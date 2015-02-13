@@ -1,0 +1,26 @@
+<% c++ #include "controller/board_video.h" %>
+<% skin my_skin %>
+<% view board_video uses Content::BoardVideo %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title><%= pageTitle %></title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/base.css">
+    </head>
+    <body>
+        <div class="theVideo">
+            <video autoplay="on" loop="on">
+                <source src="/<%= sitePathPrefix %>video/<%= videoFileName %>" type="<%= videoType %>" />
+                <%= altVideoText %>
+            </video> 
+        </div>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

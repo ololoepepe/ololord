@@ -1,0 +1,29 @@
+.post {
+    background-color: #DDDDDD;
+    border: 1px solid #CCCCCC;
+    margin-top: 4px;
+    margin-bottom: 4px;
+    padding-top: 10px;
+    padding-left: 10px;
+}
+
+.postHeader, .postFileName, .postFileSize {
+    white-space: nowrap;
+}
+
+.threadPosts {
+    horizontal-align: left;
+}
+
+.postFile {
+    vertical-align: top;
+    width: 0px;
+}
+
+.postText {
+    vertical-align: top;
+}
+
+.bannedFor {
+    color: red;
+}

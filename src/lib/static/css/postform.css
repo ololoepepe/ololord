@@ -1,0 +1,23 @@
+.postFormInvisible {
+    display: none;
+}
+
+.postFormVisible {
+    display: block;
+}
+
+.postFormTextarea {
+    font-size: 14px;
+}
+
+.postFormTable {
+    display: inline;
+}
+
+.postformLabel {
+    text-align: right;
+}
+
+.postformField {
+    text-align: left;
+}

@@ -1,0 +1,11 @@
+.searchFormInvisible {
+    display: none;
+}
+
+.searchFormVisible {
+    display: block;
+}
+
+.searchFormTable {
+    display: inline;
+}

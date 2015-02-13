@@ -1,0 +1,110 @@
+<% c++ #include "controller/ban.h" %>
+<% skin my_skin %>
+<% view ban uses Content::Ban %>
+
+<% template settings() %>
+<div class="settingsBar">
+    <span>
+        <%= localeLabelText %>
+        <select id="localeChangeSelect" class="select" onchange="javascript:changeLocale();">
+            <% foreach locale in locales %>
+                <% item %>
+                    <% if ( locale.name == content.currentLocale.name ) %>
+                        <option value="<%= locale.name %>" selected="true">
+                    <% else %>
+                        <option value="<%= locale.name %>">
+                    <% end %>
+                        <%= locale.language %> (<%= locale.country %>)
+                    </option>
+                <% end %>
+            <% end %>
+        </select>
+    </span>
+</div>
+<% end template %>
+
+<% template navbar() %>
+<div class="navbar">
+    <% foreach board in boards %>
+        <% item %>
+        <span class="navbarItem">[<a href="/<%= sitePathPrefix %><%= board.name %>"
+              title="<%= board.title %>"><%= board.name %></a>] </span>
+        <% end %>
+    <% empty %>
+    <% end %>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"><%= toHomePageText %></a>]</span>
+</div>
+<% end template %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title><%= pageTitle %></title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/base.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/settings_bar.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/navbar.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/ban.css">
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/settings.js"></script>
+    </head>
+    <body>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <center><h1><%= banMessage %></h1></center>
+        <div class="ban">
+            <table>
+                <tr>
+                    <td>
+                        <b><%= banBoardLabel %>:</b>
+                    </td>
+                    <td>
+                        <%= banBoard %>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b><%= banLevelLabel %>:</b>
+                    </td>
+                    <td>
+                        <%= banLevel %>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <b><%= banDateTimeLabel %>:</b>
+                    </td>
+                    <td>
+                        <%= banDateTime %>
+                    </td>
+                </tr>
+                <% if ( !content.banReason.empty() ) %>
+                    <tr>
+                        <td>
+                            <b><%= banReasonLabel %>:</b>
+                        </td>
+                        <td>
+                            <%= banReason %>
+                        </td>
+                    </tr>
+                <% end %>
+                <% if ( !content.banExpires.empty() ) %>
+                    <tr>
+                        <td>
+                            <b><%= banExpiresLabel %>:</b>
+                        </td>
+                        <td>
+                            <%= banExpires %>
+                        </td>
+                    </tr>
+                <% end %>
+            </table>
+        </div>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

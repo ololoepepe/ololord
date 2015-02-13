@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/translations">
+        <file>ololord_ru.qm</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,68 @@
+<% c++ #include "controller/notfound.h" %>
+<% skin my_skin %>
+<% view not_found uses Content::NotFound %>
+
+<% template settings() %>
+<div class="settingsBar">
+    <span>
+        <%= localeLabelText %>
+        <select id="localeChangeSelect" class="select" onchange="javascript:changeLocale();">
+            <% foreach locale in locales %>
+                <% item %>
+                    <% if ( locale.name == content.currentLocale.name ) %>
+                        <option value="<%= locale.name %>" selected="true">
+                    <% else %>
+                        <option value="<%= locale.name %>">
+                    <% end %>
+                        <%= locale.language %> (<%= locale.country %>)
+                    </option>
+                <% end %>
+            <% end %>
+        </select>
+    </span>
+</div>
+<% end template %>
+
+<% template navbar() %>
+<div class="navbar">
+    <% foreach board in boards %>
+        <% item %>
+        <span class="navbarItem">[<a href="/<%= sitePathPrefix %><%= board.name %>"
+              title="<%= board.title %>"><%= board.name %></a>] </span>
+        <% end %>
+    <% empty %>
+    <% end %>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"><%= toHomePageText %></a>]</span>
+</div>
+<% end template %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title><%= pageTitle %></title>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/base.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/settings_bar.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/title.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/navbar.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/not_found.css">
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/settings.js"></script>
+    </head>
+    <body>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <div class="theTitle">
+            <h1><%= notFoundMessage %></h1>
+        </div>
+        <div class="theImage">
+            <img src="/<%= sitePathPrefix %>img/<%= imageFileName %>" title="<%= imageTitle %>">
+        </div>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>static/video/friendship_is_magic_1.webm</file>
+        <file>static/video/friendship_is_magic_2.webm</file>
+    </qresource>
+</RCC>

@@ -1,0 +1,301 @@
+<% c++ #include "controller/thread.h" %>
+<% skin my_skin %>
+<% view thread uses Content::Thread %>
+
+<% template settings() %>
+<div class="settingsBar">
+    <span>
+        <%= localeLabelText %>
+        <select id="localeChangeSelect" class="select" onchange="javascript:changeLocale();">
+            <% foreach locale in locales %>
+                <% item %>
+                    <% if ( locale.name == content.currentLocale.name ) %>
+                        <option value="<%= locale.name %>" selected="true">
+                    <% else %>
+                        <option value="<%= locale.name %>">
+                    <% end %>
+                        <%= locale.language %> (<%= locale.country %>)
+                    </option>
+                <% end %>
+            <% end %>
+        </select>
+    </span>
+</div>
+<% end template %>
+
+<% template navbar() %>
+<div class="navbar">
+    <% foreach board in boards %>
+        <% item %>
+        <span class="navbarItem">[<a href="/<%= sitePathPrefix %><%= board.name %>"
+              title="<%= board.title %>"><%= board.name %></a>] </span>
+        <% end %>
+    <% empty %>
+    <% end %>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"><%= toHomePageText %></a>]</span>
+</div>
+<% end template %>
+
+<% template banner() %>
+<% if ( !content.bannerFileName.empty() ) %>
+    <div class="banner">
+        <img src="/<%= sitePathPrefix %>img/banner/<%= bannerFileName %>">
+    </div>
+<% end %>
+<% end template %>
+
+<% template createPostAction(std::string position) %>
+<form id="postForm<%= position %>" class="postFormInvisible" action="/<%= sitePathPrefix %>action/create_post"
+      method="post" enctype="multipart/form-data" accept-charset="utf-8">
+    <input type="hidden" id="postFormInputBoard<%= position %>" value="<%= currentBoard.name %>" name="board" />
+    <input type="hidden" id="postFormInputThread<%= position %>" value="<%= currentThread %>" name="thread" />
+    <table class="postFormTable">
+        <tbody>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelEmail %></b>
+                </td>
+                <td class="postformField">
+                    <input id="postFormInputEmail<%= position %>" type="text" maxlength="150" name="email" size="30" />
+                    <input type="submit" value="<%= postFormButtonSubmit %>" />
+                </td>
+            </tr>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelName %></b>
+                </td>
+                <td class="postformField">
+                    <input type="text" maxlength="50" id="postFormInputName<%= position %>" name="name" size="43" />
+                </td>
+            </tr>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelSubject %></b>
+                </td>
+                <td class="postformField">
+                    <input type="text" maxlength="150" id="postFormInputSubject<%= position %>" name="subject"
+                           size="43" />
+                </td>
+            </tr>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormInputText %></b>
+                </td>
+                <td class="postformField">
+                    <textarea name="text" id="postFormInputText<%= position %>" rows="10" cols="43"
+                              placeholder="<%= postFormInputTextPlaceholder %>" class="postFormTextarea"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormInputFile %></b>
+                </td>
+                <td class="postformField">
+                    <input type="file" name="image" id="postFormInputFile<%= position %>" accept="image/*" />
+                </td>
+            </tr>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelPassword %></b>
+                </td>
+                <td class="postformField">
+                    <input type="password" maxlength="150" id="postFormInputPassword<%= position %>" name="password"
+                           size="43" />
+                </td>
+            </tr>
+            <% if ( content.captchaEnabled ) %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelCaptcha %></b>
+                    </td>
+                    <td id="googleCaptcha<%= position %>" class="postformField">
+                        <% if ( "Top" == position ) %>
+                            <div id="googleCaptcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
+                        <% end %>
+                    </td>
+                </tr>
+            <% end %>
+        </tbody>
+    </table>
+</form>
+<% end template %>
+
+<% template searchAction(std::string position) %>
+<form id="searchForm<%= position %>" class="searchFormInvisible">
+    <input type="text" />
+</form>
+<% end template %>
+
+<% template actions(std::string position) %>
+<div class="actions">
+    <input type="hidden" id="hideSearchFormText" value="<%= hideSearchFormText %>" />
+    <input type="hidden" id="hidePostFormText" value="<%= hidePostFormText %>" />
+    <input type="hidden" id="showSearchFormText" value="<%= showSearchFormText %>" />
+    <input type="hidden" id="showPostFormText" value="<%= showPostFormText %>" />
+    <br />
+    <div>
+        <% if ( content.postingEnabled && !content.postLimitReached() ) %>
+            [<a id="showHidePostFormButton<%= position %>"
+                href="javascript:showHidePostForm('<%= position %>');">
+                <%= showPostFormText %>
+            </a>]
+        <% else %>
+        <% end %>
+        [<a id="showHideSearchFormButton<%= position %>"
+            href="javascript:showHideSearchForm('<%= position %>');">
+            <%= showSearchFormText %>
+        </a>]
+    </div>
+    <% include searchAction(position) %>
+    <% if ( content.postingEnabled ) %>
+        <% include createPostAction(position) %>
+    <% else %>
+    <% end %>
+</div>
+<% end template %>
+
+<% template post(HelperPost post, bool op, bool fixed) %>
+<% if ( op ) %>
+    <div id="post<%= post.number %>" class="opPost">
+<% else %>
+    <div id="post<%= post.number %>" class="post">
+<% end %>
+    <div class="postHeader">
+        <a id="<%= post.number %>"></a>
+        <% if ( op && fixed ) %>
+            <img src="/<%= sitePathPrefix %>img/pin.png" title="<%= fixedText %>">
+        <% end %>
+        <% if ( op && !content.postingEnabled ) %>
+            <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
+        <% end %>
+        <b><%= post.subject %></b>
+        <% if ( !post.email.empty() ) %>
+            <a href="mailto:<%= post.email %>"><%= post.name %></a>
+        <% else %>
+            <%= post.name %>
+        <% end %>
+        <%= post.dateTime %>
+        <% if ( content.postingEnabled ) %>
+            #<a href="javascript:insertPostNumber('<%= post.number %>');"><%= post.number %></a>
+        <% else %>
+            #<a href="#<%= post.number %>"><%= post.number %></a>
+        <% end %>
+    </div>
+    <table class="threadPosts">
+        <tbody>
+            <tr>
+                <%foreach file in post.files %>
+                    <% item %>
+                        <td class="postFile">
+                            <div class="postFileName">
+                                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
+                                    <%= file.sourceName %>
+                                </a>
+                            </div>
+                            <div class="postFileSize">
+                                (<%= file.size %>)
+                            </div>
+                            <div>
+                                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
+                                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+                                </a>
+                            </div>
+                        </td>
+                    <% end %>
+                <% empty %>
+                <% end %>
+                <td class="postText">
+                    <blockquote><%= post.text | raw %></blockquote>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <% if ( post.bannedFor ) %>
+                        <span class="bannedFor"><%= bannedForText %></span>
+                    <% end %>
+                <td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<% end template %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% if ( !content.pageTitle.empty() ) %>
+            <title><%= pageTitle %></title>
+        <% else %>
+            <title><%= currentBoard.title %> - <%= currentThread %></title>
+        <% end %>
+        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+        <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/base.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/settings_bar.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/navbar.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/banner.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/postform.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/searchform.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/actions.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/post.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/title.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/thread.css">
+        <!--script src="http://code.jquery.com/jquery-2.1.3.min.js"></script-->
+        <!--script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/jquery.validate.min.js"></script-->
+        <% if ( content.captchaEnabled ) %>
+            <script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
+        <% end %>
+        <!--script src="/<%= sitePathPrefix %>js/3rdparty/sha256.js"></script-->
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/settings.js"></script>
+    </head>
+    <body onload="javascript:initializeOnLoad();">
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <% if ( !content.bannerFileName.empty() ) %>
+            <br />
+        <% end %>
+        <% include banner() %>
+        <div class="theTitle">
+            <% if ( !content.pageTitle.empty() ) %>
+                <h1><%= pageTitle %></h1>
+            <% else %>
+                <h1><%= currentBoard.title %> - <%= currentThread %></h1>
+            <% end %>
+        </div>
+        <% if ( !content.postingEnabled ) %>
+            <div class="theMessage">
+                <h2><%= postingDisabledText %></h2>
+            </div>
+        <% elif ( content.postLimitReached() ) %>
+            <div class="theMessage">
+                <h2><%= postLimitReachedText %></h2>
+            </div>
+        <% end %>
+        <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
+            <div class="theMessage">
+                <h3><%= bumpLimitReachedText %></h3>
+            </div>
+        <% end %>
+        <hr />
+        <% include actions("Top") %>
+        <hr />
+        <% include post(opPost, 1, fixed) %>
+        <% foreach p in posts %>
+            <% item %>
+                <% include post(p, 0, 0) %>
+            <% end %>
+        <% empty %>
+        <% end %>
+        <hr />
+        <% include actions("Bottom") %>
+        <hr />
+        <% include navbar() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

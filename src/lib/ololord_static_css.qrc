@@ -1,0 +1,22 @@
+<RCC>
+    <qresource prefix="/">
+        <file>static/css/board.css</file>
+        <file>static/css/home.css</file>
+        <file>static/css/thread.css</file>
+        <file>static/css/rules.css</file>
+        <file>static/css/base.css</file>
+        <file>static/css/error.css</file>
+        <file>static/css/ban.css</file>
+        <file>static/css/settings_bar.css</file>
+        <file>static/css/navbar.css</file>
+        <file>static/css/banner.css</file>
+        <file>static/css/postform.css</file>
+        <file>static/css/searchform.css</file>
+        <file>static/css/actions.css</file>
+        <file>static/css/post.css</file>
+        <file>static/css/board_image.css</file>
+        <file>static/css/board_video.css</file>
+        <file>static/css/title.css</file>
+        <file>static/css/not_found.css</file>
+    </qresource>
+</RCC>

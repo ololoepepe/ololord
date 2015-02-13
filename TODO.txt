@@ -1,0 +1,7 @@
+* Make post form parameters' maximum lengths configurable
+* Make maximum file size configurable
+* Check for file being an image
+* Add API (AJAX requests support, for example site.com/api/create_post)
+? Convert special HTML sequences (&#XXXX;) to HTML (not sure if needed)
+* Implement search
+* Use plugins for routes

@@ -1,0 +1,13 @@
+body {
+    background-color: #EEEEEE;
+}
+
+a {
+    color: #FF6600;
+}
+
+.select {
+    background: #EAEAEA;
+    border: 1px solid #CCCCCC;
+    cursor: pointer;
+}
