@@ -1,12 +1,18 @@
-#ifndef WITHSETTINGS_H
-#define WITHSETTINGS_H
+#ifndef CONTENT_BASE_H
+#define CONTENT_BASE_H
 
 #include "../global.h"
+#include "board/abstractboard.h"
+
+#include <cppcms/view.h>
 
 #include <list>
 #include <string>
 
-struct OLOLORD_EXPORT WithSettings
+namespace Content
+{
+
+struct OLOLORD_EXPORT Base : public cppcms::base_content
 {
     struct Locale
     {
@@ -20,9 +26,15 @@ struct OLOLORD_EXPORT WithSettings
         }
     };
 public:
+    AbstractBoard::BoardInfoList boards;
     Locale currentLocale;
     std::string localeLabelText;
     std::list<Locale> locales;
+    std::string pageTitle;
+    std::string sitePathPrefix;
+    std::string toHomePageText;
 };
 
-#endif // WITHSETTINGS_H
+}
+
+#endif // CONTENT_BASE_H

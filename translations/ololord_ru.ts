@@ -4,26 +4,6 @@
 <context>
     <name>AbstractBoard</name>
     <message>
-        <source>Hide search form</source>
-        <comment>hideSearchFormText</comment>
-        <translation>Скрыть форму поиска</translation>
-    </message>
-    <message>
-        <source>Hide post form</source>
-        <comment>hideThreadFormText</comment>
-        <translation>Скрыть форму постинга</translation>
-    </message>
-    <message>
-        <source>Show search form</source>
-        <comment>showSearchFormText</comment>
-        <translation>Показать форму поиска</translation>
-    </message>
-    <message>
-        <source>Create thread</source>
-        <comment>showThreadFormText</comment>
-        <translation>Создать тред</translation>
-    </message>
-    <message>
         <source>Next page</source>
         <comment>toNextPageText</comment>
         <translation>Следующая страница</translation>
@@ -39,34 +19,9 @@
         <translation>Ответ</translation>
     </message>
     <message>
-        <source>Hide post form</source>
-        <comment>hidePostFormText</comment>
-        <translation>Скрыть форму постинга</translation>
-    </message>
-    <message>
-        <source>Answer in this thread</source>
-        <comment>showPostFormText</comment>
-        <translation>Ответить в тред</translation>
-    </message>
-    <message>
         <source>Posts omitted:</source>
         <comment>omittedPostsText</comment>
         <translation>Пропущено постов:</translation>
-    </message>
-    <message>
-        <source>Posting is disabled for this board</source>
-        <comment>postingDisabledText</comment>
-        <translation>На этой доске постинг запрещен</translation>
-    </message>
-    <message>
-        <source>Posting is disabled for this thread</source>
-        <comment>postingDisabledText</comment>
-        <translation>В этом треде постинг запрещен</translation>
-    </message>
-    <message>
-        <source>Post limit reached</source>
-        <comment>postLimitReachedText</comment>
-        <translation>Достигнут лимит постов</translation>
     </message>
     <message>
         <source>Borad rules</source>
@@ -481,6 +436,122 @@
     </message>
 </context>
 <context>
+    <name>initBase</name>
+    <message>
+        <source>Home</source>
+        <comment>toHomePageText</comment>
+        <translation>На главную</translation>
+    </message>
+</context>
+<context>
+    <name>initBaseThread</name>
+    <message>
+        <source>User was banned for this post</source>
+        <comment>bannedForText</comment>
+        <translation>Потребитель был запрещен для этого столба</translation>
+    </message>
+    <message>
+        <source>Bump limit reached</source>
+        <comment>bumpLimitReachedText</comment>
+        <translation>Достигнут бамплимит</translation>
+    </message>
+    <message>
+        <source>The thread is closed</source>
+        <comment>closedText</comment>
+        <translation>Тред закрыт</translation>
+    </message>
+    <message>
+        <source>Fixed</source>
+        <comment>fixedText</comment>
+        <translation>Закрепленный</translation>
+    </message>
+    <message>
+        <source>Hide post form</source>
+        <comment>hidePostFormText</comment>
+        <translation>Скрыть форму постинга</translation>
+    </message>
+    <message>
+        <source>Hide search form</source>
+        <comment>hideSearchFormText</comment>
+        <translation>Скрыть форму поиска</translation>
+    </message>
+    <message>
+        <source>Send</source>
+        <comment>postFormButtonSubmit</comment>
+        <translation>Отправить</translation>
+    </message>
+    <message>
+        <source>File:</source>
+        <comment>postFormInputFile</comment>
+        <translation>Файл:</translation>
+    </message>
+    <message>
+        <source>Post:</source>
+        <comment>postFormInputText</comment>
+        <translation>Пост:</translation>
+    </message>
+    <message>
+        <source>Comment. Max length 15000</source>
+        <comment>postFormInputTextPlaceholder</comment>
+        <translation>Комментарий. Макс. длина 15000</translation>
+    </message>
+    <message>
+        <source>Captcha:</source>
+        <comment>postFormLabelCaptcha</comment>
+        <translation>Captcha:</translation>
+    </message>
+    <message>
+        <source>E-mail:</source>
+        <comment>postFormLabelEmail</comment>
+        <translation>Эл. почта:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <comment>postFormLabelName</comment>
+        <translation>Имя:</translation>
+    </message>
+    <message>
+        <source>Password:</source>
+        <comment>postFormLabelPassword</comment>
+        <translation>Пароль:</translation>
+    </message>
+    <message>
+        <source>Subject:</source>
+        <comment>postFormLabelSubject</comment>
+        <translation>Тема:</translation>
+    </message>
+    <message>
+        <source>Posting is disabled for this thread</source>
+        <comment>postingDisabledText</comment>
+        <translation>В этом треде постинг запрещен</translation>
+    </message>
+    <message>
+        <source>Posting is disabled for this board</source>
+        <comment>postingDisabledText</comment>
+        <translation>На этой доске постинг запрещен</translation>
+    </message>
+    <message>
+        <source>Post limit reached</source>
+        <comment>postLimitReachedText</comment>
+        <translation>Достигнут лимит постов</translation>
+    </message>
+    <message>
+        <source>Answer in this thread</source>
+        <comment>showPostFormText</comment>
+        <translation>Ответить в тред</translation>
+    </message>
+    <message>
+        <source>Create thread</source>
+        <comment>showPostFormText</comment>
+        <translation>Создать тред</translation>
+    </message>
+    <message>
+        <source>Show search form</source>
+        <comment>showSearchFormText</comment>
+        <translation>Показать форму поиска</translation>
+    </message>
+</context>
+<context>
     <name>initBoards</name>
     <message>
         <source>Determines if captcha is enabled on this board.
@@ -745,85 +816,6 @@ The default value is %1.</source>
   2 - вести лог только в файле
   3 - вести лог и в консоли, и в файле
   Значение по умолчанию - 2.</translation>
-    </message>
-</context>
-<context>
-    <name>initWithNavbar</name>
-    <message>
-        <source>Home</source>
-        <comment>toHomePageText</comment>
-        <translation>На главную</translation>
-    </message>
-</context>
-<context>
-    <name>initWithPostForm</name>
-    <message>
-        <source>Send</source>
-        <comment>postFormButtonSubmit</comment>
-        <translation>Отправить</translation>
-    </message>
-    <message>
-        <source>File:</source>
-        <comment>postFormInputFile</comment>
-        <translation>Файл:</translation>
-    </message>
-    <message>
-        <source>Post:</source>
-        <comment>postFormInputText</comment>
-        <translation>Пост:</translation>
-    </message>
-    <message>
-        <source>Comment. Max length 15000</source>
-        <comment>postFormInputTextPlaceholder</comment>
-        <translation>Комментарий. Макс. длина 15000</translation>
-    </message>
-    <message>
-        <source>Captcha:</source>
-        <comment>postFormLabelCaptcha</comment>
-        <translation>Captcha:</translation>
-    </message>
-    <message>
-        <source>E-mail:</source>
-        <comment>postFormLabelEmail</comment>
-        <translation>Эл. почта:</translation>
-    </message>
-    <message>
-        <source>Name:</source>
-        <comment>postFormLabelName</comment>
-        <translation>Имя:</translation>
-    </message>
-    <message>
-        <source>Password:</source>
-        <comment>postFormLabelPassword</comment>
-        <translation>Пароль:</translation>
-    </message>
-    <message>
-        <source>Subject:</source>
-        <comment>postFormLabelSubject</comment>
-        <translation>Тема:</translation>
-    </message>
-</context>
-<context>
-    <name>initWithPosts</name>
-    <message>
-        <source>User was banned for this post</source>
-        <comment>bannedForText</comment>
-        <translation>Потребитель был запрещен для этого столба</translation>
-    </message>
-    <message>
-        <source>Bump limit reached</source>
-        <comment>bumpLimitReachedText</comment>
-        <translation>Достигнут бамплимит</translation>
-    </message>
-    <message>
-        <source>The thread is closed</source>
-        <comment>closedText</comment>
-        <translation>Тред закрыт</translation>
-    </message>
-    <message>
-        <source>Fixed</source>
-        <comment>fixedText</comment>
-        <translation>Закрепленный</translation>
     </message>
 </context>
 <context>

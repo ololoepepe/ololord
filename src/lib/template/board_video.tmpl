@@ -1,15 +1,13 @@
 <% c++ #include "controller/board_video.h" %>
 <% skin my_skin %>
-<% view board_video uses Content::BoardVideo %>
+<% view board_video uses Content::BoardVideo extends base %>
 
 <% template render() %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <title><%= pageTitle %></title>
-        <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-        <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/base.css">
+        <% include baseHead() %>
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/board_video.css">
     </head>
     <body>
         <div class="theVideo">

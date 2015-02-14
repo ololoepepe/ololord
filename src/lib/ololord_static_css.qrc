@@ -12,11 +12,11 @@
         <file>static/css/banner.css</file>
         <file>static/css/postform.css</file>
         <file>static/css/searchform.css</file>
-        <file>static/css/actions.css</file>
         <file>static/css/post.css</file>
         <file>static/css/board_image.css</file>
         <file>static/css/board_video.css</file>
         <file>static/css/title.css</file>
         <file>static/css/not_found.css</file>
+        <file>static/css/action.css</file>
     </qresource>
 </RCC>

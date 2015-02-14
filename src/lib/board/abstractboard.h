@@ -59,7 +59,7 @@ public:
     virtual QStringList rules(const QLocale &l) const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
-    virtual std::string title(const QLocale &l) const = 0;
+    virtual QString title(const QLocale &l) const = 0;
 private:
     static void cleanupBoards();
     static void initBoards(bool reinit = false);

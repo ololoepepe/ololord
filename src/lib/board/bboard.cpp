@@ -5,8 +5,6 @@
 #include <QLocale>
 #include <QString>
 
-#include <string>
-
 bBoard::bBoard()
 {
     //
@@ -17,8 +15,8 @@ QString bBoard::name() const
     return "b";
 }
 
-std::string bBoard::title(const QLocale &l) const
+QString bBoard::title(const QLocale &l) const
 {
-    TranslatorStd ts(l);
-    return ts.translate("bBoard", "/b/rotherhood", "board title");
+    TranslatorQt tq(l);
+    return tq.translate("bBoard", "/b/rotherhood", "board title");
 }

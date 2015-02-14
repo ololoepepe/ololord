@@ -1,9 +1,8 @@
 #ifndef CONTENT_NOTFOUND_H
 #define CONTENT_NOTFOUND_H
 
-#include "controller/withbase.h"
-#include "controller/withnavbar.h"
-#include "controller/withsettings.h"
+#include "controller/base.h"
+
 #include "../global.h"
 
 #include <cppcms/view.h>
@@ -14,12 +13,11 @@
 namespace Content
 {
 
-struct OLOLORD_EXPORT NotFound : public cppcms::base_content, public WithBase, public WithNavbar, public WithSettings
+struct OLOLORD_EXPORT NotFound : public Base
 {
     std::string imageFileName;
     std::string imageTitle;
     std::string notFoundMessage;
-    std::string pageTitle;
 };
 
 }

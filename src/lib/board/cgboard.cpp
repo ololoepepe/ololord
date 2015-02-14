@@ -22,11 +22,11 @@ cgBoard::cgBoard()
 void cgBoard::handleBoard(cppcms::application &app, unsigned int /*page*/)
 {
     Content::BoardImage c;
+    TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    Controller::initWithBase(&c, ts.locale());
+    Controller::initBase(c, tq.locale(), title(tq.locale()));
     c.imageFileName = "drakeface.jpg";
     c.imageTitle = ts.translate("cgBoard", "No games", "imageTitle");
-    c.pageTitle = title(ts.locale());
     app.render("board_image", c);
 }
 
@@ -40,8 +40,8 @@ bool cgBoard::postingEnabled() const
     return false;
 }
 
-std::string cgBoard::title(const QLocale &l) const
+QString cgBoard::title(const QLocale &l) const
 {
-    TranslatorStd ts(l);
-    return ts.translate("cgBoard", "Console games", "board title");
+    TranslatorQt tq(l);
+    return tq.translate("cgBoard", "Console games", "board title");
 }

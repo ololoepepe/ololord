@@ -7,15 +7,13 @@ class QString;
 #include "abstractboard.h"
 #include "../global.h"
 
-#include <string>
-
 class OLOLORD_EXPORT bBoard : public AbstractBoard
 {
 public:
     explicit bBoard();
 public:
     QString name() const;
-    std::string title(const QLocale &l) const;
+    QString title(const QLocale &l) const;
 };
 
 #endif // BBOARD_H

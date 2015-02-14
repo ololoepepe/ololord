@@ -1,6 +1,6 @@
 #include "controller.h"
 
-#include "helperthread.h"
+#include "baseboard.h"
 #include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
@@ -133,7 +133,9 @@ static void processWakabaMarkLink(QString &text, int start, int len, const QStri
     int ind = rx.indexIn(t);
     while (ind >= 0) {
         QString cap = rx.cap();
-        QString a = "<a href=\"javascript:selectPost('" + cap.mid(2).replace(">", "&gt;") + "');\">" + cap + "</a>";
+        QString postNumber = cap.mid(2);
+        QString a = "<a href=\"javascript:selectPost('" + postNumber + "', '" + QString::number(threadNumber)
+                + "');\">" + cap.replace(">", "&gt;") + "</a>";
         t.replace(ind, rx.matchedLength(), a);
         skip << qMakePair(ind, a.length());
         ind = rx.indexIn(t, ind + a.length());
@@ -514,19 +516,19 @@ void toHtml(QString *s)
     processPostText(*s, skip, "", 0L, false, &toHtml);
 }
 
-HelperPost toController(const Post &post, const QString &boardName, quint64 threadNumber, const QLocale &l,
-                        const cppcms::http::request &req, bool processCode)
+Content::BaseBoard::Post toController(const Post &post, const QString &boardName, quint64 threadNumber,
+                                      const QLocale &l, const cppcms::http::request &req, bool processCode)
 {
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
-        return HelperPost();
-    HelperPost p;
+        return Content::BaseBoard::Post();
+    Content::BaseBoard::Post p;
     p.bannedFor = post.bannedFor();
     p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
     p.email = Tools::toStd(post.email());
     TranslatorQt tq(l);
     foreach (const QString &fn, BeQt::deserialize(post.files()).toStringList()) {
-        HelperFile f;
+        Content::BaseBoard::File f;
         f.sourceName = Tools::toStd(QFileInfo(fn).fileName());
         QFileInfo fi(storagePath + "/img/" + boardName + "/" + QFileInfo(fn).fileName());
         QString suffix = fi.suffix();

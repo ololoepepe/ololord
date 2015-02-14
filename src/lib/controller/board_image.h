@@ -1,21 +1,19 @@
 #ifndef CONTENT_BOARD_IMAGE_H
 #define CONTENT_BOARD_IMAGE_H
 
-#include "controller/withbase.h"
-#include "../global.h"
+#include "controller/base.h"
 
-#include <cppcms/view.h>
+#include "../global.h"
 
 #include <string>
 
 namespace Content
 {
 
-struct OLOLORD_EXPORT BoardImage : public cppcms::base_content, public WithBase
+struct OLOLORD_EXPORT BoardImage : public Base
 {
     std::string imageFileName;
     std::string imageTitle;
-    std::string pageTitle;
 };
 
 }

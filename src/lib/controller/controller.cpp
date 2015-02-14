@@ -1,6 +1,8 @@
 #include "controller.h"
 
 #include "ban.h"
+#include "base.h"
+#include "baseboard.h"
 #include "board/abstractboard.h"
 #include "database.h"
 #include "error.h"
@@ -10,12 +12,6 @@
 #include "stored/banneduser-odb.hxx"
 #include "tools.h"
 #include "translator.h"
-#include "withbanner.h"
-#include "withbase.h"
-#include "withnavbar.h"
-#include "withpostform.h"
-#include "withposts.h"
-#include "withsettings.h"
 
 #include <BCoreApplication>
 
@@ -44,9 +40,9 @@ namespace Controller
 
 static QMutex localeMutex(QMutex::Recursive);
 
-static WithSettings::Locale toWithLocale(const QLocale &l)
+static Content::Base::Locale toWithLocale(const QLocale &l)
 {
-    WithSettings::Locale ll;
+    Content::Base::Locale ll;
     QString country = QLocale::countryToString(l.country());
     foreach (int i, bRangeR(country.length() - 1, 1)) {
         const QChar &c = country.at(i);
@@ -60,64 +56,9 @@ static WithSettings::Locale toWithLocale(const QLocale &l)
     return ll;
 }
 
-void initWithBanner(WithBanner *w, const QLocale &/*l*/, const AbstractBoard *board)
+void initBase(Content::Base &c, const QLocale &l, const QString &pageTitle)
 {
-    if (!w || !board)
-        return;
-    w->bannerFileName = Tools::toStd(board->bannerFileName());
-}
-
-void initWithBase(WithBase *w, const QLocale &/*l*/)
-{
-    if (!w)
-        return;
-    w->sitePathPrefix = Tools::toStd(SettingsLocker()->value("Site/path_prefix").toString());
-}
-
-void initWithNavbar(WithNavbar *w, const QLocale &l)
-{
-    if (!w)
-        return;
-    TranslatorStd ts(l);
-    w->boards = AbstractBoard::boardInfos(ts.locale(), false);
-    w->toHomePageText = ts.translate("initWithNavbar", "Home", "toHomePageText");
-}
-
-void initWithPostForm(WithPostForm *w, const QLocale &l, const AbstractBoard *board)
-{
-    if (!w || !board)
-        return;
-    TranslatorStd ts(l);
-    w->captchaEnabled = Tools::captchaEnabled(board->name());
-    w->captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
-    w->currentBoard.name = Tools::toStd(board->name());
-    w->currentBoard.title = board->title(l);
-    w->postFormButtonSubmit = ts.translate("initWithPostForm", "Send", "postFormButtonSubmit");
-    w->postFormInputFile = ts.translate("initWithPostForm", "File:", "postFormInputFile");
-    w->postFormInputText = ts.translate("initWithPostForm", "Post:", "postFormInputText");
-    w->postFormInputTextPlaceholder = ts.translate("initWithPostForm", "Comment. Max length 15000",
-                                                   "postFormInputTextPlaceholder");
-    w->postFormLabelCaptcha = ts.translate("initWithPostForm", "Captcha:", "postFormLabelCaptcha");
-    w->postFormLabelEmail = ts.translate("initWithPostForm", "E-mail:", "postFormLabelEmail");
-    w->postFormLabelName = ts.translate("initWithPostForm", "Name:", "postFormLabelName");
-    w->postFormLabelPassword = ts.translate("initWithPostForm", "Password:", "postFormLabelPassword");
-    w->postFormLabelSubject = ts.translate("initWithPostForm", "Subject:", "postFormLabelSubject");
-}
-
-void initWithPosts(WithPosts *w, const QLocale &l)
-{
-    if (!w)
-        return;
-    TranslatorStd ts(l);
-    w->bannedForText = ts.translate("initWithPosts", "User was banned for this post", "bannedForText");
-    w->bumpLimitReachedText = ts.translate("initWithPosts", "Bump limit reached", "bumpLimitReachedText");
-    w->closedText = ts.translate("initWithPosts", "The thread is closed", "closedText");
-    w->fixedText = ts.translate("initWithPosts", "Fixed", "fixedText");
-}
-
-void initWithSettings(WithSettings *w, const QLocale &l)
-{
-    typedef std::list<WithSettings::Locale> LocaleList;
+    typedef std::list<Content::Base::Locale> LocaleList;
     localeMutex.lock();
     init_once(LocaleList, locales, LocaleList()) {
         foreach (const QString &path, BCoreApplication::locations(BCoreApplication::TranslationsPath)) {
@@ -127,7 +68,7 @@ void initWithSettings(WithSettings *w, const QLocale &l)
                 QLocale ll(ln);
                 if (QLocale::c() == ll)
                     continue;
-                WithSettings::Locale lll = toWithLocale(ll);
+                Content::Base::Locale lll = toWithLocale(ll);
                 if (std::find(locales.begin(), locales.end(), lll) != locales.end())
                     continue;
                 locales.push_back(lll);
@@ -136,11 +77,56 @@ void initWithSettings(WithSettings *w, const QLocale &l)
         locales.push_back(toWithLocale(QLocale("en_US")));
     }
     localeMutex.unlock();
-    if (!w)
+    TranslatorStd ts(l);
+    c.boards = AbstractBoard::boardInfos(ts.locale(), false);
+    c.currentLocale = toWithLocale(l);
+    c.localeLabelText = "Language:";
+    c.locales = locales;
+    c.pageTitle = Tools::toStd(pageTitle);
+    c.sitePathPrefix = Tools::toStd(SettingsLocker()->value("Site/path_prefix").toString());
+    c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
+}
+
+void initBaseBoard(Content::BaseBoard &c, const QLocale &l, const AbstractBoard *board, bool postingEnabled,
+                   const QString &pageTitle, quint64 currentThread)
+{
+    if (!board)
         return;
-    w->currentLocale = toWithLocale(l);
-    w->localeLabelText = "Language:";
-    w->locales = locales;
+    TranslatorStd ts(l);
+    initBase(c, l, pageTitle);
+    if (c.pageTitle.empty() && currentThread)
+        c.pageTitle = Tools::toStd(board->title(l) + " - " + QString::number(currentThread));
+    c.action = currentThread ? "create_post" : "create_thread";
+    c.bannedForText = ts.translate("initBaseThread", "User was banned for this post", "bannedForText");
+    c.bannerFileName = Tools::toStd(board->bannerFileName());
+    c.bumpLimitReachedText = ts.translate("initBaseThread", "Bump limit reached", "bumpLimitReachedText");
+    c.captchaEnabled = Tools::captchaEnabled(board->name());
+    c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
+    c.closedText = ts.translate("initBaseThread", "The thread is closed", "closedText");
+    c.currentBoard.name = Tools::toStd(board->name());
+    c.currentBoard.title = Tools::toStd(board->title(l));
+    c.currentThread = currentThread;
+    c.fixedText = ts.translate("initBaseThread", "Fixed", "fixedText");
+    c.hidePostFormText = ts.translate("initBaseThread", "Hide post form", "hidePostFormText");
+    c.hideSearchFormText = ts.translate("initBaseThread", "Hide search form", "hideSearchFormText");
+    c.postFormButtonSubmit = ts.translate("initBaseThread", "Send", "postFormButtonSubmit");
+    c.postFormInputFile = ts.translate("initBaseThread", "File:", "postFormInputFile");
+    c.postFormInputText = ts.translate("initBaseThread", "Post:", "postFormInputText");
+    c.postFormInputTextPlaceholder = ts.translate("initBaseThread", "Comment. Max length 15000",
+                                                  "postFormInputTextPlaceholder");
+    c.postFormLabelCaptcha = ts.translate("initBaseThread", "Captcha:", "postFormLabelCaptcha");
+    c.postFormLabelEmail = ts.translate("initBaseThread", "E-mail:", "postFormLabelEmail");
+    c.postFormLabelName = ts.translate("initBaseThread", "Name:", "postFormLabelName");
+    c.postFormLabelPassword = ts.translate("initBaseThread", "Password:", "postFormLabelPassword");
+    c.postFormLabelSubject = ts.translate("initBaseThread", "Subject:", "postFormLabelSubject");
+    c.postingDisabledText = currentThread
+            ? ts.translate("initBaseThread", "Posting is disabled for this thread", "postingDisabledText")
+            : ts.translate("initBaseThread", "Posting is disabled for this board", "postingDisabledText");
+    c.postingEnabled = postingEnabled;
+    c.postLimitReachedText = ts.translate("initBaseThread", "Post limit reached", "postLimitReachedText");
+    c.showPostFormText = currentThread ? ts.translate("initBaseThread", "Answer in this thread", "showPostFormText")
+                                       : ts.translate("initBaseThread", "Create thread", "showPostFormText");
+    c.showSearchFormText = ts.translate("initBaseThread", "Show search form", "showSearchFormText");
 }
 
 void redirect(cppcms::application &app, const QString &where)
@@ -151,11 +137,10 @@ void redirect(cppcms::application &app, const QString &where)
 void renderBan(cppcms::application &app, const QString &board, int level, const QDateTime &dateTime,
                const QString &reason, const QDateTime &expires)
 {
+    TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::Ban c;
-    initWithBase(&c, ts.locale());
-    initWithNavbar(&c, ts.locale());
-    initWithSettings(&c, ts.locale());
+    initBase(c, tq.locale(), tq.translate("renderBan", "Ban", "pageTitle"));
     c.banBoard = ("*" != board) ? Tools::toStd(board) : ts.translate("renderBan", "all boards", "pageTitle");
     c.banBoardLabel = ts.translate("renderBan", "Board", "pageTitle");
     c.banDateTime = Tools::toStd(ts.locale().toString(Tools::dateTime(dateTime, app.request()),
@@ -175,19 +160,16 @@ void renderBan(cppcms::application &app, const QString &board, int level, const 
     c.banMessage = ts.translate("renderBan", "You are banned", "pageTitle");
     c.banReason = Tools::toStd(reason);
     c.banReasonLabel = ts.translate("renderBan", "Reason", "pageTitle");
-    c.pageTitle = ts.translate("renderBan", "Ban", "pageTitle");
     app.render("ban", c);
     Tools::log(app, "Banned");
 }
 
 void renderError(cppcms::application &app, const QString &error, const QString &description)
 {
+    TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::Error c;
-    initWithBase(&c, ts.locale());
-    initWithNavbar(&c, ts.locale());
-    initWithSettings(&c, ts.locale());
-    c.pageTitle = ts.translate("renderError", "Error", "pageTitle");
+    initBase(c, ts.locale(), tq.translate("renderError", "Error", "pageTitle"));
     c.errorMessage = !error.isEmpty() ? Tools::toStd(error) : c.pageTitle;
     c.errorDescription = Tools::toStd(description);
     app.render("error", c);
@@ -196,11 +178,10 @@ void renderError(cppcms::application &app, const QString &error, const QString &
 
 void renderNotFound(cppcms::application &app)
 {
+    TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::NotFound c;
-    initWithBase(&c, ts.locale());
-    initWithNavbar(&c, ts.locale());
-    initWithSettings(&c, ts.locale());
+    initBase(c, tq.locale(), tq.translate("renderNotFound", "Error 404", "pageTitle"));
     QStringList fns;
     foreach (const QString &path, BCoreApplication::locations(BCoreApplication::DataPath))
         fns << QDir(path + "/static/img/not_found").entryList(QDir::Files);
@@ -210,7 +191,6 @@ void renderNotFound(cppcms::application &app)
     }
     //c.imageTitle = ts.translate("renderNotFound", "Page or file not found", "imageTitle");
     c.notFoundMessage = ts.translate("renderNotFound", "Page or file not found", "notFoundMessage");
-    c.pageTitle = ts.translate("renderNotFound", "Error 404", "pageTitle");
     app.render("not_found", c);
     Tools::log(app, "Page or file not found");
 }

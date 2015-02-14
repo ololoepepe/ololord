@@ -1,11 +1,10 @@
 #ifndef CONTENT_RULES_H
 #define CONTENT_RULES_H
 
-#include "board/abstractboard.h"
-#include "controller/withbase.h"
-#include "controller/withnavbar.h"
-#include "controller/withsettings.h"
+#include "controller/base.h"
+
 #include "../global.h"
+#include "board/abstractboard.h"
 
 #include <cppcms/view.h>
 
@@ -15,11 +14,10 @@
 namespace Content
 {
 
-struct OLOLORD_EXPORT Rules : public cppcms::base_content, public WithBase, public WithNavbar, public WithSettings
+struct OLOLORD_EXPORT Rules : public Base
 {
     AbstractBoard::BoardInfo currentBoard;
     std::string noRulesText;
-    std::string pageTitle;
     std::list<std::string> rules;
 };
 

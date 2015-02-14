@@ -2,14 +2,14 @@
 #define CONTROLLER_H
 
 class AbstractBoard;
-class HelperPost;
 class Post;
-class WithBanner;
-class WithBase;
-class WithNavbar;
-class WithPostForm;
-class WithPosts;
-class WithSettings;
+
+namespace Content
+{
+
+class Base;
+
+}
 
 class QLocale;
 
@@ -28,6 +28,7 @@ class request;
 }
 
 #include "../global.h"
+#include "baseboard.h"
 #include "tools.h"
 
 #include <QDateTime>
@@ -48,25 +49,24 @@ enum UserActionType
     WriteAction = 1
 };
 
-void OLOLORD_EXPORT initWithBanner(WithBanner *w, const QLocale &l, const AbstractBoard *board);
-void OLOLORD_EXPORT initWithBase(WithBase *w, const QLocale &l);
-void OLOLORD_EXPORT initWithNavbar(WithNavbar *w, const QLocale &l);
-void OLOLORD_EXPORT initWithPostForm(WithPostForm *w, const QLocale &l, const AbstractBoard *board);
-void OLOLORD_EXPORT initWithPosts(WithPosts *w, const QLocale &l);
-void OLOLORD_EXPORT initWithSettings(WithSettings *w, const QLocale &l);
-void OLOLORD_EXPORT redirect(cppcms::application &app, const QString &where);
-void OLOLORD_EXPORT renderBan(cppcms::application &app, const QString &board, int level, const QDateTime &dateTime,
+OLOLORD_EXPORT void initBase(Content::Base &c, const QLocale &l, const QString &pageTitle = QString());
+OLOLORD_EXPORT void initBaseBoard(Content::BaseBoard &c, const QLocale &l, const AbstractBoard *board,
+                                  bool postingEnabled, const QString &pageTitle = QString(),
+                                  quint64 currentThread = 0);
+OLOLORD_EXPORT void redirect(cppcms::application &app, const QString &where);
+OLOLORD_EXPORT void renderBan(cppcms::application &app, const QString &board, int level, const QDateTime &dateTime,
                               const QString &reason = QString(), const QDateTime &expires = QDateTime());
-void OLOLORD_EXPORT renderError(cppcms::application &app, const QString &error,
+OLOLORD_EXPORT void renderError(cppcms::application &app, const QString &error,
                                 const QString &description = QString());
-void OLOLORD_EXPORT renderNotFound(cppcms::application &app);
-bool OLOLORD_EXPORT testBan(cppcms::application &app, UserActionType proposedAction, const QString &board);
-bool OLOLORD_EXPORT testParams(cppcms::application &app, const Tools::PostParameters &params);
-bool OLOLORD_EXPORT testRequest(cppcms::application &app, int acceptedTypes);
-QString OLOLORD_EXPORT toHtml(const QString &s);
-void OLOLORD_EXPORT toHtml(QString *s);
-HelperPost OLOLORD_EXPORT toController(const Post &post, const QString &boardName, quint64 opPostId, const QLocale &l,
-                                       const cppcms::http::request &req, bool processCode = false);
+OLOLORD_EXPORT void renderNotFound(cppcms::application &app);
+OLOLORD_EXPORT bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board);
+OLOLORD_EXPORT bool testParams(cppcms::application &app, const Tools::PostParameters &params);
+OLOLORD_EXPORT bool testRequest(cppcms::application &app, int acceptedTypes);
+OLOLORD_EXPORT QString toHtml(const QString &s);
+OLOLORD_EXPORT void toHtml(QString *s);
+OLOLORD_EXPORT Content::BaseBoard::Post toController(const Post &post, const QString &boardName, quint64 opPostId,
+                                                     const QLocale &l, const cppcms::http::request &req,
+                                                     bool processCode = false);
 
 }
 

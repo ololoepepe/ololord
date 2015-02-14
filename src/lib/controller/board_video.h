@@ -1,20 +1,18 @@
 #ifndef CONTENT_BOARD_VIDEO_H
 #define CONTENT_BOARD_VIDEO_H
 
-#include "controller/withbase.h"
-#include "../global.h"
+#include "controller/base.h"
 
-#include <cppcms/view.h>
+#include "../global.h"
 
 #include <string>
 
 namespace Content
 {
 
-struct OLOLORD_EXPORT BoardVideo : public cppcms::base_content, public WithBase
+struct OLOLORD_EXPORT BoardVideo : public Base
 {
     std::string altVideoText;
-    std::string pageTitle;
     std::string videoFileName;
     std::string videoType;
 };
