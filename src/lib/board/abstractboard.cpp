@@ -234,12 +234,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.postCount = posts.size();
             thread.postingEnabled = c.postingEnabled && tt.postingEnabled();
             thread.opPost = Controller::toController(*posts.first().load(), name(), tt.number(), ts.locale(),
-                                                     processCode());
+                                                     app.request(), processCode());
             foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
                 if (i <= 0)
                     break;
                 thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), name(), tt.number(),
-                                                                     ts.locale(), processCode()));
+                                                                     ts.locale(), app.request(), processCode()));
             }
             c.threads.push_back(thread);
         }
@@ -319,10 +319,10 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                 c.pageTitle = Tools::toStd(posts.first().load()->subject());
                 c.postingEnabled = Tools::postingEnabled(name()) && i->postingEnabled();
                 c.opPost = Controller::toController(*posts.first().load(), name(), i->number(), ts.locale(),
-                                                    processCode());
+                                                    app.request(), processCode());
                 foreach (int j, bRangeD(1, posts.size() - 1)) {
                     c.posts.push_back(Controller::toController(*posts.at(j).load(), name(), i->number(), ts.locale(),
-                                                               processCode()));
+                                                               app.request(), processCode()));
                 }
                 threadFound = true;
                 break;

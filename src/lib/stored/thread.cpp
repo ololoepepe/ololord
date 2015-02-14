@@ -2,6 +2,7 @@
 
 #include <QByteArray>
 #include <QDateTime>
+#include <QDebug>
 #include <QList>
 #include <QSharedPointer>
 #include <QString>
@@ -40,7 +41,7 @@ quint64 Thread::number() const
 
 QDateTime Thread::dateTime() const
 {
-    return dateTime_.toUTC();
+    return QDateTime(dateTime_.date(), dateTime_.time(), Qt::UTC);
 }
 
 bool Thread::fixed() const
@@ -118,7 +119,7 @@ quint64 Post::number() const
 
 QDateTime Post::dateTime() const
 {
-    return dateTime_.toUTC();
+    return QDateTime(dateTime_.date(), dateTime_.time(), Qt::UTC);
 }
 
 bool Post::bannedFor() const

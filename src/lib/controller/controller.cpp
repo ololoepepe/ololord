@@ -158,9 +158,11 @@ void renderBan(cppcms::application &app, const QString &board, int level, const 
     initWithSettings(&c, ts.locale());
     c.banBoard = ("*" != board) ? Tools::toStd(board) : ts.translate("renderBan", "all boards", "pageTitle");
     c.banBoardLabel = ts.translate("renderBan", "Board", "pageTitle");
-    c.banDateTime = Tools::toStd(ts.locale().toString(dateTime, "dd.MM.yyyy ddd hh:mm:ss"));
+    c.banDateTime = Tools::toStd(ts.locale().toString(Tools::dateTime(dateTime, app.request()),
+                                                      "dd.MM.yyyy ddd hh:mm:ss"));
     c.banDateTimeLabel = ts.translate("renderBan", "Date", "pageTitle");
-    c.banExpires = expires.isValid() ? Tools::toStd(ts.locale().toString(expires, "dd.MM.yyyy ddd hh:mm:ss"))
+    c.banExpires = expires.isValid() ? Tools::toStd(ts.locale().toString(Tools::dateTime(expires, app.request()),
+                                                                         "dd.MM.yyyy ddd hh:mm:ss"))
                                      : ts.translate("renderBan", "never", "pageTitle");
     c.banExpiresLabel = ts.translate("renderBan", "Expires", "pageTitle");
     if (level >= 10)

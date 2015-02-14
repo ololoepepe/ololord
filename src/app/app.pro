@@ -51,7 +51,7 @@ contains(LORD_CONFIG, builtin_resources) {
 ################################ Binaries ####################################
 ##############################################################################
 
-target.path = $${LORD_BINARIES_INSTALLS_PATH}
+target.path = $${LORD_BINARY_INSTALLS_PATH}
 INSTALLS = target
 
 } #end !contains(LORD_CONFIG, no_install)

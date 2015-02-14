@@ -22,6 +22,8 @@
 #include <QString>
 #include <QStringList>
 
+#include <cppcms/http_request.h>
+
 #include <srchilite/ioexception.h>
 #include <srchilite/langmap.h>
 #include <srchilite/parserexception.h>
@@ -513,14 +515,14 @@ void toHtml(QString *s)
 }
 
 HelperPost toController(const Post &post, const QString &boardName, quint64 threadNumber, const QLocale &l,
-                        bool processCode)
+                        const cppcms::http::request &req, bool processCode)
 {
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
         return HelperPost();
     HelperPost p;
     p.bannedFor = post.bannedFor();
-    p.dateTime = Tools::toStd(l.toString(post.dateTime().toLocalTime(), "dd/MM/yyyy ddd hh:mm:ss"));
+    p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
     p.email = Tools::toStd(post.email());
     TranslatorQt tq(l);
     foreach (const QString &fn, BeQt::deserialize(post.files()).toStringList()) {

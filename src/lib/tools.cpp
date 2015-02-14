@@ -27,6 +27,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QTime>
 #include <QVariant>
 
 #include <cppcms/http_cookie.h>
@@ -38,6 +39,7 @@
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 
+#include <cmath>
 #include <istream>
 #include <list>
 #include <locale>
@@ -68,9 +70,42 @@ public:
     }
 };
 
+static QMutex cityNameMutex(QMutex::Recursive);
 static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
 static QMutex storagePathMutex(QMutex::Recursive);
+static QMutex timezoneMutex(QMutex::Recursive);
+
+static unsigned int ipNum(const QString &ip, bool *ok = 0)
+{
+    QStringList sl = ip.split('.');
+    if (sl.size() != 4)
+        return bRet(ok, false, 0);
+    bool b = false;
+    unsigned int n = sl.last().toUInt(&b);
+    if (!b)
+        return bRet(ok, false, 0);
+    n += 256 * sl.at(2).toUInt(&b);
+    if (!ok)
+        return bRet(ok, false, 0);
+    n += 256 * 256 * sl.at(1).toUInt(&b);
+    if (!ok)
+        return bRet(ok, false, 0);
+    n += 256 * 256 * 256 * sl.first().toUInt(&b);
+    if (!ok || !n)
+        return bRet(ok, false, 0);
+    return bRet(ok, true, n);
+}
+
+static QTime time(int msecs)
+{
+    int h = msecs / BeQt::Hour;
+    msecs %= BeQt::Hour;
+    int m = msecs / BeQt::Minute;
+    msecs %= BeQt::Minute;
+    int s = msecs / BeQt::Second;
+    return QTime(h, m, s, msecs % BeQt::Second);
+}
 
 bool captchaEnabled(const QString &boardName)
 {
@@ -79,10 +114,50 @@ bool captchaEnabled(const QString &boardName)
             && (boardName.isEmpty() || s->value("Board/" + boardName + "/captcha_enabled", true).toBool());
 }
 
+QString cityName(const QString &ip)
+{
+    typedef QMap<IpRange, QString> NameMap;
+    QMutexLocker locker(&cityNameMutex);
+    init_once(NameMap, names, NameMap()) {
+        QString fn = BDirTools::findResource("res/ip_city_name_map.txt");
+        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+        foreach (const QString &s, sl) {
+            QStringList sll = s.split(' ');
+            if (sll.size() < 3)
+                continue;
+            IpRange r;
+            bool ok = false;
+            r.start = sll.first().toUInt(&ok);
+            if (!ok)
+                continue;
+            r.end = sll.at(1).toUInt(&ok);
+            if (!ok)
+                continue;
+            QString n = QStringList(sll.mid(2)).join(" ");
+            if (n.length() < sll.size() - 2)
+                continue;
+            names.insert(r, n);
+        }
+    }
+    unsigned int n = ipNum(ip);
+    if (!n)
+        return "";
+    foreach (const IpRange &r, names.keys()) {
+        if (n >= r.start && n <= r.end)
+            return names.value(r);
+    }
+    return "";
+}
+
+QString cityName(const cppcms::http::request &req)
+{
+    return cityName(fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
+}
+
 QString countryCode(const QString &ip)
 {
     typedef QMap<IpRange, QString> CodeMap;
-    countryCodeMutex.lock();
+    QMutexLocker locker(&countryCodeMutex);
     init_once(CodeMap, codes, CodeMap()) {
         QString fn = BDirTools::findResource("res/ip_country_code_map.txt");
         QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
@@ -104,24 +179,8 @@ QString countryCode(const QString &ip)
             codes.insert(r, c);
         }
     }
-    countryCodeMutex.unlock();
-    if (ip.isEmpty())
-        return "";
-    QStringList sl = ip.split('.');
-    if (sl.size() != 4)
-        return "";
-    bool ok = false;
-    unsigned int n = sl.last().toUInt(&ok);
-    if (!ok)
-        return "";
-    n += 256 * sl.at(2).toUInt(&ok);
-    if (!ok)
-        return "";
-    n += 256 * 256 * sl.at(1).toUInt(&ok);
-    if (!ok)
-        return "";
-    n += 256 * 256 * 256 * sl.first().toUInt(&ok);
-    if (!ok || !n)
+    unsigned int n = ipNum(ip);
+    if (!n)
         return "";
     foreach (const IpRange &r, codes.keys()) {
         if (n >= r.start && n <= r.end)
@@ -138,7 +197,7 @@ QString countryCode(const cppcms::http::request &req)
 QString countryName(const QString &countryCode)
 {
     typedef QMap<QString, QString> NameMap;
-    countryNameMutex.lock();
+    QMutexLocker locker(&countryNameMutex);
     init_once(NameMap, names, NameMap()) {
         QString fn = BDirTools::findResource("res/country_code_name_map.txt");
         QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
@@ -151,10 +210,18 @@ QString countryName(const QString &countryCode)
             names.insert(sll.first(), sll.last());
         }
     }
-    countryNameMutex.unlock();
     if (countryCode.length() != 2)
         return "";
     return names.value(countryCode);
+}
+
+QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
+{
+    const cppcms::http::cookie &cookie = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time");
+    QString s = fromStd(cookie.value());
+    if (s.isEmpty() || s.compare("local", Qt::CaseInsensitive))
+        return localDateTime(dt);
+    return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
 QLocale fromStd(const std::locale &l)
@@ -199,6 +266,28 @@ bool isCaptchaValid(const QString &captcha)
         qDebug() << e.what();
         return false;
     }
+}
+
+QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
+{
+    static const int MaxMsecs = 24 * BeQt::Hour;
+    if (offsetMinutes < -720 || offsetMinutes > 840)
+        return dt.toLocalTime();
+    QDateTime ndt = dt.toUTC();
+    QTime t = ndt.time();
+    int msecs = t.hour() * BeQt::Hour + t.minute() * BeQt::Minute + t.second() * BeQt::Second * t.msec();
+    int msecsOffset = offsetMinutes * BeQt::Minute;
+    msecs += msecsOffset;
+    if (msecs < 0) {
+        ndt.setDate(ndt.date().addDays(-1));
+        ndt.setTime(time(msecs + MaxMsecs));
+    } else if (msecs >= MaxMsecs) {
+        ndt.setDate(ndt.date().addDays(1));
+        ndt.setTime(time(MaxMsecs - msecs));
+    } else {
+        ndt.setTime(time(msecs));
+    }
+    return ndt;
 }
 
 QLocale locale(const cppcms::http::request &req, const QLocale &defaultLocale)
@@ -344,6 +433,29 @@ QStringList supportedCodeLanguages()
     if (ind >= 0)
         sl.insert(ind + 1, "c++");
     return sl;
+}
+
+int timeZoneMinutesOffset(const cppcms::http::request &req)
+{
+    typedef QMap<QString, int> TimezoneMap;
+    QMutexLocker locker(&timezoneMutex);
+    init_once(TimezoneMap, timezones, TimezoneMap()) {
+        QString fn = BDirTools::findResource("res/city_name_timezone_map.txt");
+        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+        foreach (const QString &s, sl) {
+            QStringList sll = s.split(' ');
+            if (sll.size() < 2)
+                continue;
+            if (sll.last().isEmpty())
+                continue;
+            bool ok = false;
+            int offset = sll.last().toInt(&ok);
+            if (!ok || offset < -720 || offset > 840)
+                continue;
+            timezones.insert(QStringList(sll.mid(0, sll.size() - 1)).join(" "), offset);
+        }
+    }
+    return timezones.value(cityName(req), -1000);
 }
 
 Post toPost(const PostParameters &params, const FileList &files)

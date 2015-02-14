@@ -21,11 +21,24 @@ function setCookie(name, value, options) {
     document.cookie = updatedCookie;
 }
 
+function reloadPage() {
+    document.location.reload(true);
+}
+
 function changeLocale() {
     var sel = document.getElementById("localeChangeSelect");
     var ln = sel.options[sel.selectedIndex].value;
     setCookie("locale", ln, {
         "expires": Billion, "path": "/"
     });
-    document.location.reload(true);
+    reloadPage();
+}
+
+function changeTime() {
+    var sel = document.getElementById("timeChangeSelect");
+    var ln = sel.options[sel.selectedIndex].value;
+    setCookie("time", ln, {
+        "expires": Billion, "path": "/"
+    });
+    reloadPage();
 }

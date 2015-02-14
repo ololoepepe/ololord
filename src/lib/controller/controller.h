@@ -18,6 +18,13 @@ namespace cppcms
 
 class application;
 
+namespace http
+{
+
+class request;
+
+}
+
 }
 
 #include "../global.h"
@@ -59,7 +66,7 @@ bool OLOLORD_EXPORT testRequest(cppcms::application &app, int acceptedTypes);
 QString OLOLORD_EXPORT toHtml(const QString &s);
 void OLOLORD_EXPORT toHtml(QString *s);
 HelperPost OLOLORD_EXPORT toController(const Post &post, const QString &boardName, quint64 opPostId, const QLocale &l,
-                                       bool processCode = false);
+                                       const cppcms::http::request &req, bool processCode = false);
 
 }
 
