@@ -1,5 +1,7 @@
 HEADERS += \
     $${PWD}/ban.h \
+    $${PWD}/base.h \
+    $${PWD}/baseboard.h \
     $${PWD}/board.h \
     $${PWD}/board_image.h \
     $${PWD}/board_video.h \
@@ -8,14 +10,7 @@ HEADERS += \
     $${PWD}/home.h \
     $${PWD}/notfound.h \
     $${PWD}/rules.h \
-    $${PWD}/thread.h \
-    $${PWD}/withbanner.h \
-    $${PWD}/withbase.h \
-    $${PWD}/withnavbar.h \
-    $${PWD}/withpostform.h \
-    $${PWD}/withposts.h \
-    $${PWD}/withsettings.h \
-    controller/helperthread.h
+    $${PWD}/thread.h
 
 SOURCES += \
     $${PWD}/controller.cpp \

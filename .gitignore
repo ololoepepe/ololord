@@ -58,7 +58,7 @@ Makefile
 
 # Other #
 #########
-src/compiled_templates.cpp
-src/stored/*.cxx
-src/stored/*.hxx
-src/stored/*.ixx
+src/lib/compiled_templates.cpp
+src/lib/stored/*.cxx
+src/lib/stored/*.hxx
+src/lib/stored/*.ixx

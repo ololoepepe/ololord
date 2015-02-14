@@ -26,10 +26,10 @@ void mlpBoard::handleBoard(cppcms::application &app, unsigned int /*page*/)
 {
     qsrand((uint) QDateTime::currentMSecsSinceEpoch());
     Content::BoardVideo c;
+    TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    Controller::initWithBase(&c, ts.locale());
+    Controller::initBase(c, app.request(), title(tq.locale()));
     c.altVideoText = ts.translate("mlpBoard", "Friendship is magic", "altVideoText");
-    c.pageTitle = title(ts.locale());
     c.videoFileName = Tools::toStd(QString("friendship_is_magic_%1.webm").arg((qrand() % 2) + 1));
     c.videoType = "video/webm";
     app.render("board_video", c);
@@ -45,8 +45,8 @@ bool mlpBoard::postingEnabled() const
     return false;
 }
 
-std::string mlpBoard::title(const QLocale &l) const
+QString mlpBoard::title(const QLocale &l) const
 {
-    TranslatorStd ts(l);
-    return ts.translate("mlpBoard", "My Little Pony", "board title");
+    TranslatorQt tq(l);
+    return tq.translate("mlpBoard", "My Little Pony", "board title");
 }

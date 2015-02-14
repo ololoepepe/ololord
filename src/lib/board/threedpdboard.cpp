@@ -5,8 +5,6 @@
 #include <QLocale>
 #include <QString>
 
-#include <string>
-
 threedpdBoard::threedpdBoard()
 {
     //
@@ -17,8 +15,8 @@ QString threedpdBoard::name() const
     return "3dpd";
 }
 
-std::string threedpdBoard::title(const QLocale &l) const
+QString threedpdBoard::title(const QLocale &l) const
 {
-    TranslatorStd ts(l);
-    return ts.translate("threedpdBoard", "3D pron", "board title");
+    TranslatorQt tq(l);
+    return tq.translate("threedpdBoard", "3D pron", "board title");
 }

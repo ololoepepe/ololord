@@ -1,16 +1,9 @@
 #ifndef CONTENT_BOARD_H
 #define CONTENT_BOARD_H
 
-#include "controller/helperthread.h"
-#include "controller/withbanner.h"
-#include "controller/withbase.h"
-#include "controller/withnavbar.h"
-#include "controller/withpostform.h"
-#include "controller/withposts.h"
-#include "controller/withsettings.h"
-#include "../global.h"
+#include "controller/baseboard.h"
 
-#include <cppcms/view.h>
+#include "../global.h"
 
 #include <list>
 #include <string>
@@ -18,23 +11,37 @@
 namespace Content
 {
 
-struct OLOLORD_EXPORT Board : public cppcms::base_content, public WithBase, public WithNavbar, public WithBanner,
-        public WithPostForm, public WithPosts, public WithSettings
+struct OLOLORD_EXPORT Board : public BaseBoard
 {
+    struct OLOLORD_EXPORT Thread
+    {
+        unsigned int bumpLimit;
+        bool fixed;
+        Post opPost;
+        std::list<Post> lastPosts;
+        unsigned int postCount;
+        bool postingEnabled;
+        unsigned int postLimit;
+    public:
+        bool bumpLimitReached()
+        {
+            return bumpLimit && (postCount >= bumpLimit);
+        }
+        unsigned int omittedPosts()
+        {
+            return (postCount > 4) ? (postCount - 4) : 0;
+        }
+        bool postLimitReached()
+        {
+            return postLimit && (postCount >= postLimit);
+        }
+    };
 public:
     std::string boardRulesLinkText;
     unsigned int currentPage;
-    std::string hideSearchFormText;
-    std::string hideThreadFormText;
     std::string omittedPostsText;
     std::list<unsigned int> pages;
-    std::string pageTitle;
-    std::string postingDisabledText;
-    bool postingEnabled;
-    std::string postLimitReachedText;
-    std::string showSearchFormText;
-    std::string showThreadFormText;
-    std::list<HelperThread> threads;
+    std::list<Thread> threads;
     std::string toNextPageText;
     std::string toPreviousPageText;
     std::string toThread;

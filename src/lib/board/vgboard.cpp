@@ -5,8 +5,6 @@
 #include <QLocale>
 #include <QString>
 
-#include <string>
-
 vgBoard::vgBoard()
 {
     //
@@ -17,8 +15,8 @@ QString vgBoard::name() const
     return "vg";
 }
 
-std::string vgBoard::title(const QLocale &l) const
+QString vgBoard::title(const QLocale &l) const
 {
-    TranslatorStd ts(l);
-    return ts.translate("vgBoard", "Video games", "board title");
+    TranslatorQt tq(l);
+    return tq.translate("vgBoard", "Video games", "board title");
 }

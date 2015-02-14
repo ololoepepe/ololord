@@ -1,0 +1,4 @@
+=== ololord 0.1.0-beta2 (14 February 2015) ===
+    * Implement time zone handling and city recognition (API only)
+    * Improve template hierarchy
+    * Implement time changing (server/local)

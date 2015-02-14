@@ -9,9 +9,9 @@
 #include "board/rfboard.h"
 #include "board/threedpdboard.h"
 #include "board/vgboard.h"
+#include "controller/baseboard.h"
 #include "controller/board.h"
 #include "controller/controller.h"
-#include "controller/helperthread.h"
 #include "controller/rules.h"
 #include "controller/thread.h"
 #include "database.h"
@@ -110,7 +110,7 @@ AbstractBoard::BoardInfoList AbstractBoard::boardInfos(const QLocale &l, bool in
             continue;
         BoardInfo info;
         info.name = Tools::toStd(board->name());
-        info.title = boards.value(key)->title(l);
+        info.title = Tools::toStd(boards.value(key)->title(l));
         list.push_back(info);
     }
     boardsMutex.unlock();
@@ -207,7 +207,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     unsigned int pageCount = 0;
-    c.postingEnabled = postingEnabled();
+    bool postingEn = postingEnabled();
     try {
         odb::database *db = Database::createConnection();
         if (!db) {
@@ -226,20 +226,20 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         if (page >= pageCount)
             return Controller::renderNotFound(app);
         foreach (const Thread &tt, list.mid(page * threadsPerPage(), threadsPerPage())) {
-            HelperThread thread;
+            Content::Board::Thread thread;
             const Thread::Posts &posts = tt.posts();
             thread.bumpLimit = bumpLimit();
             thread.fixed = tt.fixed();
             thread.postLimit = postLimit();
             thread.postCount = posts.size();
-            thread.postingEnabled = c.postingEnabled && tt.postingEnabled();
+            thread.postingEnabled = postingEn && tt.postingEnabled();
             thread.opPost = Controller::toController(*posts.first().load(), name(), tt.number(), ts.locale(),
-                                                     processCode());
+                                                     app.request(), processCode());
             foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
                 if (i <= 0)
                     break;
                 thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), name(), tt.number(),
-                                                                     ts.locale(), processCode()));
+                                                                     ts.locale(), app.request(), processCode()));
             }
             c.threads.push_back(thread);
         }
@@ -248,24 +248,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                        Tools::fromStd(e.what()));
     }
-    Controller::initWithBanner(&c, ts.locale(), this);
-    Controller::initWithBase(&c, ts.locale());
-    Controller::initWithNavbar(&c, ts.locale());
-    Controller::initWithPostForm(&c, ts.locale(), this);
-    Controller::initWithPosts(&c, ts.locale());
-    Controller::initWithSettings(&c, ts.locale());
+    Controller::initBaseBoard(c, app.request(), this, postingEn, title(ts.locale()));
     c.boardRulesLinkText = ts.translate("AbstractBoard", "Borad rules", "boardRulesLinkText");
     c.currentPage = page;
-    c.hideSearchFormText = ts.translate("AbstractBoard", "Hide search form", "hideSearchFormText");
-    c.hideThreadFormText = ts.translate("AbstractBoard", "Hide post form", "hideThreadFormText");
     c.omittedPostsText = ts.translate("AbstractBoard", "Posts omitted:", "omittedPostsText");
     foreach (int i, bRangeD(0, pageCount - 1))
         c.pages.push_back(i);
-    c.pageTitle = c.currentBoard.title;
-    c.postingDisabledText = ts.translate("AbstractBoard", "Posting is disabled for this board", "postingDisabledText");
-    c.postLimitReachedText = ts.translate("AbstractBoard", "Post limit reached", "postLimitReachedText");
-    c.showSearchFormText = ts.translate("AbstractBoard", "Show search form", "showSearchFormText");
-    c.showThreadFormText = ts.translate("AbstractBoard", "Create thread", "showThreadFormText");
     c.toNextPageText = ts.translate("AbstractBoard", "Next page", "toNextPageText");
     c.toPreviousPageText = ts.translate("AbstractBoard", "Previous page", "toPreviousPageText");
     c.toThread = ts.translate("AbstractBoard", "Answer", "toThread");
@@ -277,14 +265,13 @@ void AbstractBoard::handleRules(cppcms::application &app)
 {
     Tools::log(app, "Handling rules");
     Content::Rules c;
+    TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    Controller::initWithBase(&c, ts.locale());
-    Controller::initWithNavbar(&c, ts.locale());
-    Controller::initWithSettings(&c, ts.locale());
+    QString pageTitle = title(tq.locale()) + " - " + tq.translate("AbstractBoard", "rules", "pageTitle");
+    Controller::initBase(c, app.request(), pageTitle);
     c.currentBoard.name = Tools::toStd(name());
-    c.currentBoard.title = title(ts.locale());
+    c.currentBoard.title = Tools::toStd(title(tq.locale()));
     c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");;
-    c.pageTitle = c.currentBoard.title + " - " + ts.translate("AbstractBoard", "rules", "pageTitle");
     foreach (const QString &r, rules(ts.locale()))
         c.rules.push_back(Tools::toStd(Controller::toHtml(r)));
     app.render("rules", c);
@@ -299,6 +286,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     Content::Thread c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
+    bool postingEn = false;
+    QString pageTitle;
     try {
         odb::database *db = Database::createConnection();
         if (!db) {
@@ -316,13 +305,13 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                         tq.translate("AbstractBoard", "Internal database error", "description"));
                 }
                 c.fixed = i->fixed();
-                c.pageTitle = Tools::toStd(posts.first().load()->subject());
-                c.postingEnabled = Tools::postingEnabled(name()) && i->postingEnabled();
+                pageTitle = posts.first().load()->subject();
+                postingEn = Tools::postingEnabled(name()) && i->postingEnabled();
                 c.opPost = Controller::toController(*posts.first().load(), name(), i->number(), ts.locale(),
-                                                    processCode());
+                                                    app.request(), processCode());
                 foreach (int j, bRangeD(1, posts.size() - 1)) {
                     c.posts.push_back(Controller::toController(*posts.at(j).load(), name(), i->number(), ts.locale(),
-                                                               processCode()));
+                                                               app.request(), processCode()));
                 }
                 threadFound = true;
                 break;
@@ -335,22 +324,9 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                        Tools::fromStd(e.what()));
     }
-    Controller::initWithBanner(&c, ts.locale(), this);
-    Controller::initWithBase(&c, ts.locale());
-    Controller::initWithNavbar(&c, ts.locale());
-    Controller::initWithPostForm(&c, ts.locale(), this);
-    Controller::initWithPosts(&c, ts.locale());
-    Controller::initWithSettings(&c, ts.locale());
+    Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber);
     c.bumpLimit = bumpLimit();
-    c.currentThread = threadNumber;
-    c.hidePostFormText = ts.translate("AbstractBoard", "Hide post form", "hidePostFormText");
-    c.hideSearchFormText = ts.translate("AbstractBoard", "Hide search form", "hideSearchFormText");
-    c.postingDisabledText = ts.translate("AbstractBoard", "Posting is disabled for this thread",
-                                         "postingDisabledText");
     c.postLimit = postLimit();
-    c.postLimitReachedText = ts.translate("AbstractBoard", "Post limit reached", "postLimitReachedText");
-    c.showPostFormText = ts.translate("AbstractBoard", "Answer in this thread", "showPostFormText");;
-    c.showSearchFormText = ts.translate("AbstractBoard", "Show search form", "showSearchFormText");
     app.render("thread", c);
     Tools::log(app, "Handled thread");
 }

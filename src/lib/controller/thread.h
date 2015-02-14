@@ -1,16 +1,9 @@
 #ifndef CONTENT_THREAD_H
 #define CONTENT_THREAD_H
 
-#include "controller/helperthread.h"
-#include "controller/withbanner.h"
-#include "controller/withbase.h"
-#include "controller/withnavbar.h"
-#include "controller/withpostform.h"
-#include "controller/withposts.h"
-#include "controller/withsettings.h"
-#include "../global.h"
+#include "controller/baseboard.h"
 
-#include <cppcms/view.h>
+#include "../global.h"
 
 #include <list>
 #include <string>
@@ -18,23 +11,13 @@
 namespace Content
 {
 
-struct OLOLORD_EXPORT Thread : public cppcms::base_content, public WithBase, public WithNavbar, public WithBanner,
-        public WithPostForm, public WithPosts, public WithSettings
+struct OLOLORD_EXPORT Thread : public BaseBoard
 {
     unsigned int bumpLimit;
-    unsigned long long currentThread;
     bool fixed;
-    std::string hidePostFormText;
-    std::string hideSearchFormText;
-    HelperPost opPost;
-    std::string pageTitle;
-    std::string postingDisabledText;
-    bool postingEnabled;
+    Post opPost;
     unsigned int postLimit;
-    std::string postLimitReachedText;
-    std::list<HelperPost> posts;
-    std::string showPostFormText;
-    std::string showSearchFormText;
+    std::list<Post> posts;
 public:
     bool bumpLimitReached()
     {

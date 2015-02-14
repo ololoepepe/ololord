@@ -14,8 +14,6 @@ class application;
 #include "abstractboard.h"
 #include "../global.h"
 
-#include <string>
-
 class OLOLORD_EXPORT cgBoard : public AbstractBoard
 {
 public:
@@ -24,7 +22,7 @@ public:
     void handleBoard(cppcms::application &app, unsigned int page = 0);
     QString name() const;
     bool postingEnabled() const;
-    std::string title(const QLocale &l) const;
+    QString title(const QLocale &l) const;
 };
 
 #endif // CGBOARD_H

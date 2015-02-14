@@ -34,12 +34,12 @@ QString BannedUser::ip() const
 
 QDateTime BannedUser::dateTime() const
 {
-    return dateTime_.toUTC();
+    return QDateTime(dateTime_.date(), dateTime_.time(), Qt::UTC);
 }
 
 QDateTime BannedUser::expirationDateTime() const
 {
-    return expirationDateTime_.toUTC();
+    return QDateTime(expirationDateTime_.date(), expirationDateTime_.time(), Qt::UTC);
 }
 
 int BannedUser::level() const
@@ -54,12 +54,12 @@ QString BannedUser::reason() const
 
 void BannedUser::setDateTime(const QDateTime &dateTime)
 {
-    dateTime_ = dateTime;
+    dateTime_ = dateTime.toUTC();
 }
 
 void BannedUser::setExpirationDateTime(const QDateTime &dateTime)
 {
-    expirationDateTime_ = dateTime;
+    expirationDateTime_ = dateTime.toUTC();
 }
 
 void BannedUser::setLevel(int level)

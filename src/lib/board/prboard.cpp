@@ -6,8 +6,6 @@
 #include <QLocale>
 #include <QString>
 
-#include <string>
-
 prBoard::prBoard()
 {
     //
@@ -23,8 +21,8 @@ bool prBoard::processCode() const
     return true;
 }
 
-std::string prBoard::title(const QLocale &l) const
+QString prBoard::title(const QLocale &l) const
 {
-    TranslatorStd ts(l);
-    return ts.translate("prBoard", "/pr/ogramming", "board title");
+    TranslatorQt tq(l);
+    return tq.translate("prBoard", "/pr/ogramming", "board title");
 }

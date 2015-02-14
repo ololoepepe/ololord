@@ -1,15 +1,15 @@
-var searchFormVisible = {
+/*var searchFormVisible = {
     "top": false,
     "bottom": false
 };
 var postFormVisible = {
     "top": false,
     "bottom": false
-};
+};*/
 
 var lastSelectedElement = null;
 
-function showHideSearchForm(position) {
+/*function showHideSearchForm(position) {
     if (postFormVisible[position])
         showHidePostForm(position);
     var theButton = document.getElementById("showHideSearchFormButton" + position);
@@ -42,7 +42,7 @@ function showHidePostForm(position) {
         }
     }
     postFormVisible[position] = !postFormVisible[position];
-}
+}*/
 
 function insertPostNumberInternal(postNumber, position) {
     var field = document.getElementById("postFormInputText" + position);
@@ -78,7 +78,7 @@ function selectPost(post) {
         window.location.href = window.location.href.split("#")[0] + "#" + post;
 }
 
-function initializeOnLoad() {
+function initializeOnLoadThread() {
     var sl = window.location.href.split("#");
     if (sl.length != 2)
         return;
