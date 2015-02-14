@@ -1,6 +1,7 @@
 #include "controller.h"
 
 #include "baseboard.h"
+#include "settingslocker.h"
 #include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
@@ -9,7 +10,9 @@
 #include <BeQt>
 #include <BTextTools>
 
+#include <QByteArray>
 #include <QChar>
+#include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
@@ -19,8 +22,10 @@
 #include <QMap>
 #include <QPair>
 #include <QRegExp>
+#include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 
 #include <cppcms/http_request.h>
 
@@ -550,6 +555,20 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
     p.number = post.number();
     p.subject = Tools::toStd(post.subject());
     p.text = processPostText(post.text(), boardName, threadNumber, processCode);
+    QByteArray hashpass = post.hashpass();
+    if (!hashpass.isEmpty()) {
+        QString s;
+        hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
+        QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
+        foreach (int i, bRangeD(0, tripcode.size() - 1)) {
+            QChar c(tripcode.at(i));
+            if (c.isLetterOrNumber() || c.isPunct())
+                s += c;
+            else
+                s += QString::number(uchar(tripcode.at(i)), 16);
+        }
+        p.tripcode = Tools::toStd(s);
+    }
     return p;
 }
 

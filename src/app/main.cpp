@@ -7,6 +7,7 @@
 #include <database.h>
 #include <ololordapplication.h>
 #include <settingslocker.h>
+#include <stored/RegisteredUser>
 #include <tools.h>
 
 #include <cppcms/json.h>
@@ -46,6 +47,7 @@ static bool handleCloseThread(const QString &cmd, const QStringList &args);
 static bool handleCreateSchema(const QString &cmd, const QStringList &);
 static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
+static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
@@ -299,6 +301,35 @@ bool handleOpenThread(const QString &, const QStringList &args)
     return true;
 }
 
+bool handleRegisterUser(const QString &, const QStringList &)
+{
+    QString pwd = bReadLineSecure(translate("handleRegisterUser", "Enter password:") + " ");
+    if (pwd.isEmpty()) {
+        bWriteLine(translate("handleRegisterUser", "Invalid password"));
+        return false;
+    }
+    QString lvl = bReadLine(translate("handleRegisterUser", "Enter level:\n"
+                                      "0 - no (just logs in)\n"
+                                      "1 - user level\n"
+                                      "10 - moder level\n"
+                                      "100 - admin level\n"
+                                      "Your choice:") + " ");
+    bool ok = false;
+    int level = lvl.toInt(&ok);
+    if (!ok || (0 != level && 1 != level && 10 != level && 100 != level)) {
+        bWriteLine(translate("handleRegisterUser", "Invalid level"));
+        return false;
+    }
+    QByteArray password = QCryptographicHash::hash(pwd.toUtf8(), QCryptographicHash::Sha1);
+    QString err;
+    if (!Database::registerUser(password, static_cast<RegisteredUser::Level>(level), &err)) {
+        bWriteLine(err);
+        return true;
+    }
+    bWriteLine(translate("handleRegisterUsers", "OK"));
+    return true;
+}
+
 bool handleReloadBoards(const QString &, const QStringList &)
 {
     QString s = bReadLine(translate("handleReloadBoards", "Are you sure?") + " [Yn] ");
@@ -476,6 +507,11 @@ void initCommands()
     ch.usage = "reload-boards";
     ch.description = BTranslation::translate("initCommands", "Reload all boards: builtin and provided by plugins.");
     BTerminal::setCommandHelp("reload-boards", ch);
+    //
+    BTerminal::installHandler("register-user", &handleRegisterUser);
+    ch.usage = "register-user";
+    ch.description = BTranslation::translate("initCommands", "Registers a user.");
+    BTerminal::setCommandHelp("register-user", ch);
 }
 
 void initSettings()
@@ -523,6 +559,8 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "captcha_public_key", n);
     nn->setDescription(BTranslation::translate("initSettings", "Public key for captcha service.\n"
                                                "Apperas in the HTML pages."));
+    nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
+    nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);
     nn->setDescription(BTranslation::translate("initSettings", "Determines if HTTP_X_REAL_IP header is used to "

@@ -29,6 +29,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         unsigned long long number;
         std::string subject;
         std::string text;
+        std::string tripcode;
     };
 public:
     std::string action;

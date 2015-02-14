@@ -1,10 +1,12 @@
 #include "database.h"
 
 #include "board/abstractboard.h"
-#include "stored/postcounter.h"
-#include "stored/postcounter-odb.hxx"
 #include "stored/banneduser.h"
 #include "stored/banneduser-odb.hxx"
+#include "stored/postcounter.h"
+#include "stored/postcounter-odb.hxx"
+#include "stored/registereduser.h"
+#include "stored/registereduser-odb.hxx"
 #include "stored/thread.h"
 #include "stored/thread-odb.hxx"
 #include "tools.h"
@@ -16,6 +18,9 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+
+#include <cppcms/http_cookie.h>
+#include <cppcms/http_request.h>
 
 #include <odb/connection.hxx>
 #include <odb/database.hxx>
@@ -148,7 +153,11 @@ static bool createPostInternal(odb::database *db, const cppcms::http::request &r
         }
         if (!dt.isValid())
             dt = QDateTime::currentDateTimeUtc();
-        QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread, Tools::userIp(req), post.password));
+        QString hp = Tools::fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
+        QByteArray hpba = Tools::toHashpass(hp);
+        //if (registeredUserLevel(hpba) < 0)
+        //    hpba.clear();
+        QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread, Tools::userIp(req), post.password, hpba));
         p->setEmail(post.email);
         QStringList fileNames;
         foreach (const Tools::File &f, post.files) {
@@ -364,6 +373,67 @@ QString posterIp(const QString &boardName, quint64 postNumber)
     }
 }
 
+int registeredUserLevel(const cppcms::http::request &req)
+{
+    QString hp = Tools::fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
+    QByteArray hpba = Tools::toHashpass(hp);
+    if (hpba.isEmpty())
+        return -1;
+    return registeredUserLevel(hpba, true);
+}
+
+int registeredUserLevel(const QByteArray &hashpass, bool trans)
+{
+    bool b = false;
+    Tools::toString(hashpass, &b);
+    if (!b)
+        return -1;
+    try {
+        odb::database *db = createConnection();
+        if (!db)
+            return -1;
+        QScopedPointer<odb::transaction> transaction;
+        if (trans)
+            transaction.reset(new odb::transaction(db->begin()));
+        odb::result<RegisteredUserLevel> r(db->query<RegisteredUserLevel>(
+                                               odb::query<RegisteredUser>::hashpass == hashpass));
+        odb::result<RegisteredUserLevel>::iterator i = r.begin();
+        if (r.end() == i)
+            return -1;
+        int level = i->level;
+        ++i;
+        if (r.end() != i)
+            return -1;
+        if (trans)
+            transaction->commit();
+        return level;
+    }  catch (const odb::exception &e) {
+        qDebug() << e.what();
+        return -1;
+    }
+}
+
+bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, QString *error, const QLocale &l)
+{
+    bool b = false;
+    Tools::toString(hashpass, &b);
+    TranslatorQt tq(l);
+    if (!b)
+        return bRet(error, tq.translate("registerUser", "Invalid hashpass", "error"), false);
+    try {
+        odb::database *db = createConnection();
+        if (!db)
+            return bRet(error, tq.translate("registerUser", "Internal database error", "error"), false);
+        odb::transaction transaction(db->begin());
+        RegisteredUser user(hashpass, QDateTime::currentDateTimeUtc(), level);
+        db->persist(user);
+        transaction.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
 bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error, const QLocale &l)
 {
     TranslatorQt tq(l);
@@ -386,7 +456,7 @@ bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QStr
         thread->setFixed(fixed);
         db->update(thread);
         transaction.commit();
-        return true;
+        return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
     }

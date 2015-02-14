@@ -458,6 +458,29 @@ int timeZoneMinutesOffset(const cppcms::http::request &req)
     return timezones.value(cityName(req), -1000);
 }
 
+QByteArray toHashpass(const QString &s, bool *ok)
+{
+    if (s.length() != 44)
+        return bRet(ok, false, QByteArray());
+    QStringList sl = s.split('-');
+    if (sl.size() != 5)
+        return bRet(ok, false, QByteArray());
+    QByteArray ba;
+    foreach (const QString &ss, sl) {
+        if (ss.length() != 8 || !QRegExp("(([0-9a-f][0-9a-e])|([0-9a-e][0-9a-f])){4}").exactMatch(ss))
+            return bRet(ok, false, QByteArray());
+        char c[4];
+        foreach (int i, bRangeD(0, 3)) {
+            bool b = false;
+            c[i] = ss.mid(i * 2, 2).toUShort(&b, 16);
+            if (!b)
+                return bRet(ok, false, QByteArray());
+        }
+        ba.append(c, 4);
+    }
+    return bRet(ok, true, ba);
+}
+
 Post toPost(const PostParameters &params, const FileList &files)
 {
     Post p;
@@ -495,6 +518,23 @@ std::list<std::string> toStd(const QStringList &sl)
     foreach (const QString &s, sl)
         list.push_back(toStd(s));
     return list;
+}
+
+QString toString(const QByteArray &hp, bool *ok)
+{
+    if (hp.size() != 20)
+        return bRet(ok, false, QString());
+    QString s;
+    foreach (int i, bRangeD(0, hp.size() - 1)) {
+        s += QString::number(uchar(hp.at(i)), 16);
+        if ((i != hp.size() - 1) && !((i + 1) % 4))
+            s += "-";
+    }
+    bool b = false;
+    toHashpass(s, &b);
+    if (!b)
+        return bRet(ok, false, QString());
+    return bRet(ok, true, s);
 }
 
 QString userIp(const cppcms::http::request &req)

@@ -31,6 +31,11 @@ public:
     std::string currentTime;
     std::string localeLabelText;
     std::list<Locale> locales;
+    bool loggedIn;
+    std::string loginButtonText;
+    std::string loginLabelText;
+    std::string loginMessageOk;
+    std::string loginMessageWarning;
     std::string pageTitle;
     std::string sitePathPrefix;
     std::string timeLabelText;

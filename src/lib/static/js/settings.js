@@ -42,3 +42,21 @@ function changeTime() {
     });
     reloadPage();
 }
+
+function doLogin() {
+    var login = document.getElementById("loginInput").value;
+    var hash = CryptoJS.SHA1(login).toString(CryptoJS.enc.Hex);
+    var parts = hash.match(/.{1,8}/g);
+    var hashpass = parts.join("-");
+    setCookie("hashpass", hashpass, {
+        "expires": Billion, "path": "/"
+    });
+    reloadPage();
+}
+
+function doLogout() {
+    setCookie("hashpass", "", {
+        "expires": Billion, "path": "/"
+    });
+    reloadPage();
+}

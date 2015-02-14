@@ -388,6 +388,42 @@
     </message>
 </context>
 <context>
+    <name>handleRegisterUser</name>
+    <message>
+        <source>Enter password:</source>
+        <translation>Введите пароль:</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Enter level:
+0 - no (just logs in)
+1 - user level
+10 - moder level
+100 - admin level
+Your choice:</source>
+        <translation>Введите уровень:
+0 - нет (только логинится)
+1 - уровень опльзователя
+10 - уровень модератора
+100 - уровень администратора
+Ваш выбор:</translation>
+    </message>
+    <message>
+        <source>Invalid level</source>
+        <translation>Неправильный уровень</translation>
+    </message>
+</context>
+<context>
+    <name>handleRegisterUsers</name>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
+    </message>
+</context>
+<context>
     <name>handleReloadBoards</name>
     <message>
         <source>OK</source>
@@ -456,6 +492,31 @@
         <source>Server</source>
         <comment>timeServerText</comment>
         <translation>Серверное</translation>
+    </message>
+    <message>
+        <source>Login:</source>
+        <comment>loginLabelText</comment>
+        <translation>Логин:</translation>
+    </message>
+    <message>
+        <source>Logout</source>
+        <comment>loginButtonText</comment>
+        <translation>Разлогиниться</translation>
+    </message>
+    <message>
+        <source>Login</source>
+        <comment>loginButtonText</comment>
+        <translation>Залогиниться</translation>
+    </message>
+    <message>
+        <source>Logged in, but not registered</source>
+        <comment>loginMessageWarning</comment>
+        <translation>Залогинен, но не зарегистрирован</translation>
+    </message>
+    <message>
+        <source>Registered and logged in</source>
+        <comment>loginMessageOk</comment>
+        <translation>Зарегистрирован и залогинен</translation>
     </message>
 </context>
 <context>
@@ -731,6 +792,10 @@ If [cache-name] is not specified, all caches are cleared.</source>
         <translation>Очистить кеш с именем [cache-name].
 Если [cache-name] не задано, очищаются все кеши.</translation>
     </message>
+    <message>
+        <source>Registers a user.</source>
+        <translation>Регистрирует пользователя.</translation>
+    </message>
 </context>
 <context>
     <name>initSettings</name>
@@ -832,6 +897,10 @@ The default value is %1.</source>
   3 - вести лог и в консоли, и в файле
   Значение по умолчанию - 2.</translation>
     </message>
+    <message>
+        <source>A salt used to generate tripcodes from hashpasses.</source>
+        <translation>Соль, используемая для генерации трипкодов из хешпассов.</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>
@@ -889,6 +958,19 @@ The default value is %1.</source>
         <source>/pr/ogramming</source>
         <comment>board title</comment>
         <translation>Программирование</translation>
+    </message>
+</context>
+<context>
+    <name>registerUser</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Invalid hashpass</source>
+        <comment>error</comment>
+        <translation>Неправильный хешпасс</translation>
     </message>
 </context>
 <context>

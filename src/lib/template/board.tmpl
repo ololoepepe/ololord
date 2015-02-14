@@ -21,6 +21,9 @@
         <% else %>
             <%= post.name %>
         <% end %>
+        <% if ( !post.tripcode.empty() ) %>
+            <span class="tripcode"><%= post.tripcode %></span>
+        <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
             #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>">
@@ -63,7 +66,6 @@
                             </div>
                         </td>
                     <% end %>
-                <% empty %>
                 <% end %>
                 <td class="postText">
                     <blockquote><%= post.text | raw %></blockquote>

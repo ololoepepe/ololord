@@ -30,6 +30,7 @@ class database;
 }
 
 #include "global.h"
+#include "stored/registereduser.h"
 
 #include <BCoreApplication>
 
@@ -57,6 +58,10 @@ OLOLORD_EXPORT quint64 incrementPostCounter(odb::database *db, const QString &bo
 OLOLORD_EXPORT quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *error = 0,
                                       const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
+OLOLORD_EXPORT int registeredUserLevel(const cppcms::http::request &req);
+OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass, bool transaction = false);
+OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, QString *error,
+                                 const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error = 0,
                                    const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadOpened(const QString &board, quint64 threadNumber, bool opened, QString *error = 0,

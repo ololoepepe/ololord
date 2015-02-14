@@ -17,6 +17,7 @@
 
 #include <QChar>
 #include <QDateTime>
+#include <QDebug>
 #include <QDir>
 #include <QLocale>
 #include <QMutex>
@@ -84,6 +85,16 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentTime = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time").value();
     c.localeLabelText = "Language:";
     c.locales = locales;
+    c.loggedIn = !const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value().empty();
+    c.loginButtonText = c.loggedIn ? ts.translate("initBase", "Logout", "loginButtonText")
+                                   : ts.translate("initBase", "Login", "loginButtonText");
+    c.loginLabelText = ts.translate("initBase", "Login:", "loginLabelText");
+    if (c.loggedIn) {
+        if (Database::registeredUserLevel(req) < 0)
+            c.loginMessageWarning = ts.translate("initBase", "Logged in, but not registered", "loginMessageWarning");
+        else
+            c.loginMessageOk = ts.translate("initBase", "Registered and logged in", "loginMessageOk");
+    }
     c.pageTitle = Tools::toStd(pageTitle);
     c.sitePathPrefix = Tools::toStd(SettingsLocker()->value("Site/path_prefix").toString());
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");

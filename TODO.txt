@@ -5,3 +5,4 @@
 ? Convert special HTML sequences (&#XXXX;) to HTML (not sure if needed)
 * Implement search
 * Use plugins for routes
+[done] Implement login/registration/tripcode system

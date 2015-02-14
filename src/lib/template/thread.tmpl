@@ -22,6 +22,9 @@
         <% else %>
             <%= post.name %>
         <% end %>
+        <% if ( !post.tripcode.empty() ) %>
+            <span class="tripcode"><%= post.tripcode %></span>
+        <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
             #<a href="javascript:insertPostNumber('<%= post.number %>');"><%= post.number %></a>
