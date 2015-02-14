@@ -24,7 +24,7 @@ void cgBoard::handleBoard(cppcms::application &app, unsigned int /*page*/)
     Content::BoardImage c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    Controller::initBase(c, tq.locale(), title(tq.locale()));
+    Controller::initBase(c, app.request(), title(tq.locale()));
     c.imageFileName = "drakeface.jpg";
     c.imageTitle = ts.translate("cgBoard", "No games", "imageTitle");
     app.render("board_image", c);

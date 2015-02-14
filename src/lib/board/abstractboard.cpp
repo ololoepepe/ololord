@@ -248,7 +248,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                        Tools::fromStd(e.what()));
     }
-    Controller::initBaseBoard(c, ts.locale(), this, postingEn, title(ts.locale()));
+    Controller::initBaseBoard(c, app.request(), this, postingEn, title(ts.locale()));
     c.boardRulesLinkText = ts.translate("AbstractBoard", "Borad rules", "boardRulesLinkText");
     c.currentPage = page;
     c.omittedPostsText = ts.translate("AbstractBoard", "Posts omitted:", "omittedPostsText");
@@ -268,7 +268,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     QString pageTitle = title(tq.locale()) + " - " + tq.translate("AbstractBoard", "rules", "pageTitle");
-    Controller::initBase(c, tq.locale(), pageTitle);
+    Controller::initBase(c, app.request(), pageTitle);
     c.currentBoard.name = Tools::toStd(name());
     c.currentBoard.title = Tools::toStd(title(tq.locale()));
     c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");;
@@ -324,7 +324,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                        Tools::fromStd(e.what()));
     }
-    Controller::initBaseBoard(c, ts.locale(), this, postingEn, pageTitle, threadNumber);
+    Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber);
     c.bumpLimit = bumpLimit();
     c.postLimit = postLimit();
     app.render("thread", c);

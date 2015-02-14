@@ -20,6 +20,18 @@
             <% end %>
         </select>
     </span>
+    <span>
+        <%= timeLabelText %>
+        <select id="timeChangeSelect" class="select" onchange="javascript:changeTime();">
+            <% if ( content.currentTime == "local" ) %>
+                <option value="server"><%= timeServerText %></option>
+                <option value="local" selected="true"><%= timeLocalText %></option>
+            <% else %>
+                <option value="server" selected="true"><%= timeServerText %></option>
+                <option value="local"><%= timeLocalText %></option>
+            <% end %>
+        </select>
+    </span>
 </div>
 <% end template %>
 

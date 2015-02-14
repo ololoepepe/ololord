@@ -28,10 +28,14 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
 public:
     AbstractBoard::BoardInfoList boards;
     Locale currentLocale;
+    std::string currentTime;
     std::string localeLabelText;
     std::list<Locale> locales;
     std::string pageTitle;
     std::string sitePathPrefix;
+    std::string timeLabelText;
+    std::string timeLocalText;
+    std::string timeServerText;
     std::string toHomePageText;
 };
 

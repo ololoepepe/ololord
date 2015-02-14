@@ -25,6 +25,7 @@
 #include <QStringList>
 
 #include <cppcms/application.h>
+#include <cppcms/http_cookie.h>
 #include <cppcms/http_request.h>
 #include <cppcms/http_response.h>
 
@@ -56,7 +57,7 @@ static Content::Base::Locale toWithLocale(const QLocale &l)
     return ll;
 }
 
-void initBase(Content::Base &c, const QLocale &l, const QString &pageTitle)
+void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle)
 {
     typedef std::list<Content::Base::Locale> LocaleList;
     localeMutex.lock();
@@ -77,25 +78,29 @@ void initBase(Content::Base &c, const QLocale &l, const QString &pageTitle)
         locales.push_back(toWithLocale(QLocale("en_US")));
     }
     localeMutex.unlock();
-    TranslatorStd ts(l);
+    TranslatorStd ts(req);
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
-    c.currentLocale = toWithLocale(l);
+    c.currentLocale = toWithLocale(ts.locale());
+    c.currentTime = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time").value();
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.pageTitle = Tools::toStd(pageTitle);
     c.sitePathPrefix = Tools::toStd(SettingsLocker()->value("Site/path_prefix").toString());
+    c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
+    c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
+    c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
 }
 
-void initBaseBoard(Content::BaseBoard &c, const QLocale &l, const AbstractBoard *board, bool postingEnabled,
-                   const QString &pageTitle, quint64 currentThread)
+void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
+                   bool postingEnabled, const QString &pageTitle, quint64 currentThread)
 {
     if (!board)
         return;
-    TranslatorStd ts(l);
-    initBase(c, l, pageTitle);
+    TranslatorStd ts(req);
+    initBase(c, req, pageTitle);
     if (c.pageTitle.empty() && currentThread)
-        c.pageTitle = Tools::toStd(board->title(l) + " - " + QString::number(currentThread));
+        c.pageTitle = Tools::toStd(board->title(ts.locale()) + " - " + QString::number(currentThread));
     c.action = currentThread ? "create_post" : "create_thread";
     c.bannedForText = ts.translate("initBaseThread", "User was banned for this post", "bannedForText");
     c.bannerFileName = Tools::toStd(board->bannerFileName());
@@ -104,7 +109,7 @@ void initBaseBoard(Content::BaseBoard &c, const QLocale &l, const AbstractBoard 
     c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
     c.closedText = ts.translate("initBaseThread", "The thread is closed", "closedText");
     c.currentBoard.name = Tools::toStd(board->name());
-    c.currentBoard.title = Tools::toStd(board->title(l));
+    c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;
     c.fixedText = ts.translate("initBaseThread", "Fixed", "fixedText");
     c.hidePostFormText = ts.translate("initBaseThread", "Hide post form", "hidePostFormText");
@@ -140,7 +145,7 @@ void renderBan(cppcms::application &app, const QString &board, int level, const 
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::Ban c;
-    initBase(c, tq.locale(), tq.translate("renderBan", "Ban", "pageTitle"));
+    initBase(c, app.request(), tq.translate("renderBan", "Ban", "pageTitle"));
     c.banBoard = ("*" != board) ? Tools::toStd(board) : ts.translate("renderBan", "all boards", "pageTitle");
     c.banBoardLabel = ts.translate("renderBan", "Board", "pageTitle");
     c.banDateTime = Tools::toStd(ts.locale().toString(Tools::dateTime(dateTime, app.request()),
@@ -169,7 +174,7 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::Error c;
-    initBase(c, ts.locale(), tq.translate("renderError", "Error", "pageTitle"));
+    initBase(c, app.request(), tq.translate("renderError", "Error", "pageTitle"));
     c.errorMessage = !error.isEmpty() ? Tools::toStd(error) : c.pageTitle;
     c.errorDescription = Tools::toStd(description);
     app.render("error", c);
@@ -181,7 +186,7 @@ void renderNotFound(cppcms::application &app)
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::NotFound c;
-    initBase(c, tq.locale(), tq.translate("renderNotFound", "Error 404", "pageTitle"));
+    initBase(c, app.request(), tq.translate("renderNotFound", "Error 404", "pageTitle"));
     QStringList fns;
     foreach (const QString &path, BCoreApplication::locations(BCoreApplication::DataPath))
         fns << QDir(path + "/static/img/not_found").entryList(QDir::Files);

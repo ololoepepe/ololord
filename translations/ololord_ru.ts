@@ -442,6 +442,21 @@
         <comment>toHomePageText</comment>
         <translation>На главную</translation>
     </message>
+    <message>
+        <source>Time:</source>
+        <comment>timeLabelText</comment>
+        <translation>Время:</translation>
+    </message>
+    <message>
+        <source>Local</source>
+        <comment>timeLocalText</comment>
+        <translation>Местное</translation>
+    </message>
+    <message>
+        <source>Server</source>
+        <comment>timeServerText</comment>
+        <translation>Серверное</translation>
+    </message>
 </context>
 <context>
     <name>initBaseThread</name>

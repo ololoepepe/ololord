@@ -49,8 +49,8 @@ enum UserActionType
     WriteAction = 1
 };
 
-OLOLORD_EXPORT void initBase(Content::Base &c, const QLocale &l, const QString &pageTitle = QString());
-OLOLORD_EXPORT void initBaseBoard(Content::BaseBoard &c, const QLocale &l, const AbstractBoard *board,
+OLOLORD_EXPORT void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle = QString());
+OLOLORD_EXPORT void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
                                   bool postingEnabled, const QString &pageTitle = QString(),
                                   quint64 currentThread = 0);
 OLOLORD_EXPORT void redirect(cppcms::application &app, const QString &where);

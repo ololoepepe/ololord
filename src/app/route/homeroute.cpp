@@ -26,7 +26,7 @@ void HomeRoute::handle(cppcms::application &app)
     Content::Home c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    Controller::initBase(c, tq.locale(),
+    Controller::initBase(c, app.request(),
                          tq.translate("HomeRoute", "ololord - (almost) free communication", "pageTitle"));
     foreach (const QString &s, Tools::rules("rules/home", tq.locale()))
         c.rules.push_back(Tools::toStd(Controller::toHtml(s)));
