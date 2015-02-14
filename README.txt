@@ -95,10 +95,6 @@ When building ololord, you may pass some parameters to qmake:
    Set path to BeQt libraries. Must be used if BeQt libraries were
    installed to a custom location
 
- * "BEQT_PREFIX=<path>"
-   Set path to BeQt libraries. Must be used if BeQt libraries were
-   installed to a custom location
-
  * "CPPCMS_PREFIX=<path>"
    Set path to CppCMS libraries. Must be used if CppCMS libraries were
    installed to a custom location and must be used anyway on Windows

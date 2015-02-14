@@ -526,7 +526,10 @@ QString toString(const QByteArray &hp, bool *ok)
         return bRet(ok, false, QString());
     QString s;
     foreach (int i, bRangeD(0, hp.size() - 1)) {
-        s += QString::number(uchar(hp.at(i)), 16);
+        QString c = QString::number(uchar(hp.at(i)), 16);
+        if (c.length() < 2)
+            c.prepend("0");
+        s += c;
         if ((i != hp.size() - 1) && !((i + 1) % 4))
             s += "-";
     }

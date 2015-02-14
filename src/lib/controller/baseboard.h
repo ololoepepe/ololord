@@ -43,7 +43,6 @@ public:
     unsigned long long currentThread;
     std::string fixedText;
     std::string hidePostFormText;
-    std::string hideSearchFormText;
     std::string postFormButtonSubmit;
     std::string postFormInputFile;
     std::string postFormInputText;
@@ -57,7 +56,6 @@ public:
     bool postingEnabled;
     std::string postLimitReachedText;
     std::string showPostFormText;
-    std::string showSearchFormText;
 };
 
 }

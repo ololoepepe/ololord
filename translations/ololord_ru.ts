@@ -622,9 +622,9 @@ Your choice:</source>
         <translation>Создать тред</translation>
     </message>
     <message>
-        <source>Show search form</source>
+        <source>Search</source>
         <comment>showSearchFormText</comment>
-        <translation>Показать форму поиска</translation>
+        <translation>Искать</translation>
     </message>
 </context>
 <context>
@@ -900,6 +900,12 @@ The default value is %1.</source>
     <message>
         <source>A salt used to generate tripcodes from hashpasses.</source>
         <translation>Соль, используемая для генерации трипкодов из хешпассов.</translation>
+    </message>
+    <message>
+        <source>Public key for search API service.
+Apperas in the HTML pages.</source>
+        <translation>Открытый ключ API поискового сервиса.
+Появляется в HTML-страницах.</translation>
     </message>
 </context>
 <context>

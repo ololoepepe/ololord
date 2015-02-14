@@ -29,6 +29,7 @@ public:
     AbstractBoard::BoardInfoList boards;
     Locale currentLocale;
     std::string currentTime;
+    std::string hideSearchFormText;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;
@@ -37,6 +38,8 @@ public:
     std::string loginMessageOk;
     std::string loginMessageWarning;
     std::string pageTitle;
+    std::string searchApiKey;
+    std::string showSearchFormText;
     std::string sitePathPrefix;
     std::string timeLabelText;
     std::string timeLocalText;

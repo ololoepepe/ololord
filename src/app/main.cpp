@@ -477,7 +477,7 @@ void initCommands()
     ch.usage = "fix-thread <board> <thread-number>";
     ch.description = BTranslation::translate("initCommands",
         "Make a thread <thread-number> at <board> fixed (always above regular threads).");
-    BTerminal::setCommandHelp("unfix-thread", ch);
+    BTerminal::setCommandHelp("fix-thread", ch);
     //
     BTerminal::installHandler("open-thread", &handleOpenThread);
     ch.usage = "open-thread <board> <thread-number>";
@@ -561,6 +561,9 @@ void initSettings()
                                                "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
     nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));
+    nn = new BSettingsNode(QVariant::String, "search_api_key", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Public key for search API service.\n"
+                                               "Apperas in the HTML pages."));
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);
     nn->setDescription(BTranslation::translate("initSettings", "Determines if HTTP_X_REAL_IP header is used to "

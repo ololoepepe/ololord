@@ -9,13 +9,21 @@
         <% include baseHead() %>
         <% include settingsHead() %>
         <% include navbarHead() %>
+        <% include searchActionHead() %>
+        <% include titleHead() %>
         <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/ban.css">
     </head>
     <body>
         <% include settings() %>
         <br />
         <% include navbar() %>
-        <center><h1><%= banMessage %></h1></center>
+        <% if ( !content.searchApiKey.empty() ) %>
+            <br />
+        <% end %>
+        <% include searchAction("Top") %>
+        <div class="theTitle">
+            <h1><%= banMessage %></h1>
+        </div>
         <div class="ban">
             <table>
                 <tr>
