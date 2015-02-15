@@ -37,7 +37,12 @@
         <% if ( content.loggedIn ) %>
             <button class="button" onclick="javascript:doLogout();"><%= loginButtonText %></button>
         <% else %>
-            <input id="loginInput" type="password" class="input" name="hashpass" />
+            <input id="loginInput" type="password" class="input" name="hashpass"
+                   placeholder="<%= loginPlaceholderText %>" />
+            <button id="loginSwitch" class="button" onclick="javascript:switchLoginInput();"
+                    title="<%= switchLoginButtonTitle %>">
+                +
+            </button>
             <button class="button" onclick="javascript:doLogin();"><%= loginButtonText %></button>
         <% end %>
         <% if ( !content.loginMessageWarning.empty() ) %>

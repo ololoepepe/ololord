@@ -472,7 +472,7 @@ QByteArray toHashpass(const QString &s, bool *ok)
         return bRet(ok, false, QByteArray());
     QByteArray ba;
     foreach (const QString &ss, sl) {
-        if (ss.length() != 8 || !QRegExp("([0-9a-f][0-9a-f]){4}").exactMatch(ss))
+        if (ss.length() != 8 || !QRegExp("([0-9a-fA-F]){8}").exactMatch(ss))
             return bRet(ok, false, QByteArray());
         char c[4];
         foreach (int i, bRangeD(0, 3)) {

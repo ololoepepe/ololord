@@ -37,10 +37,12 @@ public:
     std::string loginLabelText;
     std::string loginMessageOk;
     std::string loginMessageWarning;
+    std::string loginPlaceholderText;
     std::string pageTitle;
     std::string searchApiKey;
     std::string showSearchFormText;
     std::string sitePathPrefix;
+    std::string switchLoginButtonTitle;
     std::string timeLabelText;
     std::string timeLocalText;
     std::string timeServerText;

@@ -533,6 +533,16 @@ Your choice:</source>
         <comment>loginMessageOk</comment>
         <translation>юзер</translation>
     </message>
+    <message>
+        <source>Password/hashpass</source>
+        <comment>PlaceholderText</comment>
+        <translation>Пароль/хешпасс</translation>
+    </message>
+    <message>
+        <source>Show/hide</source>
+        <comment>switchLoginButtonTitle</comment>
+        <translation>Показать/скрыть</translation>
+    </message>
 </context>
 <context>
     <name>initBaseThread</name>

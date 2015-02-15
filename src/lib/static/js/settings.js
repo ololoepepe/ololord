@@ -44,10 +44,15 @@ function changeTime() {
 }
 
 function doLogin() {
-    var login = document.getElementById("loginInput").value;
-    var hash = CryptoJS.SHA1(login).toString(CryptoJS.enc.Hex);
-    var parts = hash.match(/.{1,8}/g);
-    var hashpass = parts.join("-");
+    var pwd = document.getElementById("loginInput").value;
+    hashpass = null;
+    if (!pwd.match(/([0-9a-fA-F]{8}\-){4}[0-9a-fA-F]{8}/g)) {
+        var hash = CryptoJS.SHA1(pwd).toString(CryptoJS.enc.Hex);
+        var parts = hash.match(/.{1,8}/g);
+        hashpass = parts.join("-");
+    } else {
+        hashpass = pwd;
+    }
     setCookie("hashpass", hashpass, {
         "expires": Billion, "path": "/"
     });
@@ -59,4 +64,16 @@ function doLogout() {
         "expires": Billion, "path": "/"
     });
     reloadPage();
+}
+
+function switchLoginInput() {
+    var inp = document.getElementById("loginInput");
+    var sw = document.getElementById("loginSwitch");
+    if (inp.type === "password") {
+        inp.type = "text";
+        sw.innerHtml = "-";
+    } else if (inp.type === "text") {
+        inp.type = "password";
+        sw.innerHtml = "+";
+    }
 }

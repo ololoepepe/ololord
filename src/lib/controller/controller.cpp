@@ -104,11 +104,13 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                 c.loginMessageOk += " (" + ts.translate("initBase", "user", "loginMessageOk") + ")";
         }
     }
+    c.loginPlaceholderText = ts.translate("initBase", "Password/hashpass", "PlaceholderText");
     c.pageTitle = Tools::toStd(pageTitle);
     SettingsLocker s;
     c.searchApiKey = Tools::toStd(s->value("Site/search_api_key").toString());
     c.showSearchFormText = ts.translate("initBaseThread", "Search", "showSearchFormText");
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
+    c.switchLoginButtonTitle = ts.translate("initBase", "Show/hide", "switchLoginButtonTitle");
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
