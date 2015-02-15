@@ -44,7 +44,8 @@ static bool handleBanPoster(const QString &cmd, const QStringList &args);
 static bool handleBanUser(const QString &cmd, const QStringList &args);
 static bool handleClearCache(const QString &cmd, const QStringList &args);
 static bool handleCloseThread(const QString &cmd, const QStringList &args);
-static bool handleCreateSchema(const QString &cmd, const QStringList &);
+static bool handleCreateSchema(const QString &cmd, const QStringList &args);
+static bool handleDeletePost(const QString &cmd, const QStringList &args);
 static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
@@ -254,6 +255,34 @@ bool handleCreateSchema(const QString &, const QStringList &)
     return true;
 }
 
+bool handleDeletePost(const QString &, const QStringList &args)
+{
+    if (args.size() != 2) {
+        bWriteLine(translate("handleDeletePost", "Invalid argument count"));
+        return false;
+    }
+    QString boardName = args.first().toLower();
+    if (!AbstractBoard::boardNames().contains(boardName, Qt::CaseInsensitive)) {
+        bWriteLine(translate("handleDeletePost", "Invalid board name"));
+        return false;
+    }
+    bool ok = false;
+    quint64 postNumber = args.last().toULongLong(&ok);
+    if (!ok || !postNumber) {
+        bWriteLine(translate("handleDeletePost", "Invalid thread number"));
+        return false;
+    }
+    QString s = bReadLine(translate("handleDeletePost", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    QString err;
+    if (!Database::deletePost(boardName, postNumber, &err))
+        bWriteLine(err);
+    else
+        bWriteLine(translate("handleDeletePost", "OK"));
+    return true;
+}
+
 bool handleFixThread(const QString &, const QStringList &args)
 {
     if (args.size() != 2) {
@@ -274,7 +303,8 @@ bool handleFixThread(const QString &, const QStringList &args)
     QString err;
     if (!Database::setThreadFixed(boardName, threadNumber, true, &err))
         bWriteLine(err);
-    bWriteLine(translate("handleFixThread", "OK"));
+    else
+        bWriteLine(translate("handleFixThread", "OK"));
     return true;
 }
 
@@ -298,7 +328,8 @@ bool handleOpenThread(const QString &, const QStringList &args)
     QString err;
     if (!Database::setThreadOpened(boardName, threadNumber, true, &err))
         bWriteLine(err);
-    bWriteLine(translate("handleOpenThread", "OK"));
+    else
+        bWriteLine(translate("handleOpenThread", "OK"));
     return true;
 }
 
@@ -402,7 +433,8 @@ bool handleUnfixThread(const QString &, const QStringList &args)
     QString err;
     if (!Database::setThreadFixed(boardName, threadNumber, false, &err))
         bWriteLine(err);
-    bWriteLine(translate("handleUnfixThread", "OK"));
+    else
+        bWriteLine(translate("handleUnfixThread", "OK"));
     return true;
 }
 
@@ -515,6 +547,12 @@ void initCommands()
     ch.usage = "register-user";
     ch.description = BTranslation::translate("initCommands", "Registers a user.");
     BTerminal::setCommandHelp("register-user", ch);
+    //
+    BTerminal::installHandler("delete-post", &handleDeletePost);
+    ch.usage = "delete-post <board> <post-number>";
+    ch.description = BTranslation::translate("initCommands", "Delete post with <post-number> at <board>.\n"
+        "If <post-number> is a thread, that thread and all posts in it are deleted.");
+    BTerminal::setCommandHelp("delete-post", ch);
 }
 
 void initSettings()

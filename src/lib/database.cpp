@@ -288,6 +288,46 @@ quint64 createThread(const cppcms::http::request &req, unsigned int threadLimit,
     }
 }
 
+bool deletePost(const QString &boardName, quint64 postNumber, QString *error, const QLocale &l)
+{
+    TranslatorQt tq(l);
+    if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("deletePost", "Invalid board name", "error"), false);
+    if (!postNumber)
+        return bRet(error, tq.translate("deletePost", "Invalid post number", "error"), false);
+    try {
+        odb::database *db = createConnection();
+        if (!db)
+            return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
+        odb::transaction transaction(db->begin());
+        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == boardName
+                                                && odb::query<Thread>::number == postNumber));
+        odb::result<Thread>::iterator i = r.begin();
+        if (r.end() != i) {
+            quint64 threadId = i->id();
+            ++i;
+            if (r.end() != i)
+                return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
+            db->erase_query<Post>(odb::query<Post>::thread == threadId);
+            db->erase_query<Thread>(odb::query<Thread>::id == threadId);
+        } else {
+            odb::result<Post> rr(db->query<Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == postNumber));
+            odb::result<Post>::iterator ii = rr.begin();
+            if (rr.end() == ii)
+                return bRet(error, tq.translate("deletePost", "No such post", "error"), false);
+            ++i;
+            if (rr.end() != ii)
+                return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
+            db->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
+        }
+        transaction.commit();
+        return bRet(error, QString(), true);
+    }  catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
 quint64 incrementPostCounter(odb::database *db, const QString &boardName, QString *error, const QLocale &l)
 {
     TranslatorQt tq(l);

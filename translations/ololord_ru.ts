@@ -283,6 +283,29 @@
     </message>
 </context>
 <context>
+    <name>deletePost</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+</context>
+<context>
     <name>hBoard</name>
     <message>
         <source>/h/entai</source>
@@ -347,6 +370,29 @@
     <message>
         <source>Are you REALLY sure?</source>
         <translation>Вы ТОЧНО уверены?</translation>
+    </message>
+</context>
+<context>
+    <name>handleDeletePost</name>
+    <message>
+        <source>Invalid argument count</source>
+        <translation>Неверное количество аргументов</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
     </message>
 </context>
 <context>
@@ -820,6 +866,12 @@ If [cache-name] is not specified, all caches are cleared.</source>
     <message>
         <source>Registers a user.</source>
         <translation>Регистрирует пользователя.</translation>
+    </message>
+    <message>
+        <source>Delete post with &lt;post-number&gt; at &lt;board&gt;.
+If &lt;post-number&gt; is a thread, that thread and all posts in it are deleted.</source>
+        <translation>Удаляет пост с номером &lt;post-number&gt; на доске &lt;board&gt;.
+Если &lt;post-number&gt; является тредом, этот тред будет удален вместе со всеми постами в нем.</translation>
     </message>
 </context>
 <context>

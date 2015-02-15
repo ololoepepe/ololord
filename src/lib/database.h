@@ -53,6 +53,8 @@ OLOLORD_EXPORT bool createPost(const cppcms::http::request &req, unsigned int bu
 OLOLORD_EXPORT void createSchema();
 OLOLORD_EXPORT quint64 createThread(const cppcms::http::request &req, unsigned int threadLimit, QString *error = 0,
                                     const QLocale &l = BCoreApplication::locale(), QString *description = 0);
+OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QString *error = 0,
+                               const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT quint64 incrementPostCounter(odb::database *db, const QString &boardName, QString *error = 0,
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *error = 0,
