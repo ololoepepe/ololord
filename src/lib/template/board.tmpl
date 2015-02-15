@@ -19,7 +19,7 @@
         <% if ( !post.email.empty() ) %>
             <a href="mailto:<%= post.email %>"><%= post.name %></a>
         <% else %>
-            <%= post.name %>
+            <%= post.name | raw %>
         <% end %>
         <% if ( !post.tripcode.empty() ) %>
             <span class="tripcode"><%= post.tripcode %></span>

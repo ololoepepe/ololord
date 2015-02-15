@@ -518,6 +518,21 @@ Your choice:</source>
         <comment>loginMessageOk</comment>
         <translation>Зарегистрирован и залогинен</translation>
     </message>
+    <message>
+        <source>admin</source>
+        <comment>loginMessageOk</comment>
+        <translation>админ</translation>
+    </message>
+    <message>
+        <source>moder</source>
+        <comment>loginMessageOk</comment>
+        <translation>модер</translation>
+    </message>
+    <message>
+        <source>user</source>
+        <comment>loginMessageOk</comment>
+        <translation>юзер</translation>
+    </message>
 </context>
 <context>
     <name>initBaseThread</name>

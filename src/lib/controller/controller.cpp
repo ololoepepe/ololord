@@ -91,10 +91,18 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                    : ts.translate("initBase", "Login", "loginButtonText");
     c.loginLabelText = ts.translate("initBase", "Login:", "loginLabelText");
     if (c.loggedIn) {
-        if (Database::registeredUserLevel(req) < 0)
+        int lvl = Database::registeredUserLevel(req);
+        if (lvl < 0) {
             c.loginMessageWarning = ts.translate("initBase", "Logged in, but not registered", "loginMessageWarning");
-        else
+        } else {
             c.loginMessageOk = ts.translate("initBase", "Registered and logged in", "loginMessageOk");
+            if (lvl >= RegisteredUser::AdminLevel)
+                c.loginMessageOk += " (" + ts.translate("initBase", "admin", "loginMessageOk") + ")";
+            else if (lvl >= RegisteredUser::ModerLevel)
+                c.loginMessageOk += " (" + ts.translate("initBase", "moder", "loginMessageOk") + ")";
+            else if (lvl >= RegisteredUser::ModerLevel)
+                c.loginMessageOk += " (" + ts.translate("initBase", "user", "loginMessageOk") + ")";
+        }
     }
     c.pageTitle = Tools::toStd(pageTitle);
     SettingsLocker s;

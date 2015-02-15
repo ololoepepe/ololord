@@ -6,3 +6,5 @@
 * Implement post/thread deletion
 [done] Implement search
 [done] Use plugins for routes
+[done] Highlight moders' names
+[done] Add ability to insert raw HTML into name field for admins
