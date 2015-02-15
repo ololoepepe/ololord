@@ -33,8 +33,6 @@ HEADERS += \
     ololordwebapp.h \
     ololordwebappthread.h
 
-include(route/route.pri)
-
 contains(LORD_CONFIG, builtin_resources) {
     DEFINES += BUILTIN_RESOURCES
     RESOURCES += \

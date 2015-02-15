@@ -1,2 +1,3 @@
 HEADERS += \
-    $${PWD}/boardfactoryplugininterface.h
+    $${PWD}/boardfactoryplugininterface.h \
+    $${PWD}/routefactoryplugininterface.h

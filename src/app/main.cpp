@@ -89,6 +89,7 @@ int main(int argc, char **argv)
         bWriteLine(translate("main", "This is") + " " + BCoreApplication::applicationName()
                    + " v" + BCoreApplication::applicationVersion());
         bWriteLine(translate("main", "Enter \"help --commands\" to see the list of available commands"));
+        BCoreApplication::loadPlugins(QStringList() << "route-factory");
         QString confFileName = BDirTools::findResource("res/config.js", BDirTools::AllResources);
         bool ok = false;
         cppcms::json::value conf = Tools::readJsonValue(confFileName, &ok);

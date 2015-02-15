@@ -3,6 +3,6 @@
 * Check for file being an image
 * Add API (AJAX requests support, for example site.com/api/create_post)
 ? Convert special HTML sequences (&#XXXX;) to HTML (not sure if needed)
-* Use plugins for routes
 * Implement post/thread deletion
 [done] Implement search
+[done] Use plugins for routes

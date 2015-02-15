@@ -1,61 +1,129 @@
 #include "ololordwebapp.h"
 
-#include "route/actionroute.h"
-#include "route/boardroute.h"
-#include "route/homeroute.h"
-#include "route/staticfilesroute.h"
-#include "route/threadroute.h"
-
-#include <board/abstractboard.h>
-#include <controller/controller.h>
+#include <controller/Controller>
+#include <plugin/RouteFactoryPluginInterface>
+#include <route/AbstractRoute>
+#include <route/ActionRoute>
+#include <route/BoardRoute>
+#include <route/HomeRoute>
+#include <route/StaticFilesRoute>
+#include <route/ThreadRoute>
+#include <SettingsLocker>
 #include <tools.h>
 
 #include <BCoreApplication>
 #include <BDirTools>
+#include <BPluginWrapper>
 
 #include <QDebug>
+#include <QList>
+#include <QMap>
+#include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QtAlgorithms>
+#include <QVariant>
 
 #include <cppcms/application.h>
 #include <cppcms/service.h>
 #include <cppcms/url_dispatcher.h>
 #include <cppcms/url_mapper.h>
 
-OlolordWebApp::OlolordWebApp(cppcms::service &service) :
-    cppcms::application(service), dynamicFilesRoute("storage/img"), staticFilesRoute("static")
+static bool routeLessThan(AbstractRoute *r1, AbstractRoute *r2)
 {
-    QString boardRx = "(" + AbstractBoard::boardNames().join("|") + ")";
-    QString actionRx = "(" + ActionRoute::availableActions().join("|") + ")";
-    //
-    dispatcher().assign(Tools::toStd("/action/" + actionRx), &OlolordWebApp::action, this, 1);
-    mapper().assign("action", "/action/{1}");
-    //
-    dispatcher().assign(Tools::toStd("/" + boardRx + "/thread/([1-9][0-9]*)\\.html"), &OlolordWebApp::thread, this,
-                        1, 2);
-    mapper().assign("thread", "/{1}/{2}");
-    //
-    dispatcher().assign(Tools::toStd("/" + boardRx + "/rules\\.html"), &OlolordWebApp::boardRules, this, 1);
-    mapper().assign("boardRules", "/{1}");
-    //
-    dispatcher().assign(Tools::toStd("/" + boardRx + "/([1-9][0-9]*)\\.html"), &OlolordWebApp::boardPage, this, 1, 2);
-    mapper().assign("boardPage", "/{1}/{2}");
-    //
-    dispatcher().assign(Tools::toStd("/" + boardRx), &OlolordWebApp::board, this, 1);
-    mapper().assign("board", "/{1}");
-    dispatcher().assign(Tools::toStd("/" + boardRx + "/"), &OlolordWebApp::board, this, 1);
-    mapper().assign("board", "/{1}/");
-    //
-    dispatcher().assign(Tools::toStd("/" + boardRx + "/(.+)"), &OlolordWebApp::dynamicFiles, this, 1, 2);
-    mapper().assign("dynamicFiles", "/{1}/{2}");
-    //
-    dispatcher().assign("/(.+)", &OlolordWebApp::staticFile, this, 1);
-    mapper().assign("staticFiles", "/{1}");
-    //
-    dispatcher().assign("/", &OlolordWebApp::home, this);
-    mapper().assign("");
-    //
-    mapper().root("/board");
+    if (!r1 || !r2)
+        return false;
+    return r1->priority() < r2->priority();
+}
+
+OlolordWebApp::OlolordWebApp(cppcms::service &service) :
+    cppcms::application(service)
+{
+    QMap<std::string, AbstractRoute *> routesMap;
+    AbstractRoute *r = new ActionRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new BoardRoute(*this, BoardRoute::BoardMode);
+    routesMap.insert(r->regex(), r);
+    r = new BoardRoute(*this, BoardRoute::BoardPageMode);
+    routesMap.insert(r->regex(), r);
+    r = new BoardRoute(*this, BoardRoute::BoardRulesRoute);
+    routesMap.insert(r->regex(), r);
+    r = new HomeRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new StaticFilesRoute(*this, StaticFilesRoute::StaticFilesMode);
+    routesMap.insert(r->regex(), r);
+    r = new StaticFilesRoute(*this, StaticFilesRoute::DynamicFilesMode);
+    routesMap.insert(r->regex(), r);
+    r = new ThreadRoute(*this);
+    routesMap.insert(r->regex(), r);
+    foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("route-factory")) {
+        RouteFactoryPluginInterface *i = qobject_cast<RouteFactoryPluginInterface *>(pw->instance());
+        if (!i)
+            continue;
+        foreach (AbstractRoute *r, i->createRoutes(*this)) {
+            if (!r)
+                continue;
+            std::string rx = r->regex();
+            if (rx.empty() || r->handlerArgumentCount() > 4){
+                delete r;
+                continue;
+            }
+            if (routesMap.contains(rx))
+                delete routesMap.take(rx);
+            routesMap.insert(rx, r);
+        }
+    }
+    routes = routesMap.values();
+    qSort(routes.begin(), routes.end(), &routeLessThan);
+    foreach (AbstractRoute *r, routes) {
+        switch (r->handlerArgumentCount()) {
+        case 1:
+            dispatcher().assign(r->regex(), &AbstractRoute::handle, r, 1);
+            if (r->duplicateWithSlashAppended())
+                dispatcher().assign(r->regex() + "/", &AbstractRoute::handle, r, 1);
+            break;
+        case 2:
+            dispatcher().assign(r->regex(), &AbstractRoute::handle, r, 1, 2);
+            if (r->duplicateWithSlashAppended())
+                dispatcher().assign(r->regex() + "/", &AbstractRoute::handle, r, 1, 2);
+            break;
+        case 3:
+            dispatcher().assign(r->regex(), &AbstractRoute::handle, r, 1, 2, 3);
+            if (r->duplicateWithSlashAppended())
+                dispatcher().assign(r->regex() + "/", &AbstractRoute::handle, r, 1, 2, 3);
+            break;
+        case 4:
+            dispatcher().assign(r->regex(), &AbstractRoute::handle, r, 1, 2, 3, 4);
+            if (r->duplicateWithSlashAppended())
+                dispatcher().assign(r->regex() + "/", &AbstractRoute::handle, r, 1, 2, 3, 4);
+            break;
+        case 0:
+        default:
+            dispatcher().assign(r->regex(), &AbstractRoute::handle, r);
+            if (r->duplicateWithSlashAppended())
+                dispatcher().assign(r->regex() + "/", &AbstractRoute::handle, r);
+            break;
+        }
+        if (!r->key().empty()) {
+            mapper().assign(r->key(), r->url());
+            if (r->duplicateWithSlashAppended())
+                mapper().assign(r->key(), r->url() + "/");
+        } else {
+            mapper().assign("");
+        }
+    }
+    QString path = SettingsLocker()->value("Site/path_prefix").toString();
+    if (path.endsWith("/"))
+        path.remove(path.length() - 1, 1);
+    if (!path.isEmpty())
+        mapper().root(Tools::toStd("/" + path));
+}
+
+OlolordWebApp::~OlolordWebApp()
+{
+    foreach (AbstractRoute *r, routes)
+        delete r;
+    routes.clear();
 }
 
 void OlolordWebApp::main(std::string url)
@@ -64,44 +132,4 @@ void OlolordWebApp::main(std::string url)
         return;
     Tools::log(*this, "Page not found (handled by OlolordWebApp::main)");
     Controller::renderNotFound(*this);
-}
-
-void OlolordWebApp::action(std::string path)
-{
-    actionRoute.handle(*this, Tools::fromStd(path));
-}
-
-void OlolordWebApp::board(std::string path)
-{
-    boardRoute.handle(*this, Tools::fromStd(path));
-}
-
-void OlolordWebApp::boardRules(std::string path)
-{
-    boardRoute.handleRules(*this, Tools::fromStd(path));
-}
-
-void OlolordWebApp::boardPage(std::string path1, std::string path2)
-{
-    boardRoute.handle(*this, Tools::fromStd(path1), Tools::fromStd(path2));
-}
-
-void OlolordWebApp::dynamicFiles(std::string path1, std::string path2)
-{
-    dynamicFilesRoute.handle(*this, Tools::fromStd(path1 + "/" + path2));
-}
-
-void OlolordWebApp::home()
-{
-    homeRoute.handle(*this);
-}
-
-void OlolordWebApp::staticFile(std::string path)
-{
-    staticFilesRoute.handle(*this, Tools::fromStd(path));
-}
-
-void OlolordWebApp::thread(std::string path1, std::string path2)
-{
-    threadRoute.handle(*this, Tools::fromStd(path1), Tools::fromStd(path2));
 }

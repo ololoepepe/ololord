@@ -184,11 +184,13 @@
                 <h2><%= postingDisabledText %></h2>
             </div>
         <% else %>
+            <hr />
         <% end %>
-        <hr />
         <% include createAction("Top") %>
         <% include threads() %>
-        <hr />
+        <% if ( content.postingEnabled ) %>
+            <hr />
+        <% end %>
         <% include createAction("Bottom") %>
         <hr />
         <% include pages() %>

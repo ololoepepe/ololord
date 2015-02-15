@@ -1,8 +1,6 @@
 #ifndef BOARDFACTORYPLUGININTERFACE_H
 #define BOARDFACTORYPLUGININTERFACE_H
 
-class AbstractBoard;
-
 #include "board/abstractboard.h"
 
 #include <QList>
