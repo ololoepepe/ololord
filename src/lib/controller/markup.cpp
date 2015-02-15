@@ -555,6 +555,10 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
         p.name = ts.translate("Tools", "Anonymous", "name");
     }
     p.nameRaw = Tools::toStd(post.name());
+    if (p.nameRaw.empty()) {
+        TranslatorStd ts(l);
+        p.nameRaw = ts.translate("Tools", "Anonymous", "name");
+    }
     p.number = post.number();
     p.subject = Tools::toStd(post.subject());
     p.text = processPostText(post.text(), boardName, threadNumber, processCode);
@@ -573,6 +577,10 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
                 name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
         }
         p.name = Tools::toStd(name);
+        if (p.name.empty()) {
+            TranslatorStd ts(l);
+            p.name = ts.translate("Tools", "Anonymous", "name");
+        }
         QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
