@@ -26,7 +26,9 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string email;
         std::list<File> files;
         std::string name;
+        std::string nameRaw;
         unsigned long long number;
+        bool registered;
         std::string subject;
         std::string text;
         std::string tripcode;

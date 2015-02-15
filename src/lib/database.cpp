@@ -153,10 +153,8 @@ static bool createPostInternal(odb::database *db, const cppcms::http::request &r
         }
         if (!dt.isValid())
             dt = QDateTime::currentDateTimeUtc();
-        QString hp = Tools::fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
+        QString hp = Tools::hashPassString(req);
         QByteArray hpba = Tools::toHashpass(hp);
-        //if (registeredUserLevel(hpba) < 0)
-        //    hpba.clear();
         QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread, Tools::userIp(req), post.password, hpba));
         p->setEmail(post.email);
         QStringList fileNames;
@@ -375,7 +373,7 @@ QString posterIp(const QString &boardName, quint64 postNumber)
 
 int registeredUserLevel(const cppcms::http::request &req)
 {
-    QString hp = Tools::fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
+    QString hp = Tools::hashPassString(req);
     QByteArray hpba = Tools::toHashpass(hp);
     if (hpba.isEmpty())
         return -1;

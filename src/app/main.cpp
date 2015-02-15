@@ -321,7 +321,9 @@ bool handleRegisterUser(const QString &, const QStringList &)
         bWriteLine(translate("handleRegisterUser", "Invalid level"));
         return false;
     }
-    QByteArray password = QCryptographicHash::hash(pwd.toUtf8(), QCryptographicHash::Sha1);
+    QByteArray password = Tools::toHashpass(pwd);
+    if (password.isEmpty())
+        password = QCryptographicHash::hash(pwd.toUtf8(), QCryptographicHash::Sha1);
     QString err;
     if (!Database::registerUser(password, static_cast<RegisteredUser::Level>(level), &err)) {
         bWriteLine(err);

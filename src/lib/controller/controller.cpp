@@ -86,7 +86,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.hideSearchFormText = ts.translate("initBaseThread", "Hide search form", "hideSearchFormText");
     c.localeLabelText = "Language:";
     c.locales = locales;
-    c.loggedIn = !const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value().empty();
+    c.loggedIn = !Tools::hashPassString(req).isEmpty();
     c.loginButtonText = c.loggedIn ? ts.translate("initBase", "Logout", "loginButtonText")
                                    : ts.translate("initBase", "Login", "loginButtonText");
     c.loginLabelText = ts.translate("initBase", "Login:", "loginLabelText");

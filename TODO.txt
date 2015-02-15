@@ -8,3 +8,4 @@
 [done] Use plugins for routes
 [done] Highlight moders' names
 [done] Add ability to insert raw HTML into name field for admins
+[done] Fix hashpasses

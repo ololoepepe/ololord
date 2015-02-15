@@ -532,7 +532,7 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
     Content::BaseBoard::Post p;
     p.bannedFor = post.bannedFor();
     p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
-    p.email = Tools::toStd(toHtml(post.email()));
+    p.email = Tools::toStd(post.email());
     TranslatorQt tq(l);
     foreach (const QString &fn, BeQt::deserialize(post.files()).toStringList()) {
         Content::BaseBoard::File f;
@@ -554,16 +554,25 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
         TranslatorStd ts(l);
         p.name = ts.translate("Tools", "Anonymous", "name");
     }
+    p.nameRaw = Tools::toStd(post.name());
     p.number = post.number();
-    p.subject = Tools::toStd(toHtml(post.subject()));
+    p.subject = Tools::toStd(post.subject());
     p.text = processPostText(post.text(), boardName, threadNumber, processCode);
     QByteArray hashpass = post.hashpass();
+    p.registered = false;
     if (!hashpass.isEmpty()) {
         int lvl = Database::registeredUserLevel(hashpass);
-        if (lvl >= RegisteredUser::AdminLevel)
-            p.name = Tools::toStd(post.name());
-        else if (lvl >= RegisteredUser::ModerLevel)
-            p.name = "<span class=\"moderName\">" + Tools::toStd(toHtml(post.name())) + "</span>";
+        QString name;
+        p.registered = lvl >= RegisteredUser::UserLevel;
+        if (!post.name().isEmpty()) {
+            if (lvl >= RegisteredUser::AdminLevel)
+                name = post.name();
+            else if (lvl >= RegisteredUser::ModerLevel)
+                name = "<span class=\"moderName\">" + toHtml(post.name()) + "</span>";
+            else if (lvl >= RegisteredUser::UserLevel)
+                name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
+        }
+        p.name = Tools::toStd(name);
         QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
