@@ -14,6 +14,7 @@
 
 #include <BDirTools>
 
+#include <QCryptographicHash>
 #include <QDebug>
 #include <QSharedPointer>
 #include <QString>
@@ -310,16 +311,18 @@ bool deletePost(const QString &boardName, quint64 postNumber, QString *error, co
                 return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
             db->erase_query<Post>(odb::query<Post>::thread == threadId);
             db->erase_query<Thread>(odb::query<Thread>::id == threadId);
+            //TODO: Delete files
         } else {
             odb::result<Post> rr(db->query<Post>(odb::query<Post>::board == boardName
                                                  && odb::query<Post>::number == postNumber));
             odb::result<Post>::iterator ii = rr.begin();
             if (rr.end() == ii)
                 return bRet(error, tq.translate("deletePost", "No such post", "error"), false);
-            ++i;
+            ++ii;
             if (rr.end() != ii)
                 return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
             db->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
+            //TODO: Delete files
         }
         transaction.commit();
         return bRet(error, QString(), true);
@@ -384,6 +387,39 @@ quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *err
         return bRet(error, QString(), counter.lastPostNumber());
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), 0L);
+    }
+}
+
+bool mayDeletePost(const QString &boardName, quint64 postNumber, const QString &password, QString *error,
+                   const QLocale &l)
+{
+    TranslatorQt tq(l);
+    if (!AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("mayDeletePost", "Invalid board name", "error"), false);
+    if (!postNumber)
+        return bRet(error, tq.translate("mayDeletePost", "Invalid post number", "error"), false);
+    if (password.isEmpty())
+        return bRet(error, tq.translate("mayDeletePost", "Invalid password", "error"), false);
+    try {
+        odb::database *db = createConnection();
+        if (!db)
+            return bRet(error, tq.translate("mayDeletePost", "Internal database error", "error"), false);
+        odb::transaction transaction(db->begin());
+        odb::result<Post> r(db->query<Post>(odb::query<Post>::board == boardName
+                                            && odb::query<Post>::number == postNumber));
+        odb::result<Post>::iterator i = r.begin();
+        if (r.end() == i)
+            return bRet(error, tq.translate("mayDeletePost", "No such post", "error"), false);
+        QByteArray ppwd = i->password();
+        ++i;
+        if (r.end() != i)
+            return bRet(error, tq.translate("mayDeletePost", "Internal database error", "error"), false);
+        if (QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1) != ppwd)
+            return bRet(error, tq.translate("mayDeletePost", "Incorrect password", "error"), false);
+        transaction.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
     }
 }
 

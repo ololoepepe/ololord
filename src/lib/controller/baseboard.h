@@ -43,6 +43,9 @@ public:
     std::string closedText;
     AbstractBoard::BoardInfo currentBoard;
     unsigned long long currentThread;
+    std::string deletePostText;
+    std::string deleteThreadText;
+    std::string enterPasswordText;
     std::string fixedText;
     std::string hidePostFormText;
     std::string postFormButtonSubmit;

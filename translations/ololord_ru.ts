@@ -697,6 +697,21 @@ Your choice:</source>
         <comment>showSearchFormText</comment>
         <translation>Искать</translation>
     </message>
+    <message>
+        <source>Delete post</source>
+        <comment>fixedText</comment>
+        <translation>Удалить пост</translation>
+    </message>
+    <message>
+        <source>Delete thread</source>
+        <comment>fixedText</comment>
+        <translation>Удалить тред</translation>
+    </message>
+    <message>
+        <source>Enter password (if empty, current hashpass will be used):</source>
+        <comment>fixedText</comment>
+        <translation>Введите пароль (если он пуст, то будет использован текущий хешпасс):</translation>
+    </message>
 </context>
 <context>
     <name>initBoards</name>
@@ -1020,6 +1035,43 @@ Apperas in the HTML pages.</source>
     <message>
         <source>is already running. Quitting...</source>
         <translation>уже запущен. Выходим...</translation>
+    </message>
+    <message>
+        <source>Failed to read configuration file</source>
+        <translation>Не удалось прочитать файл конфигурации</translation>
+    </message>
+</context>
+<context>
+    <name>mayDeletePost</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
     </message>
 </context>
 <context>

@@ -6,5 +6,6 @@
         <file>static/js/3rdparty/sha1.js</file>
         <file>static/js/create_action.js</file>
         <file>static/js/search_action.js</file>
+        <file>static/js/post.js</file>
     </qresource>
 </RCC>

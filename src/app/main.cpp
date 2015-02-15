@@ -10,8 +10,6 @@
 #include <stored/RegisteredUser>
 #include <tools.h>
 
-#include <cppcms/json.h>
-
 #include <BApplicationServer>
 #include <BCoreApplication>
 #include <BDirTools>
@@ -32,6 +30,8 @@
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+
+#include <cppcms/json.h>
 
 B_DECLARE_TRANSLATE_FUNCTION
 
@@ -90,10 +90,14 @@ int main(int argc, char **argv)
         bWriteLine(translate("main", "This is") + " " + BCoreApplication::applicationName()
                    + " v" + BCoreApplication::applicationVersion());
         bWriteLine(translate("main", "Enter \"help --commands\" to see the list of available commands"));
-        BCoreApplication::loadPlugins(QStringList() << "route-factory");
+        BCoreApplication::loadPlugins(QStringList() << "route-factory" << "ajax-handler-factory");
         QString confFileName = BDirTools::findResource("res/config.js", BDirTools::AllResources);
         bool ok = false;
         cppcms::json::value conf = Tools::readJsonValue(confFileName, &ok);
+        if (!ok) {
+            bWriteLine(translate("main", "Failed to read configuration file"));
+            return 0;
+        }
         OlolordWebAppThread owt(conf);
         owt.start();
         ret = app.exec();

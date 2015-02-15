@@ -4,9 +4,9 @@
 
 <% template post(Content::BaseBoard::Post post, Content::Board::Thread thread) %>
 <% if ( post.number == thread.opPost.number ) %>
-    <div class="opPost">
+    <div id="opPost<%= post.number %>" class="opPost">
 <% else %>
-    <div class="post">
+    <div id="post<%= post.number %>" class="post">
 <% end %>
     <div class="postHeader">
         <% if ( post.number == thread.opPost.number && thread.fixed ) %>
@@ -40,6 +40,13 @@
                 <%= post.number %>
             </a>
         <% end %>
+        <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>');">
+        <% if ( post.number == thread.opPost.number ) %>
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" />
+        <% else %>
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" />
+        <% end %>
+        </a>
         <% if ( post.number == thread.opPost.number ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html">
                 <%= toThread %>
@@ -93,7 +100,7 @@
 <% foreach thread in threads %>
     <% item %>
         <hr />
-        <div>
+        <div id="thread<%= thread.opPost.number %>">
             <% include post(thread.opPost, thread) %>
         </div>
         <% if ( thread.omittedPosts() > 0 ) %>
@@ -167,6 +174,8 @@
         <script type="text/javascript" src="/<%= sitePathPrefix %>js/board.js"></script>
     </head>
     <body onload="javascript:initializeOnLoadBoard();">
+        <% include baseTexts() %>
+        <% include boardTexts() %>
         <% include settings() %>
         <br />
         <% include navbar() %>

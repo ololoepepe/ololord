@@ -1,12 +1,12 @@
 * Make post form parameters' maximum lengths configurable
 * Make maximum file size configurable
 * Check for file being an image
-* Add API (AJAX requests support, for example site.com/api/create_post)
 ? Convert special HTML sequences (&#XXXX;) to HTML (not sure if needed)
-* Implement post/thread deletion
 [done] Implement search
 [done] Use plugins for routes
 [done] Highlight moders' names
 [done] Add ability to insert raw HTML into name field for admins
 [done] Fix hashpasses
 [done] Add ability to delete posts from the command line
+[done] Implement post/thread deletion
+[done] Add API (AJAX requests support)

@@ -1,5 +1,11 @@
 var Billion = 2 * 1000 * 1000 * 1000;
 
+function getCookie(name) {
+    var matches = document.cookie.match(
+        new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
+}
+
 function setCookie(name, value, options) {
     options = options || {};
     var expires = options.expires;
@@ -19,6 +25,10 @@ function setCookie(name, value, options) {
             updatedCookie += "=" + propValue;
     }
     document.cookie = updatedCookie;
+}
+
+function deleteCookie(name) {
+    setCookie(name, "", {expires: -1});
 }
 
 function reloadPage() {

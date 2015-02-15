@@ -104,6 +104,10 @@
 <% end %>
 <% end template %>
 
+<% template boardTexts() %>
+<input type="hidden" id="enterPasswordText" value="<%= enterPasswordText %>" />
+<% end template %>
+
 <% template bannerHead() %>
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/banner.css">
 <% end template %>
@@ -118,6 +122,7 @@
 
 <% template boardHead() %>
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/post.css">
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/post.js"></script>
 <% end %>
 
 <% end view %>

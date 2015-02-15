@@ -224,6 +224,12 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
+bool deleteFiles(const FileList &files)
+{
+    //TODO
+    return false;
+}
+
 QLocale fromStd(const std::locale &l)
 {
     return QLocale(fromStd(l.name()).split('.').first());

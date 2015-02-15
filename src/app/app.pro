@@ -25,11 +25,13 @@ DEPENDPATH += $${ololordHeadersPath}
 LIBS += -L$${OUT_PWD}/../lib$${releaseDebugSuffix}/ -lololord$${libNameSuffix}
 
 SOURCES += \
+    ololordajaxwebapp.cpp \
     main.cpp \
     ololordwebapp.cpp \
     ololordwebappthread.cpp
 
 HEADERS += \
+    ololordajaxwebapp.h \
     ololordwebapp.h \
     ololordwebappthread.h
 

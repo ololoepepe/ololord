@@ -4,7 +4,7 @@
 
 <% template post(Content::BaseBoard::Post post, bool op, bool fixed) %>
 <% if ( op ) %>
-    <div id="post<%= post.number %>" class="opPost">
+    <div id="opPost<%= post.number %>" class="opPost">
 <% else %>
     <div id="post<%= post.number %>" class="post">
 <% end %>
@@ -37,6 +37,13 @@
         <% else %>
             #<a href="#<%= post.number %>"><%= post.number %></a>
         <% end %>
+        <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+        <% if ( op ) %>
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" />
+        <% else %>
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" />
+        <% end %>
+        </a>
     </div>
     <table class="threadPosts">
         <tbody>
@@ -93,6 +100,8 @@
         <script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
     </head>
     <body onload="javascript:initializeOnLoadThread();">
+        <% include baseTexts() %>
+        <% include boardTexts() %>
         <% include settings() %>
         <br />
         <% include navbar() %>

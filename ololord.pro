@@ -73,6 +73,10 @@ contains(LORD_CONFIG, headers) {
     lordInstallsHeadersGlobal.files=$$getActualHeaders()
     lordInstallsHeadersGlobal.path=$${LORD_HEADERS_INSTALLS_PATH}
     INSTALLS += lordInstallsHeadersGlobal
+    #ajax
+    lordInstallsHeadersAjax.files=$$getActualHeaders(ajax)
+    lordInstallsHeadersAjax.path=$${LORD_HEADERS_INSTALLS_PATH}/ajax
+    INSTALLS += lordInstallsHeadersAjax
     #board
     lordInstallsHeadersBoard.files=$$getActualHeaders(board)
     lordInstallsHeadersBoard.path=$${LORD_HEADERS_INSTALLS_PATH}/board
@@ -85,6 +89,10 @@ contains(LORD_CONFIG, headers) {
     lordInstallsHeadersPlugin.files=$$getActualHeaders(plugin)
     lordInstallsHeadersPlugin.path=$${LORD_HEADERS_INSTALLS_PATH}/plugin
     INSTALLS += lordInstallsHeadersPlugin
+    #route
+    lordInstallsHeadersRoute.files=$$getActualHeaders(route)
+    lordInstallsHeadersRoute.path=$${LORD_HEADERS_INSTALLS_PATH}/route
+    INSTALLS += lordInstallsHeadersRoute
     #stored
     lordInstallsHeadersStored.files=$$getActualHeaders(stored)
     lordInstallsHeadersStored.path=$${LORD_HEADERS_INSTALLS_PATH}/stored

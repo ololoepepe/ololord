@@ -136,6 +136,10 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;
+    c.deletePostText = ts.translate("initBaseThread", "Delete post", "fixedText");
+    c.deleteThreadText = ts.translate("initBaseThread", "Delete thread", "fixedText");
+    c.enterPasswordText = ts.translate("initBaseThread", "Enter password (if empty, current hashpass will be used):",
+                                       "fixedText");
     c.fixedText = ts.translate("initBaseThread", "Fixed", "fixedText");
     c.hidePostFormText = ts.translate("initBaseThread", "Hide post form", "hidePostFormText");
     c.postFormButtonSubmit = ts.translate("initBaseThread", "Send", "postFormButtonSubmit");

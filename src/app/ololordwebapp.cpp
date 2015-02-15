@@ -1,5 +1,7 @@
 #include "ololordwebapp.h"
 
+#include "ololordajaxwebapp.h"
+
 #include <controller/Controller>
 #include <plugin/RouteFactoryPluginInterface>
 #include <route/AbstractRoute>
@@ -39,6 +41,7 @@ static bool routeLessThan(AbstractRoute *r1, AbstractRoute *r2)
 OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     cppcms::application(service)
 {
+    attach(new OlolordAjaxWebApp(service), "/api", 0);
     QMap<std::string, AbstractRoute *> routesMap;
     AbstractRoute *r = new ActionRoute(*this);
     routesMap.insert(r->regex(), r);
@@ -64,7 +67,7 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
             if (!r)
                 continue;
             std::string rx = r->regex();
-            if (rx.empty() || r->handlerArgumentCount() > 4){
+            if (rx.empty() || r->handlerArgumentCount() > 4) {
                 delete r;
                 continue;
             }

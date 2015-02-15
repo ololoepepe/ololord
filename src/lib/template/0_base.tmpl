@@ -96,6 +96,10 @@
 <% end %>
 <% end template %>
 
+<% template baseTexts() %>
+<input type="hidden" id="sitePathPrefix" value="<%= sitePathPrefix %>" />
+<% end template %>
+
 <% template baseHead() %>
 <title><%= pageTitle %></title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
