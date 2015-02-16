@@ -392,8 +392,8 @@ quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *err
     }
 }
 
-bool mayDeletePost(const QString &boardName, quint64 postNumber, const QByteArray &password, QString *error,
-                   const QLocale &l)
+bool mayDeletePost(const QString &boardName, quint64 postNumber, const cppcms::http::request &req,
+                   const QByteArray &password, QString *error, const QLocale &l)
 {
     TranslatorQt tq(l);
     if (!AbstractBoard::boardNames().contains(boardName))
@@ -417,8 +417,10 @@ bool mayDeletePost(const QString &boardName, quint64 postNumber, const QByteArra
         ++i;
         if (r.end() != i)
             return bRet(error, tq.translate("mayDeletePost", "Internal database error", "error"), false);
-        if (password != ppwd && password != phps)
+        if (password != ppwd && password != phps
+                && Database::registeredUserLevel(req, false) < RegisteredUser::AdminLevel) {
             return bRet(error, tq.translate("mayDeletePost", "Incorrect password", "error"), false);
+        }
         transaction.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
@@ -450,13 +452,13 @@ QString posterIp(const QString &boardName, quint64 postNumber)
     }
 }
 
-int registeredUserLevel(const cppcms::http::request &req)
+int registeredUserLevel(const cppcms::http::request &req, bool trans)
 {
     QString hp = Tools::hashPassString(req);
     QByteArray hpba = Tools::toHashpass(hp);
     if (hpba.isEmpty())
         return -1;
-    return registeredUserLevel(hpba, true);
+    return registeredUserLevel(hpba, trans);
 }
 
 int registeredUserLevel(const QByteArray &hashpass, bool trans)

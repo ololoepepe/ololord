@@ -1,1 +1,2 @@
 * Add ability to post files of different types
+[done] Add ability for admins to delete any posts

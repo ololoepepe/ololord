@@ -25,9 +25,10 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
     QString board = Tools::fromStd(boardName);
     quint64 post = postNumber > 0 ? quint64(postNumber) : 0;
     QByteArray password = Tools::toHashpass(Tools::fromStd(pwd));
-    QLocale l = Tools::locale(server.request());
+    const cppcms::http::request &req = server.request();
+    QLocale l = Tools::locale(req);
     QString err;
-    if (!Database::mayDeletePost(board, post, password, &err, l))
+    if (!Database::mayDeletePost(board, post, req, password, &err, l))
         return server.return_result(Tools::toStd(err));
     if (!Database::deletePost(board, post, &err, l))
         return server.return_result(Tools::toStd(err));
