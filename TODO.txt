@@ -1,2 +1,4 @@
 * Add ability to post files of different types
+* Add ability to hide posts/threads
 [done] Add ability for admins to delete any posts
+[done] Implement thread archiving

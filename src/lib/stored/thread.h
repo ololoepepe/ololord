@@ -28,6 +28,7 @@ private:
     quint64 number_;
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
+    bool archived_;
     bool fixed_;
     bool postingEnabled_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(thread_))
@@ -41,10 +42,12 @@ public:
     QString board() const;
     quint64 number() const;
     QDateTime dateTime() const;
+    bool archived() const;
     bool fixed() const;
     bool postingEnabled() const;
     const Posts &posts() const;
     Posts &posts();
+    void setArchived(bool archived);
     void setBoard(const QString &board);
     void setDateTime(const QDateTime &dateTime);
     void setFixed(bool fixed);
@@ -64,6 +67,7 @@ PRAGMA_DB(view object(Thread))
 struct OLOLORD_EXPORT ThreadIdDateTimeFixed
 {
     quint64 id;
+    quint64 number;
     QDateTime dateTime;
     bool fixed;
 };

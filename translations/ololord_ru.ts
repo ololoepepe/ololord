@@ -156,6 +156,12 @@ The default is 1.</source>
         <translation>Максимальное количество прикрепленных файлов на этой доске.
 По умолчанию 1.</translation>
     </message>
+    <message>
+        <source>Maximum archived thread count for this board.
+The default is 0 (do not archive).</source>
+        <translation>Максимальное количество архивируемых тредов для этой доски.
+По умолчанию 0 (не архивировать).</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -378,6 +384,11 @@ The default is 1.</source>
         <source>Internal error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>
@@ -1127,6 +1138,12 @@ The default is 10485760 (10 MB).</source>
 The default is 1.</source>
         <translation>Максимальное количество прикрепленных файлов.
 По умолчанию 1.</translation>
+    </message>
+    <message>
+        <source>Maximum archived thread count per board.
+The default is 0 (do not archive).</source>
+        <translation>Максимальное количество архивируемых тредов на каждой доске.
+По умолчанию 0 (не архивировать).</translation>
     </message>
 </context>
 <context>

@@ -43,6 +43,7 @@ public:
     static QStringList boardNames(bool includeHidden = true);
     static void reloadBoards();
 public:
+    unsigned int archiveLimit() const;
     QString bannerFileName() const;
     unsigned int bumpLimit() const;
     virtual void createPost(cppcms::application &app);

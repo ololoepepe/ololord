@@ -136,6 +136,12 @@ void AbstractBoard::reloadBoards()
     initBoards(true);
 }
 
+unsigned int AbstractBoard::archiveLimit() const
+{
+    SettingsLocker s;
+    return s->value("Board/" + name() + "/archive_limit", s->value("Board/archive_limit", 0)).toUInt();
+}
+
 QString AbstractBoard::bannerFileName() const
 {
     QString path = BDirTools::findResource("static/img/banner", BDirTools::AllResources);
@@ -201,6 +207,7 @@ void AbstractBoard::createThread(cppcms::application &app)
     QString err;
     QString desc;
     Database::CreateThreadParameters p(req, params, files, tq.locale());
+    p.archiveLimit = archiveLimit();
     p.threadLimit = threadLimit();
     p.error = &err;
     p.description = &desc;
@@ -228,7 +235,8 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
         odb::transaction transaction(db->begin());
-        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == name()));
+        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == name()
+                                                && odb::query<Thread>::archived == false));
         QList<Thread> list;
         for (odb::result<Thread>::iterator i = r.begin(); i != r.end(); ++i)
             list << *i;
@@ -308,7 +316,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
         odb::transaction transaction(db->begin());
-        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == name()));
+        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == name()
+                                                && odb::query<Thread>::archived == false));
         bool threadFound = false;
         for (odb::result<Thread>::iterator i = r.begin(); i != r.end(); ++i) {
             if (i->number() == threadNumber) {
@@ -514,6 +523,9 @@ void AbstractBoard::initBoards(bool reinit)
         nnn->setDescription(BTranslation::translate("AbstractBoard",
                                                     "Maximum attached file count for this board.\n"
                                                     "The default is 1."));
+        nnn = new BSettingsNode(QVariant::UInt, "archive_limit", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum archived thread count for this board.\n"
+                                                   "The default is 0 (do not archive)."));
     }
     if (!reinit)
         qAddPostRoutine(&cleanupBoards);

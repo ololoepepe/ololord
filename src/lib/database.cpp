@@ -314,17 +314,50 @@ quint64 createThread(CreateThreadParameters &p)
         if (!postNumber)
             return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description, err, 0L);
         if (p.threadLimit) {
-            odb::result<ThreadCount> tcr(db->query<ThreadCount>(odb::query<Thread>::board == boardName));
+            odb::result<ThreadCount> tcr(db->query<ThreadCount>(odb::query<Thread>::board == boardName
+                                                                && odb::query<Thread>::archived == false));
             const ThreadCount &threadCount(*tcr.begin());
             if (threadCount.count >= (int) p.threadLimit) {
                 odb::result<ThreadIdDateTimeFixed> tir(db->query<ThreadIdDateTimeFixed>(
-                                                           odb::query<Thread>::board == boardName));
+                                                           odb::query<Thread>::board == boardName
+                                                           && odb::query<Thread>::archived == false));
                 QList<ThreadIdDateTimeFixed> list;
                 for (odb::result<ThreadIdDateTimeFixed>::iterator j = tir.begin(); j != tir.end(); ++j)
                     list << *j;
                 qSort(list.begin(), list.end(), &threadIdDateTimeFixedLessThan);
-                db->erase_query<Post>(odb::query<Post>::thread == list.last().id);
-                db->erase<Thread>(list.last().id);
+                if (p.archiveLimit) {
+                    odb::result<ThreadCount> atcr(db->query<ThreadCount>(odb::query<Thread>::board == boardName
+                                                                         && odb::query<Thread>::archived == true));
+                    const ThreadCount &archivedThreadCount(*atcr.begin());
+                    if (archivedThreadCount.count >= (int) p.archiveLimit) {
+                        odb::result<ThreadIdDateTimeFixed> atir(db->query<ThreadIdDateTimeFixed>(
+                                                                    odb::query<Thread>::board == boardName
+                                                                    && odb::query<Thread>::archived == true));
+                        QList<ThreadIdDateTimeFixed> alist;
+                        for (odb::result<ThreadIdDateTimeFixed>::iterator k = atir.begin(); k != atir.end(); ++k)
+                            alist << *k;
+                        qSort(alist.begin(), alist.end(), &threadIdDateTimeFixedLessThan);
+                        if (!deletePostInternal(boardName, alist.last().number, p.error, p.locale, db))
+                            return 0L;
+                    }
+                    odb::result<Thread> tr(db->query<Thread>(odb::query<Thread>::id == list.last().id));
+                    odb::result<Thread>::iterator k = tr.begin();
+                    if (tr.end() == k) {
+                        return bRet(p.error, tq.translate("createThread", "Internal database error", "error"),
+                                    p.description, err, 0L);
+                    }
+                    Thread t = *k;
+                    ++k;
+                    if (tr.end() != k) {
+                        return bRet(p.error, tq.translate("createThread", "Internal database error", "error"),
+                                    p.description, err, 0L);
+                    }
+                    t.setArchived(true);
+                    db->update(t);
+                } else {
+                    if (!deletePostInternal(boardName, list.last().number, p.error, p.locale, db))
+                        return 0L;
+                }
             }
         }
         QDateTime dt = QDateTime::currentDateTimeUtc();

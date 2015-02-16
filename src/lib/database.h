@@ -73,6 +73,7 @@ struct OLOLORD_EXPORT CreateThreadParameters
     const QMap<QString, QString> &params;
     const cppcms::http::request &request;
 public:
+    unsigned int archiveLimit;
     unsigned int threadLimit;
     QString *error;
     QString *description;

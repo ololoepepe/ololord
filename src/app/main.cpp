@@ -613,6 +613,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::UInt, "max_file_count", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum attached file count.\n"
                                                "The default is 1."));
+    nn = new BSettingsNode(QVariant::UInt, "archive_limit", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum archived thread count per board.\n"
+                                               "The default is 0 (do not archive)."));
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
@@ -657,6 +660,7 @@ void initSettings()
         nnn->setDescription(t);
     }
     BTerminal::setRootSettingsNode(root);
+    AbstractBoard::boardNames(); //Required to initialize board settings
 }
 
 void initTerminal()
