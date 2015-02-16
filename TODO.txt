@@ -1,12 +1,1 @@
 * Add ability to post files of different types
-[done] Implement search
-[done] Use plugins for routes
-[done] Highlight moders' names
-[done] Add ability to insert raw HTML into name field for admins
-[done] Fix hashpasses
-[done] Add ability to delete posts from the command line
-[done] Implement post/thread deletion
-[done] Add API (AJAX requests support)
-[done] Fix file deletion
-[done] Make post form parameters' maximum lengths configurable
-[done] Make maximum file size and count configurable
