@@ -16,6 +16,7 @@
 
 #include <QCryptographicHash>
 #include <QDebug>
+#include <QScopedPointer>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -154,9 +155,8 @@ static bool createPostInternal(odb::database *db, const cppcms::http::request &r
         }
         if (!dt.isValid())
             dt = QDateTime::currentDateTimeUtc();
-        QString hp = Tools::hashPassString(req);
-        QByteArray hpba = Tools::toHashpass(hp);
-        QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread, Tools::userIp(req), post.password, hpba));
+        QByteArray hp = Tools::hashpass(req);
+        QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread, Tools::userIp(req), post.password, hp));
         p->setEmail(post.email);
         QStringList fileNames;
         foreach (const Tools::File &f, post.files) {
@@ -180,6 +180,60 @@ static bool createPostInternal(odb::database *db, const cppcms::http::request &r
     } catch (const odb::exception &e) {
         return bRet(error, tq.translate("createPost", "Internal error", "error"), description,
                     Tools::fromStd(e.what()), false);
+    }
+}
+
+static bool deletePostInternal(const QString &boardName, quint64 postNumber, QString *error, const QLocale &l,
+                               odb::database *db = 0)
+{
+    TranslatorQt tq(l);
+    if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("deletePostInternal", "Invalid board name", "error"), false);
+    if (!postNumber)
+        return bRet(error, tq.translate("deletePostInternal", "Invalid post number", "error"), false);
+    try {
+        bool trans = false;
+        trans = !db;
+        if (!db)
+            db = createConnection();
+        if (!db)
+            return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+        QScopedPointer<odb::transaction> transaction;
+        if (trans)
+            transaction.reset(new odb::transaction(db->begin()));
+        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == boardName
+                                                && odb::query<Thread>::number == postNumber));
+        odb::result<Thread>::iterator i = r.begin();
+        if (r.end() != i) {
+            quint64 threadId = i->id();
+            ++i;
+            if (r.end() != i)
+                return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+            odb::result<Post> rr(db->query<Post>(odb::query<Post>::thread == threadId));
+            QStringList files;
+            for (odb::result<Post>::iterator ii = rr.begin(); ii != rr.end(); ++ii)
+                files += BeQt::deserialize(ii->files()).toStringList();
+            db->erase_query<Post>(odb::query<Post>::thread == threadId);
+            db->erase_query<Thread>(odb::query<Thread>::id == threadId);
+            Tools::deleteFiles(boardName, files);
+        } else {
+            odb::result<Post> rr(db->query<Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == postNumber));
+            odb::result<Post>::iterator ii = rr.begin();
+            if (rr.end() == ii)
+                return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
+            QStringList files = BeQt::deserialize(ii->files()).toStringList();
+            ++ii;
+            if (rr.end() != ii)
+                return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+            db->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
+            Tools::deleteFiles(boardName, files);
+        }
+        if (transaction)
+            transaction->commit();
+        return bRet(error, QString(), true);
+    }  catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
     }
 }
 
@@ -288,47 +342,46 @@ quint64 createThread(CreateThreadParameters &p)
 
 bool deletePost(const QString &boardName, quint64 postNumber, QString *error, const QLocale &l)
 {
-    TranslatorQt tq(l);
-    if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
+    return deletePostInternal(boardName, postNumber, error, l);
+}
+
+bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
+                const QByteArray &password, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!AbstractBoard::boardNames().contains(boardName))
         return bRet(error, tq.translate("deletePost", "Invalid board name", "error"), false);
     if (!postNumber)
         return bRet(error, tq.translate("deletePost", "Invalid post number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (password.isEmpty() && hashpass.isEmpty())
+        return bRet(error, tq.translate("deletePost", "Invalid password", "error"), false);
     try {
         odb::database *db = createConnection();
         if (!db)
             return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());
-        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == boardName
-                                                && odb::query<Thread>::number == postNumber));
-        odb::result<Thread>::iterator i = r.begin();
-        if (r.end() != i) {
-            quint64 threadId = i->id();
-            ++i;
-            if (r.end() != i)
-                return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
-            odb::result<Post> rr(db->query<Post>(odb::query<Post>::thread == threadId));
-            QStringList files;
-            for (odb::result<Post>::iterator ii = rr.begin(); ii != rr.end(); ++ii)
-                files += BeQt::deserialize(ii->files()).toStringList();
-            db->erase_query<Post>(odb::query<Post>::thread == threadId);
-            db->erase_query<Thread>(odb::query<Thread>::id == threadId);
-            Tools::deleteFiles(boardName, files);
-        } else {
-            odb::result<Post> rr(db->query<Post>(odb::query<Post>::board == boardName
-                                                 && odb::query<Post>::number == postNumber));
-            odb::result<Post>::iterator ii = rr.begin();
-            if (rr.end() == ii)
-                return bRet(error, tq.translate("deletePost", "No such post", "error"), false);
-            QStringList files = BeQt::deserialize(ii->files()).toStringList();
-            ++ii;
-            if (rr.end() != ii)
-                return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
-            db->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
-            Tools::deleteFiles(boardName, files);
+        odb::result<Post> r(db->query<Post>(odb::query<Post>::board == boardName
+                                            && odb::query<Post>::number == postNumber));
+        odb::result<Post>::iterator i = r.begin();
+        if (r.end() == i)
+            return bRet(error, tq.translate("deletePost", "No such post", "error"), false);
+        QByteArray ppwd = i->password();
+        QByteArray phps = i->hashpass();
+        ++i;
+        if (r.end() != i)
+            return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
+        if (password.isEmpty()) {
+            if (hashpass != phps && Database::registeredUserLevel(req, false) < RegisteredUser::AdminLevel)
+                return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
+        } else if (password != ppwd) {
+            return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
         }
+        if (!deletePostInternal(boardName, postNumber, error, tq.locale(), db))
+            return false;
         transaction.commit();
         return bRet(error, QString(), true);
-    }  catch (const odb::exception &e) {
+    } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
     }
 }
@@ -392,42 +445,6 @@ quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *err
     }
 }
 
-bool mayDeletePost(const QString &boardName, quint64 postNumber, const cppcms::http::request &req,
-                   const QByteArray &password, QString *error, const QLocale &l)
-{
-    TranslatorQt tq(l);
-    if (!AbstractBoard::boardNames().contains(boardName))
-        return bRet(error, tq.translate("mayDeletePost", "Invalid board name", "error"), false);
-    if (!postNumber)
-        return bRet(error, tq.translate("mayDeletePost", "Invalid post number", "error"), false);
-    if (password.isEmpty())
-        return bRet(error, tq.translate("mayDeletePost", "Invalid password", "error"), false);
-    try {
-        odb::database *db = createConnection();
-        if (!db)
-            return bRet(error, tq.translate("mayDeletePost", "Internal database error", "error"), false);
-        odb::transaction transaction(db->begin());
-        odb::result<Post> r(db->query<Post>(odb::query<Post>::board == boardName
-                                            && odb::query<Post>::number == postNumber));
-        odb::result<Post>::iterator i = r.begin();
-        if (r.end() == i)
-            return bRet(error, tq.translate("mayDeletePost", "No such post", "error"), false);
-        QByteArray ppwd = i->password();
-        QByteArray phps = i->hashpass();
-        ++i;
-        if (r.end() != i)
-            return bRet(error, tq.translate("mayDeletePost", "Internal database error", "error"), false);
-        if (password != ppwd && password != phps
-                && Database::registeredUserLevel(req, false) < RegisteredUser::AdminLevel) {
-            return bRet(error, tq.translate("mayDeletePost", "Incorrect password", "error"), false);
-        }
-        transaction.commit();
-        return bRet(error, QString(), true);
-    } catch (const odb::exception &e) {
-        return bRet(error, Tools::fromStd(e.what()), false);
-    }
-}
-
 QString posterIp(const QString &boardName, quint64 postNumber)
 {
     try {
@@ -454,11 +471,10 @@ QString posterIp(const QString &boardName, quint64 postNumber)
 
 int registeredUserLevel(const cppcms::http::request &req, bool trans)
 {
-    QString hp = Tools::hashPassString(req);
-    QByteArray hpba = Tools::toHashpass(hp);
-    if (hpba.isEmpty())
+    QByteArray hp = Tools::hashpass(req);
+    if (hp.isEmpty())
         return -1;
-    return registeredUserLevel(hpba, trans);
+    return registeredUserLevel(hp, trans);
 }
 
 int registeredUserLevel(const QByteArray &hashpass, bool trans)

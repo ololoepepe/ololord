@@ -5,8 +5,7 @@ function deletePost(boardName, postNumber, fromThread) {
     if (null === pwd)
         return;
     if (pwd.length < 1) {
-        pwd = getCookie("hashpass");
-        if (!pwd)
+        if (!getCookie("hashpass"))
             return alert(document.getElementById("notLoggedInText").value);
     } else if (!isHashpass(pwd)) {
         pwd = toHashpass(pwd);
@@ -21,26 +20,23 @@ function deletePost(boardName, postNumber, fromThread) {
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
-                var res = JSON.parse(xhr.responseText).result;
-                if (null === res) {
-                    alert("Error"); //TODO
-                } else if (res.length < 1) {
-                    var post = document.getElementById("post" + postNumber);
-                    if (!post) {
-                        if (!!fromThread) {
-                            var suffix = "thread/" + postNumber + ".html";
-                            window.location.href = window.location.href.replace(suffix, "");
-                        } else {
-                            reloadPage();
-                        }
-                        return;
+                var response = JSON.parse(xhr.responseText);
+                var err = response.error;
+                if (!!err)
+                    return alert(err);
+                var post = document.getElementById("post" + postNumber);
+                if (!post) {
+                    if (!!fromThread) {
+                        var suffix = "thread/" + postNumber + ".html";
+                        window.location.href = window.location.href.replace(suffix, "");
+                    } else {
+                        reloadPage();
                     }
-                    post.parentNode.removeChild(post);
-                } else {
-                    alert(res);
+                    return;
                 }
+                post.parentNode.removeChild(post);
             } else {
-                alert("Error: " + xhr.status); //TODO
+                alert(document.getElementById("ajaxErrorText").value + " " + xhr.status);
             }
         }
     };

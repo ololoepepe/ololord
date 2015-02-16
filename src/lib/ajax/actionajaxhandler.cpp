@@ -20,19 +20,14 @@ ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
     //
 }
 
-void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string pwd)
+void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string password)
 {
-    QString board = Tools::fromStd(boardName);
-    quint64 post = postNumber > 0 ? quint64(postNumber) : 0;
-    QByteArray password = Tools::toHashpass(Tools::fromStd(pwd));
-    const cppcms::http::request &req = server.request();
-    QLocale l = Tools::locale(req);
     QString err;
-    if (!Database::mayDeletePost(board, post, req, password, &err, l))
-        return server.return_result(Tools::toStd(err));
-    if (!Database::deletePost(board, post, &err, l))
-        return server.return_result(Tools::toStd(err));
-    server.return_result("");
+    if (!Database::deletePost(Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0, server.request(),
+                              Tools::toHashpass(Tools::fromStd(password)), &err)) {
+        return server.return_error(Tools::toStd(err));
+    }
+    server.return_result(true);
 }
 
 QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const

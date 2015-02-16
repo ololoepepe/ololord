@@ -24,7 +24,7 @@ class OLOLORD_EXPORT ActionAjaxHandler : public AbstractAjaxHandler
 public:
     explicit ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv);
 public:
-    void deletePost(std::string boardName, long long postNumber, std::string pwd);
+    void deletePost(std::string boardName, long long postNumber, std::string password);
     QList<Handler> handlers() const;
 };
 

@@ -258,9 +258,14 @@ QStringList fromStd(const std::list<std::string> &sl)
     return list;
 }
 
-QString hashPassString(const cppcms::http::request &req)
+QByteArray hashpass(const cppcms::http::request &req)
 {
-    return Tools::fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
+    return toHashpass(hashpassString(req));
+}
+
+QString hashpassString(const cppcms::http::request &req)
+{
+    return fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
 }
 
 bool isCaptchaValid(const QString &captcha)

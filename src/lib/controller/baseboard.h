@@ -35,6 +35,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     };
 public:
     std::string action;
+    std::string ajaxErrorText;
     std::string bannedForText;
     std::string bannerFileName;
     std::string bumpLimitReachedText;

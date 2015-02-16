@@ -87,7 +87,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.hideSearchFormText = ts.translate("initBaseThread", "Hide search form", "hideSearchFormText");
     c.localeLabelText = "Language:";
     c.locales = locales;
-    c.loggedIn = !Tools::hashPassString(req).isEmpty();
+    c.loggedIn = !Tools::hashpassString(req).isEmpty();
     c.loginButtonText = c.loggedIn ? ts.translate("initBase", "Logout", "loginButtonText")
                                    : ts.translate("initBase", "Login", "loginButtonText");
     c.loginLabelText = ts.translate("initBase", "Login:", "loginLabelText");
@@ -129,6 +129,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     if (c.pageTitle.empty() && currentThread)
         c.pageTitle = Tools::toStd(board->title(ts.locale()) + " - " + QString::number(currentThread));
     c.action = currentThread ? "create_post" : "create_thread";
+    c.ajaxErrorText = ts.translate("initBaseThread", "AJAX request returned status", "ajaxErrorText");
     c.bannedForText = ts.translate("initBaseThread", "User was banned for this post", "bannedForText");
     c.bannerFileName = Tools::toStd(board->bannerFileName());
     c.bumpLimitReachedText = ts.translate("initBaseThread", "Bump limit reached", "bumpLimitReachedText");

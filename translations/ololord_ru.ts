@@ -402,6 +402,44 @@ The default is 1.</source>
         <comment>error</comment>
         <translation>Нет такого поста</translation>
     </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+</context>
+<context>
+    <name>deletePostInternal</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
 </context>
 <context>
     <name>hBoard</name>
@@ -815,6 +853,11 @@ Your choice:</source>
         <comment>postFormInputTextPlaceholder</comment>
         <translation>Комментарий. Макс. длина %1</translation>
     </message>
+    <message>
+        <source>AJAX request returned status</source>
+        <comment>ajaxErrorText</comment>
+        <translation>AJAX-запрос вернул статус</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -1125,39 +1168,6 @@ The default is 1.</source>
     <message>
         <source>Failed to read configuration file</source>
         <translation>Не удалось прочитать файл конфигурации</translation>
-    </message>
-</context>
-<context>
-    <name>mayDeletePost</name>
-    <message>
-        <source>Invalid board name</source>
-        <comment>error</comment>
-        <translation>Неверное имя доски</translation>
-    </message>
-    <message>
-        <source>Invalid post number</source>
-        <comment>error</comment>
-        <translation>Неверный номер поста</translation>
-    </message>
-    <message>
-        <source>Invalid password</source>
-        <comment>error</comment>
-        <translation>Неправильный пароль</translation>
-    </message>
-    <message>
-        <source>Internal database error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
-    </message>
-    <message>
-        <source>No such post</source>
-        <comment>error</comment>
-        <translation>Нет такого поста</translation>
-    </message>
-    <message>
-        <source>Incorrect password</source>
-        <comment>error</comment>
-        <translation>Неправильный пароль</translation>
     </message>
 </context>
 <context>
