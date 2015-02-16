@@ -229,7 +229,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     unsigned int pageCount = 0;
     bool postingEn = postingEnabled();
     try {
-        odb::database *db = Database::createConnection();
+        QScopedPointer<odb::database> db(Database::createConnection());
         if (!db) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
@@ -310,7 +310,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     bool postingEn = false;
     QString pageTitle;
     try {
-        odb::database *db = Database::createConnection();
+        QScopedPointer<odb::database> db(Database::createConnection());
         if (!db) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));

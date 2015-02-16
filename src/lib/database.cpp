@@ -42,7 +42,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
     if (board.isEmpty() || (!AbstractBoard::boardNames().contains(board) && "*" != board))
         return bRet(error, tq.translate("banUserInternal", "Invalid board name", "error"), false);
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());
@@ -198,6 +198,9 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             db = createConnection();
         if (!db)
             return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+        QScopedPointer<odb::database> dbb;
+        if (trans)
+            dbb.reset(db);
         QScopedPointer<odb::transaction> transaction;
         if (trans)
             transaction.reset(new odb::transaction(db->begin()));
@@ -274,12 +277,14 @@ bool createPost(CreatePostParameters &p)
 {
     TranslatorQt tq(p.locale);
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         odb::transaction transaction(db->begin());
         QString err;
         QString desc;
-        if (!createPostInternal(db, p.request, p.params, p.files, p.bumpLimit, p.postLimit, &err, p.locale, &desc))
+        if (!createPostInternal(db.data(), p.request, p.params, p.files, p.bumpLimit, p.postLimit, &err, p.locale,
+                                &desc)) {
             return bRet(p.error, err, p.description, desc, false);
+        }
         transaction.commit();
         return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
@@ -290,7 +295,7 @@ bool createPost(CreatePostParameters &p)
 
 void createSchema()
 {
-    odb::database *db = createConnection();
+    QScopedPointer<odb::database> db(createConnection());
     if (!db)
         return;
     odb::connection_ptr c(db->connection());
@@ -306,11 +311,11 @@ quint64 createThread(CreateThreadParameters &p)
     QString boardName = p.params.value("board");
     TranslatorQt tq(p.locale);
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         odb::transaction transaction(db->begin());
         QString err;
         QString desc;
-        quint64 postNumber = incrementPostCounter(db, p.params.value("board"), &err, p.locale);
+        quint64 postNumber = incrementPostCounter(db.data(), p.params.value("board"), &err, p.locale);
         if (!postNumber)
             return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description, err, 0L);
         if (p.threadLimit) {
@@ -337,7 +342,7 @@ quint64 createThread(CreateThreadParameters &p)
                         for (odb::result<ThreadIdDateTimeFixed>::iterator k = atir.begin(); k != atir.end(); ++k)
                             alist << *k;
                         qSort(alist.begin(), alist.end(), &threadIdDateTimeFixedLessThan);
-                        if (!deletePostInternal(boardName, alist.last().number, p.description, p.locale, db))
+                        if (!deletePostInternal(boardName, alist.last().number, p.description, p.locale, db.data()))
                             return bRet(p.error, tq.translate("createThread", "Internal error", "error"), 0L);
                     }
                     odb::result<Thread> tr(db->query<Thread>(odb::query<Thread>::id == list.last().id));
@@ -355,7 +360,7 @@ quint64 createThread(CreateThreadParameters &p)
                     t.setArchived(true);
                     db->update(t);
                 } else {
-                    if (!deletePostInternal(boardName, list.last().number, p.description, p.locale, db))
+                    if (!deletePostInternal(boardName, list.last().number, p.description, p.locale, db.data()))
                         return bRet(p.error, tq.translate("createThread", "Internal error", "error"), 0L);
                 }
             }
@@ -363,7 +368,7 @@ quint64 createThread(CreateThreadParameters &p)
         QDateTime dt = QDateTime::currentDateTimeUtc();
         QSharedPointer<Thread> thread(new Thread(p.params.value("board"), postNumber, dt));
         db->persist(thread);
-        if (!createPostInternal(db, p.request, p.params, p.files, 0, 0, &err, p.locale, &desc, dt, postNumber))
+        if (!createPostInternal(db.data(), p.request, p.params, p.files, 0, 0, &err, p.locale, &desc, dt, postNumber))
             return bRet(p.error, err, p.description, desc, 0L);
         transaction.commit();
         return bRet(p.error, QString(), p.description, QString(), postNumber);
@@ -390,7 +395,7 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
     if (password.isEmpty() && hashpass.isEmpty())
         return bRet(error, tq.translate("deletePost", "Invalid password", "error"), false);
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());
@@ -410,7 +415,7 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         } else if (password != ppwd) {
             return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
         }
-        if (!deletePostInternal(boardName, postNumber, error, tq.locale(), db))
+        if (!deletePostInternal(boardName, postNumber, error, tq.locale(), db.data()))
             return false;
         transaction.commit();
         return bRet(error, QString(), true);
@@ -481,7 +486,7 @@ quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *err
 QString posterIp(const QString &boardName, quint64 postNumber)
 {
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return "";
         odb::transaction transaction(db->begin());
@@ -517,7 +522,7 @@ int registeredUserLevel(const QByteArray &hashpass, bool trans)
     if (!b)
         return -1;
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return -1;
         QScopedPointer<odb::transaction> transaction;
@@ -549,7 +554,7 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, QStri
     if (!b)
         return bRet(error, tq.translate("registerUser", "Invalid hashpass", "error"), false);
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("registerUser", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());
@@ -566,7 +571,7 @@ bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QStr
 {
     TranslatorQt tq(l);
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("setThreadFixed", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());
@@ -594,7 +599,7 @@ bool setThreadOpened(const QString &board, quint64 threadNumber, bool opened, QS
 {
     TranslatorQt tq(l);
     try {
-        odb::database *db = createConnection();
+        QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("setThreadOpened", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());

@@ -476,7 +476,7 @@ void initCommands()
         "  --expires|-e=<date> (optional), where <date> must be the expiration date in the following format:\n"
         "    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.\n"
         "Example:\n"
-        "  ban-user -i=192.168.0.2 -b=vg -l=1 \"-r=posting shit\" -e=01.04.2015");
+        "  ban-user -i=192.168.0.2 -b=vg -l=1 \"-r=posting shit\" -e=01.04.2015:22");
     BTerminal::setCommandHelp("ban-user", ch);
     //
     BTerminal::installHandler("ban-poster", &handleBanPoster);
@@ -497,7 +497,7 @@ void initCommands()
         "  --expires|-e=<date> (optional), where <date> must be the expiration date in the following format:\n"
         "    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.\n"
         "Example:\n"
-        "  ban-poster -i=192.168.0.2 -b=vg -l=1 \"-r=posting shit\" -e=01.04.2015");
+        "  ban-poster -i=192.168.0.2 -b=vg -l=1 \"-r=posting shit\" -e=01.04.2015:22");
     BTerminal::setCommandHelp("ban-poster", ch);
     //
     BTerminal::installHandler("close-thread", &handleCloseThread);

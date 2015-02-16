@@ -2,3 +2,4 @@
 * Add ability to hide posts/threads
 [done] Add ability for admins to delete any posts
 [done] Implement thread archiving
+[done] Fix database connection cleanup

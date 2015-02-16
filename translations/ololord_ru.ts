@@ -892,7 +892,7 @@ The parameters are:
     dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
 Example:
   ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015</source>
-        <translation>Забанить пользователя.
+        <translation type="obsolete">Забанить пользователя.
 Параметры:
   --ip-address|-i=&lt;ip&gt;, где &lt;ip&gt; должен быть правильным IP-адресом.
   --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
@@ -924,7 +924,7 @@ The parameters are:
     dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
 Example:
   ban-poster -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015</source>
-        <translation>Забанить пользователя.
+        <translation type="obsolete">Забанить пользователя.
 Параметры:
   --source-board|-s=&lt;board&gt;, где &lt;board&gt; должна быть одной из существующих досок.
   --post-number|-p=&lt;number&gt;, где &lt;number&gt; должен быть номером поста.
@@ -985,6 +985,70 @@ If [cache-name] is not specified, all caches are cleared.</source>
 If &lt;post-number&gt; is a thread, that thread and all posts in it are deleted.</source>
         <translation>Удаляет пост с номером &lt;post-number&gt; на доске &lt;board&gt;.
 Если &lt;post-number&gt; является тредом, этот тред будет удален вместе со всеми постами в нем.</translation>
+    </message>
+    <message>
+        <source>Ban a user.
+The parameters are:
+  --ip-address|-i=&lt;ip&gt;, where &lt;ip&gt; must be a valid IP address.
+  --board|-b=&lt;board&gt; (optional), where &lt;board&gt; must be one of the existing boards or *.
+    The user will be banned for the board specified or for all boards in case of *).
+    The default is *.
+  --level|-l=&lt;level&gt; (optional), where &lt;level&gt; must be one of the following:
+    0 - user is not banned,
+    1 - user is banned from posting,
+    10 - user is banned from reading.
+  --reason|-r=&lt;reason&gt; (optional), where &lt;reason&gt; is a reason for (un)banning.
+  --expires|-e=&lt;date&gt; (optional), where &lt;date&gt; must be the expiration date in the following format:
+    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
+Example:
+  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015:22</source>
+        <translation>Забанить пользователя.
+Параметры:
+  --ip-address|-i=&lt;ip&gt;, где &lt;ip&gt; должен быть правильным IP-адресом.
+  --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
+    Пользователь будет забанен на указанной доске, либо на всех досках, если указано *).
+  --level|-l=&lt;level&gt; (опционально), где &lt;level&gt; должен быть одним из следующих:
+    0 - пользователь не забанен,
+    1 - пользователю запрещено постить,
+    10 - пользователю запрещено читать.
+  --reason|-r=&lt;reason&gt; (опционально), где &lt;reason&gt; - причниа (раз)бана.
+  --expires|-e=&lt;date&gt; (опционально), где &lt;date&gt; должна быть датой окончания бана в следующем формате:
+    dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
+Пример:
+  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015:22</translation>
+    </message>
+    <message>
+        <source>Ban a user.
+The parameters are:
+  --source-board|-s=&lt;board&gt;, where &lt;board&gt; must be one of the existing boards.
+  --post-number|-p=&lt;number&gt;, where &lt;number&gt; must be a number of a post.
+  --board|-b=&lt;board&gt; (optional), where &lt;board&gt; must be one of the existing boards or *.
+    The user will be banned for the board specified or for all boards in case of *).
+    The default is *.
+  --level|-l=&lt;level&gt; (optional), where &lt;level&gt; must be one of the following:
+    0 - user is not banned,
+    1 - user is banned from posting,
+    10 - user is banned from reading.
+  --reason|-r=&lt;reason&gt; (optional), where &lt;reason&gt; is a reason for (un)banning.
+  --expires|-e=&lt;date&gt; (optional), where &lt;date&gt; must be the expiration date in the following format:
+    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
+Example:
+  ban-poster -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015:22</source>
+        <translation>Забанить пользователя.
+Параметры:
+  --source-board|-s=&lt;board&gt;, где &lt;board&gt; должна быть одной из существующих досок.
+  --post-number|-p=&lt;number&gt;, где &lt;number&gt; должен быть номером поста.
+  --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
+    Пользователь будет забанен на указанной доске, либо на всех досках, если указано *).
+  --level|-l=&lt;level&gt; (опционально), где &lt;level&gt; должен быть одним из следующих:
+    0 - пользователь не забанен,
+    1 - пользователю запрещено постить,
+    10 - пользователю запрещено читать.
+  --reason|-r=&lt;reason&gt; (опционально), где &lt;reason&gt; - причниа (раз)бана.
+  --expires|-e=&lt;date&gt; (опционально), где &lt;date&gt; должна быть датой окончания бана в следующем формате:
+    dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
+Пример:
+  ban-poster -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015:22</translation>
     </message>
 </context>
 <context>
