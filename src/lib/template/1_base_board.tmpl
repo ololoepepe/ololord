@@ -104,6 +104,22 @@
 <% end %>
 <% end template %>
 
+<% template postFile(Content::BaseBoard::File file) %>
+<td class="postFile">
+    <div class="postFileName">
+        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"><%= file.sourceName %></a>
+    </div>
+    <div class="postFileSize">
+        (<%= file.size %>)
+    </div>
+    <div>
+        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
+            <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+        </a>
+    </div>
+</td>
+<% end template %>
+
 <% template boardTexts() %>
 <input type="hidden" id="enterPasswordText" value="<%= enterPasswordText %>" />
 <input type="hidden" id="notLoggedInText" value="<%= notLoggedInText %>" />

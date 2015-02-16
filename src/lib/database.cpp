@@ -94,15 +94,15 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
     }
 }
 
-static bool createPostInternal(odb::database *db, const cppcms::http::request &req, unsigned int bumpLimit,
-                               unsigned int postLimit, QString *error, const QLocale &l, QString *description,
-                               QDateTime dt = QDateTime(), quint64 threadNumber = 0L)
+static bool createPostInternal(odb::database *db, const cppcms::http::request &req, const Tools::PostParameters &param,
+                               const Tools::FileList &files, unsigned int bumpLimit, unsigned int postLimit,
+                               QString *error, const QLocale &l, QString *description, QDateTime dt = QDateTime(),
+                               quint64 threadNumber = 0L)
 {
-    Tools::PostParameters params = Tools::postParameters(req);
-    QString boardName = params.value("board");
+    QString boardName = param.value("board");
     if (!threadNumber)
-        threadNumber = params.value("thread").toULongLong();
-    Tools::Post post = Tools::toPost(req);
+        threadNumber = param.value("thread").toULongLong();
+    Tools::Post post = Tools::toPost(param, files);
     TranslatorQt tq(l);
     try {
         if (!db) {
@@ -216,21 +216,20 @@ odb::database *createConnection()
     return new odb::sqlite::database(Tools::toStd(fileName), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
 }
 
-bool createPost(const cppcms::http::request &req, unsigned int bumpLimit, unsigned int postLimit, QString *error,
-                const QLocale &l, QString *description)
+bool createPost(CreatePostParameters &p)
 {
-    TranslatorQt tq(l);
+    TranslatorQt tq(p.locale);
     try {
         odb::database *db = createConnection();
         odb::transaction transaction(db->begin());
         QString err;
         QString desc;
-        if (!createPostInternal(db, req, bumpLimit, postLimit, &err, l, &desc))
-            return bRet(error, err, description, desc, false);
+        if (!createPostInternal(db, p.request, p.params, p.files, p.bumpLimit, p.postLimit, &err, p.locale, &desc))
+            return bRet(p.error, err, p.description, desc, false);
         transaction.commit();
-        return bRet(error, QString(), description, QString(), true);
+        return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
-        return bRet(error, tq.translate("createPost", "Internal error", "error"), description,
+        return bRet(p.error, tq.translate("createPost", "Internal error", "error"), p.description,
                     Tools::fromStd(e.what()), false);
     }
 }
@@ -248,24 +247,22 @@ void createSchema()
     c->execute("PRAGMA foreign_keys=ON");
 }
 
-quint64 createThread(const cppcms::http::request &req, unsigned int threadLimit, QString *error, const QLocale &l,
-                     QString *description)
+quint64 createThread(CreateThreadParameters &p)
 {
-    Tools::PostParameters params = Tools::postParameters(req);
-    QString boardName = params.value("board");
-    TranslatorQt tq(l);
+    QString boardName = p.params.value("board");
+    TranslatorQt tq(p.locale);
     try {
         odb::database *db = createConnection();
         odb::transaction transaction(db->begin());
         QString err;
         QString desc;
-        quint64 postNumber = incrementPostCounter(db, params.value("board"), &err, tq.locale());
+        quint64 postNumber = incrementPostCounter(db, p.params.value("board"), &err, p.locale);
         if (!postNumber)
-            return bRet(error, tq.translate("createThread", "Internal error", "error"), description, err, 0L);
-        if (threadLimit) {
+            return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description, err, 0L);
+        if (p.threadLimit) {
             odb::result<ThreadCount> tcr(db->query<ThreadCount>(odb::query<Thread>::board == boardName));
             const ThreadCount &threadCount(*tcr.begin());
-            if (threadCount.count >= (int) threadLimit) {
+            if (threadCount.count >= (int) p.threadLimit) {
                 odb::result<ThreadIdDateTimeFixed> tir(db->query<ThreadIdDateTimeFixed>(
                                                            odb::query<Thread>::board == boardName));
                 QList<ThreadIdDateTimeFixed> list;
@@ -277,14 +274,14 @@ quint64 createThread(const cppcms::http::request &req, unsigned int threadLimit,
             }
         }
         QDateTime dt = QDateTime::currentDateTimeUtc();
-        QSharedPointer<Thread> thread(new Thread(params.value("board"), postNumber, dt));
+        QSharedPointer<Thread> thread(new Thread(p.params.value("board"), postNumber, dt));
         db->persist(thread);
-        if (!createPostInternal(db, req, 0, 0, &err, l, &desc, dt, postNumber))
-            return bRet(error, err, description, desc, 0L);
+        if (!createPostInternal(db, p.request, p.params, p.files, 0, 0, &err, p.locale, &desc, dt, postNumber))
+            return bRet(p.error, err, p.description, desc, 0L);
         transaction.commit();
-        return bRet(error, QString(), description, QString(), postNumber);
+        return bRet(p.error, QString(), p.description, QString(), postNumber);
     } catch (const odb::exception &e) {
-        return bRet(error, tq.translate("createThread", "Internal error", "error"), description,
+        return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
                     Tools::fromStd(e.what()), 0L);
     }
 }

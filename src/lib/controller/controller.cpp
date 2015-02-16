@@ -14,6 +14,7 @@
 #include "translator.h"
 
 #include <BCoreApplication>
+#include <BeQt>
 
 #include <QChar>
 #include <QDateTime>
@@ -123,6 +124,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     if (!board)
         return;
     TranslatorStd ts(req);
+    TranslatorQt tq(req);
     initBase(c, req, pageTitle);
     if (c.pageTitle.empty() && currentThread)
         c.pageTitle = Tools::toStd(board->title(ts.locale()) + " - " + QString::number(currentThread));
@@ -146,8 +148,11 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormButtonSubmit = ts.translate("initBaseThread", "Send", "postFormButtonSubmit");
     c.postFormInputFile = ts.translate("initBaseThread", "File:", "postFormInputFile");
     c.postFormInputText = ts.translate("initBaseThread", "Post:", "postFormInputText");
-    c.postFormInputTextPlaceholder = ts.translate("initBaseThread", "Comment. Max length 15000",
-                                                  "postFormInputTextPlaceholder");
+    SettingsLocker s;
+    int maxText = s->value("Board/" + board->name() + "/max_text_length",
+                           s->value("Board/max_text_length", 15000)).toInt();
+    c.postFormInputTextPlaceholder = Tools::toStd(tq.translate("initBaseThread", "Comment. Max length %1",
+                                                               "postFormInputTextPlaceholder").arg(maxText));
     c.postFormLabelCaptcha = ts.translate("initBaseThread", "Captcha:", "postFormLabelCaptcha");
     c.postFormLabelEmail = ts.translate("initBaseThread", "E-mail:", "postFormLabelEmail");
     c.postFormLabelName = ts.translate("initBaseThread", "Name:", "postFormLabelName");
@@ -286,34 +291,64 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
     }
 }
 
-bool testParams(cppcms::application &app, const Tools::PostParameters &params)
+bool testParams(cppcms::application &app, const Tools::PostParameters &params, const Tools::FileList &files,
+                const QString &boardName)
 {
+    SettingsLocker s;
     TranslatorQt tq(app.request());
-    if (params.value("email").length() > 150) {
+    int maxEmail = s->value("Board/" + boardName + "/max_email_length",
+                            s->value("Board/max_email_length", 150)).toInt();
+    int maxName = s->value("Board/" + boardName + "/max_name_length",
+                           s->value("Board/max_name_length", 50)).toInt();
+    int maxSubject = s->value("Board/" + boardName + "/max_subject_length",
+                              s->value("Board/max_subject_length", 150)).toInt();
+    int maxText = s->value("Board/" + boardName + "/max_text_length",
+                           s->value("Board/max_text_length", 15000)).toInt();
+    int maxPassword = s->value("Board/" + boardName + "/max_password_length",
+                                s->value("Board/max_password_length", 150)).toInt();
+    int maxFileCount = s->value("Board/" + boardName + "/max_file_count",
+                                s->value("Board/max_file_count", 1)).toInt();
+    int maxFileSize = s->value("Board/" + boardName + "/max_file_size",
+                               s->value("Board/max_file_size", 10 * BeQt::Megabyte)).toInt();
+    if (params.value("email").length() > maxEmail) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "E-mail is too long", "description"));
         Tools::log(app, "E-mail is too long");
         return false;
-    } else if (params.value("name").length() > 50) {
+    } else if (params.value("name").length() > maxName) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Name is too long", "description"));
         Tools::log(app, "Name is too long");
         return false;
-    } else if (params.value("subject").length() > 150) {
+    } else if (params.value("subject").length() > maxSubject) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Subject is too long", "description"));
         Tools::log(app, "Subject is too long");
         return false;
-    } else if (params.value("text").length() > 15000) {
+    } else if (params.value("text").length() > maxText) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Comment is too long", "description"));
         Tools::log(app, "Comment is too long");
         return false;
-    } else if (params.value("password").length() > 150) {
+    } else if (params.value("password").length() > maxPassword) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Password is too long", "description"));
         Tools::log(app, "Password is too long");
         return false;
+    } else if (files.size() > maxFileCount) {
+        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
+                    tq.translate("testParams", "Too many files", "description"));
+        Tools::log(app, "File is too big");
+        return false;
+    } else {
+        foreach (const Tools::File &f, files) {
+            if (f.data.size() > maxFileSize) {
+                renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
+                            tq.translate("testParams", "File is too big", "description"));
+                Tools::log(app, "File is too big");
+                return false;
+            }
+        }
     }
     return true;
 }

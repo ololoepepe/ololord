@@ -592,6 +592,27 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Maximum thread count per board.\n"
                                                "When the limit is reached, the most old threads get deleted.\n"
                                                "The default is 200."));
+    nn = new BSettingsNode(QVariant::UInt, "max_email_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the e-mail field.\n"
+                                               "The default is 150."));
+    nn = new BSettingsNode(QVariant::UInt, "max_name_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the name field.\n"
+                                               "The default is 50."));
+    nn = new BSettingsNode(QVariant::UInt, "max_subject_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the subject field.\n"
+                                               "The default is 150."));
+    nn = new BSettingsNode(QVariant::UInt, "max_text_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the text field.\n"
+                                               "The default is 15000."));
+    nn = new BSettingsNode(QVariant::UInt, "max_password_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the password field.\n"
+                                               "The default is 150."));
+    nn = new BSettingsNode(QVariant::UInt, "max_file_size", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum attached file size (in bytes).\n"
+                                               "The default is 10485760 (10 MB)."));
+    nn = new BSettingsNode(QVariant::UInt, "max_file_count", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum attached file count.\n"
+                                               "The default is 1."));
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"

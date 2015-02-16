@@ -1,6 +1,4 @@
-* Make post form parameters' maximum lengths configurable
-* Make maximum file size configurable
-? Convert special HTML sequences (&#XXXX;) to HTML (not sure if needed)
+* Add ability to post files of different types
 [done] Implement search
 [done] Use plugins for routes
 [done] Highlight moders' names
@@ -10,3 +8,5 @@
 [done] Implement post/thread deletion
 [done] Add API (AJAX requests support)
 [done] Fix file deletion
+[done] Make post form parameters' maximum lengths configurable
+[done] Make maximum file size and count configurable

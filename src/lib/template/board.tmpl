@@ -32,25 +32,18 @@
         <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
-            #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>">
-                <%= post.number %>
-            </a>
+            #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
         <% else %>
-            #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>">
-                <%= post.number %>
-            </a>
+            #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
         <% end %>
         <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>');">
         <% if ( post.number == thread.opPost.number ) %>
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" />
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
         <% else %>
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" />
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
         <% end %>
-        </a>
         <% if ( post.number == thread.opPost.number ) %>
-            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html">
-                <%= toThread %>
-            </a>]
+            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
         <% end %>
         <% if ( post.number == thread.opPost.number && thread.postLimitReached() ) %>
             <span class="postLimitReached"><%= postLimitReachedText %></span>
@@ -63,21 +56,7 @@
             <tr>
                 <%foreach file in post.files %>
                     <% item %>
-                        <td class="postFile">
-                            <div>
-                                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-                                    <%= file.sourceName %>
-                                </a>
-                            </div class="postFileName">
-                            <div class="postFileSize">
-                                (<%= file.size %>)
-                            </div>
-                            <div>
-                                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-                                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
-                                </a>
-                            </div>
-                        </td>
+                        <% include postFile(file) %>
                     <% end %>
                 <% end %>
                 <td class="postText">

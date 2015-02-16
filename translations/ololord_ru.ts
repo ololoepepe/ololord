@@ -58,6 +58,104 @@
         <comment>description</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>Determines if captcha is enabled on this board.
+The default is true.</source>
+        <translation>Определяет, включена ли капча на этой доске.
+По умолчанию true.</translation>
+    </message>
+    <message>
+        <source>Number of threads per one page on this board.
+The default is 20.</source>
+        <translation>Число тредов на одну страницу для этой доски.
+По умолчанию 20.</translation>
+    </message>
+    <message>
+        <source>Determines if posting is enabled on this board.
+The default is true.</source>
+        <translation>Определяет, разрешен ли постинг на этой доске.
+По умолчанию true.</translation>
+    </message>
+    <message>
+        <source>Maximum bump count on this board.
+When a thread has reached it&apos;s bump limit, it will not be raised anymore.
+The default is 500.</source>
+        <translation>Максимальное количество бампов на этой доске.
+Когда тред достигает своего бамплимита, он больше не будет поднят.
+По умолчанию 500.</translation>
+    </message>
+    <message>
+        <source>Maximum post count per thread on this board.
+The default is 1000.</source>
+        <translation>Максимальное количество постов в треде на этой доске.
+По умолчанию 1000.</translation>
+    </message>
+    <message>
+        <source>Maximum thread count for this board.
+When the limit is reached, the most old threads get deleted.
+The default is 200.</source>
+        <translation>Максимальное количество тредов на этой доске.
+Когда лимит достигнут, наиболее старые треды удаляются.
+По умолчанию 200.</translation>
+    </message>
+    <message>
+        <source>Determines if this board is hidden.
+A hidden board will not appear in navigation bars.
+The default is false.</source>
+        <translation>Определяет, является ли данная доска скрытой.
+Скрытая доска не отображается на панелях навигации.
+По умолчанию false.</translation>
+    </message>
+    <message>
+        <source>Determines if this board is enabled.
+A disabled board will not be accessible by any means.
+The default is true.</source>
+        <translation>Определяет, включена ли эта доска.
+Отключенная доска не будет доступна никаким способом.
+По умолчанию true.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the e-mail field for this board.
+The default is 150.</source>
+        <translation>Максимальная длина поля эл. почты на этой доске.
+По умолчанию 150.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the name field for this board.
+The default is 50.</source>
+        <translation>Максимальная длина поля имени на этой доске.
+По умолчанию 50.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the subject field for this board.
+The default is 150.</source>
+        <translation>Максимальная длина поля темы на этой доске.
+По умолчанию 150.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the text field for this board.
+The default is 15000.</source>
+        <translation>Максимальная длина поля текста на этой доске.
+По умолчанию 15000.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the password field for this board.
+The default is 150.</source>
+        <translation>Максимальная длина поля пароля на этой доске.
+По умолчанию 150.</translation>
+    </message>
+    <message>
+        <source>Maximum attached file size (in bytes) for this board.
+The default is 10485760 (10 MB).</source>
+        <translation>Максимальный размер прикрепленного файла (в байтах) на этой доске.
+По умолчанию 10485760 (10 МБ).</translation>
+    </message>
+    <message>
+        <source>Maximum attached file count for this board.
+The default is 1.</source>
+        <translation>Максимальное количество прикрепленных файлов на этой доске.
+По умолчанию 1.</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -638,11 +736,6 @@ Your choice:</source>
         <translation>Пост:</translation>
     </message>
     <message>
-        <source>Comment. Max length 15000</source>
-        <comment>postFormInputTextPlaceholder</comment>
-        <translation>Комментарий. Макс. длина 15000</translation>
-    </message>
-    <message>
         <source>Captcha:</source>
         <comment>postFormLabelCaptcha</comment>
         <translation>Captcha:</translation>
@@ -717,64 +810,10 @@ Your choice:</source>
         <comment>notLoggedInText</comment>
         <translation>Вы не залогинены!</translation>
     </message>
-</context>
-<context>
-    <name>initBoards</name>
     <message>
-        <source>Determines if captcha is enabled on this board.
-The default is true.</source>
-        <translation>Определяет, включена ли капча на этой доске.
-По умолчанию true.</translation>
-    </message>
-    <message>
-        <source>Number of threads per one page on this board.
-The default is 20.</source>
-        <translation>Число тредов на одну страницу для этой доски.
-По умолчанию 20.</translation>
-    </message>
-    <message>
-        <source>Determines if posting is enabled on this board.
-The default is true.</source>
-        <translation>Определяет, разрешен ли постинг на этой доске.
-По умолчанию true.</translation>
-    </message>
-    <message>
-        <source>Maximum bump count on this board.
-When a thread has reached it&apos;s bump limit, it will not be raised anymore.
-The default is 500.</source>
-        <translation>Максимальное количество бампов на этой доске.
-Когда тред достигает своего бамплимита, он больше не будет поднят.
-По умолчанию 500.</translation>
-    </message>
-    <message>
-        <source>Maximum post count per thread on this board.
-The default is 1000.</source>
-        <translation>Максимальное количество постов в треде на этой доске.
-По умолчанию 1000.</translation>
-    </message>
-    <message>
-        <source>Maximum thread count for this board.
-When the limit is reached, the most old threads get deleted.
-The default is 200.</source>
-        <translation>Максимальное количество тредов на этой доске.
-Когда лимит достигнут, наиболее старые треды удаляются.
-По умолчанию 200.</translation>
-    </message>
-    <message>
-        <source>Determines if this board is hidden.
-A hidden board will not appear in navigation bars.
-The default is false.</source>
-        <translation>Определяет, является ли данная доска скрытой.
-Скрытая доска не отображается на панелях навигации.
-По умолчанию false.</translation>
-    </message>
-    <message>
-        <source>Determines if this board is enabled.
-A disabled board will not be accessible by any means.
-The default is true.</source>
-        <translation>Определяет, включена ли эта доска.
-Отключенная доска не будет доступна никаким способом.
-По умолчанию true.</translation>
+        <source>Comment. Max length %1</source>
+        <comment>postFormInputTextPlaceholder</comment>
+        <translation>Комментарий. Макс. длина %1</translation>
     </message>
 </context>
 <context>
@@ -1003,6 +1042,48 @@ The default value is %1.</source>
 Apperas in the HTML pages.</source>
         <translation>Открытый ключ API поискового сервиса.
 Появляется в HTML-страницах.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the e-mail field.
+The default is 150.</source>
+        <translation>Максимальная длина поля эл. почты.
+По умолчанию 150.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the name field.
+The default is 50.</source>
+        <translation>Максимальная длина поля имени.
+По умолчанию 50.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the subject field.
+The default is 150.</source>
+        <translation>Максимальная длина полятемы.
+По умолчанию 150.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the text field.
+The default is 15000.</source>
+        <translation>Максимальная длина поля текста.
+По умолчанию 15000.</translation>
+    </message>
+    <message>
+        <source>Maximum length of the password field.
+The default is 150.</source>
+        <translation>Максимальная длина поля пароля.
+По умолчанию 150.</translation>
+    </message>
+    <message>
+        <source>Maximum attached file size (in bytes).
+The default is 10485760 (10 MB).</source>
+        <translation>Максимальный размер прикрепленного файлв (в байтах).
+По умолчанию 10485760 (10 МБ).</translation>
+    </message>
+    <message>
+        <source>Maximum attached file count.
+The default is 1.</source>
+        <translation>Максимальное количество прикрепленных файлов.
+По умолчанию 1.</translation>
     </message>
 </context>
 <context>
@@ -1348,6 +1429,16 @@ Apperas in the HTML pages.</source>
         <source>Password is too long</source>
         <comment>description</comment>
         <translation>Пароль слишком длинный</translation>
+    </message>
+    <message>
+        <source>Too many files</source>
+        <comment>description</comment>
+        <translation>Слишком много файлов</translation>
+    </message>
+    <message>
+        <source>File is too big</source>
+        <comment>description</comment>
+        <translation>Файл слишком большой</translation>
     </message>
 </context>
 <context>

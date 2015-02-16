@@ -160,7 +160,9 @@ void AbstractBoard::createPost(cppcms::application &app)
     cppcms::http::request &req = app.request();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return;
-    if (!Controller::testParams(app, Tools::postParameters(req)))
+    Tools::PostParameters params = Tools::postParameters(req);
+    Tools::FileList files = Tools::postFiles(req);
+    if (!Controller::testParams(app, params, files, name()))
         return;
     TranslatorQt tq(req);
     if (!Tools::postingEnabled(name())) {
@@ -169,7 +171,12 @@ void AbstractBoard::createPost(cppcms::application &app)
     }
     QString err;
     QString desc;
-    if (!Database::createPost(req, bumpLimit(), postLimit(), &err, tq.locale(), &desc))
+    Database::CreatePostParameters p(req, params, files, tq.locale());
+    p.bumpLimit = bumpLimit();
+    p.postLimit = postLimit();
+    p.error = &err;
+    p.description = &desc;
+    if (!Database::createPost(p))
         return Controller::renderError(app, err, desc);
     quint64 threadNumber = Tools::postParameters(req).value("thread").toULongLong();
     Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html");
@@ -182,7 +189,9 @@ void AbstractBoard::createThread(cppcms::application &app)
     cppcms::http::request &req = app.request();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return;
-    if (!Controller::testParams(app, Tools::postParameters(req)))
+    Tools::PostParameters params = Tools::postParameters(req);
+    Tools::FileList files = Tools::postFiles(req);
+    if (!Controller::testParams(app, params, files, name()))
         return;
     TranslatorQt tq(req);
     if (!Tools::postingEnabled(name())) {
@@ -191,7 +200,11 @@ void AbstractBoard::createThread(cppcms::application &app)
     }
     QString err;
     QString desc;
-    quint64 threadNumber = Database::createThread(req, threadLimit(), &err, tq.locale(), &desc);
+    Database::CreateThreadParameters p(req, params, files, tq.locale());
+    p.threadLimit = threadLimit();
+    p.error = &err;
+    p.description = &desc;
+    quint64 threadNumber = Database::createThread(p);
     if (!threadNumber)
         return Controller::renderError(app, err, desc);
     Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html");
@@ -445,34 +458,62 @@ void AbstractBoard::initBoards(bool reinit)
     foreach (const QString &boardName, boards.keys()) {
         BSettingsNode *nn = new BSettingsNode(boardName, n);
         BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "captcha_enabled", nn);
-        nnn->setDescription(BTranslation::translate("initBoards", "Determines if captcha is enabled on this board.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if captcha is enabled on this board.\n"
                                                     "The default is true."));
         nnn = new BSettingsNode(QVariant::UInt, "threads_per_page", nn);
-        nnn->setDescription(BTranslation::translate("initBoards", "Number of threads per one page on this board.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Number of threads per one page on this board.\n"
                                                     "The default is 20."));
         nnn = new BSettingsNode(QVariant::Bool, "posting_enabled", nn);
-        nnn->setDescription(BTranslation::translate("initBoards", "Determines if posting is enabled on this board.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if posting is enabled on this board.\n"
                                                     "The default is true."));
         nnn = new BSettingsNode(QVariant::UInt, "bump_limit", nn);
-        nnn->setDescription(BTranslation::translate("initBoards", "Maximum bump count on this board.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum bump count on this board.\n"
                                                     "When a thread has reached it's bump limit, "
                                                     "it will not be raised anymore.\n"
                                                     "The default is 500."));
         nnn = new BSettingsNode(QVariant::UInt, "post_limit", nn);
-        nnn->setDescription(BTranslation::translate("initBoards", "Maximum post count per thread on this board.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum post count per thread on this board.\n"
                                                     "The default is 1000."));
         nnn = new BSettingsNode(QVariant::UInt, "thread_limit", nn);
-        nnn->setDescription(BTranslation::translate("initBoards", "Maximum thread count for this board.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum thread count for this board.\n"
                                                     "When the limit is reached, the most old threads get deleted.\n"
                                                     "The default is 200."));
         nnn = new BSettingsNode(QVariant::Bool, "hidden", nn);
-        nnn->setDescription(BTranslation::translate("initBoards", "Determines if this board is hidden.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if this board is hidden.\n"
                                                     "A hidden board will not appear in navigation bars.\n"
                                                     "The default is false."));
         nnn = new BSettingsNode(QVariant::Bool, "enabled", nn);
-        nnn->setDescription(BTranslation::translate("initBoards", "Determines if this board is enabled.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if this board is enabled.\n"
                                                     "A disabled board will not be accessible by any means.\n"
                                                     "The default is true."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_email_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the e-mail field for this board.\n"
+                                                    "The default is 150."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_name_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the name field for this board.\n"
+                                                    "The default is 50."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_subject_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the subject field for this board.\n"
+                                                    "The default is 150."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_text_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the text field for this board.\n"
+                                                    "The default is 15000."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_password_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the password field for this board.\n"
+                                                    "The default is 150."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_file_size", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum attached file size (in bytes) for this board.\n"
+                                                    "The default is 10485760 (10 MB)."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_file_count", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum attached file count for this board.\n"
+                                                    "The default is 1."));
     }
     if (!reinit)
         qAddPostRoutine(&cleanupBoards);

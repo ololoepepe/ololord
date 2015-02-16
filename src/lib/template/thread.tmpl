@@ -39,34 +39,18 @@
         <% end %>
         <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
         <% if ( op ) %>
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" />
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
         <% else %>
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" />
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
         <% end %>
-        </a>
     </div>
     <table class="threadPosts">
         <tbody>
             <tr>
                 <%foreach file in post.files %>
                     <% item %>
-                        <td class="postFile">
-                            <div class="postFileName">
-                                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-                                    <%= file.sourceName %>
-                                </a>
-                            </div>
-                            <div class="postFileSize">
-                                (<%= file.size %>)
-                            </div>
-                            <div>
-                                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-                                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
-                                </a>
-                            </div>
-                        </td>
+                        <% include postFile(file) %>
                     <% end %>
-                <% empty %>
                 <% end %>
                 <td class="postText">
                     <blockquote><%= post.text | raw %></blockquote>
