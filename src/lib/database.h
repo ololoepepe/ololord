@@ -59,7 +59,7 @@ OLOLORD_EXPORT quint64 incrementPostCounter(odb::database *db, const QString &bo
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *error = 0,
                                       const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool mayDeletePost(const QString &boardName, quint64 postNumber, const QString &password,
+OLOLORD_EXPORT bool mayDeletePost(const QString &boardName, quint64 postNumber, const QByteArray &password,
                                   QString *error = 0, const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT int registeredUserLevel(const cppcms::http::request &req);

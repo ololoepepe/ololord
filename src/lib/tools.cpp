@@ -224,10 +224,20 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
-bool deleteFiles(const FileList &files)
+void deleteFiles(const QString &boardName, const QStringList &fileNames)
 {
-    //TODO
-    return false;
+    if (boardName.isEmpty())
+        return;
+    QString path = storagePath() + "/img/" + boardName;
+    QFileInfo fi(path);
+    if (!fi.exists() || !fi.isDir())
+        return;
+    foreach (const QString &fn, fileNames) {
+        QFile::remove(path + "/" + fn);
+        QFileInfo fii(fn);
+        QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
+        QFile::remove(path + "/" + fii.baseName() + "s." + suff);
+    }
 }
 
 QLocale fromStd(const std::locale &l)
@@ -333,7 +343,7 @@ FileList postFiles(const cppcms::http::request &request)
         char *buff = new char[f->size()];
         in.read(buff, f->size());
         file.data = QByteArray::fromRawData(buff, f->size());
-        file.fileName = fromStd(f->filename());
+        file.fileName = QFileInfo(fromStd(f->filename())).fileName();
         file.formFieldName = fromStd(f->name());
         file.mimeType = fromStd(f->mime());
         list << file;
@@ -420,7 +430,7 @@ QString saveFile(const File &f, const QString &boardName, bool *ok)
         suffix = "png";
     if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
         return bRet(ok, false, QString());
-    return bRet(ok, true, sfn);
+    return bRet(ok, true, QFileInfo(sfn).fileName());
 }
 
 QString storagePath()

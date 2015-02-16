@@ -1,6 +1,5 @@
 * Make post form parameters' maximum lengths configurable
 * Make maximum file size configurable
-* Check for file being an image
 ? Convert special HTML sequences (&#XXXX;) to HTML (not sure if needed)
 [done] Implement search
 [done] Use plugins for routes
@@ -10,3 +9,4 @@
 [done] Add ability to delete posts from the command line
 [done] Implement post/thread deletion
 [done] Add API (AJAX requests support)
+[done] Fix file deletion

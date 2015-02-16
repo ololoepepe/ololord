@@ -78,7 +78,7 @@ OLOLORD_EXPORT QString countryCode(const QString &ip);
 OLOLORD_EXPORT QString countryCode(const cppcms::http::request &req);
 OLOLORD_EXPORT QString countryName(const QString &countryCode);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
-OLOLORD_EXPORT bool deleteFiles(const FileList &files);
+OLOLORD_EXPORT void deleteFiles(const QString &boardName, const QStringList &fileNames);
 OLOLORD_EXPORT QString guessMimeType(const QString &fileName, bool *ok = 0);
 OLOLORD_EXPORT QString guessMimeType(const QByteArray &data, bool *ok = 0);
 OLOLORD_EXPORT QLocale fromStd(const std::locale &l);

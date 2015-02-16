@@ -53,16 +53,21 @@ function changeTime() {
     reloadPage();
 }
 
+function isHashpass(s) {
+    return !!s.match(/([0-9a-fA-F]{8}\-){4}[0-9a-fA-F]{8}/g);
+}
+
+function toHashpass(s) {
+    if (!s)
+        return "";
+    var hash = CryptoJS.SHA1(s).toString(CryptoJS.enc.Hex);
+    var parts = hash.match(/.{1,8}/g);
+    return parts.join("-");
+}
+
 function doLogin() {
     var pwd = document.getElementById("loginInput").value;
-    hashpass = null;
-    if (!pwd.match(/([0-9a-fA-F]{8}\-){4}[0-9a-fA-F]{8}/g)) {
-        var hash = CryptoJS.SHA1(pwd).toString(CryptoJS.enc.Hex);
-        var parts = hash.match(/.{1,8}/g);
-        hashpass = parts.join("-");
-    } else {
-        hashpass = pwd;
-    }
+    hashpass = isHashpass(pwd) ? pwd : toHashpass(pwd);
     setCookie("hashpass", hashpass, {
         "expires": Billion, "path": "/"
     });

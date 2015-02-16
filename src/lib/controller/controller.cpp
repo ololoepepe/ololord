@@ -142,6 +142,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
                                        "fixedText");
     c.fixedText = ts.translate("initBaseThread", "Fixed", "fixedText");
     c.hidePostFormText = ts.translate("initBaseThread", "Hide post form", "hidePostFormText");
+    c.notLoggedInText = ts.translate("initBaseThread", "You are not logged in!", "notLoggedInText");
     c.postFormButtonSubmit = ts.translate("initBaseThread", "Send", "postFormButtonSubmit");
     c.postFormInputFile = ts.translate("initBaseThread", "File:", "postFormInputFile");
     c.postFormInputText = ts.translate("initBaseThread", "Post:", "postFormInputText");

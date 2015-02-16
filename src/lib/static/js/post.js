@@ -1,10 +1,16 @@
 function deletePost(boardName, postNumber, fromThread) {
     if (!boardName || isNaN(postNumber))
         return;
-    var text = document.getElementById("enterPasswordText").value;
-    var pwd = prompt(text);
-    if (!pwd)
+    var pwd = prompt(document.getElementById("enterPasswordText").value);
+    if (null === pwd)
         return;
+    if (pwd.length < 1) {
+        pwd = getCookie("hashpass");
+        if (!pwd)
+            return alert(document.getElementById("notLoggedInText").value);
+    } else if (!isHashpass(pwd)) {
+        pwd = toHashpass(pwd);
+    }
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
     var prefix = document.getElementById("sitePathPrefix").value;
@@ -16,7 +22,9 @@ function deletePost(boardName, postNumber, fromThread) {
         if (xhr.readyState === 4) {
             if (xhr.status === 200) {
                 var res = JSON.parse(xhr.responseText).result;
-                if (0 === res.length) {
+                if (null === res) {
+                    alert("Error"); //TODO
+                } else if (res.length < 1) {
                     var post = document.getElementById("post" + postNumber);
                     if (!post) {
                         if (!!fromThread) {

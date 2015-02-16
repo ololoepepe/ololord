@@ -2,8 +2,8 @@ blockquote {
     margin-top: 5px;
     margin-left: 10px;
     overflow: auto;
-    max-height: 400px;
-    max-width: 1000px;
+    max-height: 600px;
+    max-width: 2000px;
 }
 
 span.spoiler, span.spoiler a {

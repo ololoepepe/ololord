@@ -309,20 +309,25 @@ bool deletePost(const QString &boardName, quint64 postNumber, QString *error, co
             ++i;
             if (r.end() != i)
                 return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
+            odb::result<Post> rr(db->query<Post>(odb::query<Post>::thread == threadId));
+            QStringList files;
+            for (odb::result<Post>::iterator ii = rr.begin(); ii != rr.end(); ++ii)
+                files += BeQt::deserialize(ii->files()).toStringList();
             db->erase_query<Post>(odb::query<Post>::thread == threadId);
             db->erase_query<Thread>(odb::query<Thread>::id == threadId);
-            //TODO: Delete files
+            Tools::deleteFiles(boardName, files);
         } else {
             odb::result<Post> rr(db->query<Post>(odb::query<Post>::board == boardName
                                                  && odb::query<Post>::number == postNumber));
             odb::result<Post>::iterator ii = rr.begin();
             if (rr.end() == ii)
                 return bRet(error, tq.translate("deletePost", "No such post", "error"), false);
+            QStringList files = BeQt::deserialize(ii->files()).toStringList();
             ++ii;
             if (rr.end() != ii)
                 return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
             db->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
-            //TODO: Delete files
+            Tools::deleteFiles(boardName, files);
         }
         transaction.commit();
         return bRet(error, QString(), true);
@@ -390,7 +395,7 @@ quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *err
     }
 }
 
-bool mayDeletePost(const QString &boardName, quint64 postNumber, const QString &password, QString *error,
+bool mayDeletePost(const QString &boardName, quint64 postNumber, const QByteArray &password, QString *error,
                    const QLocale &l)
 {
     TranslatorQt tq(l);
@@ -411,10 +416,11 @@ bool mayDeletePost(const QString &boardName, quint64 postNumber, const QString &
         if (r.end() == i)
             return bRet(error, tq.translate("mayDeletePost", "No such post", "error"), false);
         QByteArray ppwd = i->password();
+        QByteArray phps = i->hashpass();
         ++i;
         if (r.end() != i)
             return bRet(error, tq.translate("mayDeletePost", "Internal database error", "error"), false);
-        if (QCryptographicHash::hash(password.toUtf8(), QCryptographicHash::Sha1) != ppwd)
+        if (password != ppwd && password != phps)
             return bRet(error, tq.translate("mayDeletePost", "Incorrect password", "error"), false);
         transaction.commit();
         return bRet(error, QString(), true);

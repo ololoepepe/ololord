@@ -48,6 +48,7 @@ public:
     std::string enterPasswordText;
     std::string fixedText;
     std::string hidePostFormText;
+    std::string notLoggedInText;
     std::string postFormButtonSubmit;
     std::string postFormInputFile;
     std::string postFormInputText;

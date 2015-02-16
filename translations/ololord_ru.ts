@@ -712,6 +712,11 @@ Your choice:</source>
         <comment>fixedText</comment>
         <translation>Введите пароль (если он пуст, то будет использован текущий хешпасс):</translation>
     </message>
+    <message>
+        <source>You are not logged in!</source>
+        <comment>notLoggedInText</comment>
+        <translation>Вы не залогинены!</translation>
+    </message>
 </context>
 <context>
     <name>initBoards</name>

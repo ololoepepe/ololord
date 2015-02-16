@@ -3,6 +3,7 @@
 #include "database.h"
 #include "tools.h"
 
+#include <QByteArray>
 #include <QDebug>
 #include <QList>
 #include <QLocale>
@@ -23,7 +24,7 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
 {
     QString board = Tools::fromStd(boardName);
     quint64 post = postNumber > 0 ? quint64(postNumber) : 0;
-    QString password = Tools::fromStd(pwd);
+    QByteArray password = Tools::toHashpass(Tools::fromStd(pwd));
     QLocale l = Tools::locale(server.request());
     QString err;
     if (!Database::mayDeletePost(board, post, password, &err, l))
