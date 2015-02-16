@@ -337,26 +337,26 @@ quint64 createThread(CreateThreadParameters &p)
                         for (odb::result<ThreadIdDateTimeFixed>::iterator k = atir.begin(); k != atir.end(); ++k)
                             alist << *k;
                         qSort(alist.begin(), alist.end(), &threadIdDateTimeFixedLessThan);
-                        if (!deletePostInternal(boardName, alist.last().number, p.error, p.locale, db))
-                            return 0L;
+                        if (!deletePostInternal(boardName, alist.last().number, p.description, p.locale, db))
+                            return bRet(p.error, tq.translate("createThread", "Internal error", "error"), 0L);
                     }
                     odb::result<Thread> tr(db->query<Thread>(odb::query<Thread>::id == list.last().id));
                     odb::result<Thread>::iterator k = tr.begin();
                     if (tr.end() == k) {
-                        return bRet(p.error, tq.translate("createThread", "Internal database error", "error"),
-                                    p.description, err, 0L);
+                        return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
+                                    tq.translate("createThread", "Internal database error", "error"), 0L);
                     }
                     Thread t = *k;
                     ++k;
                     if (tr.end() != k) {
-                        return bRet(p.error, tq.translate("createThread", "Internal database error", "error"),
-                                    p.description, err, 0L);
+                        return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
+                                    tq.translate("createThread", "Internal database error", "error"), 0L);
                     }
                     t.setArchived(true);
                     db->update(t);
                 } else {
-                    if (!deletePostInternal(boardName, list.last().number, p.error, p.locale, db))
-                        return 0L;
+                    if (!deletePostInternal(boardName, list.last().number, p.description, p.locale, db))
+                        return bRet(p.error, tq.translate("createThread", "Internal error", "error"), 0L);
                 }
             }
         }
