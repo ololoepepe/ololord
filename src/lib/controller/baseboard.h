@@ -26,9 +26,12 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string email;
         std::list<File> files;
         std::string name;
+        std::string nameRaw;
         unsigned long long number;
+        bool registered;
         std::string subject;
         std::string text;
+        std::string tripcode;
     };
 public:
     std::string action;
@@ -40,9 +43,12 @@ public:
     std::string closedText;
     AbstractBoard::BoardInfo currentBoard;
     unsigned long long currentThread;
+    std::string deletePostText;
+    std::string deleteThreadText;
+    std::string enterPasswordText;
     std::string fixedText;
     std::string hidePostFormText;
-    std::string hideSearchFormText;
+    std::string notLoggedInText;
     std::string postFormButtonSubmit;
     std::string postFormInputFile;
     std::string postFormInputText;
@@ -56,7 +62,6 @@ public:
     bool postingEnabled;
     std::string postLimitReachedText;
     std::string showPostFormText;
-    std::string showSearchFormText;
 };
 
 }

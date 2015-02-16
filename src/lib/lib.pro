@@ -32,9 +32,11 @@ HEADERS += \
     tools.h \
     translator.h \
 
+include(ajax/ajax.pri)
 include(board/board.pri)
 include(controller/controller.pri)
 include(plugin/plugin.pri)
+include(route/route.pri)
 include(stored/stored.pri)
 
 #Processing CppCMS templates

@@ -1,11 +1,13 @@
 SOURCES += \
     $${PWD}/banneduser.cpp \
     $${PWD}/postcounter.cpp \
+    $${PWD}/registereduser.cpp \
     $${PWD}/thread.cpp
 
 HEADERS += \
     $${PWD}/banneduser.h \
     $${PWD}/postcounter.h \
+    $${PWD}/registereduser.h \
     $${PWD}/thread.h
 
 #Processing ODB templates

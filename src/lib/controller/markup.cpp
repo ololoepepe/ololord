@@ -1,6 +1,9 @@
 #include "controller.h"
 
 #include "baseboard.h"
+#include "database.h"
+#include "settingslocker.h"
+#include "stored/registereduser.h"
 #include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
@@ -9,7 +12,9 @@
 #include <BeQt>
 #include <BTextTools>
 
+#include <QByteArray>
 #include <QChar>
+#include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
@@ -19,8 +24,10 @@
 #include <QMap>
 #include <QPair>
 #include <QRegExp>
+#include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 
 #include <cppcms/http_request.h>
 
@@ -542,14 +549,50 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
         f.size = Tools::toStd(s);
         p.files.push_back(f);
     }
-    p.name = Tools::toStd(post.name());
+    p.name = Tools::toStd(toHtml(post.name()));
     if (p.name.empty()) {
         TranslatorStd ts(l);
         p.name = ts.translate("Tools", "Anonymous", "name");
     }
+    p.nameRaw = Tools::toStd(post.name());
+    if (p.nameRaw.empty()) {
+        TranslatorStd ts(l);
+        p.nameRaw = ts.translate("Tools", "Anonymous", "name");
+    }
     p.number = post.number();
     p.subject = Tools::toStd(post.subject());
     p.text = processPostText(post.text(), boardName, threadNumber, processCode);
+    QByteArray hashpass = post.hashpass();
+    p.registered = false;
+    if (!hashpass.isEmpty()) {
+        int lvl = Database::registeredUserLevel(hashpass);
+        QString name;
+        p.registered = lvl >= RegisteredUser::UserLevel;
+        if (!post.name().isEmpty()) {
+            if (lvl >= RegisteredUser::AdminLevel)
+                name = post.name();
+            else if (lvl >= RegisteredUser::ModerLevel)
+                name = "<span class=\"moderName\">" + toHtml(post.name()) + "</span>";
+            else if (lvl >= RegisteredUser::UserLevel)
+                name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
+        }
+        p.name = Tools::toStd(name);
+        if (p.name.empty()) {
+            TranslatorStd ts(l);
+            p.name = ts.translate("Tools", "Anonymous", "name");
+        }
+        QString s;
+        hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
+        QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
+        foreach (int i, bRangeD(0, tripcode.size() - 1)) {
+            QChar c(tripcode.at(i));
+            if (c.isLetterOrNumber() || c.isPunct())
+                s += c;
+            else
+                s += QString::number(uchar(tripcode.at(i)), 16);
+        }
+        p.tripcode = Tools::toStd(s);
+    }
     return p;
 }
 

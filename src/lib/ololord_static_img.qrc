@@ -18,5 +18,6 @@
         <file>static/img/not_found/not_found_2.png</file>
         <file>static/img/pin.png</file>
         <file>static/img/closed.png</file>
+        <file>static/img/delete.png</file>
     </qresource>
 </RCC>

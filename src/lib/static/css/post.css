@@ -27,3 +27,16 @@
 .bannedFor {
     color: red;
 }
+
+.tripcode {
+    color: green;
+}
+
+.moderName {
+    color: blue;
+}
+
+.registeredName:before {
+    content: "\2713";
+    color: green;
+}

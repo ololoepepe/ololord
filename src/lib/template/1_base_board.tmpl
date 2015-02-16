@@ -11,134 +11,135 @@
 <% end template %>
 
 <% template createAction(std::string position) %>
-<form id="postForm<%= position %>" class="postFormInvisible" action="/<%= sitePathPrefix %>action/<%= action %>"
-      method="post" enctype="multipart/form-data" accept-charset="utf-8">
-    <input type="hidden" id="postFormInputBoard<%= position %>" value="<%= currentBoard.name %>" name="board" />
-    <% if ( content.currentThread > 0 ) %>
-        <input type="hidden" id="postFormInputThread<%= position %>" value="<%= currentThread %>" name="thread" />
-    <% end %>
-    <table class="postFormTable">
-        <tbody>
-            <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelEmail %></b>
-                </td>
-                <td class="postformField">
-                    <input id="postFormInputEmail<%= position %>" type="text" maxlength="150" name="email"
-                           size="30" />
-                    <input type="submit" value="<%= postFormButtonSubmit %>" />
-                </td>
-            </tr>
-            <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelName %></b>
-                </td>
-                <td class="postformField">
-                    <input type="text" maxlength="50" id="postFormInputName<%= position %>" name="name" size="43" />
-                </td>
-            </tr>
-            <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelSubject %></b>
-                </td>
-                <td class="postformField">
-                    <input type="text" maxlength="150" id="postFormInputSubject<%= position %>" name="subject"
-                           size="43" />
-                </td>
-            </tr>
-            <tr>
-                <td class="postformLabel">
-                    <b><%= postFormInputText %></b>
-                </td>
-                <td class="postformField">
-                    <textarea name="text" id="postFormInputText<%= position %>" rows="10" cols="43"
-                              placeholder="<%= postFormInputTextPlaceholder %>" class="postFormTextarea"></textarea>
-                </td>
-            </tr>
-            <tr>
-                <td class="postformLabel">
-                    <b><%= postFormInputFile %></b>
-                </td>
-                <td class="postformField">
-                    <input type="file" name="image" id="postFormInputFile<%= position %>" accept="image/*" />
-                </td>
-            </tr>
-            <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelPassword %></b>
-                </td>
-                <td class="postformField">
-                    <input type="password" maxlength="150" id="postFormInputPassword<%= position %>" name="password"
-                           size="43" />
-                </td>
-            </tr>
-            <% if ( content.captchaEnabled ) %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelCaptcha %></b>
-                    </td>
-                    <td id="googleCaptcha<%= position %>" class="postformField">
-                        <% if ( "Top" == position ) %>
-                            <div id="googleCaptcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
-                        <% end %>
-                    </td>
-                </tr>
-            <% end %>
-        </tbody>
-    </table>
-</form>
-<% end template %>
-
-<% template searchAction(std::string position) %>
-<form id="searchForm<%= position %>" class="searchFormInvisible">
-    <input type="text" />
-</form>
-<% end template %>
-
-<% template actions(std::string position) %>
-<div class="actions">
-    <input type="hidden" id="hideSearchFormText" value="<%= hideSearchFormText %>" />
-    <input type="hidden" id="hidePostFormText" value="<%= hidePostFormText %>" />
-    <input type="hidden" id="showSearchFormText" value="<%= showSearchFormText %>" />
-    <input type="hidden" id="showPostFormText" value="<%= showPostFormText %>" />
-    <div>
-        <% if ( content.postingEnabled ) %>
-            [<a id="showHidePostFormButton<%= position %>"
-                 href="javascript:showHidePostForm('<%= position %>');">
+<% if ( content.postingEnabled ) %>
+    <div class="createAction">
+        <input type="hidden" id="hidePostFormText" value="<%= hidePostFormText %>" />
+        <input type="hidden" id="showPostFormText" value="<%= showPostFormText %>" />
+        <div>
+            [<a id="showHidePostFormButton<%= position %>" href="javascript:showHidePostForm('<%= position %>');">
                 <%= showPostFormText %>
             </a>]
-        <% else %>
-        <% end %>
-        [<a id="showHideSearchFormButton<%= position %>"
-            href="javascript:showHideSearchForm('<%= position %>');">
-            <%= showSearchFormText %>
-        </a>]
+        </div>
+        <form id="postForm<%= position %>" class="postFormInvisible" method="post" accept-charset="utf-8"
+              action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data">
+            <input type="hidden" id="postFormInputBoard<%= position %>" value="<%= currentBoard.name %>"
+                   name="board" />
+            <% if ( content.currentThread > 0 ) %>
+                <input type="hidden" id="postFormInputThread<%= position %>" value="<%= currentThread %>"
+                       name="thread" />
+            <% end %>
+            <table class="postFormTable">
+                <tbody>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelEmail %></b>
+                        </td>
+                        <td class="postformField">
+                            <input id="postFormInputEmail<%= position %>" type="text" maxlength="150" name="email"
+                                   size="30" />
+                            <input type="submit" value="<%= postFormButtonSubmit %>" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelName %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="text" maxlength="50" id="postFormInputName<%= position %>" name="name"
+                                   size="43" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelSubject %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="text" maxlength="150" id="postFormInputSubject<%= position %>" name="subject"
+                                   size="43" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormInputText %></b>
+                        </td>
+                        <td class="postformField">
+                            <textarea name="text" id="postFormInputText<%= position %>" rows="10" cols="43"
+                                      placeholder="<%= postFormInputTextPlaceholder %>"
+                                      class="postFormTextarea"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormInputFile %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="file" name="image" id="postFormInputFile<%= position %>" accept="image/*" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelPassword %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="password" maxlength="150" id="postFormInputPassword<%= position %>"
+                                   name="password" size="43" />
+                        </td>
+                    </tr>
+                    <% if ( content.captchaEnabled ) %>
+                        <tr>
+                            <td class="postformLabel">
+                                <b><%= postFormLabelCaptcha %></b>
+                            </td>
+                            <td id="googleCaptcha<%= position %>" class="postformField">
+                                <% if ( "Top" == position ) %>
+                                    <div id="googleCaptcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
+                                <% end %>
+                            </td>
+                        </tr>
+                    <% end %>
+                </tbody>
+            </table>
+        </form>
     </div>
-    <% include searchAction(position) %>
-    <% if ( content.postingEnabled ) %>
-        <% include createAction(position) %>
-    <% else %>
-    <% end %>
-</div>
+<% end %>
+<% end template %>
+
+<% template postFile(Content::BaseBoard::File file) %>
+<td class="postFile">
+    <div class="postFileName">
+        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"><%= file.sourceName %></a>
+    </div>
+    <div class="postFileSize">
+        (<%= file.size %>)
+    </div>
+    <div>
+        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
+            <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+        </a>
+    </div>
+</td>
+<% end template %>
+
+<% template boardTexts() %>
+<input type="hidden" id="enterPasswordText" value="<%= enterPasswordText %>" />
+<input type="hidden" id="notLoggedInText" value="<%= notLoggedInText %>" />
 <% end template %>
 
 <% template bannerHead() %>
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/banner.css">
 <% end template %>
 
-<% template actionHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/action.css">
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/post.css">
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/postform.css">
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/searchform.css">
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/action.js"></script>
+<% template createActionHead() %>
+<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/create_action.css">
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/create_action.js"></script>
 <% if ( content.captchaEnabled ) %>
     <script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
 <% end %>
 <% end template %>
 
-<% template titleHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/title.css">
+<% template boardHead() %>
+<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/post.css">
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/post.js"></script>
 <% end %>
 
 <% end view %>

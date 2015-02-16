@@ -224,6 +224,22 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
+void deleteFiles(const QString &boardName, const QStringList &fileNames)
+{
+    if (boardName.isEmpty())
+        return;
+    QString path = storagePath() + "/img/" + boardName;
+    QFileInfo fi(path);
+    if (!fi.exists() || !fi.isDir())
+        return;
+    foreach (const QString &fn, fileNames) {
+        QFile::remove(path + "/" + fn);
+        QFileInfo fii(fn);
+        QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
+        QFile::remove(path + "/" + fii.baseName() + "s." + suff);
+    }
+}
+
 QLocale fromStd(const std::locale &l)
 {
     return QLocale(fromStd(l.name()).split('.').first());
@@ -240,6 +256,11 @@ QStringList fromStd(const std::list<std::string> &sl)
     foreach (const std::string &s, sl)
         list << fromStd(s);
     return list;
+}
+
+QString hashPassString(const cppcms::http::request &req)
+{
+    return Tools::fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
 }
 
 bool isCaptchaValid(const QString &captcha)
@@ -322,7 +343,7 @@ FileList postFiles(const cppcms::http::request &request)
         char *buff = new char[f->size()];
         in.read(buff, f->size());
         file.data = QByteArray::fromRawData(buff, f->size());
-        file.fileName = fromStd(f->filename());
+        file.fileName = QFileInfo(fromStd(f->filename())).fileName();
         file.formFieldName = fromStd(f->name());
         file.mimeType = fromStd(f->mime());
         list << file;
@@ -409,7 +430,7 @@ QString saveFile(const File &f, const QString &boardName, bool *ok)
         suffix = "png";
     if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
         return bRet(ok, false, QString());
-    return bRet(ok, true, sfn);
+    return bRet(ok, true, QFileInfo(sfn).fileName());
 }
 
 QString storagePath()
@@ -458,6 +479,29 @@ int timeZoneMinutesOffset(const cppcms::http::request &req)
     return timezones.value(cityName(req), -1000);
 }
 
+QByteArray toHashpass(const QString &s, bool *ok)
+{
+    if (s.length() != 44)
+        return bRet(ok, false, QByteArray());
+    QStringList sl = s.split('-');
+    if (sl.size() != 5)
+        return bRet(ok, false, QByteArray());
+    QByteArray ba;
+    foreach (const QString &ss, sl) {
+        if (ss.length() != 8 || !QRegExp("([0-9a-fA-F]){8}").exactMatch(ss))
+            return bRet(ok, false, QByteArray());
+        char c[4];
+        foreach (int i, bRangeD(0, 3)) {
+            bool b = false;
+            c[i] = ss.mid(i * 2, 2).toUShort(&b, 16);
+            if (!b)
+                return bRet(ok, false, QByteArray());
+        }
+        ba.append(c, 4);
+    }
+    return bRet(ok, true, ba);
+}
+
 Post toPost(const PostParameters &params, const FileList &files)
 {
     Post p;
@@ -495,6 +539,26 @@ std::list<std::string> toStd(const QStringList &sl)
     foreach (const QString &s, sl)
         list.push_back(toStd(s));
     return list;
+}
+
+QString toString(const QByteArray &hp, bool *ok)
+{
+    if (hp.size() != 20)
+        return bRet(ok, false, QString());
+    QString s;
+    foreach (int i, bRangeD(0, hp.size() - 1)) {
+        QString c = QString::number(uchar(hp.at(i)), 16);
+        if (c.length() < 2)
+            c.prepend("0");
+        s += c;
+        if ((i != hp.size() - 1) && !((i + 1) % 4))
+            s += "-";
+    }
+    bool b = false;
+    toHashpass(s, &b);
+    if (!b)
+        return bRet(ok, false, QString());
+    return bRet(ok, true, s);
 }
 
 QString userIp(const cppcms::http::request &req)

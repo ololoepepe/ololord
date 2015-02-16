@@ -9,3 +9,11 @@
     text-align: left;
     white-spcace: nowrap;
 }
+
+.loginMessageWarning {
+    color: orange;
+}
+
+.loginMessageOk {
+    color: green;
+}

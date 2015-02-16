@@ -7,9 +7,8 @@
 #include <database.h>
 #include <ololordapplication.h>
 #include <settingslocker.h>
+#include <stored/RegisteredUser>
 #include <tools.h>
-
-#include <cppcms/json.h>
 
 #include <BApplicationServer>
 #include <BCoreApplication>
@@ -32,6 +31,8 @@
 #include <QStringList>
 #include <QVariant>
 
+#include <cppcms/json.h>
+
 B_DECLARE_TRANSLATE_FUNCTION
 
 static const QString IpAddressRegexpPattern =
@@ -43,9 +44,11 @@ static bool handleBanPoster(const QString &cmd, const QStringList &args);
 static bool handleBanUser(const QString &cmd, const QStringList &args);
 static bool handleClearCache(const QString &cmd, const QStringList &args);
 static bool handleCloseThread(const QString &cmd, const QStringList &args);
-static bool handleCreateSchema(const QString &cmd, const QStringList &);
+static bool handleCreateSchema(const QString &cmd, const QStringList &args);
+static bool handleDeletePost(const QString &cmd, const QStringList &args);
 static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
+static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
@@ -68,7 +71,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-beta2");
+        app.setApplicationVersion("0.1.0-beta3");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -87,9 +90,14 @@ int main(int argc, char **argv)
         bWriteLine(translate("main", "This is") + " " + BCoreApplication::applicationName()
                    + " v" + BCoreApplication::applicationVersion());
         bWriteLine(translate("main", "Enter \"help --commands\" to see the list of available commands"));
+        BCoreApplication::loadPlugins(QStringList() << "route-factory" << "ajax-handler-factory");
         QString confFileName = BDirTools::findResource("res/config.js", BDirTools::AllResources);
         bool ok = false;
         cppcms::json::value conf = Tools::readJsonValue(confFileName, &ok);
+        if (!ok) {
+            bWriteLine(translate("main", "Failed to read configuration file"));
+            return 0;
+        }
         OlolordWebAppThread owt(conf);
         owt.start();
         ret = app.exec();
@@ -251,6 +259,34 @@ bool handleCreateSchema(const QString &, const QStringList &)
     return true;
 }
 
+bool handleDeletePost(const QString &, const QStringList &args)
+{
+    if (args.size() != 2) {
+        bWriteLine(translate("handleDeletePost", "Invalid argument count"));
+        return false;
+    }
+    QString boardName = args.first().toLower();
+    if (!AbstractBoard::boardNames().contains(boardName, Qt::CaseInsensitive)) {
+        bWriteLine(translate("handleDeletePost", "Invalid board name"));
+        return false;
+    }
+    bool ok = false;
+    quint64 postNumber = args.last().toULongLong(&ok);
+    if (!ok || !postNumber) {
+        bWriteLine(translate("handleDeletePost", "Invalid thread number"));
+        return false;
+    }
+    QString s = bReadLine(translate("handleDeletePost", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    QString err;
+    if (!Database::deletePost(boardName, postNumber, &err))
+        bWriteLine(err);
+    else
+        bWriteLine(translate("handleDeletePost", "OK"));
+    return true;
+}
+
 bool handleFixThread(const QString &, const QStringList &args)
 {
     if (args.size() != 2) {
@@ -271,7 +307,8 @@ bool handleFixThread(const QString &, const QStringList &args)
     QString err;
     if (!Database::setThreadFixed(boardName, threadNumber, true, &err))
         bWriteLine(err);
-    bWriteLine(translate("handleFixThread", "OK"));
+    else
+        bWriteLine(translate("handleFixThread", "OK"));
     return true;
 }
 
@@ -295,7 +332,39 @@ bool handleOpenThread(const QString &, const QStringList &args)
     QString err;
     if (!Database::setThreadOpened(boardName, threadNumber, true, &err))
         bWriteLine(err);
-    bWriteLine(translate("handleOpenThread", "OK"));
+    else
+        bWriteLine(translate("handleOpenThread", "OK"));
+    return true;
+}
+
+bool handleRegisterUser(const QString &, const QStringList &)
+{
+    QString pwd = bReadLineSecure(translate("handleRegisterUser", "Enter password:") + " ");
+    if (pwd.isEmpty()) {
+        bWriteLine(translate("handleRegisterUser", "Invalid password"));
+        return false;
+    }
+    QString lvl = bReadLine(translate("handleRegisterUser", "Enter level:\n"
+                                      "0 - no (just logs in)\n"
+                                      "1 - user level\n"
+                                      "10 - moder level\n"
+                                      "100 - admin level\n"
+                                      "Your choice:") + " ");
+    bool ok = false;
+    int level = lvl.toInt(&ok);
+    if (!ok || (0 != level && 1 != level && 10 != level && 100 != level)) {
+        bWriteLine(translate("handleRegisterUser", "Invalid level"));
+        return false;
+    }
+    QByteArray password = Tools::toHashpass(pwd);
+    if (password.isEmpty())
+        password = QCryptographicHash::hash(pwd.toUtf8(), QCryptographicHash::Sha1);
+    QString err;
+    if (!Database::registerUser(password, static_cast<RegisteredUser::Level>(level), &err)) {
+        bWriteLine(err);
+        return true;
+    }
+    bWriteLine(translate("handleRegisterUsers", "OK"));
     return true;
 }
 
@@ -368,7 +437,8 @@ bool handleUnfixThread(const QString &, const QStringList &args)
     QString err;
     if (!Database::setThreadFixed(boardName, threadNumber, false, &err))
         bWriteLine(err);
-    bWriteLine(translate("handleUnfixThread", "OK"));
+    else
+        bWriteLine(translate("handleUnfixThread", "OK"));
     return true;
 }
 
@@ -446,7 +516,7 @@ void initCommands()
     ch.usage = "fix-thread <board> <thread-number>";
     ch.description = BTranslation::translate("initCommands",
         "Make a thread <thread-number> at <board> fixed (always above regular threads).");
-    BTerminal::setCommandHelp("unfix-thread", ch);
+    BTerminal::setCommandHelp("fix-thread", ch);
     //
     BTerminal::installHandler("open-thread", &handleOpenThread);
     ch.usage = "open-thread <board> <thread-number>";
@@ -476,6 +546,17 @@ void initCommands()
     ch.usage = "reload-boards";
     ch.description = BTranslation::translate("initCommands", "Reload all boards: builtin and provided by plugins.");
     BTerminal::setCommandHelp("reload-boards", ch);
+    //
+    BTerminal::installHandler("register-user", &handleRegisterUser);
+    ch.usage = "register-user";
+    ch.description = BTranslation::translate("initCommands", "Registers a user.");
+    BTerminal::setCommandHelp("register-user", ch);
+    //
+    BTerminal::installHandler("delete-post", &handleDeletePost);
+    ch.usage = "delete-post <board> <post-number>";
+    ch.description = BTranslation::translate("initCommands", "Delete post with <post-number> at <board>.\n"
+        "If <post-number> is a thread, that thread and all posts in it are deleted.");
+    BTerminal::setCommandHelp("delete-post", ch);
 }
 
 void initSettings()
@@ -511,6 +592,27 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Maximum thread count per board.\n"
                                                "When the limit is reached, the most old threads get deleted.\n"
                                                "The default is 200."));
+    nn = new BSettingsNode(QVariant::UInt, "max_email_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the e-mail field.\n"
+                                               "The default is 150."));
+    nn = new BSettingsNode(QVariant::UInt, "max_name_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the name field.\n"
+                                               "The default is 50."));
+    nn = new BSettingsNode(QVariant::UInt, "max_subject_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the subject field.\n"
+                                               "The default is 150."));
+    nn = new BSettingsNode(QVariant::UInt, "max_text_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the text field.\n"
+                                               "The default is 15000."));
+    nn = new BSettingsNode(QVariant::UInt, "max_password_length", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the password field.\n"
+                                               "The default is 150."));
+    nn = new BSettingsNode(QVariant::UInt, "max_file_size", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum attached file size (in bytes).\n"
+                                               "The default is 10485760 (10 MB)."));
+    nn = new BSettingsNode(QVariant::UInt, "max_file_count", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum attached file count.\n"
+                                               "The default is 1."));
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
@@ -522,6 +624,11 @@ void initSettings()
                                                "other resources."));
     nn = new BSettingsNode(QVariant::String, "captcha_public_key", n);
     nn->setDescription(BTranslation::translate("initSettings", "Public key for captcha service.\n"
+                                               "Apperas in the HTML pages."));
+    nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
+    nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));
+    nn = new BSettingsNode(QVariant::String, "search_api_key", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Public key for search API service.\n"
                                                "Apperas in the HTML pages."));
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);

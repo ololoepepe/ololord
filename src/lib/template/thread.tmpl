@@ -4,7 +4,7 @@
 
 <% template post(Content::BaseBoard::Post post, bool op, bool fixed) %>
 <% if ( op ) %>
-    <div id="post<%= post.number %>" class="opPost">
+    <div id="opPost<%= post.number %>" class="opPost">
 <% else %>
     <div id="post<%= post.number %>" class="post">
 <% end %>
@@ -17,10 +17,19 @@
             <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
         <% end %>
         <b><%= post.subject %></b>
+        <% if ( post.registered ) %>
+                <span class="registeredName">
+            <% end %>
         <% if ( !post.email.empty() ) %>
-            <a href="mailto:<%= post.email %>"><%= post.name %></a>
+            <a href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
         <% else %>
-            <%= post.name %>
+            <%= post.name | raw %>
+        <% end %>
+        <% if ( post.registered ) %>
+                </span>
+            <% end %>
+        <% if ( !post.tripcode.empty() ) %>
+            <span class="tripcode"><%= post.tripcode %></span>
         <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
@@ -28,29 +37,20 @@
         <% else %>
             #<a href="#<%= post.number %>"><%= post.number %></a>
         <% end %>
+        <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+        <% if ( op ) %>
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
+        <% else %>
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+        <% end %>
     </div>
     <table class="threadPosts">
         <tbody>
             <tr>
                 <%foreach file in post.files %>
                     <% item %>
-                        <td class="postFile">
-                            <div class="postFileName">
-                                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-                                    <%= file.sourceName %>
-                                </a>
-                            </div>
-                            <div class="postFileSize">
-                                (<%= file.size %>)
-                            </div>
-                            <div>
-                                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-                                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
-                                </a>
-                            </div>
-                        </td>
+                        <% include postFile(file) %>
                     <% end %>
-                <% empty %>
                 <% end %>
                 <td class="postText">
                     <blockquote><%= post.text | raw %></blockquote>
@@ -76,18 +76,23 @@
         <% include settingsHead() %>
         <% include navbarHead() %>
         <% include bannerHead() %>
-        <% include actionHead() %>
+        <% include createActionHead() %>
+        <% include boardHead() %>
+        <% include searchActionHead() %>
         <% include titleHead() %>
         <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/thread.css">
-        <!--script src="http://code.jquery.com/jquery-2.1.3.min.js"></script-->
-        <!--script src="http://ajax.aspnetcdn.com/ajax/jquery.validate/1.13.1/jquery.validate.min.js"></script-->
-        <!--script src="/<%= sitePathPrefix %>js/3rdparty/sha256.js"></script-->
         <script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
     </head>
     <body onload="javascript:initializeOnLoadThread();">
+        <% include baseTexts() %>
+        <% include boardTexts() %>
         <% include settings() %>
         <br />
         <% include navbar() %>
+        <% if ( !content.searchApiKey.empty() ) %>
+            <br />
+        <% end %>
+        <% include searchAction("Top") %>
         <% if ( !content.bannerFileName.empty() ) %>
             <br />
         <% end %>
@@ -107,14 +112,15 @@
             <div class="theMessage">
                 <h2><%= postLimitReachedText %></h2>
             </div>
+        <% else %>
+            <hr />
         <% end %>
         <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
             <div class="theMessage">
                 <h3><%= bumpLimitReachedText %></h3>
             </div>
         <% end %>
-        <hr />
-        <% include actions("Top") %>
+        <% include createAction("Top") %>
         <hr />
         <% include post(opPost, 1, fixed) %>
         <% foreach p in posts %>
@@ -123,10 +129,16 @@
             <% end %>
         <% empty %>
         <% end %>
-        <hr />
-        <% include actions("Bottom") %>
+        <% if ( content.postingEnabled && !content.postLimitReached() ) %>
+            <hr />
+        <% end %>
+        <% include createAction("Bottom") %>
         <hr />
         <% include navbar() %>
+        <% if ( !content.searchApiKey.empty() ) %>
+            <br />
+        <% end %>
+        <% include searchAction("Bottom") %>
     </body>
 </html>
 <% end template %>

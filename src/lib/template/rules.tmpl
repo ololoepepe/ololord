@@ -9,13 +9,18 @@
         <% include baseHead() %>
         <% include settingsHead() %>
         <% include navbarHead() %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/title.css">
+        <% include searchActionHead() %>
+        <% include titleHead() %>
         <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/rules.css">
     </head>
     <body>
         <% include settings() %>
         <br />
         <% include navbar() %>
+        <% if ( !content.searchApiKey.empty() ) %>
+            <br />
+        <% end %>
+        <% include searchAction("Top") %>
         <div class="theTitle">
             <h1><%= currentBoard.title %></h1>
         </div>

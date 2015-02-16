@@ -78,11 +78,13 @@ OLOLORD_EXPORT QString countryCode(const QString &ip);
 OLOLORD_EXPORT QString countryCode(const cppcms::http::request &req);
 OLOLORD_EXPORT QString countryName(const QString &countryCode);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
+OLOLORD_EXPORT void deleteFiles(const QString &boardName, const QStringList &fileNames);
 OLOLORD_EXPORT QString guessMimeType(const QString &fileName, bool *ok = 0);
 OLOLORD_EXPORT QString guessMimeType(const QByteArray &data, bool *ok = 0);
 OLOLORD_EXPORT QLocale fromStd(const std::locale &l);
 OLOLORD_EXPORT QString fromStd(const std::string &s);
 OLOLORD_EXPORT QStringList fromStd(const std::list<std::string> &sl);
+OLOLORD_EXPORT QString hashPassString(const cppcms::http::request &req);
 OLOLORD_EXPORT bool isCaptchaValid(const QString &captcha);
 OLOLORD_EXPORT QDateTime localDateTime(const QDateTime &dt, int offsetMinutes = -1000);
 OLOLORD_EXPORT QLocale locale(const cppcms::http::request &req,
@@ -98,11 +100,13 @@ OLOLORD_EXPORT QString saveFile(const File &f, const QString &boardName, bool *o
 OLOLORD_EXPORT QString storagePath();
 OLOLORD_EXPORT QStringList supportedCodeLanguages();
 OLOLORD_EXPORT int timeZoneMinutesOffset(const cppcms::http::request &req);
+OLOLORD_EXPORT QByteArray toHashpass(const QString &s, bool *ok = 0);
 OLOLORD_EXPORT Post toPost(const PostParameters &params, const FileList &files);
 OLOLORD_EXPORT Post toPost(const cppcms::http::request &req);
 OLOLORD_EXPORT std::locale toStd(const QLocale &l);
 OLOLORD_EXPORT std::string toStd(const QString &s);
 OLOLORD_EXPORT std::list<std::string> toStd(const QStringList &sl);
+OLOLORD_EXPORT QString toString(const QByteArray &hp, bool *ok = 0);
 OLOLORD_EXPORT QString userIp(const cppcms::http::request &req);
 
 }

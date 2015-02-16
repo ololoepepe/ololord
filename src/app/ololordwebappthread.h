@@ -1,13 +1,12 @@
 #ifndef OLOLORDWEBAPPTHREAD_H
 #define OLOLORDWEBAPPTHREAD_H
 
-#include <cppcms/json.h>
-
 #include <QThread>
+
+#include <cppcms/json.h>
 
 class OlolordWebAppThread : public QThread
 {
-    Q_OBJECT
 private:
     const cppcms::json::value Conf;
 public:

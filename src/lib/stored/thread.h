@@ -83,6 +83,7 @@ private:
     bool bannedFor_;
     QString email_;
     QByteArray files_;
+    QByteArray hashpass_;
     QString name_;
     PRAGMA_DB(not_null)
     QByteArray password_;
@@ -93,7 +94,7 @@ private:
     QLazySharedPointer<Thread> thread_;
 public:
     explicit Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
-                  const QString &posterIp, const QByteArray &password);
+                  const QString &posterIp, const QByteArray &password, const QByteArray &hashpass = QByteArray());
 public:
     explicit Post();
 public:
@@ -104,6 +105,7 @@ public:
     bool bannedFor() const;
     QString email() const;
     QByteArray files() const;
+    QByteArray hashpass() const;
     QString name() const;
     QByteArray password() const;
     QString posterIp() const;

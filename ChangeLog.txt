@@ -1,4 +1,20 @@
+=== ololord 0.1.0-beta3 (16 February 2015) ===
+    * Implement search
+    * Use plugins for routes
+    * Highlight moders' names
+    * Add ability to insert raw HTML into name field for admins
+    * Fix hashpasses
+    * Add ability to delete posts from the command line
+    * Implement post/thread deletion
+    * Add API (AJAX requests support)
+    * Fix file deletion
+    * Make post form parameters' maximum lengths configurable
+    * Make maximum file size and count configurable
+
 === ololord 0.1.0-beta2 (14 February 2015) ===
     * Implement time zone handling and city recognition (API only)
     * Improve template hierarchy
     * Implement time changing (server/local)
+
+=== ololord 0.1.0-beta (13 February 2015) ===
+    * First release

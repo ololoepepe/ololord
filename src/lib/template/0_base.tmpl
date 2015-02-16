@@ -32,6 +32,25 @@
             <% end %>
         </select>
     </span>
+    <span>
+        <%= loginLabelText %>
+        <% if ( content.loggedIn ) %>
+            <button class="button" onclick="javascript:doLogout();"><%= loginButtonText %></button>
+        <% else %>
+            <input id="loginInput" type="password" class="input" name="hashpass"
+                   placeholder="<%= loginPlaceholderText %>" />
+            <button id="loginSwitch" class="button" onclick="javascript:switchLoginInput();"
+                    title="<%= switchLoginButtonTitle %>">
+                +
+            </button>
+            <button class="button" onclick="javascript:doLogin();"><%= loginButtonText %></button>
+        <% end %>
+        <% if ( !content.loginMessageWarning.empty() ) %>
+            <span class="loginMessageWarning"><%= loginMessageWarning %></span>
+        <% elif ( !content.loginMessageOk.empty() ) %>
+            <span class="loginMessageOk"><%= loginMessageOk %></span>
+        <% end %>
+    </span>
 </div>
 <% end template %>
 
@@ -48,6 +67,39 @@
 </div>
 <% end template %>
 
+<% template searchAction(std::string position) %>
+<% if ( !content.searchApiKey.empty() ) %>
+    <div class="searchAction">
+        <input type="hidden" id="hideSearchFormText" value="<%= hideSearchFormText %>" />
+        <input type="hidden" id="showSearchFormText" value="<%= showSearchFormText %>" />
+        <div>
+            [<a id="showHideSearchFormButton<%= position %>"
+                href="javascript:showHideSearchForm('<%= position %>');">
+                <%= showSearchFormText %>
+            </a>]
+        </div>
+        <script>
+            (function() {
+                var gcse = document.createElement("script");
+                gcse.type = "text/javascript";
+                gcse.async = true;
+                gcse.src = (document.location.protocol == "https:" ? "https:" : "http:") +
+                    "//www.google.com/cse/cse.js?cx=<%= searchApiKey %>";
+                var s = document.getElementsByTagName("script")[0];
+                s.parentNode.insertBefore(gcse, s);
+            })();
+        </script>
+        <div id="searchForm<%= position %>" class="searchFormInvisible">
+            <gcse:search></gcse:search>
+        </div>
+    </div>
+<% end %>
+<% end template %>
+
+<% template baseTexts() %>
+<input type="hidden" id="sitePathPrefix" value="<%= sitePathPrefix %>" />
+<% end template %>
+
 <% template baseHead() %>
 <title><%= pageTitle %></title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
@@ -57,12 +109,22 @@
 
 <% template settingsHead() %>
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/settings_bar.css">
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/settings.js"></script>
 <% end template %>
 
 <% template navbarHead() %>
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/navbar.css">
 <% end template %>
+
+<% template searchActionHead() %>
+<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/search_action.css">
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/search_action.js"></script>
+<% end template %>
+
+<% template titleHead() %>
+<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/title.css">
+<% end %>
 
 <% end view %>
 <% end skin %>

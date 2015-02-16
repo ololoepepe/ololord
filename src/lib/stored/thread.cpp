@@ -85,12 +85,13 @@ void Thread::setPostingEnabled(bool enabled)
 }
 
 Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
-           const QString &posterIp, const QByteArray &password)
+           const QString &posterIp, const QByteArray &password, const QByteArray &hashpass)
 {
     id_ = 0L;
     board_ = board;
     number_ = number;
     dateTime_ = dateTime.toUTC();
+    hashpass_ = hashpass;
     bannedFor_ = false;
     thread_ = thread;
     posterIp_ = posterIp;
@@ -135,6 +136,11 @@ QString Post::email() const
 QByteArray Post::files() const
 {
     return files_;
+}
+
+QByteArray Post::hashpass() const
+{
+    return hashpass_;
 }
 
 QString Post::name() const
