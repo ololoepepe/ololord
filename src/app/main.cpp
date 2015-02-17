@@ -97,6 +97,7 @@ int main(int argc, char **argv)
             bWriteLine(translate("main", "Failed to read configuration file"));
             return 0;
         }
+        Database::createSchema();
         Database::checkOutdatedEntries();
         OlolordWebAppThread owt(conf);
         owt.start();

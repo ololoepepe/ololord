@@ -382,6 +382,19 @@ bool createPost(CreatePostParameters &p)
     }
 }
 
+void createSchema()
+{
+    Transaction t;
+    if (!t)
+        return;
+    if (t->execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='threads'"))
+        return;
+    t->execute("PRAGMA foreign_keys=OFF");
+    odb::schema_catalog::create_schema(*t);
+    t->execute("PRAGMA foreign_keys=ON");
+    t.commit();
+}
+
 quint64 createThread(CreateThreadParameters &p)
 {
     QString boardName = p.params.value("board");

@@ -19,8 +19,6 @@
 #include <exception>
 
 static QMutex mutex;
-static bool schemaChecked = false;
-static QMutex schemaMutex;
 static QMap<odb::transaction *, int> transactions;
 
 Transaction::Transaction(bool commitOnDestruction) :
@@ -96,15 +94,6 @@ void Transaction::reset()
             odb::database *db = new odb::sqlite::database(Tools::toStd(fileName),
                                                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
             odb::transaction *t = new odb::transaction(db->begin());
-            QMutexLocker schemaLocker(&schemaMutex);
-            if (!schemaChecked && !db->execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='threads'")) {
-                db->execute("PRAGMA foreign_keys=OFF");
-                odb::schema_catalog::create_schema(*db);
-                db->execute("PRAGMA foreign_keys=ON");
-                t->commit();
-                t->reset(db->begin());
-            }
-            schemaLocker.unlock();
             QMutexLocker locker(&mutex);
             transactions.insert(t, 1);
         } catch (const std::exception &e) {
