@@ -36,14 +36,17 @@ class database;
 #include <BCoreApplication>
 
 #include <QDateTime>
+#include <QDebug>
 #include <QList>
 #include <QMap>
+#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 
 #ifndef OLOLORD_NO_ODB
 #include <odb/database.hxx>
 #include <odb/query.hxx>
+#include <odb/transaction.hxx>
 #endif
 
 namespace Database
@@ -53,27 +56,57 @@ namespace Database
 template <typename ResultType> class Result
 {
 public:
-    ResultType * const data;
     const bool error;
 public:
+    QSharedPointer<ResultType> data;
+public:
     explicit Result(bool err = true) :
-        data(0), error(err)
+        error(err)
     {
         //
     }
     explicit Result(const odb::result_iterator<ResultType> &i) :
-        data(new ResultType(*i)), error(false)
+        error(false)
     {
-        //
+        data = QSharedPointer<ResultType>(new ResultType(*i));
     }
-    ~Result()
+    Result(const Result<ResultType> &other) :
+        error(other.error)
     {
-        delete data;
+        *this = other;
+    }
+public:
+    void clear()
+    {
+        data.clear();
     }
 public:
     ResultType *operator ->() const
     {
-        return data;
+        return data.data();
+    }
+    ResultType &operator *() const
+    {
+        return *data;
+    }
+    bool operator !() const
+    {
+        return data.isNull();
+    }
+    Result<ResultType> &operator =(const Result<ResultType> &other)
+    {
+        data = other.data;
+        *const_cast<bool *>(&error) = other.error;
+        return *this;
+    }
+    Result<ResultType> &operator =(ResultType *t)
+    {
+        data = QSharedPointer<ResultType>(t);
+        return *this;
+    }
+    operator bool() const
+    {
+        return !data.isNull();
     }
 };
 
@@ -82,11 +115,11 @@ template <typename ResultType, typename QueryType> QList<ResultType> query(
 {
     if (!db)
         return bRet(ok, false, QList<ResultType>());
-    odb::result<ResultType> r(db->query(q));
+    odb::result<ResultType> r(db->query<ResultType>(q));
     QList<ResultType> list;
     for (odb::result_iterator<ResultType> i = r.begin(); i != r.end(); ++i)
         list << *i;
-    return list;
+    return bRet(ok, true, list);
 }
 
 template <typename ResultType, typename QueryType> QList<ResultType> query(odb::database *db, const QString &q,
@@ -98,7 +131,7 @@ template <typename ResultType, typename QueryType> QList<ResultType> query(odb::
     QList<ResultType> list;
     for (odb::result_iterator<ResultType> i = r.begin(); i != r.end(); ++i)
         list << *i;
-    return list;
+    return bRet(ok, true, list);
 }
 
 template <typename ResultType> QList<ResultType> queryAll(odb::database *db, bool *ok = 0)
@@ -109,7 +142,7 @@ template <typename ResultType> QList<ResultType> queryAll(odb::database *db, boo
     QList<ResultType> list;
     for (odb::result_iterator<ResultType> i = r.begin(); i != r.end(); ++i)
         list << *i;
-    return list;
+    return bRet(ok, true, list);
 }
 
 template <typename ResultType, typename QueryType> Result<ResultType> queryOne(odb::database *db,
@@ -117,15 +150,39 @@ template <typename ResultType, typename QueryType> Result<ResultType> queryOne(o
 {
     if (!db)
         return Result<ResultType>();
-    odb::result<ResultType> r(db->query(q));
+    odb::result<ResultType> r(db->query<ResultType>(q));
     odb::result_iterator<ResultType> i = r.begin();
     if (r.end() == i)
         return Result<ResultType>(false);
     Result<ResultType> v(i);
     ++i;
     if (r.end() != i)
-        return Result<ResultType>();
+        return Result<ResultType>(false);
     return v;
+}
+
+template <typename T> void persist(odb::database *db, const Result<T> &t, bool *ok = 0)
+{
+    if (!db || !t)
+        return bSet(ok, false);
+    db->persist(*t);
+    bSet(ok, true);
+}
+
+template <typename T> void update(odb::database *db, const Result<T> &t, bool *ok = 0)
+{
+    if (!db || !t)
+        return bSet(ok, false);
+    db->update(*t);
+    bSet(ok, true);
+}
+
+template <typename T> void erase(odb::database *db, const Result<T> &t, bool *ok = 0)
+{
+    if (!db || !t)
+        return bSet(ok, false);
+    db->erase(*t);
+    bSet(ok, true);
 }
 #endif
 
@@ -193,10 +250,10 @@ OLOLORD_EXPORT quint64 incrementPostCounter(odb::database *db, const QString &bo
 OLOLORD_EXPORT quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *error = 0,
                                       const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
-OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req, bool transaction = true);
-OLOLORD_EXPORT QStringList registeredUserBoards(const QByteArray &hashpass, bool transaction = false);
-OLOLORD_EXPORT int registeredUserLevel(const cppcms::http::request &req, bool transaction = true);
-OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass, bool transaction = false);
+OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req, odb::database *db = 0);
+OLOLORD_EXPORT QStringList registeredUserBoards(const QByteArray &hashpass, odb::database *db = 0);
+OLOLORD_EXPORT int registeredUserLevel(const cppcms::http::request &req, odb::database *db = 0);
+OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass, odb::database *db = 0);
 OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level = RegisteredUser::UserLevel,
                                  const QStringList &boards = QStringList("*"), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
@@ -208,6 +265,64 @@ OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumb
                                     const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened,
                                     const cppcms::http::request &req, QString *error = 0);
+
+#ifndef OLOLORD_NO_ODB
+class OLOLORD_EXPORT Transaction
+{
+private:
+    const bool external;
+private:
+    odb::database *mdb;
+    odb::transaction *transaction;
+public:
+    explicit Transaction(odb::database *db = 0) :
+        external(db)
+    {
+        transaction = 0;
+        mdb = db;
+        if (external)
+            return;
+        mdb = createConnection();
+        if (!mdb)
+            return;
+        transaction = new odb::transaction(mdb->begin());
+    }
+    ~Transaction()
+    {
+        rollback();
+        if (!external && mdb) {
+            delete mdb;
+        }
+    }
+public:
+    void commit()
+    {
+        if (external || !transaction)
+            return;
+        transaction->commit();
+        delete transaction;
+        transaction = 0;
+    }
+    odb::database *db() const
+    {
+        return mdb;
+    }
+    void restart()
+    {
+        if (external || mdb || transaction)
+            return;
+        transaction = new odb::transaction(mdb->begin());
+    }
+    void rollback()
+    {
+        if (external || !transaction)
+            return;
+        transaction->rollback();
+        delete transaction;
+        transaction = 0;
+    }
+};
+#endif
 
 }
 

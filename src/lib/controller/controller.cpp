@@ -59,7 +59,7 @@ static Content::Base::Locale toWithLocale(const QLocale &l)
     return ll;
 }
 
-void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle)
+void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle, odb::database *db)
 {
     typedef std::list<Content::Base::Locale> LocaleList;
     localeMutex.lock();
@@ -94,7 +94,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                    : ts.translate("initBase", "Login", "loginButtonText");
     c.loginLabelText = ts.translate("initBase", "Login:", "loginLabelText");
     if (c.loggedIn) {
-        int lvl = Database::registeredUserLevel(req);
+        int lvl = Database::registeredUserLevel(req, db);
         if (lvl < 0) {
             c.loginMessageWarning = ts.translate("initBase", "Logged in, but not registered", "loginMessageWarning");
         } else {
@@ -223,12 +223,12 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     Tools::log(app, error + (!description.isEmpty() ? (": " + description) : QString()));
 }
 
-void renderNotFound(cppcms::application &app)
+void renderNotFound(cppcms::application &app, odb::database *db)
 {
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::NotFound c;
-    initBase(c, app.request(), tq.translate("renderNotFound", "Error 404", "pageTitle"));
+    initBase(c, app.request(), tq.translate("renderNotFound", "Error 404", "pageTitle"), db);
     QStringList fns;
     foreach (const QString &path, BCoreApplication::locations(BCoreApplication::DataPath))
         fns << QDir(path + "/static/img/not_found").entryList(QDir::Files);

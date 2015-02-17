@@ -523,8 +523,9 @@ void toHtml(QString *s)
     processPostText(*s, skip, "", 0L, false, &toHtml);
 }
 
-Content::BaseBoard::Post toController(const Post &post, const QString &boardName, quint64 threadNumber,
-                                      const QLocale &l, const cppcms::http::request &req, bool processCode)
+Content::BaseBoard::Post toController(odb::database *db, const Post &post, const QString &boardName,
+                                      quint64 threadNumber, const QLocale &l, const cppcms::http::request &req,
+                                      bool processCode)
 {
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
@@ -565,7 +566,7 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
     QByteArray hashpass = post.hashpass();
     p.showRegistered = false;
     if (!hashpass.isEmpty()) {
-        int lvl = Database::registeredUserLevel(hashpass);
+        int lvl = Database::registeredUserLevel(hashpass, db);
         QString name;
         p.showRegistered = lvl >= RegisteredUser::UserLevel;
         if (!post.name().isEmpty()) {

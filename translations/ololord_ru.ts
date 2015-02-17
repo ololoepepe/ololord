@@ -246,11 +246,6 @@ The default is 0 (do not archive).</source>
         <translation>Неверный IP-адрес</translation>
     </message>
     <message>
-        <source>Internal error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка</translation>
-    </message>
-    <message>
         <source>Invalid board name</source>
         <comment>error</comment>
         <translation>Неверное имя доски</translation>
@@ -317,6 +312,14 @@ The default is 0 (do not archive).</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
     </message>
+</context>
+<context>
+    <name>createPostInternalt</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
     <message>
         <source>Internal database error</source>
         <comment>description</comment>
@@ -343,6 +346,16 @@ The default is 0 (do not archive).</source>
         <translation>Капча отсутствует либо неправильная</translation>
     </message>
     <message>
+        <source>No file</source>
+        <comment>error</comment>
+        <translation>Отсутствует файл</translation>
+    </message>
+    <message>
+        <source>Attempt to create a thread without attaching a file</source>
+        <comment>description</comment>
+        <translation>Попытка создать тред без прикрепления файла</translation>
+    </message>
+    <message>
         <source>No file/text</source>
         <comment>error</comment>
         <translation>Нет файла/текста</translation>
@@ -366,16 +379,6 @@ The default is 0 (do not archive).</source>
         <source>Internal file system error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка файловой системы</translation>
-    </message>
-    <message>
-        <source>No file</source>
-        <comment>error</comment>
-        <translation>Отсутствует файл</translation>
-    </message>
-    <message>
-        <source>Attempt to create a thread without attaching a file</source>
-        <comment>description</comment>
-        <translation>Попытка создать тред без прикрепления файла</translation>
     </message>
 </context>
 <context>
@@ -1202,11 +1205,6 @@ The default is 0 (do not archive).</source>
         <source>Invalid board name</source>
         <comment>error</comment>
         <translation>Неверное имя доски</translation>
-    </message>
-    <message>
-        <source>Internal database error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>

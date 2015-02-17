@@ -10,3 +10,5 @@
 [done] Add ablility to close/unclose threads form the web
 [done] Add ablility to fix/unfix threads form the web
 [done] Implement secure password input
+[done] Delete post files if transaction rolls back
+[done] Implement ODB wrappers
