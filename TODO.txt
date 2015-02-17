@@ -1,5 +1,7 @@
 * Add ability to post files of different types
 * Add ability to hide posts/threads
+* Check for unbanned users periodically
 [done] Add ability for admins to delete any posts
 [done] Implement thread archiving
 [done] Fix database connection cleanup
+[done] Remove banned user from database when unbanned

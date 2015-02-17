@@ -6,6 +6,7 @@
 #include <QByteArray>
 #include <QDateTime>
 #include <QString>
+#include <QStringList>
 
 #include <odb/core.hxx>
 
@@ -28,8 +29,10 @@ private:
     QDateTime dateTime_;
     PRAGMA_DB(not_null)
     int level_;
+    QByteArray boards_;
 public:
-    explicit RegisteredUser(const QByteArray &hashpass, const QDateTime &dateTime, Level level = UserLevel);
+    explicit RegisteredUser(const QByteArray &hashpass, const QDateTime &dateTime,
+                            Level level = UserLevel, const QStringList &boards = QStringList("*"));
 private:
     explicit RegisteredUser();
 public:
@@ -37,8 +40,10 @@ public:
     QByteArray hashpass() const;
     QDateTime dateTime() const;
     int level() const;
+    QStringList boards() const;
     void setHashpass(const QByteArray &hashpass);
     void setLevel(Level level);
+    void setBoards(const QStringList &boards);
 private:
     friend class odb::access;
 };

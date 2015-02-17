@@ -356,11 +356,16 @@ bool handleRegisterUser(const QString &, const QStringList &)
         bWriteLine(translate("handleRegisterUser", "Invalid level"));
         return false;
     }
+    QStringList boards = bReadLine(translate("handleRegisterUser", "Enter boards:\n"
+                                             "Separate board names by spaces.\n"
+                                             "* - any board\n"
+                                             "Your choice:") + " ").split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    boards.removeDuplicates();
     QByteArray password = Tools::toHashpass(pwd);
     if (password.isEmpty())
         password = QCryptographicHash::hash(pwd.toUtf8(), QCryptographicHash::Sha1);
     QString err;
-    if (!Database::registerUser(password, static_cast<RegisteredUser::Level>(level), &err)) {
+    if (!Database::registerUser(password, static_cast<RegisteredUser::Level>(level), boards, &err)) {
         bWriteLine(err);
         return true;
     }

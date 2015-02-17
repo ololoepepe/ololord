@@ -534,7 +534,7 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
     p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
     p.email = Tools::toStd(post.email());
     TranslatorQt tq(l);
-    foreach (const QString &fn, BeQt::deserialize(post.files()).toStringList()) {
+    foreach (const QString &fn, post.files()) {
         Content::BaseBoard::File f;
         f.sourceName = Tools::toStd(QFileInfo(fn).fileName());
         QFileInfo fi(storagePath + "/img/" + boardName + "/" + QFileInfo(fn).fileName());
@@ -563,11 +563,11 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
     p.subject = Tools::toStd(post.subject());
     p.text = processPostText(post.text(), boardName, threadNumber, processCode);
     QByteArray hashpass = post.hashpass();
-    p.registered = false;
+    p.showRegistered = false;
     if (!hashpass.isEmpty()) {
         int lvl = Database::registeredUserLevel(hashpass);
         QString name;
-        p.registered = lvl >= RegisteredUser::UserLevel;
+        p.showRegistered = lvl >= RegisteredUser::UserLevel;
         if (!post.name().isEmpty()) {
             if (lvl >= RegisteredUser::AdminLevel)
                 name = post.name();

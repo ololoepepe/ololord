@@ -40,9 +40,9 @@ public:
     std::string loginPlaceholderText;
     std::string pageTitle;
     std::string searchApiKey;
+    std::string showPasswordText;
     std::string showSearchFormText;
     std::string sitePathPrefix;
-    std::string switchLoginButtonTitle;
     std::string timeLabelText;
     std::string timeLocalText;
     std::string timeServerText;

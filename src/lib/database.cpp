@@ -70,12 +70,21 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
         bool upd = false;
         QDateTime dt = QDateTime::currentDateTimeUtc();
         if (r.end() == i) {
+            if (level < 1) {
+                transaction.commit();
+                return bRet(error, QString(), true);
+            }
             user = QSharedPointer<BannedUser>(new BannedUser(board, ip, dt));
         } else {
             user = QSharedPointer<BannedUser>(new BannedUser(*i));
             ++i;
             if (r.end() != i)
                 return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
+            if (level < 1) {
+                db->erase(user);
+                transaction.commit();
+                return bRet(error, QString(), true);
+            }
             user->setDateTime(dt);
             upd = true;
         }
@@ -167,7 +176,7 @@ static bool createPostInternal(odb::database *db, const cppcms::http::request &r
                             tq.translate("createPost", "Internal file system error", "description"), false);
             }
         }
-        p->setFiles(BeQt::serialize(fileNames));
+        p->setFiles(fileNames);
         p->setName(post.name);
         p->setSubject(post.subject);
         p->setText(post.text);
@@ -215,7 +224,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             odb::result<Post> rr(db->query<Post>(odb::query<Post>::thread == threadId));
             QStringList files;
             for (odb::result<Post>::iterator ii = rr.begin(); ii != rr.end(); ++ii)
-                files += BeQt::deserialize(ii->files()).toStringList();
+                files += ii->files();
             db->erase_query<Post>(odb::query<Post>::thread == threadId);
             db->erase_query<Thread>(odb::query<Thread>::id == threadId);
             Tools::deleteFiles(boardName, files);
@@ -225,7 +234,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             odb::result<Post>::iterator ii = rr.begin();
             if (rr.end() == ii)
                 return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
-            QStringList files = BeQt::deserialize(ii->files()).toStringList();
+            QStringList files = ii->files();
             ++ii;
             if (rr.end() != ii)
                 return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
@@ -410,8 +419,14 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         if (r.end() != i)
             return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
         if (password.isEmpty()) {
-            if (hashpass != phps && Database::registeredUserLevel(req, false) < RegisteredUser::AdminLevel)
-                return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
+            if (hashpass != phps) {
+                int lvl = registeredUserLevel(req, false);
+                if (lvl < RegisteredUser::ModerLevel || registeredUserLevel(phps, false) >= lvl)
+                    return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
+                QStringList boards = registeredUserBoards(req, false);
+                if (!boards.contains("*") && !boards.contains(boardName))
+                    return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
+            }
         } else if (password != ppwd) {
             return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
         }
@@ -507,6 +522,44 @@ QString posterIp(const QString &boardName, quint64 postNumber)
     }
 }
 
+QStringList registeredUserBoards(const cppcms::http::request &req, bool trans)
+{
+    QByteArray hp = Tools::hashpass(req);
+    if (hp.isEmpty())
+        return QStringList();
+    return registeredUserBoards(hp, trans);
+}
+
+QStringList registeredUserBoards(const QByteArray &hashpass, bool trans)
+{
+    bool b = false;
+    Tools::toString(hashpass, &b);
+    if (!b)
+        return QStringList();
+    try {
+        QScopedPointer<odb::database> db(createConnection());
+        if (!db)
+            return QStringList();
+        QScopedPointer<odb::transaction> transaction;
+        if (trans)
+            transaction.reset(new odb::transaction(db->begin()));
+        odb::result<RegisteredUser> r(db->query<RegisteredUser>(odb::query<RegisteredUser>::hashpass == hashpass));
+        odb::result<RegisteredUser>::iterator i = r.begin();
+        if (r.end() == i)
+            return QStringList();
+        QStringList boards = i->boards();
+        ++i;
+        if (r.end() != i)
+            return QStringList();
+        if (trans)
+            transaction->commit();
+        return boards;
+    }  catch (const odb::exception &e) {
+        qDebug() << e.what();
+        return QStringList();
+    }
+}
+
 int registeredUserLevel(const cppcms::http::request &req, bool trans)
 {
     QByteArray hp = Tools::hashpass(req);
@@ -546,19 +599,25 @@ int registeredUserLevel(const QByteArray &hashpass, bool trans)
     }
 }
 
-bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, QString *error, const QLocale &l)
+bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const QStringList &boards, QString *error,
+                  const QLocale &l)
 {
     bool b = false;
     Tools::toString(hashpass, &b);
     TranslatorQt tq(l);
     if (!b)
         return bRet(error, tq.translate("registerUser", "Invalid hashpass", "error"), false);
+    QStringList boardNames = AbstractBoard::boardNames();
+    foreach (const QString &bn, boardNames) {
+        if ("*" != bn && !boardNames.contains(bn))
+            return bRet(error, tq.translate("registerUser", "Invalid board(s)", "error"), false);
+    }
     try {
         QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("registerUser", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());
-        RegisteredUser user(hashpass, QDateTime::currentDateTimeUtc(), level);
+        RegisteredUser user(hashpass, QDateTime::currentDateTimeUtc(), level, boards);
         db->persist(user);
         transaction.commit();
         return bRet(error, QString(), true);

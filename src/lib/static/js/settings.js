@@ -81,14 +81,11 @@ function doLogout() {
     reloadPage();
 }
 
-function switchLoginInput() {
+function switchShowLogin() {
     var inp = document.getElementById("loginInput");
-    var sw = document.getElementById("loginSwitch");
-    if (inp.type === "password") {
+    var sw = document.getElementById("showLoginCheckbox");
+    if (inp.type === "password")
         inp.type = "text";
-        sw.innerHtml = "-";
-    } else if (inp.type === "text") {
+    else if (inp.type === "text")
         inp.type = "password";
-        sw.innerHtml = "+";
-    }
 }

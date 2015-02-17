@@ -16,18 +16,15 @@
             <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
         <% end %>
         <b><%= post.subject %></b>
-        <% if ( post.registered ) %>
-                <span class="registeredName">
-            <% end %>
+        <% if ( post.showRegistered ) %>
+            <img src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>">
+        <% end %>
         <% if ( !post.email.empty() ) %>
             <a href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
         <% else %>
             <%= post.name | raw %>
         <% end %>
-        <% if ( post.registered ) %>
-                </span>
-            <% end %>
-        <% if ( !post.tripcode.empty() ) %>
+        <% if ( post.showRegistered && !post.tripcode.empty() ) %>
             <span class="tripcode"><%= post.tripcode %></span>
         <% end %>
         <%= post.dateTime %>

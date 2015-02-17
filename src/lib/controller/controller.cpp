@@ -109,9 +109,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.pageTitle = Tools::toStd(pageTitle);
     SettingsLocker s;
     c.searchApiKey = Tools::toStd(s->value("Site/search_api_key").toString());
+    c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showSearchFormText = ts.translate("initBaseThread", "Search", "showSearchFormText");
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
-    c.switchLoginButtonTitle = ts.translate("initBase", "Show/hide", "switchLoginButtonTitle");
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
@@ -164,6 +164,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             : ts.translate("initBaseThread", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseThread", "Post limit reached", "postLimitReachedText");
+    c.registeredText = ts.translate("initBaseThread", "This user is registered", "registeredText");
     c.showPostFormText = currentThread ? ts.translate("initBaseThread", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseThread", "Create thread", "showPostFormText");
 }

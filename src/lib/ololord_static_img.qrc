@@ -19,5 +19,8 @@
         <file>static/img/pin.png</file>
         <file>static/img/closed.png</file>
         <file>static/img/delete.png</file>
+        <file>static/img/open.png</file>
+        <file>static/img/registered.png</file>
+        <file>static/img/unfix.png</file>
     </qresource>
 </RCC>

@@ -35,8 +35,3 @@
 .moderName {
     color: blue;
 }
-
-.registeredName:before {
-    content: "\2713";
-    color: green;
-}

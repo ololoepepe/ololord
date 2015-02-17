@@ -28,7 +28,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string name;
         std::string nameRaw;
         unsigned long long number;
-        bool registered;
+        bool showRegistered;
         std::string subject;
         std::string text;
         std::string tripcode;
@@ -62,6 +62,7 @@ public:
     std::string postingDisabledText;
     bool postingEnabled;
     std::string postLimitReachedText;
+    std::string registeredText;
     std::string showPostFormText;
 };
 

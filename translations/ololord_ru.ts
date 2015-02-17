@@ -608,6 +608,16 @@ Your choice:</source>
         <source>Invalid level</source>
         <translation>Неправильный уровень</translation>
     </message>
+    <message>
+        <source>Enter boards:
+Separate board names by spaces.
+* - any board
+Your choice:</source>
+        <translation>Введите доски:
+Отделяйте названия досок пробелами.
+* - любая доска
+Ваш выбор:</translation>
+    </message>
 </context>
 <context>
     <name>handleRegisterUsers</name>
@@ -732,9 +742,9 @@ Your choice:</source>
         <translation>Пароль/хешпасс</translation>
     </message>
     <message>
-        <source>Show/hide</source>
-        <comment>switchLoginButtonTitle</comment>
-        <translation>Показать/скрыть</translation>
+        <source>Show password</source>
+        <comment>showPasswordText</comment>
+        <translation>Показать пароль</translation>
     </message>
 </context>
 <context>
@@ -868,6 +878,11 @@ Your choice:</source>
         <source>AJAX request returned status</source>
         <comment>ajaxErrorText</comment>
         <translation>AJAX-запрос вернул статус</translation>
+    </message>
+    <message>
+        <source>This user is registered</source>
+        <comment>registeredText</comment>
+        <translation>Этот пользователь зарегистрирован</translation>
     </message>
 </context>
 <context>
@@ -1283,6 +1298,11 @@ The default is 0 (do not archive).</source>
         <source>Invalid hashpass</source>
         <comment>error</comment>
         <translation>Неправильный хешпасс</translation>
+    </message>
+    <message>
+        <source>Invalid board(s)</source>
+        <comment>error</comment>
+        <translation>Неправильная(ые) доска(и)</translation>
     </message>
 </context>
 <context>

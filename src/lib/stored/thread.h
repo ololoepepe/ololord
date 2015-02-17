@@ -10,6 +10,7 @@ class Post;
 #include <QList>
 #include <QSharedPointer>
 #include <QString>
+#include <QStringList>
 
 #include <odb/core.hxx>
 #include <odb/qt/lazy-ptr.hxx>
@@ -108,14 +109,14 @@ public:
     QDateTime dateTime() const;
     bool bannedFor() const;
     QString email() const;
-    QByteArray files() const;
+    QStringList files() const;
     QByteArray hashpass() const;
     QString name() const;
     QByteArray password() const;
     QString posterIp() const;
     void setBannedFor(bool banned);
     void setEmail(const QString &email);
-    void setFiles(const QByteArray &files);
+    void setFiles(const QStringList &files);
     void setName(const QString &name);
     void setSubject(const QString &subject);
     void setText(const QString &text);

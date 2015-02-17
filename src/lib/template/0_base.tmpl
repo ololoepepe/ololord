@@ -39,10 +39,8 @@
         <% else %>
             <input id="loginInput" type="password" class="input" name="hashpass"
                    placeholder="<%= loginPlaceholderText %>" />
-            <button id="loginSwitch" class="button" onclick="javascript:switchLoginInput();"
-                    title="<%= switchLoginButtonTitle %>">
-                +
-            </button>
+            <input id="showLoginCheckbox" type="checkbox" class="checkbox" onclick="javascript:switchShowLogin();"
+                   name="showLogin" title="<%= showPasswordText %>" />
             <button class="button" onclick="javascript:doLogin();"><%= loginButtonText %></button>
         <% end %>
         <% if ( !content.loginMessageWarning.empty() ) %>

@@ -1,11 +1,14 @@
 #include "thread.h"
 
+#include <BeQt>
+
 #include <QByteArray>
 #include <QDateTime>
 #include <QDebug>
 #include <QList>
 #include <QSharedPointer>
 #include <QString>
+#include <QStringList>
 
 #include <odb/qt/lazy-ptr.hxx>
 
@@ -144,9 +147,9 @@ QString Post::email() const
     return email_;
 }
 
-QByteArray Post::files() const
+QStringList Post::files() const
 {
-    return files_;
+    return BeQt::deserialize(files_).toStringList();
 }
 
 QByteArray Post::hashpass() const
@@ -179,9 +182,9 @@ void Post::setEmail(const QString &email)
     email_ = email;
 }
 
-void Post::setFiles(const QByteArray &files)
+void Post::setFiles(const QStringList &files)
 {
-    files_ = files;
+    files_ = BeQt::serialize(files);
 }
 
 void Post::setName(const QString &name)

@@ -39,6 +39,7 @@ class database;
 #include <QList>
 #include <QMap>
 #include <QString>
+#include <QStringList>
 
 namespace Database
 {
@@ -106,13 +107,13 @@ OLOLORD_EXPORT quint64 incrementPostCounter(odb::database *db, const QString &bo
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT quint64 lastPostNumber(odb::database *db, const QString &boardName, QString *error = 0,
                                       const QLocale &l = BCoreApplication::locale());
-/*OLOLORD_EXPORT bool mayDeletePost(const QString &boardName, quint64 postNumber, const cppcms::http::request &req,
-                                  const QByteArray &password, QString *error = 0,
-                                  const QLocale &l = BCoreApplication::locale());*/
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
+OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req, bool transaction = true);
+OLOLORD_EXPORT QStringList registeredUserBoards(const QByteArray &hashpass, bool transaction = false);
 OLOLORD_EXPORT int registeredUserLevel(const cppcms::http::request &req, bool transaction = true);
 OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass, bool transaction = false);
-OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, QString *error,
+OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level = RegisteredUser::UserLevel,
+                                 const QStringList &boards = QStringList("*"), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error = 0,
                                    const QLocale &l = BCoreApplication::locale());
