@@ -24,8 +24,10 @@ private:
     PRAGMA_DB(not_null)
     int level_;
     QString reason_;
+    PRAGMA_DB(null)
+    quint64 postId_;
 public:
-    explicit BannedUser(const QString &board, const QString &ip, const QDateTime &dateTime);
+    explicit BannedUser(const QString &board, const QString &ip, const QDateTime &dateTime, quint64 postId = 0L);
 private:
     explicit BannedUser();
 public:
@@ -36,6 +38,7 @@ public:
     QDateTime expirationDateTime() const;
     int level() const;
     QString reason() const;
+    quint64 postId() const;
     void setDateTime(const QDateTime &dateTime);
     void setExpirationDateTime(const QDateTime &dateTime);
     void setLevel(int level);

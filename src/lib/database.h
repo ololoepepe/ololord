@@ -98,7 +98,6 @@ OLOLORD_EXPORT bool banUser(const QString &sourceBoard, quint64 postNumber, cons
 OLOLORD_EXPORT void checkOutdatedEntries();
 OLOLORD_EXPORT odb::database *createConnection();
 OLOLORD_EXPORT bool createPost(CreatePostParameters &p);
-OLOLORD_EXPORT void createSchema();
 OLOLORD_EXPORT quint64 createThread(CreateThreadParameters &p);
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QString *error = 0,
                                const QLocale &l = BCoreApplication::locale());

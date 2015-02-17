@@ -521,13 +521,6 @@ The default is 0 (do not archive).</source>
     </message>
 </context>
 <context>
-    <name>handleCreateSchema</name>
-    <message>
-        <source>Are you REALLY sure?</source>
-        <translation>Вы ТОЧНО уверены?</translation>
-    </message>
-</context>
-<context>
     <name>handleDeletePost</name>
     <message>
         <source>Invalid argument count</source>
@@ -937,12 +930,6 @@ Your choice:</source>
     <message>
         <source>Make a thread &lt;thread-number&gt; at &lt;board&gt; not available for posting (closed).</source>
         <translation>Сделать тред &lt;thread-number&gt; на &lt;board&gt; недоступным для постинга (закрытым).</translation>
-    </message>
-    <message>
-        <source>Create the database schema.
-Warning: all existing data will be lost!</source>
-        <translation>Создать схему базы данных.
-Предупреждение: все имеющиеся данные будут потеряны!</translation>
     </message>
     <message>
         <source>Make a thread &lt;thread-number&gt; at &lt;board&gt; fixed (always above regular threads).</source>

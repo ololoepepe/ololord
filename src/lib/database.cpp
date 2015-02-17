@@ -45,6 +45,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
         QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
+        quint64 postId = 0L;
         odb::transaction transaction(db->begin());
         if (!sourceBoard.isEmpty() && postNumber) {
             odb::result<Post> r(db->query<Post>(odb::query<Post>::board == sourceBoard
@@ -56,6 +57,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             ++i;
             if (r.end() != i)
                 return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
+            postId = post.id();
             if (ip.isEmpty())
                 ip = post.posterIp();
             post.setBannedFor(level > 0);
@@ -74,7 +76,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
                 transaction.commit();
                 return bRet(error, QString(), true);
             }
-            user = QSharedPointer<BannedUser>(new BannedUser(board, ip, dt));
+            user = QSharedPointer<BannedUser>(new BannedUser(board, ip, dt, postId));
         } else {
             user = QSharedPointer<BannedUser>(new BannedUser(*i));
             ++i;
@@ -358,8 +360,22 @@ void checkOutdatedEntries()
         QDateTime dt = QDateTime::currentDateTimeUtc();
         for (odb::result<BannedUser>::iterator i = r.begin(); i != r.end(); ++i) {
             QDateTime exp = i->expirationDateTime();
-            if (exp.isValid() && exp <= dt)
+            if (exp.isValid() && exp <= dt) {
+                quint64 postId = i->postId();
                 db->erase_query<BannedUser>(odb::query<BannedUser>::id == i->id());
+                if (postId) {
+                    odb::result<Post> rr(db->query<Post>(odb::query<Post>::id == postId));
+                    odb::result<Post>::iterator j = rr.begin();
+                    if (rr.end() == j)
+                        continue;
+                    QSharedPointer<Post> post(new Post(*j));
+                    ++j;
+                    if (rr.end() != j)
+                        continue;
+                    post->setBannedFor(false);
+                    db->persist(post);
+                }
+            }
         }
         transaction.commit();
     }  catch (const odb::exception &e) {
@@ -375,7 +391,26 @@ odb::database *createConnection()
     QString fileName = storagePath + "/db.sqlite";
     if (!BDirTools::touch(fileName))
         return 0;
-    return new odb::sqlite::database(Tools::toStd(fileName), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+    odb::database *db = 0;
+    try {
+        db = new odb::sqlite::database(Tools::toStd(fileName), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+        if (!db)
+            return 0;
+        odb::transaction t(db->begin());
+        if (!db->execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='threads'")) {
+            t.commit();
+            t.reset(db->begin());
+            db->execute("PRAGMA foreign_keys=OFF");
+            odb::schema_catalog::create_schema(*db);
+            db->execute("PRAGMA foreign_keys=ON");
+            t.commit();
+        }
+        return db;
+    } catch (const odb::exception &e) {
+        qDebug() << e.what();
+        delete db;
+        return 0;
+    }
 }
 
 bool createPost(CreatePostParameters &p)
@@ -396,19 +431,6 @@ bool createPost(CreatePostParameters &p)
         return bRet(p.error, tq.translate("createPost", "Internal error", "error"), p.description,
                     Tools::fromStd(e.what()), false);
     }
-}
-
-void createSchema()
-{
-    QScopedPointer<odb::database> db(createConnection());
-    if (!db)
-        return;
-    odb::connection_ptr c(db->connection());
-    c->execute("PRAGMA foreign_keys=OFF");
-    odb::transaction t(c->begin());
-    odb::schema_catalog::create_schema(*db);
-    t.commit();
-    c->execute("PRAGMA foreign_keys=ON");
 }
 
 quint64 createThread(CreateThreadParameters &p)

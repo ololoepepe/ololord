@@ -44,7 +44,6 @@ static bool handleBanPoster(const QString &cmd, const QStringList &args);
 static bool handleBanUser(const QString &cmd, const QStringList &args);
 static bool handleClearCache(const QString &cmd, const QStringList &args);
 static bool handleCloseThread(const QString &cmd, const QStringList &args);
-static bool handleCreateSchema(const QString &cmd, const QStringList &args);
 static bool handleDeletePost(const QString &cmd, const QStringList &args);
 static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
@@ -265,16 +264,6 @@ bool handleCloseThread(const QString &, const QStringList &args)
     if (!Database::setThreadOpened(boardName, threadNumber, false, &err))
         bWriteLine(err);
     bWriteLine(translate("handleCloseThread", "OK"));
-    return true;
-}
-
-bool handleCreateSchema(const QString &, const QStringList &)
-{
-    if (bReadLine(translate("handleCreateSchema",
-                            "Are you REALLY sure?") + " [yN] ").compare("y", Qt::CaseInsensitive)) {
-        return true;
-    }
-    Database::createSchema();
     return true;
 }
 
@@ -529,12 +518,6 @@ void initCommands()
     ch.description = BTranslation::translate("initCommands",
         "Make a thread <thread-number> at <board> not available for posting (closed).");
     BTerminal::setCommandHelp("close-thread", ch);
-    //
-    BTerminal::installHandler("create-schema", &handleCreateSchema);
-    ch.usage = "create-schema";
-    ch.description = BTranslation::translate("initCommands", "Create the database schema.\n"
-                                             "Warning: all existing data will be lost!");
-    BTerminal::setCommandHelp("create-schema", ch);
     //
     BTerminal::installHandler("fix-thread", &handleFixThread);
     ch.usage = "fix-thread <board> <thread-number>";
