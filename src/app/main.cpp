@@ -98,6 +98,7 @@ int main(int argc, char **argv)
             bWriteLine(translate("main", "Failed to read configuration file"));
             return 0;
         }
+        Database::checkOutdatedEntries();
         OlolordWebAppThread owt(conf);
         owt.start();
         ret = app.exec();
@@ -144,7 +145,7 @@ bool handleBanPoster(const QString &, const QStringList &args)
     QString boards = AbstractBoard::boardNames().join("|");
     QString options = "sourceBoard:--source-board|-s=" + boards + ",postNumber:--post-number|-p=,"
             "[board:--board|-b=" + boards + "|*],[level:--level|-l=0|1|10|100],[reason:--reason|-r=],"
-            "[expires:--expires|-e]";
+            "[expires:--expires|-e=]";
     BTextTools::OptionsParsingError error = BTextTools::parseOptions(args, options, result, errorData);
     if (!checkParsingError(error, errorData))
         return false;
@@ -158,8 +159,17 @@ bool handleBanPoster(const QString &, const QStringList &args)
         board = "*";
     int level = result.contains("level") ? result.value("level").toInt() : 1;
     QString reason = result.value("reason");
-    QDateTime expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
-                                                   : QDateTime();
+    QDateTime expires;
+    if (result.contains("expires")) {
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
+                                             : QDateTime();
+        if (!expires.isValid()) {
+            QString s = bReadLine(translate("handleBanPoster", "Invalid date. User will be banned forever. Continue?")
+                                  + " [Yn] ");
+            if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+                return true;
+        }
+    }
     QString err;
     if (!Database::banUser(sourceBoard, postNumber, board, level, reason, expires, &err))
         bWriteLine(err);
@@ -174,7 +184,7 @@ bool handleBanUser(const QString &, const QStringList &args)
     QString errorData;
     QString boards = AbstractBoard::boardNames().join("|");
     QString options = "ip:--ip-address|-i=,[board:--board|-b=" + boards + "|*],[level:--level|-l=0|1|10|100],"
-            "[reason:--reason|-r=],[expires:--expires|-e]";
+            "[reason:--reason|-r=],[expires:--expires|-e=]";
     BTextTools::OptionsParsingError error = BTextTools::parseOptions(args, options, result, errorData);
     if (!checkParsingError(error, errorData))
         return false;
@@ -188,8 +198,17 @@ bool handleBanUser(const QString &, const QStringList &args)
         board = "*";
     int level = result.contains("level") ? result.value("level").toInt() : 1;
     QString reason = result.value("reason");
-    QDateTime expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
-                                                   : QDateTime();
+    QDateTime expires;
+    if (result.contains("expires")) {
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
+                                             : QDateTime();
+        if (!expires.isValid()) {
+            QString s = bReadLine(translate("handleBanUser", "Invalid date. User will be banned forever. Continue?")
+                                  + " [Yn] ");
+            if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+                return true;
+        }
+    }
     QString err;
     if (!Database::banUser(ip, board, level, reason, expires, &err))
         bWriteLine(err);

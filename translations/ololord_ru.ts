@@ -466,6 +466,10 @@ The default is 0 (do not archive).</source>
         <source>OK</source>
         <translation>ОК</translation>
     </message>
+    <message>
+        <source>Invalid date. User will be banned forever. Continue?</source>
+        <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
+    </message>
 </context>
 <context>
     <name>handleBanUser</name>
@@ -476,6 +480,10 @@ The default is 0 (do not archive).</source>
     <message>
         <source>OK</source>
         <translation>ОК</translation>
+    </message>
+    <message>
+        <source>Invalid date. User will be banned forever. Continue?</source>
+        <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
     </message>
 </context>
 <context>

@@ -95,6 +95,7 @@ OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int l
 OLOLORD_EXPORT bool banUser(const QString &sourceBoard, quint64 postNumber, const QString &board = "*", int level = 1,
                             const QString &reason = QString(), const QDateTime &expires = QDateTime(),
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT void checkOutdatedEntries();
 OLOLORD_EXPORT odb::database *createConnection();
 OLOLORD_EXPORT bool createPost(CreatePostParameters &p);
 OLOLORD_EXPORT void createSchema();

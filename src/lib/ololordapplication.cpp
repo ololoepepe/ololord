@@ -1,10 +1,13 @@
 #include "ololordapplication.h"
 
+#include "database.h"
 #include "translator.h"
 
 #include <BCoreApplication>
+#include <BeQt>
 
 #include <QString>
+#include <QTimerEvent>
 
 OlolordApplication::OlolordApplication(int &argc, char **argv, const QString &applicationName,
                                        const QString &organizationName) :
@@ -19,6 +22,7 @@ OlolordApplication::OlolordApplication(int &argc, char **argv, const QString &ap
     Q_INIT_RESOURCE(ololord_static_js);
     Q_INIT_RESOURCE(ololord_static_video);
 #endif
+    timerId = startTimer(BeQt::Hour);
 }
 
 OlolordApplication::OlolordApplication(int &argc, char **argv, const InitialSettings &s) :
@@ -33,6 +37,7 @@ OlolordApplication::OlolordApplication(int &argc, char **argv, const InitialSett
     Q_INIT_RESOURCE(ololord_static_js);
     Q_INIT_RESOURCE(ololord_static_video);
 #endif
+    timerId = startTimer(BeQt::Hour);
 }
 
 OlolordApplication::~OlolordApplication()
@@ -45,4 +50,11 @@ OlolordApplication::~OlolordApplication()
     Q_CLEANUP_RESOURCE(ololord_static_js);
     Q_CLEANUP_RESOURCE(ololord_static_video);
 #endif
+}
+
+void OlolordApplication::timerEvent(QTimerEvent *e)
+{
+    if (!e || e->timerId() != timerId)
+        return;
+   Database::checkOutdatedEntries();
 }

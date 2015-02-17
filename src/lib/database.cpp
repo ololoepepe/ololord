@@ -271,6 +271,26 @@ bool banUser(const QString &sourceBoard, quint64 postNumber, const QString &boar
     return banUserInternal(sourceBoard, postNumber, board, level, reason, expires, error, l);
 }
 
+void checkOutdatedEntries()
+{
+    try {
+        QScopedPointer<odb::database> db(createConnection());
+        if (!db)
+            return;
+        odb::transaction transaction(db->begin());
+        odb::result<BannedUser> r(db->query<BannedUser>());
+        QDateTime dt = QDateTime::currentDateTimeUtc();
+        for (odb::result<BannedUser>::iterator i = r.begin(); i != r.end(); ++i) {
+            QDateTime exp = i->expirationDateTime();
+            if (exp.isValid() && exp <= dt)
+                db->erase_query<BannedUser>(odb::query<BannedUser>::id == i->id());
+        }
+        transaction.commit();
+    }  catch (const odb::exception &e) {
+        qDebug() << e.what();
+    }
+}
+
 odb::database *createConnection()
 {
     QString storagePath = Tools::storagePath();

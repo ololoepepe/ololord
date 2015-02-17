@@ -1,6 +1,8 @@
 #ifndef OLOLORDAPPLICATION_H
 #define OLOLORDAPPLICATION_H
 
+class QTimerEvent;
+
 #include "global.h"
 
 #include <BCoreApplication>
@@ -18,11 +20,15 @@
 class OLOLORD_EXPORT OlolordApplication : public BCoreApplication
 {
     Q_OBJECT
+private:
+    int timerId;
 public:
     explicit OlolordApplication(int &argc, char **argv, const QString &applicationName = QString(),
                                 const QString &organizationName = QString());
     explicit OlolordApplication(int &argc, char **argv, const InitialSettings &s);
     ~OlolordApplication();
+protected:
+    void timerEvent(QTimerEvent *e);
 private:
     Q_DISABLE_COPY(OlolordApplication)
 };
