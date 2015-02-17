@@ -81,6 +81,8 @@ LIBS *= -L$${lordLibsPath}/ -ololord
     } else {
         LIBS *= -L$${ODB_PREFIX}/lib/ -lodb-qt
     }
+} else {
+    DEFINES += OLOLORD_NO_ODB
 }
 
 #libcurl

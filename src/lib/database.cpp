@@ -34,6 +34,59 @@
 namespace Database
 {
 
+class Transaction
+{
+private:
+    const bool external;
+private:
+    odb::database *mdb;
+    odb::transaction *transaction;
+public:
+    explicit Transaction(odb::database *db = 0) :
+        external(db)
+    {
+        transaction = 0;
+        mdb = db;
+        if (external)
+            return;
+        mdb = createConnection();
+        if (!mdb)
+            return;
+        transaction = new odb::transaction(db->begin());
+    }
+    ~Transaction()
+    {
+        rollback();
+    }
+public:
+    void commit()
+    {
+        if (external || !transaction)
+            return;
+        transaction->commit();
+        delete transaction;
+        transaction = 0;
+    }
+    odb::database *db() const
+    {
+        return mdb;
+    }
+    void restart()
+    {
+        if (external || mdb || transaction)
+            return;
+        transaction = new odb::transaction(mdb->begin());
+    }
+    void rollback()
+    {
+        if (external || !transaction)
+            return;
+        transaction->rollback();
+        delete transaction;
+        transaction = 0;
+    }
+};
+
 static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, const QString &board, int level,
                             const QString &reason, const QDateTime &expires, QString *error, const QLocale &l,
                             QString ip = QString())

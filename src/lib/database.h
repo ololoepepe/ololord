@@ -41,8 +41,93 @@ class database;
 #include <QString>
 #include <QStringList>
 
+#ifndef OLOLORD_NO_ODB
+#include <odb/database.hxx>
+#include <odb/query.hxx>
+#endif
+
 namespace Database
 {
+
+#ifndef OLOLORD_NO_ODB
+template <typename ResultType> class Result
+{
+public:
+    ResultType * const data;
+    const bool error;
+public:
+    explicit Result(bool err = true) :
+        data(0), error(err)
+    {
+        //
+    }
+    explicit Result(const odb::result_iterator<ResultType> &i) :
+        data(new ResultType(*i)), error(false)
+    {
+        //
+    }
+    ~Result()
+    {
+        delete data;
+    }
+public:
+    ResultType *operator ->() const
+    {
+        return data;
+    }
+};
+
+template <typename ResultType, typename QueryType> QList<ResultType> query(
+        odb::database *db, const odb::query<QueryType> &q, bool *ok = 0)
+{
+    if (!db)
+        return bRet(ok, false, QList<ResultType>());
+    odb::result<ResultType> r(db->query(q));
+    QList<ResultType> list;
+    for (odb::result_iterator<ResultType> i = r.begin(); i != r.end(); ++i)
+        list << *i;
+    return list;
+}
+
+template <typename ResultType, typename QueryType> QList<ResultType> query(odb::database *db, const QString &q,
+                                                                           bool *ok = 0)
+{
+    if (!db)
+        return bRet(ok, false, QList<ResultType>());
+    odb::result<ResultType> r(db->query<ResultType>(q.toUtf8().constData()));
+    QList<ResultType> list;
+    for (odb::result_iterator<ResultType> i = r.begin(); i != r.end(); ++i)
+        list << *i;
+    return list;
+}
+
+template <typename ResultType> QList<ResultType> queryAll(odb::database *db, bool *ok = 0)
+{
+    if (!db)
+        return bRet(ok, false, QList<ResultType>());
+    odb::result<ResultType> r(db->query<ResultType>());
+    QList<ResultType> list;
+    for (odb::result_iterator<ResultType> i = r.begin(); i != r.end(); ++i)
+        list << *i;
+    return list;
+}
+
+template <typename ResultType, typename QueryType> Result<ResultType> queryOne(odb::database *db,
+                                                                               const odb::query<QueryType> &q)
+{
+    if (!db)
+        return Result<ResultType>();
+    odb::result<ResultType> r(db->query(q));
+    odb::result_iterator<ResultType> i = r.begin();
+    if (r.end() == i)
+        return Result<ResultType>(false);
+    Result<ResultType> v(i);
+    ++i;
+    if (r.end() != i)
+        return Result<ResultType>();
+    return v;
+}
+#endif
 
 struct OLOLORD_EXPORT CreatePostParameters
 {
