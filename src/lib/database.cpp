@@ -396,14 +396,20 @@ odb::database *createConnection()
         db = new odb::sqlite::database(Tools::toStd(fileName), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
         if (!db)
             return 0;
-        odb::transaction t(db->begin());
+        QScopedPointer<odb::transaction> t;
+        bool trans = !odb::transaction::has_current();
+        if (trans)
+            t.reset(new odb::transaction(db->begin()));
         if (!db->execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='threads'")) {
-            t.commit();
-            t.reset(db->begin());
+            if (trans)
+                t->commit();
+            if (trans)
+                t->reset(db->begin());
             db->execute("PRAGMA foreign_keys=OFF");
             odb::schema_catalog::create_schema(*db);
             db->execute("PRAGMA foreign_keys=ON");
-            t.commit();
+            if (trans)
+                t->commit();
         }
         return db;
     } catch (const odb::exception &e) {
