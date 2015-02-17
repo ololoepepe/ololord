@@ -28,27 +28,30 @@ function ajaxRequest(method, params, id, callback) {
 function deletePost(boardName, postNumber, fromThread) {
     if (!boardName || isNaN(+postNumber))
         return;
-    var pwd = prompt(document.getElementById("enterPasswordText").value);
-    if (null === pwd)
-        return;
-    if (pwd.length < 1) {
-        if (!getCookie("hashpass"))
-            return alert(document.getElementById("notLoggedInText").value);
-    } else if (!isHashpass(pwd)) {
-        pwd = toHashpass(pwd);
-    }
-    ajaxRequest("delete_post", [boardName, +postNumber, pwd], 1, function(res) {
-        var post = document.getElementById("post" + postNumber);
-        if (!post) {
-            if (!!fromThread) {
-                var suffix = "thread/" + postNumber + ".html";
-                window.location.href = window.location.href.replace(suffix, "");
-            } else {
-                reloadPage();
-            }
+    var title = document.getElementById("enterPasswordTitle").value;
+    var label = document.getElementById("enterPasswordText").value;
+    showPasswordDialog(title, label, function(pwd) {
+        if (null === pwd)
             return;
+        if (pwd.length < 1) {
+            if (!getCookie("hashpass"))
+                return alert(document.getElementById("notLoggedInText").value);
+        } else if (!isHashpass(pwd)) {
+            pwd = toHashpass(pwd);
         }
-        post.parentNode.removeChild(post);
+        ajaxRequest("delete_post", [boardName, +postNumber, pwd], 1, function(res) {
+            var post = document.getElementById("post" + postNumber);
+            if (!post) {
+                if (!!fromThread) {
+                    var suffix = "thread/" + postNumber + ".html";
+                    window.location.href = window.location.href.replace(suffix, "");
+                } else {
+                    reloadPage();
+                }
+                return;
+            }
+            post.parentNode.removeChild(post);
+        });
     });
 }
 

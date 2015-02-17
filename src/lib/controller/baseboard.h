@@ -48,6 +48,7 @@ public:
     std::string deletePostText;
     std::string deleteThreadText;
     std::string enterPasswordText;
+    std::string enterPasswordTitle;
     std::string fixedText;
     std::string fixThreadText;
     std::string hidePostFormText;

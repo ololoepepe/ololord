@@ -9,3 +9,4 @@
 [done] Fix closed threads
 [done] Add ablility to close/unclose threads form the web
 [done] Add ablility to fix/unfix threads form the web
+[done] Implement secure password input

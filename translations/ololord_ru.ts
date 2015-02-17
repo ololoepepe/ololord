@@ -754,6 +754,26 @@ Your choice:</source>
         <comment>showPasswordText</comment>
         <translation>Показать пароль</translation>
     </message>
+    <message>
+        <source>Cancel</source>
+        <comment>cancelButtonText</comment>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>Confirm</source>
+        <comment>confirmButtonText</comment>
+        <translation>Подтвердить</translation>
+    </message>
+    <message>
+        <source>Hide search form</source>
+        <comment>hideSearchFormText</comment>
+        <translation>Скрыть форму поиска</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <comment>showSearchFormText</comment>
+        <translation>Искать</translation>
+    </message>
 </context>
 <context>
     <name>initBaseThread</name>
@@ -781,11 +801,6 @@ Your choice:</source>
         <source>Hide post form</source>
         <comment>hidePostFormText</comment>
         <translation>Скрыть форму постинга</translation>
-    </message>
-    <message>
-        <source>Hide search form</source>
-        <comment>hideSearchFormText</comment>
-        <translation>Скрыть форму поиска</translation>
     </message>
     <message>
         <source>Send</source>
@@ -853,11 +868,6 @@ Your choice:</source>
         <translation>Создать тред</translation>
     </message>
     <message>
-        <source>Search</source>
-        <comment>showSearchFormText</comment>
-        <translation>Искать</translation>
-    </message>
-    <message>
         <source>Delete post</source>
         <comment>fixedText</comment>
         <translation>Удалить пост</translation>
@@ -866,11 +876,6 @@ Your choice:</source>
         <source>Delete thread</source>
         <comment>fixedText</comment>
         <translation>Удалить тред</translation>
-    </message>
-    <message>
-        <source>Enter password (if empty, current hashpass will be used):</source>
-        <comment>fixedText</comment>
-        <translation>Введите пароль (если он пуст, то будет использован текущий хешпасс):</translation>
     </message>
     <message>
         <source>You are not logged in!</source>
@@ -911,6 +916,16 @@ Your choice:</source>
         <source>Unfix thread</source>
         <comment>unfixThreadText</comment>
         <translation>Открепить тред</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <comment>enterPasswordTitle</comment>
+        <translation>Введите пароль</translation>
+    </message>
+    <message>
+        <source>If password is empty, current hashpass will be used</source>
+        <comment>enterPasswordText</comment>
+        <translation>Если пароль пуст, будет использован текущий хешпасс</translation>
     </message>
 </context>
 <context>

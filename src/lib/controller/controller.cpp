@@ -82,9 +82,11 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     localeMutex.unlock();
     TranslatorStd ts(req);
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
+    c.cancelButtonText = ts.translate("initBase", "Cancel", "cancelButtonText");
+    c.confirmButtonText = ts.translate("initBase", "Confirm", "confirmButtonText");
     c.currentLocale = toWithLocale(ts.locale());
     c.currentTime = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time").value();
-    c.hideSearchFormText = ts.translate("initBaseThread", "Hide search form", "hideSearchFormText");
+    c.hideSearchFormText = ts.translate("initBase", "Hide search form", "hideSearchFormText");
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.loggedIn = !Tools::hashpassString(req).isEmpty();
@@ -110,7 +112,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     SettingsLocker s;
     c.searchApiKey = Tools::toStd(s->value("Site/search_api_key").toString());
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
-    c.showSearchFormText = ts.translate("initBaseThread", "Search", "showSearchFormText");
+    c.showSearchFormText = ts.translate("initBase", "Search", "showSearchFormText");
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
@@ -142,8 +144,9 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.currentThread = currentThread;
     c.deletePostText = ts.translate("initBaseThread", "Delete post", "fixedText");
     c.deleteThreadText = ts.translate("initBaseThread", "Delete thread", "fixedText");
-    c.enterPasswordText = ts.translate("initBaseThread", "Enter password (if empty, current hashpass will be used):",
-                                       "fixedText");
+    c.enterPasswordText = ts.translate("initBaseThread", "If password is empty, current hashpass will be used",
+                                       "enterPasswordText");
+    c.enterPasswordTitle = ts.translate("initBaseThread", "Enter password", "enterPasswordTitle");
     c.fixedText = ts.translate("initBaseThread", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseThread", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseThread", "Hide post form", "hidePostFormText");

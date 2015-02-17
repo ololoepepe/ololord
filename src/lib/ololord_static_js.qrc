@@ -7,5 +7,6 @@
         <file>static/js/create_action.js</file>
         <file>static/js/search_action.js</file>
         <file>static/js/post.js</file>
+        <file>static/js/3rdparty/picoModal-2.1.0.min.js</file>
     </qresource>
 </RCC>

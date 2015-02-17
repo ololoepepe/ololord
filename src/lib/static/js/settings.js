@@ -35,6 +35,60 @@ function reloadPage() {
     document.location.reload(true);
 }
 
+function showPasswordDialog(title, label, callback) {
+    var root = document.createElement("div"); 
+    var div = document.createElement("div");
+    var c = document.createElement("center");
+    var t = document.createElement("b");
+    t.appendChild(document.createTextNode(title));
+    c.appendChild(t);
+    div.appendChild(c);
+    div.appendChild(document.createElement("br"));
+    div.appendChild(document.createTextNode(label));
+    div.appendChild(document.createElement("br"));
+    var input = document.createElement("input");
+    input.type = "password";
+    input.maxlength = 150;
+    input.size = 30;
+    div.appendChild(input);
+    var sw = document.createElement("input");
+    sw.type = "checkbox";
+    sw.title = document.getElementById("showPasswordText").value;
+    sw.onclick = function() {
+        if (input.type === "password")
+            input.type = "text";
+        else if (input.type === "text")
+            input.type = "password";
+    };
+    div.appendChild(sw);
+    root.appendChild(div);
+    root.appendChild(document.createElement("br"));
+    var div2 = document.createElement("div");
+    var dialog = null;
+    var cancel = document.createElement("button");
+    cancel.onclick = function() {
+        dialog.close();
+    };
+    cancel.innerHTML = document.getElementById("cancelButtonText").value;
+    div2.appendChild(cancel);
+    var ok = document.createElement("button");
+    ok.onclick = function() {
+        callback(input.value);
+        dialog.close();
+    };
+    ok.innerHTML = document.getElementById("confirmButtonText").value;
+    div2.appendChild(ok);
+    root.appendChild(div2);
+    dialog = picoModal({
+        "content": root
+    }).afterShow(function(modal) {
+        input.focus();
+    }).afterClose(function(modal) {
+        modal.destroy();
+    });
+    dialog.show();
+}
+
 function changeLocale() {
     var sel = document.getElementById("localeChangeSelect");
     var ln = sel.options[sel.selectedIndex].value;
