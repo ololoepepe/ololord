@@ -11,9 +11,9 @@
     <div class="postHeader">
         <a id="<%= post.number %>"></a>
         <% if ( op && content.fixed ) %>
-            <img src="/<%= sitePathPrefix %>img/pin.png" title="<%= fixedText %>">
+            <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>">
         <% end %>
-        <% if ( op && !content.closed ) %>
+        <% if ( op && content.closed ) %>
             <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
         <% end %>
         <b><%= post.subject %></b>
@@ -33,6 +33,22 @@
             #<a href="javascript:insertPostNumber('<%= post.number %>');"><%= post.number %></a>
         <% else %>
             #<a href="#<%= post.number %>"><%= post.number %></a>
+        <% end %>
+        <% if ( content.moder && op ) %>
+            <% if ( content.fixed ) %>
+                <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+            <% else %>
+                <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+            <% end %>
+            <% if ( content.closed ) %>
+                <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+            <% else %>
+                <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+            <% end %>
         <% end %>
         <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
         <% if ( op ) %>

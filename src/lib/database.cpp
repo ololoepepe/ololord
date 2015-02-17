@@ -249,6 +249,82 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     }
 }
 
+static bool setThreadFixedInternal(const QString &board, quint64 threadNumber, bool fixed, QString *error,
+                                   const QLocale &l, odb::database *db = 0)
+{
+    TranslatorQt tq(l);
+    try {
+        bool trans = false;
+        trans = !db;
+        if (!db)
+            db = createConnection();
+        if (!db)
+            return bRet(error, tq.translate("setThreadFixedInternal", "Internal database error", "error"), false);
+        QScopedPointer<odb::database> dbb;
+        if (trans)
+            dbb.reset(db);
+        QScopedPointer<odb::transaction> transaction;
+        if (trans)
+            transaction.reset(new odb::transaction(db->begin()));
+        odb::result<Thread> tr = db->query<Thread>(odb::query<Thread>::number == threadNumber
+                                                   && odb::query<Thread>::board == board);
+        odb::result<Thread>::iterator ti = tr.begin();
+        if (tr.end() == ti)
+            return bRet(error, tq.translate("setThreadFixedInternal", "No such thread", "error"), false);
+        QSharedPointer<Thread> thread(new Thread(*ti));
+        ++ti;
+        if (tr.end() != ti)
+            return bRet(error, tq.translate("setThreadFixedInternal", "Internal database error", "error"), false);
+        if (thread->fixed() == fixed)
+            return bRet(error, QString(), true);
+        thread->setFixed(fixed);
+        db->update(thread);
+        if (transaction)
+            transaction->commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
+static bool setThreadOpenedInternal(const QString &board, quint64 threadNumber, bool opened, QString *error,
+                                    const QLocale &l, odb::database *db = 0)
+{
+    TranslatorQt tq(l);
+    try {
+        bool trans = false;
+        trans = !db;
+        if (!db)
+            db = createConnection();
+        if (!db)
+            return bRet(error, tq.translate("setThreadOpenedInternal", "Internal database error", "error"), false);
+        QScopedPointer<odb::database> dbb;
+        if (trans)
+            dbb.reset(db);
+        QScopedPointer<odb::transaction> transaction;
+        if (trans)
+            transaction.reset(new odb::transaction(db->begin()));
+        odb::result<Thread> tr = db->query<Thread>(odb::query<Thread>::number == threadNumber
+                                                   && odb::query<Thread>::board == board);
+        odb::result<Thread>::iterator ti = tr.begin();
+        if (tr.end() == ti)
+            return bRet(error, tq.translate("setThreadOpenedInternal", "No such thread", "error"), false);
+        QSharedPointer<Thread> thread(new Thread(*ti));
+        ++ti;
+        if (tr.end() != ti)
+            return bRet(error, tq.translate("setThreadOpenedInternal", "No such thread", "error"), false);
+        if (thread->postingEnabled() == opened)
+            return bRet(error, QString(), true);
+        thread->setPostingEnabled(opened);
+        db->update(thread);
+        if (transaction)
+            transaction->commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
 static bool threadIdDateTimeFixedLessThan(const ThreadIdDateTimeFixed &t1, const ThreadIdDateTimeFixed &t2)
 {
     if (t1.fixed == t2.fixed)
@@ -443,9 +519,11 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
                 int lvl = registeredUserLevel(req, false);
                 if (lvl < RegisteredUser::ModerLevel || registeredUserLevel(phps, false) >= lvl)
                     return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
-                QStringList boards = registeredUserBoards(req, false);
-                if (!boards.contains("*") && !boards.contains(boardName))
-                    return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
+                if (lvl < RegisteredUser::AdminLevel) {
+                    QStringList boards = registeredUserBoards(req, false);
+                    if (!boards.contains("*") && !boards.contains(boardName))
+                        return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
+                }
             }
         } else if (password != ppwd) {
             return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
@@ -648,25 +726,35 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
 
 bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error, const QLocale &l)
 {
-    TranslatorQt tq(l);
+    return setThreadFixedInternal(board, threadNumber, fixed, error, l);
+}
+
+bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, const cppcms::http::request &req,
+                    QString *error)
+{
+    TranslatorQt tq(req);
+    if (!AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("setThreadFixed", "Invalid board name", "error"), false);
+    if (!threadNumber)
+        return bRet(error, tq.translate("setThreadFixed", "Invalid thread number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("setThreadFixed", "Not logged in", "error"), false);
     try {
         QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("setThreadFixed", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());
-        odb::result<Thread> tr = db->query<Thread>(odb::query<Thread>::number == threadNumber
-                                                   && odb::query<Thread>::board == board);
-        odb::result<Thread>::iterator ti = tr.begin();
-        if (tr.end() == ti)
-            return bRet(error, tq.translate("setThreadFixed", "No such thread", "error"), false);
-        QSharedPointer<Thread> thread(new Thread(*ti));
-        ++ti;
-        if (tr.end() != ti)
-            return bRet(error, tq.translate("setThreadFixed", "Internal database error", "error"), false);
-        if (thread->fixed() == fixed)
-            return bRet(error, QString(), true);
-        thread->setFixed(fixed);
-        db->update(thread);
+        int lvl = registeredUserLevel(req, false);
+        if (lvl < RegisteredUser::ModerLevel)
+            return bRet(error, tq.translate("setThreadFixed", "Not enough rights", "error"), false);
+        if (lvl < RegisteredUser::AdminLevel) {
+            QStringList boards = registeredUserBoards(req, false);
+            if (!boards.contains("*") && !boards.contains(boardName))
+                return bRet(error, tq.translate("setThreadFixed", "Not enough rights", "error"), false);
+        }
+        if (!setThreadFixedInternal(boardName, threadNumber, fixed, error, tq.locale(), db.data()))
+            return false;
         transaction.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
@@ -676,25 +764,35 @@ bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QStr
 
 bool setThreadOpened(const QString &board, quint64 threadNumber, bool opened, QString *error, const QLocale &l)
 {
-    TranslatorQt tq(l);
+    return setThreadOpenedInternal(board, threadNumber, opened, error, l);
+}
+
+bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened, const cppcms::http::request &req,
+                     QString *error)
+{
+    TranslatorQt tq(req);
+    if (!AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("setThreadOpened", "Invalid board name", "error"), false);
+    if (!threadNumber)
+        return bRet(error, tq.translate("setThreadOpened", "Invalid thread number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("setThreadOpened", "Not logged in", "error"), false);
     try {
         QScopedPointer<odb::database> db(createConnection());
         if (!db)
             return bRet(error, tq.translate("setThreadOpened", "Internal database error", "error"), false);
         odb::transaction transaction(db->begin());
-        odb::result<Thread> tr = db->query<Thread>(odb::query<Thread>::number == threadNumber
-                                                   && odb::query<Thread>::board == board);
-        odb::result<Thread>::iterator ti = tr.begin();
-        if (tr.end() == ti)
-            return bRet(error, tq.translate("setThreadOpened", "No such thread", "error"), false);
-        QSharedPointer<Thread> thread(new Thread(*ti));
-        ++ti;
-        if (tr.end() != ti)
-            return bRet(error, tq.translate("setThreadOpened", "No such thread", "error"), false);
-        if (thread->postingEnabled() == opened)
-            return bRet(error, QString(), true);
-        thread->setPostingEnabled(opened);
-        db->update(thread);
+        int lvl = registeredUserLevel(req, false);
+        if (lvl < RegisteredUser::ModerLevel)
+            return bRet(error, tq.translate("setThreadOpened", "Not enough rights", "error"), false);
+        if (lvl < RegisteredUser::AdminLevel) {
+            QStringList boards = registeredUserBoards(req, false);
+            if (!boards.contains("*") && !boards.contains(boardName))
+                return bRet(error, tq.translate("setThreadOpened", "Not enough rights", "error"), false);
+        }
+        if (!setThreadOpenedInternal(boardName, threadNumber, opened, error, tq.locale(), db.data()))
+            return false;
         transaction.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {

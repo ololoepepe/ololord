@@ -892,76 +892,32 @@ Your choice:</source>
         <comment>registeredText</comment>
         <translation>Этот пользователь зарегистрирован</translation>
     </message>
+    <message>
+        <source>Close thread</source>
+        <comment>closeThreadText</comment>
+        <translation>Закрыть тред</translation>
+    </message>
+    <message>
+        <source>Fix thread</source>
+        <comment>fixThreadText</comment>
+        <translation>Закрепить тред</translation>
+    </message>
+    <message>
+        <source>Open thread</source>
+        <comment>openThreadText</comment>
+        <translation>Открыть тред</translation>
+    </message>
+    <message>
+        <source>Unfix thread</source>
+        <comment>unfixThreadText</comment>
+        <translation>Открепить тред</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
     <message>
         <source>This is ololord. Enter &quot;help --all&quot; to see full Help</source>
         <translation>Это ololord. Введите &quot;help --all&quot; чтобы увидеть полную Справку</translation>
-    </message>
-    <message>
-        <source>Ban a user.
-The parameters are:
-  --ip-address|-i=&lt;ip&gt;, where &lt;ip&gt; must be a valid IP address.
-  --board|-b=&lt;board&gt; (optional), where &lt;board&gt; must be one of the existing boards or *.
-    The user will be banned for the board specified or for all boards in case of *).
-    The default is *.
-  --level|-l=&lt;level&gt; (optional), where &lt;level&gt; must be one of the following:
-    0 - user is not banned,
-    1 - user is banned from posting,
-    10 - user is banned from reading.
-  --reason|-r=&lt;reason&gt; (optional), where &lt;reason&gt; is a reason for (un)banning.
-  --expires|-e=&lt;date&gt; (optional), where &lt;date&gt; must be the expiration date in the following format:
-    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
-Example:
-  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015</source>
-        <translation type="obsolete">Забанить пользователя.
-Параметры:
-  --ip-address|-i=&lt;ip&gt;, где &lt;ip&gt; должен быть правильным IP-адресом.
-  --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
-    Пользователь будет забанен на указанной доске, либо на всех досках, если указано *).
-  --level|-l=&lt;level&gt; (опционально), где &lt;level&gt; должен быть одним из следующих:
-    0 - пользователь не забанен,
-    1 - пользователю запрещено постить,
-    10 - пользователю запрещено читать.
-  --reason|-r=&lt;reason&gt; (опционально), где &lt;reason&gt; - причниа (раз)бана.
-  --expires|-e=&lt;date&gt; (опционально), где &lt;date&gt; должна быть датой окончания бана в следующем формате:
-    dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
-Пример:
-  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015</translation>
-    </message>
-    <message>
-        <source>Ban a user.
-The parameters are:
-  --source-board|-s=&lt;board&gt;, where &lt;board&gt; must be one of the existing boards.
-  --post-number|-p=&lt;number&gt;, where &lt;number&gt; must be a number of a post.
-  --board|-b=&lt;board&gt; (optional), where &lt;board&gt; must be one of the existing boards or *.
-    The user will be banned for the board specified or for all boards in case of *).
-    The default is *.
-  --level|-l=&lt;level&gt; (optional), where &lt;level&gt; must be one of the following:
-    0 - user is not banned,
-    1 - user is banned from posting,
-    10 - user is banned from reading.
-  --reason|-r=&lt;reason&gt; (optional), where &lt;reason&gt; is a reason for (un)banning.
-  --expires|-e=&lt;date&gt; (optional), where &lt;date&gt; must be the expiration date in the following format:
-    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
-Example:
-  ban-poster -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015</source>
-        <translation type="obsolete">Забанить пользователя.
-Параметры:
-  --source-board|-s=&lt;board&gt;, где &lt;board&gt; должна быть одной из существующих досок.
-  --post-number|-p=&lt;number&gt;, где &lt;number&gt; должен быть номером поста.
-  --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
-    Пользователь будет забанен на указанной доске, либо на всех досках, если указано *).
-  --level|-l=&lt;level&gt; (опционально), где &lt;level&gt; должен быть одним из следующих:
-    0 - пользователь не забанен,
-    1 - пользователю запрещено постить,
-    10 - пользователю запрещено читать.
-  --reason|-r=&lt;reason&gt; (опционально), где &lt;reason&gt; - причниа (раз)бана.
-  --expires|-e=&lt;date&gt; (опционально), где &lt;date&gt; должна быть датой окончания бана в следующем формате:
-    dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
-Пример:
-  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015</translation>
     </message>
     <message>
         <source>Make a thread &lt;thread-number&gt; at &lt;board&gt; not available for posting (closed).</source>
@@ -1452,6 +1408,34 @@ The default is 0 (do not archive).</source>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
     <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>не залогинен</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+</context>
+<context>
+    <name>setThreadFixedInternal</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
         <source>No such thread</source>
         <comment>error</comment>
         <translation>Нет такого треда</translation>
@@ -1459,6 +1443,34 @@ The default is 0 (do not archive).</source>
 </context>
 <context>
     <name>setThreadOpened</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+</context>
+<context>
+    <name>setThreadOpenedInternal</name>
     <message>
         <source>Internal database error</source>
         <comment>error</comment>

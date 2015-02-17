@@ -26,6 +26,8 @@ public:
 public:
     void deletePost(std::string boardName, long long postNumber, std::string password);
     QList<Handler> handlers() const;
+    void setThreadFixed(std::string boardName, long long postNumber, bool fixed);
+    void setThreadOpened(std::string boardName, long long postNumber, bool opened);
 };
 
 #endif // ACTIONAJAXHANDLER_H

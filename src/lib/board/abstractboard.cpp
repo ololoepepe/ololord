@@ -332,7 +332,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                     return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                         tq.translate("AbstractBoard", "Internal database error", "description"));
                 }
-                c.closed = i->postingEnabled();
+                c.closed = !i->postingEnabled();
                 c.fixed = i->fixed();
                 pageTitle = posts.first().load()->subject();
                 postingEn = postingEn && i->postingEnabled();

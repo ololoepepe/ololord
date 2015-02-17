@@ -116,10 +116,14 @@ OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass, bool transact
 OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level = RegisteredUser::UserLevel,
                                  const QStringList &boards = QStringList("*"), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error = 0,
+OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, QString *error = 0,
                                    const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool setThreadOpened(const QString &board, quint64 threadNumber, bool opened, QString *error = 0,
+OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed,
+                                   const cppcms::http::request &req, QString *error = 0);
+OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened, QString *error = 0,
                                     const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened,
+                                    const cppcms::http::request &req, QString *error = 0);
 
 }
 

@@ -10,7 +10,7 @@
 <% end %>
     <div class="postHeader">
         <% if ( post.number == thread.opPost.number && thread.fixed ) %>
-            <img src="/<%= sitePathPrefix %>img/pin.png" title="<%= fixedText %>">
+            <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>">
         <% end %>
         <% if ( post.number == thread.opPost.number && thread.closed ) %>
             <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
@@ -33,8 +33,23 @@
         <% else %>
             #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
         <% end %>
+        <% if ( content.moder && post.number == thread.opPost.number ) %>
+            <% if ( thread.fixed ) %>
+                <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+            <% else %>
+                <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+            <% end %>
+            <% if ( thread.closed ) %>
+                <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+            <% else %>
+                <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+            <% end %>
+        <% end %>
         <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>');">
-        <!-- -->
         <% if ( post.number == thread.opPost.number ) %>
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
         <% else %>

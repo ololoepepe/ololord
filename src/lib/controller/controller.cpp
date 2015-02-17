@@ -136,6 +136,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.captchaEnabled = Tools::captchaEnabled(board->name());
     c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
     c.closedText = ts.translate("initBaseThread", "The thread is closed", "closedText");
+    c.closeThreadText = ts.translate("initBaseThread", "Close thread", "closeThreadText");
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;
@@ -144,8 +145,10 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.enterPasswordText = ts.translate("initBaseThread", "Enter password (if empty, current hashpass will be used):",
                                        "fixedText");
     c.fixedText = ts.translate("initBaseThread", "Fixed", "fixedText");
+    c.fixThreadText = ts.translate("initBaseThread", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseThread", "Hide post form", "hidePostFormText");
     c.notLoggedInText = ts.translate("initBaseThread", "You are not logged in!", "notLoggedInText");
+    c.openThreadText = ts.translate("initBaseThread", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseThread", "Send", "postFormButtonSubmit");
     c.postFormInputFile = ts.translate("initBaseThread", "File:", "postFormInputFile");
     c.postFormInputText = ts.translate("initBaseThread", "Post:", "postFormInputText");
@@ -167,6 +170,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.registeredText = ts.translate("initBaseThread", "This user is registered", "registeredText");
     c.showPostFormText = currentThread ? ts.translate("initBaseThread", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseThread", "Create thread", "showPostFormText");
+    c.unfixThreadText = ts.translate("initBaseThread", "Unfix thread", "unfixThreadText");
 }
 
 void redirect(cppcms::application &app, const QString &where)

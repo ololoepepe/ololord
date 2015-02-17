@@ -16,11 +16,11 @@
         <file>static/img/banner/vg_4.jpg</file>
         <file>static/img/not_found/not_found_1.jpg</file>
         <file>static/img/not_found/not_found_2.png</file>
-        <file>static/img/pin.png</file>
         <file>static/img/closed.png</file>
         <file>static/img/delete.png</file>
         <file>static/img/open.png</file>
         <file>static/img/registered.png</file>
         <file>static/img/unfix.png</file>
+        <file>static/img/fixed.png</file>
     </qresource>
 </RCC>

@@ -42,15 +42,18 @@ public:
     bool captchaEnabled;
     std::string captchaKey;
     std::string closedText;
+    std::string closeThreadText;
     AbstractBoard::BoardInfo currentBoard;
     unsigned long long currentThread;
     std::string deletePostText;
     std::string deleteThreadText;
     std::string enterPasswordText;
     std::string fixedText;
+    std::string fixThreadText;
     std::string hidePostFormText;
     bool moder;
     std::string notLoggedInText;
+    std::string openThreadText;
     std::string postFormButtonSubmit;
     std::string postFormInputFile;
     std::string postFormInputText;
@@ -65,6 +68,7 @@ public:
     std::string postLimitReachedText;
     std::string registeredText;
     std::string showPostFormText;
+    std::string unfixThreadText;
 };
 
 }
