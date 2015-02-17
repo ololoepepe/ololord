@@ -12,6 +12,7 @@
 #include "stored/banneduser-odb.hxx"
 #include "tools.h"
 #include "translator.h"
+#include "translator.h"
 
 #include <BCoreApplication>
 #include <BeQt>
@@ -59,7 +60,7 @@ static Content::Base::Locale toWithLocale(const QLocale &l)
     return ll;
 }
 
-void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle, odb::database *db)
+void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle)
 {
     typedef std::list<Content::Base::Locale> LocaleList;
     localeMutex.lock();
@@ -94,7 +95,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                    : ts.translate("initBase", "Login", "loginButtonText");
     c.loginLabelText = ts.translate("initBase", "Login:", "loginLabelText");
     if (c.loggedIn) {
-        int lvl = Database::registeredUserLevel(req, db);
+        int lvl = Database::registeredUserLevel(req);
         if (lvl < 0) {
             c.loginMessageWarning = ts.translate("initBase", "Logged in, but not registered", "loginMessageWarning");
         } else {
@@ -223,12 +224,12 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     Tools::log(app, error + (!description.isEmpty() ? (": " + description) : QString()));
 }
 
-void renderNotFound(cppcms::application &app, odb::database *db)
+void renderNotFound(cppcms::application &app)
 {
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::NotFound c;
-    initBase(c, app.request(), tq.translate("renderNotFound", "Error 404", "pageTitle"), db);
+    initBase(c, app.request(), tq.translate("renderNotFound", "Error 404", "pageTitle"));
     QStringList fns;
     foreach (const QString &path, BCoreApplication::locations(BCoreApplication::DataPath))
         fns << QDir(path + "/static/img/not_found").entryList(QDir::Files);
@@ -247,42 +248,41 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
     QString ip = Tools::userIp(app.request());
     TranslatorQt tq(app.request());
     try {
-        odb::database *db = Database::createConnection();
-        if (!db) {
+        Transaction t;
+        if (!t) {
             renderError(app, tq.translate("testBan", "Internal error", "error"),
                         tq.translate("testBan", "Internal database error", "description"));
             return false;
         }
-        odb::transaction transaction(db->begin());
-        odb::result<BannedUser> r(db->query<BannedUser>(odb::query<BannedUser>::board == "*"
-                                                        && odb::query<BannedUser>::ip == ip));
+        QList<BannedUser> list = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
+                                                                         && odb::query<BannedUser>::ip == ip);
         QString banBoard;
         QDateTime banDateTime;
         QString banReason;
         QDateTime banExpires;
         int banLevel = 0;
-        for (odb::result<BannedUser>::iterator i = r.begin(); i != r.end(); ++i) {
-            QDateTime expires = i->expirationDateTime().toUTC();
+        foreach (const BannedUser &u, list) {
+            QDateTime expires = u.expirationDateTime().toUTC();
             if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                banLevel = i->level();
-                banBoard = i->board();
-                banDateTime = i->dateTime();
-                banReason = i->reason();
-                banExpires = i->expirationDateTime();
+                banLevel = u.level();
+                banBoard = u.board();
+                banDateTime = u.dateTime();
+                banReason = u.reason();
+                banExpires = u.expirationDateTime();
                 break;
             }
         }
         if (banLevel <= 0) {
-            odb::result<BannedUser> rr(db->query<BannedUser>(odb::query<BannedUser>::board == board
-                                                            && odb::query<BannedUser>::ip == ip));
-            for (odb::result<BannedUser>::iterator i = rr.begin(); i != rr.end(); ++i) {
-                QDateTime expires = i->expirationDateTime().toUTC();
+            QList<BannedUser> listt = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == board
+                                                                              && odb::query<BannedUser>::ip == ip);
+            foreach (const BannedUser &u, listt) {
+                QDateTime expires = u.expirationDateTime().toUTC();
                 if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                    banLevel = i->level();
-                    banBoard = i->board();
-                    banDateTime = i->dateTime().toUTC();
-                    banReason = i->reason();
-                    banExpires = i->expirationDateTime();
+                    banLevel = u.level();
+                    banBoard = u.board();
+                    banDateTime = u.dateTime().toUTC();
+                    banReason = u.reason();
+                    banExpires = u.expirationDateTime();
                     break;
                 }
             }
@@ -292,7 +292,7 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
         if (banLevel < proposedAction)
             return true;
         renderBan(app, banBoard, banLevel, banDateTime, banReason, banExpires);
-        transaction.commit();
+        t.commit();
         return false;
     }  catch (const odb::exception &e) {
         renderError(app, tq.translate("testBan", "Internal error", "error"), Tools::fromStd(e.what()));

@@ -12,3 +12,4 @@
 [done] Implement secure password input
 [done] Delete post files if transaction rolls back
 [done] Implement ODB wrappers
+[done] Implement thread-local transaction singleton

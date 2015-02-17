@@ -22,6 +22,7 @@
 #include "stored/thread.h"
 #include "stored/thread-odb.hxx"
 #include "tools.h"
+#include "transaction.h"
 #include "translator.h"
 
 #include <BCoreApplication>
@@ -229,12 +230,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     unsigned int pageCount = 0;
     bool postingEn = postingEnabled();
     try {
-        Database::Transaction t;
-        if (!t.db()) {
+        Transaction t;
+        if (!t) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
-        QList<Thread> list = Database::query<Thread, Thread>(t.db(), odb::query<Thread>::board == name()
+        QList<Thread> list = Database::query<Thread, Thread>(odb::query<Thread>::board == name()
                                                              && odb::query<Thread>::archived == false);
         qSort(list.begin(), list.end(), &threadLessThan);
         pageCount = (list.size() / threadsPerPage()) + ((list.size() % threadsPerPage()) ? 1 : 0);
@@ -251,19 +252,19 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.postLimit = postLimit();
             thread.postCount = posts.size();
             thread.postingEnabled = postingEn && tt.postingEnabled();
-            thread.opPost = Controller::toController(t.db(), *posts.first().load(), name(), tt.number(), ts.locale(),
+            thread.opPost = Controller::toController(*posts.first().load(), name(), tt.number(), ts.locale(),
                                                      app.request(), processCode());
             foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
                 if (i <= 0)
                     break;
-                thread.lastPosts.push_front(Controller::toController(t.db(), *posts.at(i).load(), name(), tt.number(),
+                thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), name(), tt.number(),
                                                                      ts.locale(), app.request(), processCode()));
             }
             c.threads.push_back(thread);
         }
-        c.moder = Database::registeredUserLevel(app.request(), t.db()) >= RegisteredUser::ModerLevel;
+        c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
         if (c.moder) {
-            QStringList boards = Database::registeredUserBoards(app.request(), t.db());
+            QStringList boards = Database::registeredUserBoards(app.request());
             c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
         }
         t.commit();
@@ -312,20 +313,20 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     bool postingEn = postingEnabled();
     QString pageTitle;
     try {
-        Database::Transaction t;
-        if (!t.db()) {
+        Transaction t;
+        if (!t) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
         Database::Result<Thread> thread = Database::queryOne<Thread, Thread>(
-                    t.db(), odb::query<Thread>::board == name() && odb::query<Thread>::number == threadNumber
+                    odb::query<Thread>::board == name() && odb::query<Thread>::number == threadNumber
                     && odb::query<Thread>::archived == false);
         if (thread.error) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
         if (!thread)
-            return Controller::renderNotFound(app, t.db());
+            return Controller::renderNotFound(app);
         const Thread::Posts &posts = thread->posts();
         if (posts.isEmpty()) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
@@ -335,15 +336,15 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         c.fixed = thread->fixed();
         pageTitle = posts.first().load()->subject();
         postingEn = postingEn && thread->postingEnabled();
-        c.opPost = Controller::toController(t.db(), *posts.first().load(), name(), thread->number(), ts.locale(),
+        c.opPost = Controller::toController(*posts.first().load(), name(), thread->number(), ts.locale(),
                                             app.request(), processCode());
         foreach (int j, bRangeD(1, posts.size() - 1)) {
-            c.posts.push_back(Controller::toController(t.db(), *posts.at(j).load(), name(), thread->number(),
-                                                       ts.locale(), app.request(), processCode()));
+            c.posts.push_back(Controller::toController(*posts.at(j).load(), name(), thread->number(), ts.locale(),
+                                                       app.request(), processCode()));
         }
-        c.moder = Database::registeredUserLevel(app.request(), t.db()) >= RegisteredUser::ModerLevel;
+        c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
         if (c.moder) {
-            QStringList boards = Database::registeredUserBoards(app.request(), t.db());
+            QStringList boards = Database::registeredUserBoards(app.request());
             c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
         }
         t.commit();
