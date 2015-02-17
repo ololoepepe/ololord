@@ -12,7 +12,7 @@
         <% if ( post.number == thread.opPost.number && thread.fixed ) %>
             <img src="/<%= sitePathPrefix %>img/pin.png" title="<%= fixedText %>">
         <% end %>
-        <% if ( post.number == thread.opPost.number && !thread.postingEnabled ) %>
+        <% if ( post.number == thread.opPost.number && thread.closed ) %>
             <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
         <% end %>
         <b><%= post.subject %></b>
@@ -34,6 +34,7 @@
             #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
         <% end %>
         <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>');">
+        <!-- -->
         <% if ( post.number == thread.opPost.number ) %>
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
         <% else %>

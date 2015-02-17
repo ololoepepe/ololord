@@ -14,6 +14,7 @@ namespace Content
 struct OLOLORD_EXPORT Thread : public BaseBoard
 {
     unsigned int bumpLimit;
+    bool closed;
     bool fixed;
     Post opPost;
     unsigned int postLimit;

@@ -5,3 +5,4 @@
 [done] Implement thread archiving
 [done] Fix database connection cleanup
 [done] Remove banned user from database when unbanned
+[done] Fix closed threads

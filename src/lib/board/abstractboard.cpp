@@ -171,7 +171,7 @@ void AbstractBoard::createPost(cppcms::application &app)
     if (!Controller::testParams(app, params, files, name()))
         return;
     TranslatorQt tq(req);
-    if (!Tools::postingEnabled(name())) {
+    if (!postingEnabled()) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Posting disabled", "error"),
             tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
     }
@@ -200,7 +200,7 @@ void AbstractBoard::createThread(cppcms::application &app)
     if (!Controller::testParams(app, params, files, name()))
         return;
     TranslatorQt tq(req);
-    if (!Tools::postingEnabled(name())) {
+    if (!postingEnabled()) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Posting disabled", "error"),
             tq.translate("AbstractBoard", "Posting is disabled for this board", "description"));
     }
@@ -250,6 +250,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             Content::Board::Thread thread;
             const Thread::Posts &posts = tt.posts();
             thread.bumpLimit = bumpLimit();
+            thread.closed = !tt.postingEnabled();
             thread.fixed = tt.fixed();
             thread.postLimit = postLimit();
             thread.postCount = posts.size();
@@ -263,6 +264,11 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                                                                      ts.locale(), app.request(), processCode()));
             }
             c.threads.push_back(thread);
+        }
+        c.moder = Database::registeredUserLevel(app.request(), false) >= RegisteredUser::ModerLevel;
+        if (c.moder) {
+            QStringList boards = Database::registeredUserBoards(app.request(), false);
+            c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
         }
         transaction.commit();
     }  catch (const odb::exception &e) {
@@ -307,7 +313,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     Content::Thread c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    bool postingEn = false;
+    bool postingEn = postingEnabled();
     QString pageTitle;
     try {
         QScopedPointer<odb::database> db(Database::createConnection());
@@ -326,9 +332,10 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                     return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                         tq.translate("AbstractBoard", "Internal database error", "description"));
                 }
+                c.closed = i->postingEnabled();
                 c.fixed = i->fixed();
                 pageTitle = posts.first().load()->subject();
-                postingEn = Tools::postingEnabled(name()) && i->postingEnabled();
+                postingEn = postingEn && i->postingEnabled();
                 c.opPost = Controller::toController(*posts.first().load(), name(), i->number(), ts.locale(),
                                                     app.request(), processCode());
                 foreach (int j, bRangeD(1, posts.size() - 1)) {
@@ -341,6 +348,11 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         }
         if (!threadFound)
             return Controller::renderNotFound(app);
+        c.moder = Database::registeredUserLevel(app.request(), false) >= RegisteredUser::ModerLevel;
+        if (c.moder) {
+            QStringList boards = Database::registeredUserBoards(app.request(), false);
+            c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
+        }
         transaction.commit();
     }  catch (const odb::exception &e) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),

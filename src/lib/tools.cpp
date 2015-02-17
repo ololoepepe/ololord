@@ -356,15 +356,6 @@ FileList postFiles(const cppcms::http::request &request)
     return list;
 }
 
-bool postingEnabled(const QString &boardName)
-{
-    if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
-        return false;
-    SettingsLocker s;
-    return s->value("Board/posting_enabled", true).toBool()
-            && s->value("Board/" + boardName + "/posting_enabled", true).toBool();
-}
-
 PostParameters postParameters(const cppcms::http::request &request)
 {
     PostParameters m;
