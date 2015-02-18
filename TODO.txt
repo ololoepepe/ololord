@@ -3,3 +3,4 @@
 * Add ability to hide posts/threads
 * Add ability to customize captcha
 [done] Add news block to the home page
+[done] Optimise Transaction wrapper class
