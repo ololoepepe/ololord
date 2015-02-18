@@ -119,11 +119,16 @@ static void processWakabaMarkExternalLink(QString &text, int start, int len, con
         QString cap = rx.cap();
         if (!cap.startsWith("http"))
             cap.prepend("http://");
-        t.insert(ind + rx.matchedLength(), "</a>");
+        int ml = rx.matchedLength();
+        if (cap.endsWith('.')) {
+            cap.remove(cap.length() - 1, 1);
+            ml -= 1;
+        }
+        t.insert(ind + ml, "</a>");
         t.insert(ind, "<a href=\"" + cap + "\">");
         skip << qMakePair(ind, cap.length() + 11);
-        skip << qMakePair(ind + rx.matchedLength() + cap.length() + 11, 4);
-        ind = rx.indexIn(t, ind + rx.matchedLength() + cap.length() + 15);
+        skip << qMakePair(ind + ml + cap.length() + 11, 4);
+        ind = rx.indexIn(t, ind + ml + cap.length() + 15);
     }
     processPostText(t, skip, boardName, threadNumber, processCode, &toHtml);
     text.replace(start, len, t);
