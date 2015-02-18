@@ -33,5 +33,11 @@
 }
 
 .moderName {
+    font-weight: bold;
     color: blue;
+}
+
+.userName {
+    font-weight: bold;
+    color: #006000;
 }

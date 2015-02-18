@@ -552,7 +552,9 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
     }
     p.name = Tools::toStd(toHtml(post.name()));
     if (p.name.empty())
-        p.name = Tools::toStd(board->defaultUserName(l));
+        p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+    else
+        p.name = "<span class=\"userName\">" + p.name + "</span>";
     p.nameRaw = Tools::toStd(post.name());
     if (p.nameRaw.empty())
         p.nameRaw = Tools::toStd(board->defaultUserName(l));
@@ -576,7 +578,7 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         }
         p.name = Tools::toStd(name);
         if (p.name.empty())
-            p.name = Tools::toStd(board->defaultUserName(l));
+            p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
         QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
