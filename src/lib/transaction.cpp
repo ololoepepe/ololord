@@ -56,7 +56,9 @@ void Transaction::commit()
         } else {
             try {
                 h->commit();
+                odb::database *db = &h->database();
                 delete h;
+                delete db;
             } catch (const std::exception &e) {
                 qDebug() << e.what();
                 return;
@@ -116,7 +118,9 @@ void Transaction::rollback()
         } else {
             try {
                 h->rollback();
+                odb::database *db = &h->database();
                 delete h;
+                delete db;
             } catch (const std::exception &e) {
                 qDebug() << e.what();
                 return;
