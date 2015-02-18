@@ -8,6 +8,7 @@
 #include "board/mlpboard.h"
 #include "board/prboard.h"
 #include "board/rfboard.h"
+#include "board/socboard.h"
 #include "board/threedpdboard.h"
 #include "board/vgboard.h"
 #include "controller/baseboard.h"
@@ -455,6 +456,8 @@ void AbstractBoard::initBoards(bool reinit)
     b = new prBoard;
     boards.insert(b->name(), b);
     b = new rfBoard;
+    boards.insert(b->name(), b);
+    b = new socBoard;
     boards.insert(b->name(), b);
     b = new threedpdBoard;
     boards.insert(b->name(), b);
