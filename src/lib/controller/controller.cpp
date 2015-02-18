@@ -6,6 +6,7 @@
 #include "board/abstractboard.h"
 #include "database.h"
 #include "error.h"
+#include "ipban.h"
 #include "notfound.h"
 #include "settingslocker.h"
 #include "stored/banneduser.h"
@@ -226,6 +227,24 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     Tools::log(app, error + (!description.isEmpty() ? (": " + description) : QString()));
 }
 
+void renderIpBan(cppcms::application &app, int level)
+{
+    TranslatorQt tq(app.request());
+    TranslatorStd ts(app.request());
+    Content::IpBan c;
+    initBase(c, app.request(), tq.translate("renderIpBan", "Ban", "pageTitle"));
+    c.banMessage = ts.translate("renderIpBan", "You are banned", "pageTitle");
+    if (level >= 10) {
+        c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
+                                        "You are not allowed to read or make posts.", "pageTitle");
+    } else if (level >= 1) {
+        c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
+                                        "You are not allowed to make posts.", "pageTitle");
+    }
+    app.render("ip_ban", c);
+    Tools::log(app, "Banned (ban list)");
+}
+
 void renderNotFound(cppcms::application &app)
 {
     TranslatorQt tq(app.request());
@@ -248,6 +267,11 @@ void renderNotFound(cppcms::application &app)
 bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board)
 {
     QString ip = Tools::userIp(app.request());
+    int lvl = Tools::ipBanLevel(ip);
+    if (lvl >= proposedAction) {
+        renderIpBan(app, lvl);
+        return false;
+    }
     TranslatorQt tq(app.request());
     try {
         Transaction t;

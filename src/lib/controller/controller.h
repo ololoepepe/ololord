@@ -58,6 +58,7 @@ OLOLORD_EXPORT void renderBan(cppcms::application &app, const QString &board, in
                               const QString &reason = QString(), const QDateTime &expires = QDateTime());
 OLOLORD_EXPORT void renderError(cppcms::application &app, const QString &error,
                                 const QString &description = QString());
+OLOLORD_EXPORT void renderIpBan(cppcms::application &app, int level);
 OLOLORD_EXPORT void renderNotFound(cppcms::application &app);
 OLOLORD_EXPORT bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board);
 OLOLORD_EXPORT bool testParams(cppcms::application &app, const Tools::PostParameters &params,

@@ -1345,6 +1345,29 @@ The default is 0 (do not archive).</source>
     </message>
 </context>
 <context>
+    <name>renderIpBan</name>
+    <message>
+        <source>Ban</source>
+        <comment>pageTitle</comment>
+        <translation>Бан</translation>
+    </message>
+    <message>
+        <source>You are banned</source>
+        <comment>pageTitle</comment>
+        <translation>Вы забанены</translation>
+    </message>
+    <message>
+        <source>Your IP address is in the ban list. You are not allowed to read or make posts.</source>
+        <comment>pageTitle</comment>
+        <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить или читать.</translation>
+    </message>
+    <message>
+        <source>Your IP address is in the ban list. You are not allowed to make posts.</source>
+        <comment>pageTitle</comment>
+        <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить.</translation>
+    </message>
+</context>
+<context>
     <name>renderNotFound</name>
     <message>
         <source>Page or file not found</source>

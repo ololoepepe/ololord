@@ -16,4 +16,4 @@
 [done] Implement thread-local transaction singleton
 [done] Add ability to be logged in but post without a tripcode
 [done] Add /int/ board
-* Add IP ban list
+[done] Add IP ban list

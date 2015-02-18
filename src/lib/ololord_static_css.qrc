@@ -17,5 +17,6 @@
         <file>static/css/not_found.css</file>
         <file>static/css/search_action.css</file>
         <file>static/css/create_action.css</file>
+        <file>static/css/ip_ban.css</file>
     </qresource>
 </RCC>

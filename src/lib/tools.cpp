@@ -285,6 +285,53 @@ QString hashpassString(const cppcms::http::request &req)
     return cookieValue(req, "hashpass");
 }
 
+int ipBanLevel(const QString &ip)
+{
+    bool ok = false;
+    unsigned int n = ipNum(ip, &ok);
+    if (!ok || !n)
+        return 0;
+    Cache::IpBanInfoList *list = Cache::ipBanInfoList();
+    int level = 0;
+    if (!list) {
+        QString path = BDirTools::findResource("res/ip_ban.txt", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return 0;
+        QStringList sl = BDirTools::readTextFile(path, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+        list = new Cache::IpBanInfoList;
+        foreach (const QString &s, sl) {
+            QStringList sll = s.split(' ');
+            if (sll.size() != 2)
+                continue;
+            Cache::IpBanInfo inf;
+            inf.ip = ipNum(sll.first(), &ok);
+            if (!ok || !inf.ip)
+                continue;
+            inf.level = sll.last().toUInt(&ok);
+            if (!ok || !inf.level)
+                continue;
+            if (inf.ip == n)
+                level = inf.level;
+            *list << inf;
+        }
+        if (!Cache::cacheIpBanInfoList(list))
+            delete list;
+    } else {
+        foreach (const Cache::IpBanInfo &inf, *list) {
+            if (inf.ip == n) {
+                level = inf.level;
+                break;
+            }
+        }
+    }
+    return level;
+}
+
+int ipBanLevel(const cppcms::http::request &req)
+{
+    return ipBanLevel(userIp(req));
+}
+
 bool isCaptchaValid(const QString &captcha)
 {
     if (captcha.isEmpty())
