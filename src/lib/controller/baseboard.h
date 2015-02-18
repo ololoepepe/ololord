@@ -32,6 +32,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string subject;
         std::string text;
         std::string tripcode;
+        bool showTripcode;
     };
 public:
     std::string action;

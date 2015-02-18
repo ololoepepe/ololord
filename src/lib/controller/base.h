@@ -44,6 +44,7 @@ public:
     std::string searchApiKey;
     std::string showPasswordText;
     std::string showSearchFormText;
+    std::string showTripcodeText;
     std::string sitePathPrefix;
     std::string timeLabelText;
     std::string timeLocalText;

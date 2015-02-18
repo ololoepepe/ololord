@@ -154,6 +154,13 @@ QString cityName(const cppcms::http::request &req)
     return cityName(fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
 }
 
+QString cookieValue(const cppcms::http::request &req, const QString &name)
+{
+    if (name.isEmpty())
+        return "";
+    return fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name(toStd(name)).value());
+}
+
 QString countryCode(const QString &ip)
 {
     typedef QMap<IpRange, QString> CodeMap;
@@ -217,8 +224,7 @@ QString countryName(const QString &countryCode)
 
 QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
 {
-    const cppcms::http::cookie &cookie = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time");
-    QString s = fromStd(cookie.value());
+    QString s = cookieValue(req, "time");
     if (s.isEmpty() || s.compare("local", Qt::CaseInsensitive))
         return localDateTime(dt);
     return localDateTime(dt, timeZoneMinutesOffset(req));
@@ -265,7 +271,7 @@ QByteArray hashpass(const cppcms::http::request &req)
 
 QString hashpassString(const cppcms::http::request &req)
 {
-    return fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
+    return cookieValue(req, "hashpass");
 }
 
 bool isCaptchaValid(const QString &captcha)
@@ -318,8 +324,7 @@ QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
 
 QLocale locale(const cppcms::http::request &req, const QLocale &defaultLocale)
 {
-    cppcms::http::cookie localeCookie = const_cast<cppcms::http::request *>(&req)->cookie_by_name("locale");
-    QLocale l(fromStd(localeCookie.value()));
+    QLocale l(cookieValue(req, "locale"));
     if (QLocale::c() == l)
         l = QLocale(countryCode(req));
     return (QLocale::c() == l) ? defaultLocale : l;

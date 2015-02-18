@@ -114,6 +114,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.searchApiKey = Tools::toStd(s->value("Site/search_api_key").toString());
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showSearchFormText = ts.translate("initBase", "Search", "showSearchFormText");
+    c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");

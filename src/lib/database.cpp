@@ -22,7 +22,6 @@
 #include <QString>
 #include <QStringList>
 
-#include <cppcms/http_cookie.h>
 #include <cppcms/http_request.h>
 
 #include <odb/connection.hxx>
@@ -187,8 +186,8 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
             }
             if (postLimit && (postCount->count >= (int) postLimit)) {
                 return bRet(error, tq.translate("createPostInternalt", "Post limit", "error"), description,
-                            tq.translate("createPostInternalt", "The thread has reached it's post limit", "description"),
-                            false);
+                            tq.translate("createPostInternalt", "The thread has reached it's post limit",
+                                         "description"), false);
             }
             if (bumpLimit && (postCount->count >= (int) bumpLimit))
                 bump = false;
@@ -211,6 +210,7 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         p->setName(post.name);
         p->setSubject(post.subject);
         p->setText(post.text);
+        p->setShowTripcode(!Tools::cookieValue(req, "show_tripcode").compare("true", Qt::CaseInsensitive));
         if (bump) {
             thread->setDateTime(dt);
             update(thread);

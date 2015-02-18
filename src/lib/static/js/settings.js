@@ -137,9 +137,26 @@ function doLogout() {
 
 function switchShowLogin() {
     var inp = document.getElementById("loginInput");
-    var sw = document.getElementById("showLoginCheckbox");
     if (inp.type === "password")
         inp.type = "text";
     else if (inp.type === "text")
         inp.type = "password";
+}
+
+function switchShowTripcode() {
+    var sw = document.getElementById("showTripcodeCheckbox");
+    if (!!sw.checked) {
+        setCookie("show_tripcode", "true", {
+            "expires": Billion, "path": "/"
+        });
+    } else {
+        setCookie("show_tripcode", "", {
+            "expires": Billion, "path": "/"
+        });
+    }
+}
+
+function initializeOnLoadSettings() {
+    if (getCookie("show_tripcode") === "true")
+        document.getElementById("showTripcodeCheckbox").checked = true;
 }

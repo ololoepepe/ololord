@@ -74,6 +74,7 @@ typedef QMap<QString, QString> PostParameters;
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
 OLOLORD_EXPORT QString cityName(const QString &ip);
 OLOLORD_EXPORT QString cityName(const cppcms::http::request &req);
+OLOLORD_EXPORT QString cookieValue(const cppcms::http::request &req, const QString &name);
 OLOLORD_EXPORT QString countryCode(const QString &ip);
 OLOLORD_EXPORT QString countryCode(const cppcms::http::request &req);
 OLOLORD_EXPORT QString countryName(const QString &countryCode);

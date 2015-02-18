@@ -770,6 +770,11 @@ Your choice:</source>
         <comment>showSearchFormText</comment>
         <translation>Искать</translation>
     </message>
+    <message>
+        <source>I&apos;m an attention whore!</source>
+        <comment>showTripcodeText</comment>
+        <translation>Я - вниманиешлюха!</translation>
+    </message>
 </context>
 <context>
     <name>initBaseThread</name>

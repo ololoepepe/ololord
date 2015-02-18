@@ -13,7 +13,7 @@
         <% include titleHead() %>
         <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/not_found.css">
     </head>
-    <body>
+    <body onload="javascript:initializeOnLoadSettings();">
         <% include settingsTexts() %>
         <% include settings() %>
         <br />

@@ -564,6 +564,7 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
     p.text = processPostText(post.text(), boardName, threadNumber, processCode);
     QByteArray hashpass = post.hashpass();
     p.showRegistered = false;
+    p.showTripcode = post.showTripcode();
     if (!hashpass.isEmpty()) {
         int lvl = Database::registeredUserLevel(hashpass);
         QString name;

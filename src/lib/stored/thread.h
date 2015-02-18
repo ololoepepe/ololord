@@ -86,6 +86,7 @@ private:
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
     bool bannedFor_;
+    bool showTripcode_;
     QString email_;
     QByteArray files_;
     QByteArray hashpass_;
@@ -108,6 +109,7 @@ public:
     quint64 number() const;
     QDateTime dateTime() const;
     bool bannedFor() const;
+    bool showTripcode() const;
     QString email() const;
     QStringList files() const;
     QByteArray hashpass() const;
@@ -115,6 +117,7 @@ public:
     QByteArray password() const;
     QString posterIp() const;
     void setBannedFor(bool banned);
+    void setShowTripcode(bool show);
     void setEmail(const QString &email);
     void setFiles(const QStringList &files);
     void setName(const QString &name);

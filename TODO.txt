@@ -13,3 +13,4 @@
 [done] Delete post files if transaction rolls back
 [done] Implement ODB wrappers
 [done] Implement thread-local transaction singleton
+[done] Add ability to be logged in but post without a tripcode

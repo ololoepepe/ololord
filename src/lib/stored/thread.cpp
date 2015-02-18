@@ -107,6 +107,7 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     dateTime_ = dateTime.toUTC();
     hashpass_ = hashpass;
     bannedFor_ = false;
+    showTripcode_ = false;
     thread_ = thread;
     posterIp_ = posterIp;
     password_ = password;
@@ -142,6 +143,11 @@ bool Post::bannedFor() const
     return bannedFor_;
 }
 
+bool Post::showTripcode() const
+{
+    return showTripcode_;
+}
+
 QString Post::email() const
 {
     return email_;
@@ -175,6 +181,11 @@ QString Post::posterIp() const
 void Post::setBannedFor(bool banned)
 {
     bannedFor_ = banned;
+}
+
+void Post::setShowTripcode(bool show)
+{
+    showTripcode_ = show;
 }
 
 void Post::setEmail(const QString &email)
