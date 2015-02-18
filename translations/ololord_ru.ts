@@ -200,19 +200,6 @@ The default is 0 (do not archive).</source>
     </message>
 </context>
 <context>
-    <name>Tools</name>
-    <message>
-        <source>Anonymous</source>
-        <comment>name</comment>
-        <translation>Аноним</translation>
-    </message>
-    <message>
-        <source>KB</source>
-        <comment>fileSize</comment>
-        <translation>Кб</translation>
-    </message>
-</context>
-<context>
     <name>aBoard</name>
     <message>
         <source>/a/nime</source>
@@ -960,12 +947,6 @@ Your choice:</source>
         <translation>Перезагрузить все доски: встроенные и предоставленные плагинами.</translation>
     </message>
     <message>
-        <source>Clear the cache specified by [cache-name].
-If [cache-name] is not specified, all caches are cleared.</source>
-        <translation>Очистить кеш с именем [cache-name].
-Если [cache-name] не задано, очищаются все кеши.</translation>
-    </message>
-    <message>
         <source>Registers a user.</source>
         <translation>Регистрирует пользователя.</translation>
     </message>
@@ -1038,6 +1019,16 @@ Example:
     dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
 Пример:
   ban-poster -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015:22</translation>
+    </message>
+    <message>
+        <source>Clear the cache specified by [cache-name].
+If [cache-name] is not specified, all caches are cleared.
+The following caches may be cleared:
+%1</source>
+        <translation>Очистить кеш с именем [cache-name].
+Если [cache-name] не задано, очищаются все кеши.
+Могут быть очищены следующие кеши:
+%1</translation>
     </message>
 </context>
 <context>
@@ -1197,6 +1188,14 @@ The default is 1.</source>
 The default is 0 (do not archive).</source>
         <translation>Максимальное количество архивируемых тредов на каждой доске.
 По умолчанию 0 (не архивировать).</translation>
+    </message>
+</context>
+<context>
+    <name>intBoard</name>
+    <message>
+        <source>/int/ernational</source>
+        <comment>board title</comment>
+        <translation>/int/ernational</translation>
     </message>
 </context>
 <context>
@@ -1596,6 +1595,24 @@ The default is 0 (do not archive).</source>
         <source>3D pron</source>
         <comment>board title</comment>
         <translation>3D прон</translation>
+    </message>
+</context>
+<context>
+    <name>toController</name>
+    <message>
+        <source>KB</source>
+        <comment>fileSize</comment>
+        <translation>Кб</translation>
+    </message>
+    <message>
+        <source>Anonymous</source>
+        <comment>name</comment>
+        <translation>Аноним</translation>
+    </message>
+    <message>
+        <source>Unknown country</source>
+        <comment>countryName</comment>
+        <translation>Неизвестная страна</translation>
     </message>
 </context>
 <context>

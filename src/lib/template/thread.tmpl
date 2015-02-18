@@ -28,6 +28,14 @@
         <% if ( post.showRegistered && !post.tripcode.empty() && post.showTripcode ) %>
             <span class="tripcode"><%= post.tripcode %></span>
         <% end %>
+        <% if ( content.showWhois && !post.flagName.empty() ) %>
+            <% if ( !post.cityName.empty() ) %>
+                <img src="/<%= sitePathPrefix %>/img/flag/<%= post.flagName %>"
+                     title="<%= post.countryName %>: <%= post.cityName %>">
+            <% else %>
+                <img src="/<%= sitePathPrefix %>/img/flag/<%= post.flagName %>" title="<%= post.countryName %>">
+            <% end %>
+        <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
             #<a href="javascript:insertPostNumber('<%= post.number %>');"><%= post.number %></a>

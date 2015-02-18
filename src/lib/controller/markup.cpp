@@ -523,7 +523,7 @@ void toHtml(QString *s)
     processPostText(*s, skip, "", 0L, false, &toHtml);
 }
 
-Content::BaseBoard::Post toController(const Post &post, const QString &boardName, quint64 threadNumber,
+Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board, quint64 threadNumber,
                                       const QLocale &l, const cppcms::http::request &req, bool processCode)
 {
     QString storagePath = Tools::storagePath();
@@ -534,15 +534,16 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
     p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
     p.email = Tools::toStd(post.email());
     TranslatorQt tq(l);
+    TranslatorStd ts(l);
     foreach (const QString &fn, post.files()) {
         Content::BaseBoard::File f;
         f.sourceName = Tools::toStd(QFileInfo(fn).fileName());
-        QFileInfo fi(storagePath + "/img/" + boardName + "/" + QFileInfo(fn).fileName());
+        QFileInfo fi(storagePath + "/img/" + board->name() + "/" + QFileInfo(fn).fileName());
         QString suffix = fi.suffix();
         if (!suffix.compare("gif", Qt::CaseInsensitive))
             suffix = "png";
         f.thumbName = Tools::toStd(fi.baseName() + "s." + suffix);
-        QString s = QString::number(fi.size() / BeQt::Kilobyte) + tq.translate("Tools", "KB", "fileSize");
+        QString s = QString::number(fi.size() / BeQt::Kilobyte) + tq.translate("toController", "KB", "fileSize");
         QImage img(fi.filePath());
         if (!img.isNull())
             s += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
@@ -552,16 +553,16 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
     p.name = Tools::toStd(toHtml(post.name()));
     if (p.name.empty()) {
         TranslatorStd ts(l);
-        p.name = ts.translate("Tools", "Anonymous", "name");
+        p.name = ts.translate("toController", "Anonymous", "name");
     }
     p.nameRaw = Tools::toStd(post.name());
     if (p.nameRaw.empty()) {
         TranslatorStd ts(l);
-        p.nameRaw = ts.translate("Tools", "Anonymous", "name");
+        p.nameRaw = ts.translate("toController", "Anonymous", "name");
     }
     p.number = post.number();
     p.subject = Tools::toStd(post.subject());
-    p.text = processPostText(post.text(), boardName, threadNumber, processCode);
+    p.text = processPostText(post.text(), board->name(), threadNumber, processCode);
     QByteArray hashpass = post.hashpass();
     p.showRegistered = false;
     p.showTripcode = post.showTripcode();
@@ -580,7 +581,7 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
         p.name = Tools::toStd(name);
         if (p.name.empty()) {
             TranslatorStd ts(l);
-            p.name = ts.translate("Tools", "Anonymous", "name");
+            p.name = ts.translate("toController", "Anonymous", "name");
         }
         QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
@@ -593,6 +594,17 @@ Content::BaseBoard::Post toController(const Post &post, const QString &boardName
                 s += QString::number(uchar(tripcode.at(i)), 16);
         }
         p.tripcode = Tools::toStd(s);
+    }
+    if (board->showWhois()) {
+        QString countryCode = Tools::countryCode(post.posterIp());
+        p.flagName = Tools::toStd(Tools::flagName(countryCode));
+        if (!p.flagName.empty()) {
+            p.countryName = Tools::toStd(Tools::countryName(countryCode));
+            p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
+        } else {
+            p.flagName = "default.png";
+            p.countryName = ts.translate("toController", "Unknown country", "countryName");
+        }
     }
     return p;
 }

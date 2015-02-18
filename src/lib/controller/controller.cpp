@@ -173,6 +173,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseThread", "Post limit reached", "postLimitReachedText");
     c.registeredText = ts.translate("initBaseThread", "This user is registered", "registeredText");
+    c.showWhois = board->showWhois();
     c.showPostFormText = currentThread ? ts.translate("initBaseThread", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseThread", "Create thread", "showPostFormText");
     c.unfixThreadText = ts.translate("initBaseThread", "Unfix thread", "unfixThreadText");

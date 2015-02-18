@@ -22,9 +22,12 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     struct OLOLORD_EXPORT Post
     {
         bool bannedFor;
+        std::string cityName;
+        std::string countryName;
         std::string dateTime;
         std::string email;
         std::list<File> files;
+        std::string flagName;
         std::string name;
         std::string nameRaw;
         unsigned long long number;
@@ -70,6 +73,7 @@ public:
     std::string postLimitReachedText;
     std::string registeredText;
     std::string showPostFormText;
+    bool showWhois;
     std::string unfixThreadText;
 };
 

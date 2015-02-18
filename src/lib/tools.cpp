@@ -86,13 +86,13 @@ static unsigned int ipNum(const QString &ip, bool *ok = 0)
     if (!b)
         return bRet(ok, false, 0);
     n += 256 * sl.at(2).toUInt(&b);
-    if (!ok)
+    if (!b)
         return bRet(ok, false, 0);
     n += 256 * 256 * sl.at(1).toUInt(&b);
-    if (!ok)
+    if (!b)
         return bRet(ok, false, 0);
     n += 256 * 256 * 256 * sl.first().toUInt(&b);
-    if (!ok || !n)
+    if (!b || !n)
         return bRet(ok, false, 0);
     return bRet(ok, true, n);
 }
@@ -210,11 +210,14 @@ QString countryName(const QString &countryCode)
         QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
         foreach (const QString &s, sl) {
             QStringList sll = s.split(' ');
-            if (sll.size() != 2)
+            if (sll.size() < 2)
                 continue;
-            if (sll.first().length() != 2 || sll.last().isEmpty())
+            if (sll.first().length() != 2)
                 continue;
-            names.insert(sll.first(), sll.last());
+            QString name = QStringList(sll.mid(1)).join(" ");
+            if (name.length() < sll.length() - 1)
+                continue;
+            names.insert(sll.first(), name);
         }
     }
     if (countryCode.length() != 2)
@@ -244,6 +247,14 @@ void deleteFiles(const QString &boardName, const QStringList &fileNames)
         QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
         QFile::remove(path + "/" + fii.baseName() + "s." + suff);
     }
+}
+
+QString flagName(const QString &countryCode)
+{
+    if (countryCode.length() != 2)
+        return "";
+    QString fn = BDirTools::findResource("static/img/flag/" + countryCode.toUpper() + ".png");
+    return !fn.isEmpty() ? QFileInfo(fn).fileName() : QString();
 }
 
 QLocale fromStd(const std::locale &l)

@@ -65,7 +65,7 @@ OLOLORD_EXPORT bool testParams(cppcms::application &app, const Tools::PostParame
 OLOLORD_EXPORT bool testRequest(cppcms::application &app, int acceptedTypes);
 OLOLORD_EXPORT QString toHtml(const QString &s);
 OLOLORD_EXPORT void toHtml(QString *s);
-OLOLORD_EXPORT Content::BaseBoard::Post toController(const Post &post, const QString &boardName,
+OLOLORD_EXPORT Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board,
                                                      quint64 opPostId, const QLocale &l,
                                                      const cppcms::http::request &req, bool processCode = false);
 

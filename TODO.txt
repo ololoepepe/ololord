@@ -1,6 +1,7 @@
 * Add ability to post files of different types
 * Add ability to ban users from the web
 * Add ability to hide posts/threads
+* Add ability to customize captcha
 [done] Check for unbanned users periodically
 [done] Add ability for admins to delete any posts
 [done] Implement thread archiving
@@ -14,3 +15,5 @@
 [done] Implement ODB wrappers
 [done] Implement thread-local transaction singleton
 [done] Add ability to be logged in but post without a tripcode
+[done] Add /int/ board
+* Add IP ban list

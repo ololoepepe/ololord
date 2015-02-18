@@ -4,6 +4,7 @@
 #include "board/bboard.h"
 #include "board/cgboard.h"
 #include "board/hboard.h"
+#include "board/intboard.h"
 #include "board/mlpboard.h"
 #include "board/prboard.h"
 #include "board/rfboard.h"
@@ -252,12 +253,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.postLimit = postLimit();
             thread.postCount = posts.size();
             thread.postingEnabled = postingEn && tt.postingEnabled();
-            thread.opPost = Controller::toController(*posts.first().load(), name(), tt.number(), ts.locale(),
+            thread.opPost = Controller::toController(*posts.first().load(), this, tt.number(), ts.locale(),
                                                      app.request(), processCode());
             foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
                 if (i <= 0)
                     break;
-                thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), name(), tt.number(),
+                thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), this, tt.number(),
                                                                      ts.locale(), app.request(), processCode()));
             }
             c.threads.push_back(thread);
@@ -336,10 +337,10 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         c.fixed = thread->fixed();
         pageTitle = posts.first().load()->subject();
         postingEn = postingEn && thread->postingEnabled();
-        c.opPost = Controller::toController(*posts.first().load(), name(), thread->number(), ts.locale(),
+        c.opPost = Controller::toController(*posts.first().load(), this, thread->number(), ts.locale(),
                                             app.request(), processCode());
         foreach (int j, bRangeD(1, posts.size() - 1)) {
-            c.posts.push_back(Controller::toController(*posts.at(j).load(), name(), thread->number(), ts.locale(),
+            c.posts.push_back(Controller::toController(*posts.at(j).load(), this, thread->number(), ts.locale(),
                                                        app.request(), processCode()));
         }
         c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
@@ -391,6 +392,11 @@ QStringList AbstractBoard::rules(const QLocale &l) const
     return Tools::rules("rules", l) + Tools::rules("rules/" + name(), l);
 }
 
+bool AbstractBoard::showWhois() const
+{
+    return false;
+}
+
 unsigned int AbstractBoard::threadLimit() const
 {
     SettingsLocker s;
@@ -436,6 +442,8 @@ void AbstractBoard::initBoards(bool reinit)
     b = new cgBoard;
     boards.insert(b->name(), b);
     b = new hBoard;
+    boards.insert(b->name(), b);
+    b = new intBoard;
     boards.insert(b->name(), b);
     b = new mlpBoard;
     boards.insert(b->name(), b);

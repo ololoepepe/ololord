@@ -546,8 +546,11 @@ void initCommands()
     //
     BTerminal::installHandler("clear-cache", &handleClearCache);
     ch.usage = "clear-cache [cache-name]";
-    ch.description = BTranslation::translate("initCommands", "Clear the cache specified by [cache-name].\n"
-                                             "If [cache-name] is not specified, all caches are cleared.");
+    BTranslation t = BTranslation::translate("initCommands", "Clear the cache specified by [cache-name].\n"
+                                             "If [cache-name] is not specified, all caches are cleared.\n"
+                                             "The following caches may be cleared:\n%1");
+    t.setArgument("  " + Cache::availableCacheNames().join("\n  "));
+    ch.description = t;
     BTerminal::setCommandHelp("clear-cache", ch);
     //
     BTerminal::installHandler("reload-boards", &handleReloadBoards);
