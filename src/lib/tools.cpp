@@ -86,13 +86,13 @@ static unsigned int ipNum(const QString &ip, bool *ok = 0)
     if (!b)
         return bRet(ok, false, 0);
     n += 256 * sl.at(2).toUInt(&b);
-    if (!ok)
+    if (!b)
         return bRet(ok, false, 0);
     n += 256 * 256 * sl.at(1).toUInt(&b);
-    if (!ok)
+    if (!b)
         return bRet(ok, false, 0);
     n += 256 * 256 * 256 * sl.first().toUInt(&b);
-    if (!ok || !n)
+    if (!b || !n)
         return bRet(ok, false, 0);
     return bRet(ok, true, n);
 }
@@ -154,6 +154,13 @@ QString cityName(const cppcms::http::request &req)
     return cityName(fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
 }
 
+QString cookieValue(const cppcms::http::request &req, const QString &name)
+{
+    if (name.isEmpty())
+        return "";
+    return fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name(toStd(name)).value());
+}
+
 QString countryCode(const QString &ip)
 {
     typedef QMap<IpRange, QString> CodeMap;
@@ -203,11 +210,14 @@ QString countryName(const QString &countryCode)
         QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
         foreach (const QString &s, sl) {
             QStringList sll = s.split(' ');
-            if (sll.size() != 2)
+            if (sll.size() < 2)
                 continue;
-            if (sll.first().length() != 2 || sll.last().isEmpty())
+            if (sll.first().length() != 2)
                 continue;
-            names.insert(sll.first(), sll.last());
+            QString name = QStringList(sll.mid(1)).join(" ");
+            if (name.length() < sll.length() - 1)
+                continue;
+            names.insert(sll.first(), name);
         }
     }
     if (countryCode.length() != 2)
@@ -217,8 +227,7 @@ QString countryName(const QString &countryCode)
 
 QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
 {
-    const cppcms::http::cookie &cookie = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time");
-    QString s = fromStd(cookie.value());
+    QString s = cookieValue(req, "time");
     if (s.isEmpty() || s.compare("local", Qt::CaseInsensitive))
         return localDateTime(dt);
     return localDateTime(dt, timeZoneMinutesOffset(req));
@@ -240,6 +249,14 @@ void deleteFiles(const QString &boardName, const QStringList &fileNames)
     }
 }
 
+QString flagName(const QString &countryCode)
+{
+    if (countryCode.length() != 2)
+        return "";
+    QString fn = BDirTools::findResource("static/img/flag/" + countryCode.toUpper() + ".png");
+    return !fn.isEmpty() ? QFileInfo(fn).fileName() : QString();
+}
+
 QLocale fromStd(const std::locale &l)
 {
     return QLocale(fromStd(l.name()).split('.').first());
@@ -258,9 +275,61 @@ QStringList fromStd(const std::list<std::string> &sl)
     return list;
 }
 
-QString hashPassString(const cppcms::http::request &req)
+QByteArray hashpass(const cppcms::http::request &req)
 {
-    return Tools::fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name("hashpass").value());
+    return toHashpass(hashpassString(req));
+}
+
+QString hashpassString(const cppcms::http::request &req)
+{
+    return cookieValue(req, "hashpass");
+}
+
+int ipBanLevel(const QString &ip)
+{
+    bool ok = false;
+    unsigned int n = ipNum(ip, &ok);
+    if (!ok || !n)
+        return 0;
+    Cache::IpBanInfoList *list = Cache::ipBanInfoList();
+    int level = 0;
+    if (!list) {
+        QString path = BDirTools::findResource("res/ip_ban.txt", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return 0;
+        QStringList sl = BDirTools::readTextFile(path, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+        list = new Cache::IpBanInfoList;
+        foreach (const QString &s, sl) {
+            QStringList sll = s.split(' ');
+            if (sll.size() != 2)
+                continue;
+            Cache::IpBanInfo inf;
+            inf.ip = ipNum(sll.first(), &ok);
+            if (!ok || !inf.ip)
+                continue;
+            inf.level = sll.last().toUInt(&ok);
+            if (!ok || !inf.level)
+                continue;
+            if (inf.ip == n)
+                level = inf.level;
+            *list << inf;
+        }
+        if (!Cache::cacheIpBanInfoList(list))
+            delete list;
+    } else {
+        foreach (const Cache::IpBanInfo &inf, *list) {
+            if (inf.ip == n) {
+                level = inf.level;
+                break;
+            }
+        }
+    }
+    return level;
+}
+
+int ipBanLevel(const cppcms::http::request &req)
+{
+    return ipBanLevel(userIp(req));
 }
 
 bool isCaptchaValid(const QString &captcha)
@@ -313,8 +382,7 @@ QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
 
 QLocale locale(const cppcms::http::request &req, const QLocale &defaultLocale)
 {
-    cppcms::http::cookie localeCookie = const_cast<cppcms::http::request *>(&req)->cookie_by_name("locale");
-    QLocale l(fromStd(localeCookie.value()));
+    QLocale l(cookieValue(req, "locale"));
     if (QLocale::c() == l)
         l = QLocale(countryCode(req));
     return (QLocale::c() == l) ? defaultLocale : l;
@@ -349,15 +417,6 @@ FileList postFiles(const cppcms::http::request &request)
         list << file;
     }
     return list;
-}
-
-bool postingEnabled(const QString &boardName)
-{
-    if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
-        return false;
-    SettingsLocker s;
-    return s->value("Board/posting_enabled", true).toBool()
-            && s->value("Board/" + boardName + "/posting_enabled", true).toBool();
 }
 
 PostParameters postParameters(const cppcms::http::request &request)

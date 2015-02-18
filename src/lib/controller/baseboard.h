@@ -22,33 +22,43 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     struct OLOLORD_EXPORT Post
     {
         bool bannedFor;
+        std::string cityName;
+        std::string countryName;
         std::string dateTime;
         std::string email;
         std::list<File> files;
+        std::string flagName;
         std::string name;
         std::string nameRaw;
         unsigned long long number;
-        bool registered;
+        bool showRegistered;
         std::string subject;
         std::string text;
         std::string tripcode;
+        bool showTripcode;
     };
 public:
     std::string action;
+    std::string ajaxErrorText;
     std::string bannedForText;
     std::string bannerFileName;
     std::string bumpLimitReachedText;
     bool captchaEnabled;
     std::string captchaKey;
     std::string closedText;
+    std::string closeThreadText;
     AbstractBoard::BoardInfo currentBoard;
     unsigned long long currentThread;
     std::string deletePostText;
     std::string deleteThreadText;
     std::string enterPasswordText;
+    std::string enterPasswordTitle;
     std::string fixedText;
+    std::string fixThreadText;
     std::string hidePostFormText;
+    bool moder;
     std::string notLoggedInText;
+    std::string openThreadText;
     std::string postFormButtonSubmit;
     std::string postFormInputFile;
     std::string postFormInputText;
@@ -61,7 +71,10 @@ public:
     std::string postingDisabledText;
     bool postingEnabled;
     std::string postLimitReachedText;
+    std::string registeredText;
     std::string showPostFormText;
+    bool showWhois;
+    std::string unfixThreadText;
 };
 
 }

@@ -36,13 +36,13 @@
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
             <button class="button" onclick="javascript:doLogout();"><%= loginButtonText %></button>
+            <input id="showTripcodeCheckbox" type="checkbox" class="checkbox" title="<%= showTripcodeText %>"
+                   onclick="javascript:switchShowTripcode();" name="showTripcode" />
         <% else %>
             <input id="loginInput" type="password" class="input" name="hashpass"
                    placeholder="<%= loginPlaceholderText %>" />
-            <button id="loginSwitch" class="button" onclick="javascript:switchLoginInput();"
-                    title="<%= switchLoginButtonTitle %>">
-                +
-            </button>
+            <input id="showLoginCheckbox" type="checkbox" class="checkbox" onclick="javascript:switchShowLogin();"
+                   name="showLogin" title="<%= showPasswordText %>" />
             <button class="button" onclick="javascript:doLogin();"><%= loginButtonText %></button>
         <% end %>
         <% if ( !content.loginMessageWarning.empty() ) %>
@@ -100,6 +100,12 @@
 <input type="hidden" id="sitePathPrefix" value="<%= sitePathPrefix %>" />
 <% end template %>
 
+<% template settingsTexts() %>
+<input type="hidden" id="showPasswordText" value="<%= showPasswordText %>" />
+<input type="hidden" id="cancelButtonText" value="<%= cancelButtonText %>" />
+<input type="hidden" id="confirmButtonText" value="<%= confirmButtonText %>" />
+<% end template %>
+
 <% template baseHead() %>
 <title><%= pageTitle %></title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
@@ -109,6 +115,7 @@
 
 <% template settingsHead() %>
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/settings_bar.css">
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/picoModal-2.1.0.min.js"></script>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/settings.js"></script>
 <% end template %>

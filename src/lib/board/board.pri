@@ -4,6 +4,7 @@ HEADERS += \
     $${PWD}/bboard.h \
     $${PWD}/cgboard.h \
     $${PWD}/hboard.h \
+    $${PWD}/intboard.h \
     $${PWD}/mlpboard.h \
     $${PWD}/prboard.h \
     $${PWD}/rfboard.h \
@@ -16,6 +17,7 @@ SOURCES += \
     $${PWD}/bboard.cpp \
     $${PWD}/cgboard.cpp \
     $${PWD}/hboard.cpp \
+    $${PWD}/intboard.cpp \
     $${PWD}/mlpboard.cpp \
     $${PWD}/prboard.cpp \
     $${PWD}/rfboard.cpp \

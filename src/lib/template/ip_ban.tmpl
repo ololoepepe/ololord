@@ -1,0 +1,36 @@
+<% c++ #include "controller/ipban.h" %>
+<% skin my_skin %>
+<% view ip_ban uses Content::IpBan extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead() %>
+        <% include settingsHead() %>
+        <% include navbarHead() %>
+        <% include searchActionHead() %>
+        <% include titleHead() %>
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/ip_ban.css">
+    </head>
+    <body onload="javascript:initializeOnLoadSettings();">
+        <% include settingsTexts() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <% if ( !content.searchApiKey.empty() ) %>
+            <br />
+        <% end %>
+        <% include searchAction("Top") %>
+        <div class="theTitle">
+            <h1><%= banMessage %></h1>
+        </div>
+        <div class="ipBan">
+            <%= banDescription %>
+        </div>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

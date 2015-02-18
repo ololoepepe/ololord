@@ -1,1 +1,4 @@
 * Add ability to post files of different types
+* Add ability to ban users from the web
+* Add ability to hide posts/threads
+* Add ability to customize captcha

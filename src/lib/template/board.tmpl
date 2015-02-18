@@ -10,31 +10,52 @@
 <% end %>
     <div class="postHeader">
         <% if ( post.number == thread.opPost.number && thread.fixed ) %>
-            <img src="/<%= sitePathPrefix %>img/pin.png" title="<%= fixedText %>">
+            <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>">
         <% end %>
-        <% if ( post.number == thread.opPost.number && !thread.postingEnabled ) %>
+        <% if ( post.number == thread.opPost.number && thread.closed ) %>
             <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
         <% end %>
         <b><%= post.subject %></b>
-        <% if ( post.registered ) %>
-                <span class="registeredName">
-            <% end %>
+        <% if ( post.showRegistered && post.showTripcode ) %>
+            <img src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>">
+        <% end %>
         <% if ( !post.email.empty() ) %>
             <a href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
         <% else %>
             <%= post.name | raw %>
         <% end %>
-        <% if ( post.registered ) %>
-                </span>
-            <% end %>
-        <% if ( !post.tripcode.empty() ) %>
+        <% if ( post.showRegistered && !post.tripcode.empty() && post.showTripcode ) %>
             <span class="tripcode"><%= post.tripcode %></span>
+        <% end %>
+        <% if ( content.showWhois && !post.flagName.empty() ) %>
+            <% if ( !post.cityName.empty() ) %>
+                <img src="/<%= sitePathPrefix %>/img/flag/<%= post.flagName %>"
+                     title="<%= post.countryName %>: <%= post.cityName %>">
+            <% else %>
+                <img src="/<%= sitePathPrefix %>/img/flag/<%= post.flagName %>" title="<%= post.countryName %>">
+            <% end %>
         <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
             #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
         <% else %>
             #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
+        <% end %>
+        <% if ( content.moder && post.number == thread.opPost.number ) %>
+            <% if ( thread.fixed ) %>
+                <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+            <% else %>
+                <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+            <% end %>
+            <% if ( thread.closed ) %>
+                <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+            <% else %>
+                <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+            <% end %>
         <% end %>
         <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>');">
         <% if ( post.number == thread.opPost.number ) %>
@@ -152,8 +173,9 @@
         <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/board.css">
         <script type="text/javascript" src="/<%= sitePathPrefix %>js/board.js"></script>
     </head>
-    <body onload="javascript:initializeOnLoadBoard();">
+    <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadBoard();">
         <% include baseTexts() %>
+        <% include settingsTexts() %>
         <% include boardTexts() %>
         <% include settings() %>
         <br />

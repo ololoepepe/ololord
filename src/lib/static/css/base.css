@@ -21,3 +21,9 @@ a {
     border: 1px solid #CCCCCC;
     cursor: pointer;
 }
+
+.checkbox {
+    background: #EAEAEA;
+    border: 1px solid #CCCCCC;
+    cursor: pointer;
+}

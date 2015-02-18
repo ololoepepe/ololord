@@ -10,6 +10,7 @@ class Post;
 #include <QList>
 #include <QSharedPointer>
 #include <QString>
+#include <QStringList>
 
 #include <odb/core.hxx>
 #include <odb/qt/lazy-ptr.hxx>
@@ -28,6 +29,7 @@ private:
     quint64 number_;
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
+    bool archived_;
     bool fixed_;
     bool postingEnabled_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(thread_))
@@ -41,10 +43,12 @@ public:
     QString board() const;
     quint64 number() const;
     QDateTime dateTime() const;
+    bool archived() const;
     bool fixed() const;
     bool postingEnabled() const;
     const Posts &posts() const;
     Posts &posts();
+    void setArchived(bool archived);
     void setBoard(const QString &board);
     void setDateTime(const QDateTime &dateTime);
     void setFixed(bool fixed);
@@ -64,6 +68,7 @@ PRAGMA_DB(view object(Thread))
 struct OLOLORD_EXPORT ThreadIdDateTimeFixed
 {
     quint64 id;
+    quint64 number;
     QDateTime dateTime;
     bool fixed;
 };
@@ -81,6 +86,7 @@ private:
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
     bool bannedFor_;
+    bool showTripcode_;
     QString email_;
     QByteArray files_;
     QByteArray hashpass_;
@@ -103,15 +109,17 @@ public:
     quint64 number() const;
     QDateTime dateTime() const;
     bool bannedFor() const;
+    bool showTripcode() const;
     QString email() const;
-    QByteArray files() const;
+    QStringList files() const;
     QByteArray hashpass() const;
     QString name() const;
     QByteArray password() const;
     QString posterIp() const;
     void setBannedFor(bool banned);
+    void setShowTripcode(bool show);
     void setEmail(const QString &email);
-    void setFiles(const QByteArray &files);
+    void setFiles(const QStringList &files);
     void setName(const QString &name);
     void setSubject(const QString &subject);
     void setText(const QString &text);

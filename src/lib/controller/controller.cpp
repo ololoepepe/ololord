@@ -6,11 +6,13 @@
 #include "board/abstractboard.h"
 #include "database.h"
 #include "error.h"
+#include "ipban.h"
 #include "notfound.h"
 #include "settingslocker.h"
 #include "stored/banneduser.h"
 #include "stored/banneduser-odb.hxx"
 #include "tools.h"
+#include "translator.h"
 #include "translator.h"
 
 #include <BCoreApplication>
@@ -82,12 +84,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     localeMutex.unlock();
     TranslatorStd ts(req);
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
+    c.cancelButtonText = ts.translate("initBase", "Cancel", "cancelButtonText");
+    c.confirmButtonText = ts.translate("initBase", "Confirm", "confirmButtonText");
     c.currentLocale = toWithLocale(ts.locale());
     c.currentTime = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time").value();
-    c.hideSearchFormText = ts.translate("initBaseThread", "Hide search form", "hideSearchFormText");
+    c.hideSearchFormText = ts.translate("initBase", "Hide search form", "hideSearchFormText");
     c.localeLabelText = "Language:";
     c.locales = locales;
-    c.loggedIn = !Tools::hashPassString(req).isEmpty();
+    c.loggedIn = !Tools::hashpassString(req).isEmpty();
     c.loginButtonText = c.loggedIn ? ts.translate("initBase", "Logout", "loginButtonText")
                                    : ts.translate("initBase", "Login", "loginButtonText");
     c.loginLabelText = ts.translate("initBase", "Login:", "loginLabelText");
@@ -109,9 +113,10 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.pageTitle = Tools::toStd(pageTitle);
     SettingsLocker s;
     c.searchApiKey = Tools::toStd(s->value("Site/search_api_key").toString());
-    c.showSearchFormText = ts.translate("initBaseThread", "Search", "showSearchFormText");
+    c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
+    c.showSearchFormText = ts.translate("initBase", "Search", "showSearchFormText");
+    c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
-    c.switchLoginButtonTitle = ts.translate("initBase", "Show/hide", "switchLoginButtonTitle");
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
@@ -129,22 +134,27 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     if (c.pageTitle.empty() && currentThread)
         c.pageTitle = Tools::toStd(board->title(ts.locale()) + " - " + QString::number(currentThread));
     c.action = currentThread ? "create_post" : "create_thread";
+    c.ajaxErrorText = ts.translate("initBaseThread", "AJAX request returned status", "ajaxErrorText");
     c.bannedForText = ts.translate("initBaseThread", "User was banned for this post", "bannedForText");
     c.bannerFileName = Tools::toStd(board->bannerFileName());
     c.bumpLimitReachedText = ts.translate("initBaseThread", "Bump limit reached", "bumpLimitReachedText");
     c.captchaEnabled = Tools::captchaEnabled(board->name());
     c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
     c.closedText = ts.translate("initBaseThread", "The thread is closed", "closedText");
+    c.closeThreadText = ts.translate("initBaseThread", "Close thread", "closeThreadText");
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;
     c.deletePostText = ts.translate("initBaseThread", "Delete post", "fixedText");
     c.deleteThreadText = ts.translate("initBaseThread", "Delete thread", "fixedText");
-    c.enterPasswordText = ts.translate("initBaseThread", "Enter password (if empty, current hashpass will be used):",
-                                       "fixedText");
+    c.enterPasswordText = ts.translate("initBaseThread", "If password is empty, current hashpass will be used",
+                                       "enterPasswordText");
+    c.enterPasswordTitle = ts.translate("initBaseThread", "Enter password", "enterPasswordTitle");
     c.fixedText = ts.translate("initBaseThread", "Fixed", "fixedText");
+    c.fixThreadText = ts.translate("initBaseThread", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseThread", "Hide post form", "hidePostFormText");
     c.notLoggedInText = ts.translate("initBaseThread", "You are not logged in!", "notLoggedInText");
+    c.openThreadText = ts.translate("initBaseThread", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseThread", "Send", "postFormButtonSubmit");
     c.postFormInputFile = ts.translate("initBaseThread", "File:", "postFormInputFile");
     c.postFormInputText = ts.translate("initBaseThread", "Post:", "postFormInputText");
@@ -163,8 +173,11 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             : ts.translate("initBaseThread", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseThread", "Post limit reached", "postLimitReachedText");
+    c.registeredText = ts.translate("initBaseThread", "This user is registered", "registeredText");
+    c.showWhois = board->showWhois();
     c.showPostFormText = currentThread ? ts.translate("initBaseThread", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseThread", "Create thread", "showPostFormText");
+    c.unfixThreadText = ts.translate("initBaseThread", "Unfix thread", "unfixThreadText");
 }
 
 void redirect(cppcms::application &app, const QString &where)
@@ -214,6 +227,24 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     Tools::log(app, error + (!description.isEmpty() ? (": " + description) : QString()));
 }
 
+void renderIpBan(cppcms::application &app, int level)
+{
+    TranslatorQt tq(app.request());
+    TranslatorStd ts(app.request());
+    Content::IpBan c;
+    initBase(c, app.request(), tq.translate("renderIpBan", "Ban", "pageTitle"));
+    c.banMessage = ts.translate("renderIpBan", "You are banned", "pageTitle");
+    if (level >= 10) {
+        c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
+                                        "You are not allowed to read or make posts.", "pageTitle");
+    } else if (level >= 1) {
+        c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
+                                        "You are not allowed to make posts.", "pageTitle");
+    }
+    app.render("ip_ban", c);
+    Tools::log(app, "Banned (ban list)");
+}
+
 void renderNotFound(cppcms::application &app)
 {
     TranslatorQt tq(app.request());
@@ -236,44 +267,48 @@ void renderNotFound(cppcms::application &app)
 bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board)
 {
     QString ip = Tools::userIp(app.request());
+    int lvl = Tools::ipBanLevel(ip);
+    if (lvl >= proposedAction) {
+        renderIpBan(app, lvl);
+        return false;
+    }
     TranslatorQt tq(app.request());
     try {
-        odb::database *db = Database::createConnection();
-        if (!db) {
+        Transaction t;
+        if (!t) {
             renderError(app, tq.translate("testBan", "Internal error", "error"),
                         tq.translate("testBan", "Internal database error", "description"));
             return false;
         }
-        odb::transaction transaction(db->begin());
-        odb::result<BannedUser> r(db->query<BannedUser>(odb::query<BannedUser>::board == "*"
-                                                        && odb::query<BannedUser>::ip == ip));
+        QList<BannedUser> list = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
+                                                                         && odb::query<BannedUser>::ip == ip);
         QString banBoard;
         QDateTime banDateTime;
         QString banReason;
         QDateTime banExpires;
         int banLevel = 0;
-        for (odb::result<BannedUser>::iterator i = r.begin(); i != r.end(); ++i) {
-            QDateTime expires = i->expirationDateTime().toUTC();
+        foreach (const BannedUser &u, list) {
+            QDateTime expires = u.expirationDateTime().toUTC();
             if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                banLevel = i->level();
-                banBoard = i->board();
-                banDateTime = i->dateTime();
-                banReason = i->reason();
-                banExpires = i->expirationDateTime();
+                banLevel = u.level();
+                banBoard = u.board();
+                banDateTime = u.dateTime();
+                banReason = u.reason();
+                banExpires = u.expirationDateTime();
                 break;
             }
         }
         if (banLevel <= 0) {
-            odb::result<BannedUser> rr(db->query<BannedUser>(odb::query<BannedUser>::board == board
-                                                            && odb::query<BannedUser>::ip == ip));
-            for (odb::result<BannedUser>::iterator i = rr.begin(); i != rr.end(); ++i) {
-                QDateTime expires = i->expirationDateTime().toUTC();
+            QList<BannedUser> listt = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == board
+                                                                              && odb::query<BannedUser>::ip == ip);
+            foreach (const BannedUser &u, listt) {
+                QDateTime expires = u.expirationDateTime().toUTC();
                 if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                    banLevel = i->level();
-                    banBoard = i->board();
-                    banDateTime = i->dateTime().toUTC();
-                    banReason = i->reason();
-                    banExpires = i->expirationDateTime();
+                    banLevel = u.level();
+                    banBoard = u.board();
+                    banDateTime = u.dateTime().toUTC();
+                    banReason = u.reason();
+                    banExpires = u.expirationDateTime();
                     break;
                 }
             }
@@ -283,7 +318,7 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
         if (banLevel < proposedAction)
             return true;
         renderBan(app, banBoard, banLevel, banDateTime, banReason, banExpires);
-        transaction.commit();
+        t.commit();
         return false;
     }  catch (const odb::exception &e) {
         renderError(app, tq.translate("testBan", "Internal error", "error"), Tools::fromStd(e.what()));

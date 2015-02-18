@@ -58,6 +58,7 @@ OLOLORD_EXPORT void renderBan(cppcms::application &app, const QString &board, in
                               const QString &reason = QString(), const QDateTime &expires = QDateTime());
 OLOLORD_EXPORT void renderError(cppcms::application &app, const QString &error,
                                 const QString &description = QString());
+OLOLORD_EXPORT void renderIpBan(cppcms::application &app, int level);
 OLOLORD_EXPORT void renderNotFound(cppcms::application &app);
 OLOLORD_EXPORT bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board);
 OLOLORD_EXPORT bool testParams(cppcms::application &app, const Tools::PostParameters &params,
@@ -65,9 +66,9 @@ OLOLORD_EXPORT bool testParams(cppcms::application &app, const Tools::PostParame
 OLOLORD_EXPORT bool testRequest(cppcms::application &app, int acceptedTypes);
 OLOLORD_EXPORT QString toHtml(const QString &s);
 OLOLORD_EXPORT void toHtml(QString *s);
-OLOLORD_EXPORT Content::BaseBoard::Post toController(const Post &post, const QString &boardName, quint64 opPostId,
-                                                     const QLocale &l, const cppcms::http::request &req,
-                                                     bool processCode = false);
+OLOLORD_EXPORT Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board,
+                                                     quint64 opPostId, const QLocale &l,
+                                                     const cppcms::http::request &req, bool processCode = false);
 
 }
 

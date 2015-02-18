@@ -8,6 +8,7 @@ HEADERS += \
     $${PWD}/controller.h \
     $${PWD}/error.h \
     $${PWD}/home.h \
+    $${PWD}/ipban.h \
     $${PWD}/notfound.h \
     $${PWD}/rules.h \
     $${PWD}/thread.h

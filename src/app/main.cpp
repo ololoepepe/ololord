@@ -44,7 +44,6 @@ static bool handleBanPoster(const QString &cmd, const QStringList &args);
 static bool handleBanUser(const QString &cmd, const QStringList &args);
 static bool handleClearCache(const QString &cmd, const QStringList &args);
 static bool handleCloseThread(const QString &cmd, const QStringList &args);
-static bool handleCreateSchema(const QString &cmd, const QStringList &args);
 static bool handleDeletePost(const QString &cmd, const QStringList &args);
 static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
@@ -71,7 +70,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-beta3");
+        app.setApplicationVersion("0.1.0-beta4");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -98,6 +97,8 @@ int main(int argc, char **argv)
             bWriteLine(translate("main", "Failed to read configuration file"));
             return 0;
         }
+        Database::createSchema();
+        Database::checkOutdatedEntries();
         OlolordWebAppThread owt(conf);
         owt.start();
         ret = app.exec();
@@ -144,7 +145,7 @@ bool handleBanPoster(const QString &, const QStringList &args)
     QString boards = AbstractBoard::boardNames().join("|");
     QString options = "sourceBoard:--source-board|-s=" + boards + ",postNumber:--post-number|-p=,"
             "[board:--board|-b=" + boards + "|*],[level:--level|-l=0|1|10|100],[reason:--reason|-r=],"
-            "[expires:--expires|-e]";
+            "[expires:--expires|-e=]";
     BTextTools::OptionsParsingError error = BTextTools::parseOptions(args, options, result, errorData);
     if (!checkParsingError(error, errorData))
         return false;
@@ -158,8 +159,17 @@ bool handleBanPoster(const QString &, const QStringList &args)
         board = "*";
     int level = result.contains("level") ? result.value("level").toInt() : 1;
     QString reason = result.value("reason");
-    QDateTime expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
-                                                   : QDateTime();
+    QDateTime expires;
+    if (result.contains("expires")) {
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
+                                             : QDateTime();
+        if (!expires.isValid()) {
+            QString s = bReadLine(translate("handleBanPoster", "Invalid date. User will be banned forever. Continue?")
+                                  + " [Yn] ");
+            if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+                return true;
+        }
+    }
     QString err;
     if (!Database::banUser(sourceBoard, postNumber, board, level, reason, expires, &err))
         bWriteLine(err);
@@ -174,7 +184,7 @@ bool handleBanUser(const QString &, const QStringList &args)
     QString errorData;
     QString boards = AbstractBoard::boardNames().join("|");
     QString options = "ip:--ip-address|-i=,[board:--board|-b=" + boards + "|*],[level:--level|-l=0|1|10|100],"
-            "[reason:--reason|-r=],[expires:--expires|-e]";
+            "[reason:--reason|-r=],[expires:--expires|-e=]";
     BTextTools::OptionsParsingError error = BTextTools::parseOptions(args, options, result, errorData);
     if (!checkParsingError(error, errorData))
         return false;
@@ -188,8 +198,17 @@ bool handleBanUser(const QString &, const QStringList &args)
         board = "*";
     int level = result.contains("level") ? result.value("level").toInt() : 1;
     QString reason = result.value("reason");
-    QDateTime expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
-                                                   : QDateTime();
+    QDateTime expires;
+    if (result.contains("expires")) {
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
+                                             : QDateTime();
+        if (!expires.isValid()) {
+            QString s = bReadLine(translate("handleBanUser", "Invalid date. User will be banned forever. Continue?")
+                                  + " [Yn] ");
+            if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+                return true;
+        }
+    }
     QString err;
     if (!Database::banUser(ip, board, level, reason, expires, &err))
         bWriteLine(err);
@@ -246,16 +265,6 @@ bool handleCloseThread(const QString &, const QStringList &args)
     if (!Database::setThreadOpened(boardName, threadNumber, false, &err))
         bWriteLine(err);
     bWriteLine(translate("handleCloseThread", "OK"));
-    return true;
-}
-
-bool handleCreateSchema(const QString &, const QStringList &)
-{
-    if (bReadLine(translate("handleCreateSchema",
-                            "Are you REALLY sure?") + " [yN] ").compare("y", Qt::CaseInsensitive)) {
-        return true;
-    }
-    Database::createSchema();
     return true;
 }
 
@@ -356,11 +365,16 @@ bool handleRegisterUser(const QString &, const QStringList &)
         bWriteLine(translate("handleRegisterUser", "Invalid level"));
         return false;
     }
+    QStringList boards = bReadLine(translate("handleRegisterUser", "Enter boards:\n"
+                                             "Separate board names by spaces.\n"
+                                             "* - any board\n"
+                                             "Your choice:") + " ").split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    boards.removeDuplicates();
     QByteArray password = Tools::toHashpass(pwd);
     if (password.isEmpty())
         password = QCryptographicHash::hash(pwd.toUtf8(), QCryptographicHash::Sha1);
     QString err;
-    if (!Database::registerUser(password, static_cast<RegisteredUser::Level>(level), &err)) {
+    if (!Database::registerUser(password, static_cast<RegisteredUser::Level>(level), boards, &err)) {
         bWriteLine(err);
         return true;
     }
@@ -476,7 +490,7 @@ void initCommands()
         "  --expires|-e=<date> (optional), where <date> must be the expiration date in the following format:\n"
         "    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.\n"
         "Example:\n"
-        "  ban-user -i=192.168.0.2 -b=vg -l=1 \"-r=posting shit\" -e=01.04.2015");
+        "  ban-user -i=192.168.0.2 -b=vg -l=1 \"-r=posting shit\" -e=01.04.2015:22");
     BTerminal::setCommandHelp("ban-user", ch);
     //
     BTerminal::installHandler("ban-poster", &handleBanPoster);
@@ -497,7 +511,7 @@ void initCommands()
         "  --expires|-e=<date> (optional), where <date> must be the expiration date in the following format:\n"
         "    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.\n"
         "Example:\n"
-        "  ban-poster -i=192.168.0.2 -b=vg -l=1 \"-r=posting shit\" -e=01.04.2015");
+        "  ban-poster -i=192.168.0.2 -b=vg -l=1 \"-r=posting shit\" -e=01.04.2015:22");
     BTerminal::setCommandHelp("ban-poster", ch);
     //
     BTerminal::installHandler("close-thread", &handleCloseThread);
@@ -505,12 +519,6 @@ void initCommands()
     ch.description = BTranslation::translate("initCommands",
         "Make a thread <thread-number> at <board> not available for posting (closed).");
     BTerminal::setCommandHelp("close-thread", ch);
-    //
-    BTerminal::installHandler("create-schema", &handleCreateSchema);
-    ch.usage = "create-schema";
-    ch.description = BTranslation::translate("initCommands", "Create the database schema.\n"
-                                             "Warning: all existing data will be lost!");
-    BTerminal::setCommandHelp("create-schema", ch);
     //
     BTerminal::installHandler("fix-thread", &handleFixThread);
     ch.usage = "fix-thread <board> <thread-number>";
@@ -538,8 +546,11 @@ void initCommands()
     //
     BTerminal::installHandler("clear-cache", &handleClearCache);
     ch.usage = "clear-cache [cache-name]";
-    ch.description = BTranslation::translate("initCommands", "Clear the cache specified by [cache-name].\n"
-                                             "If [cache-name] is not specified, all caches are cleared.");
+    BTranslation t = BTranslation::translate("initCommands", "Clear the cache specified by [cache-name].\n"
+                                             "If [cache-name] is not specified, all caches are cleared.\n"
+                                             "The following caches may be cleared:\n%1");
+    t.setArgument("  " + Cache::availableCacheNames().join("\n  "));
+    ch.description = t;
     BTerminal::setCommandHelp("clear-cache", ch);
     //
     BTerminal::installHandler("reload-boards", &handleReloadBoards);
@@ -613,6 +624,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::UInt, "max_file_count", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum attached file count.\n"
                                                "The default is 1."));
+    nn = new BSettingsNode(QVariant::UInt, "archive_limit", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum archived thread count per board.\n"
+                                               "The default is 0 (do not archive)."));
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
@@ -657,6 +671,7 @@ void initSettings()
         nnn->setDescription(t);
     }
     BTerminal::setRootSettingsNode(root);
+    AbstractBoard::boardNames(); //Required to initialize board settings
 }
 
 void initTerminal()

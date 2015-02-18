@@ -3,13 +3,14 @@
 #include <QDateTime>
 #include <QString>
 
-BannedUser::BannedUser(const QString &board, const QString &ip, const QDateTime &dateTime)
+BannedUser::BannedUser(const QString &board, const QString &ip, const QDateTime &dateTime, quint64 postId)
 {
     id_ = 0L;
     board_ = board;
     ip_ = ip;
     dateTime_ = dateTime.toUTC();
     level_ = 1;
+    postId_ = postId;
 }
 
 BannedUser::BannedUser()
@@ -50,6 +51,11 @@ int BannedUser::level() const
 QString BannedUser::reason() const
 {
     return reason_;
+}
+
+quint64 BannedUser::postId() const
+{
+    return postId_;
 }
 
 void BannedUser::setDateTime(const QDateTime &dateTime)

@@ -156,6 +156,12 @@ The default is 1.</source>
         <translation>Максимальное количество прикрепленных файлов на этой доске.
 По умолчанию 1.</translation>
     </message>
+    <message>
+        <source>Maximum archived thread count for this board.
+The default is 0 (do not archive).</source>
+        <translation>Максимальное количество архивируемых тредов для этой доски.
+По умолчанию 0 (не архивировать).</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -194,19 +200,6 @@ The default is 1.</source>
     </message>
 </context>
 <context>
-    <name>Tools</name>
-    <message>
-        <source>Anonymous</source>
-        <comment>name</comment>
-        <translation>Аноним</translation>
-    </message>
-    <message>
-        <source>KB</source>
-        <comment>fileSize</comment>
-        <translation>Кб</translation>
-    </message>
-</context>
-<context>
     <name>aBoard</name>
     <message>
         <source>/a/nime</source>
@@ -238,11 +231,6 @@ The default is 1.</source>
         <source>Invalid IP address</source>
         <comment>error</comment>
         <translation>Неверный IP-адрес</translation>
-    </message>
-    <message>
-        <source>Internal error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка</translation>
     </message>
     <message>
         <source>Invalid board name</source>
@@ -311,6 +299,14 @@ The default is 1.</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
     </message>
+</context>
+<context>
+    <name>createPostInternalt</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
     <message>
         <source>Internal database error</source>
         <comment>description</comment>
@@ -337,6 +333,16 @@ The default is 1.</source>
         <translation>Капча отсутствует либо неправильная</translation>
     </message>
     <message>
+        <source>No file</source>
+        <comment>error</comment>
+        <translation>Отсутствует файл</translation>
+    </message>
+    <message>
+        <source>Attempt to create a thread without attaching a file</source>
+        <comment>description</comment>
+        <translation>Попытка создать тред без прикрепления файла</translation>
+    </message>
+    <message>
         <source>No file/text</source>
         <comment>error</comment>
         <translation>Нет файла/текста</translation>
@@ -361,16 +367,6 @@ The default is 1.</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка файловой системы</translation>
     </message>
-    <message>
-        <source>No file</source>
-        <comment>error</comment>
-        <translation>Отсутствует файл</translation>
-    </message>
-    <message>
-        <source>Attempt to create a thread without attaching a file</source>
-        <comment>description</comment>
-        <translation>Попытка создать тред без прикрепления файла</translation>
-    </message>
 </context>
 <context>
     <name>createThread</name>
@@ -379,9 +375,52 @@ The default is 1.</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
     </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
 </context>
 <context>
     <name>deletePost</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+</context>
+<context>
+    <name>deletePostInternal</name>
     <message>
         <source>Invalid board name</source>
         <comment>error</comment>
@@ -417,6 +456,10 @@ The default is 1.</source>
         <source>OK</source>
         <translation>ОК</translation>
     </message>
+    <message>
+        <source>Invalid date. User will be banned forever. Continue?</source>
+        <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
+    </message>
 </context>
 <context>
     <name>handleBanUser</name>
@@ -427,6 +470,10 @@ The default is 1.</source>
     <message>
         <source>OK</source>
         <translation>ОК</translation>
+    </message>
+    <message>
+        <source>Invalid date. User will be banned forever. Continue?</source>
+        <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
     </message>
 </context>
 <context>
@@ -461,13 +508,6 @@ The default is 1.</source>
     <message>
         <source>OK</source>
         <translation>ОК</translation>
-    </message>
-</context>
-<context>
-    <name>handleCreateSchema</name>
-    <message>
-        <source>Are you REALLY sure?</source>
-        <translation>Вы ТОЧНО уверены?</translation>
     </message>
 </context>
 <context>
@@ -558,6 +598,16 @@ Your choice:</source>
     <message>
         <source>Invalid level</source>
         <translation>Неправильный уровень</translation>
+    </message>
+    <message>
+        <source>Enter boards:
+Separate board names by spaces.
+* - any board
+Your choice:</source>
+        <translation>Введите доски:
+Отделяйте названия досок пробелами.
+* - любая доска
+Ваш выбор:</translation>
     </message>
 </context>
 <context>
@@ -683,9 +733,34 @@ Your choice:</source>
         <translation>Пароль/хешпасс</translation>
     </message>
     <message>
-        <source>Show/hide</source>
-        <comment>switchLoginButtonTitle</comment>
-        <translation>Показать/скрыть</translation>
+        <source>Show password</source>
+        <comment>showPasswordText</comment>
+        <translation>Показать пароль</translation>
+    </message>
+    <message>
+        <source>Cancel</source>
+        <comment>cancelButtonText</comment>
+        <translation>Отмена</translation>
+    </message>
+    <message>
+        <source>Confirm</source>
+        <comment>confirmButtonText</comment>
+        <translation>Подтвердить</translation>
+    </message>
+    <message>
+        <source>Hide search form</source>
+        <comment>hideSearchFormText</comment>
+        <translation>Скрыть форму поиска</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <comment>showSearchFormText</comment>
+        <translation>Искать</translation>
+    </message>
+    <message>
+        <source>I&apos;m an attention whore!</source>
+        <comment>showTripcodeText</comment>
+        <translation>Я - вниманиешлюха!</translation>
     </message>
 </context>
 <context>
@@ -714,11 +789,6 @@ Your choice:</source>
         <source>Hide post form</source>
         <comment>hidePostFormText</comment>
         <translation>Скрыть форму постинга</translation>
-    </message>
-    <message>
-        <source>Hide search form</source>
-        <comment>hideSearchFormText</comment>
-        <translation>Скрыть форму поиска</translation>
     </message>
     <message>
         <source>Send</source>
@@ -786,11 +856,6 @@ Your choice:</source>
         <translation>Создать тред</translation>
     </message>
     <message>
-        <source>Search</source>
-        <comment>showSearchFormText</comment>
-        <translation>Искать</translation>
-    </message>
-    <message>
         <source>Delete post</source>
         <comment>fixedText</comment>
         <translation>Удалить пост</translation>
@@ -799,11 +864,6 @@ Your choice:</source>
         <source>Delete thread</source>
         <comment>fixedText</comment>
         <translation>Удалить тред</translation>
-    </message>
-    <message>
-        <source>Enter password (if empty, current hashpass will be used):</source>
-        <comment>fixedText</comment>
-        <translation>Введите пароль (если он пуст, то будет использован текущий хешпасс):</translation>
     </message>
     <message>
         <source>You are not logged in!</source>
@@ -815,6 +875,46 @@ Your choice:</source>
         <comment>postFormInputTextPlaceholder</comment>
         <translation>Комментарий. Макс. длина %1</translation>
     </message>
+    <message>
+        <source>AJAX request returned status</source>
+        <comment>ajaxErrorText</comment>
+        <translation>AJAX-запрос вернул статус</translation>
+    </message>
+    <message>
+        <source>This user is registered</source>
+        <comment>registeredText</comment>
+        <translation>Этот пользователь зарегистрирован</translation>
+    </message>
+    <message>
+        <source>Close thread</source>
+        <comment>closeThreadText</comment>
+        <translation>Закрыть тред</translation>
+    </message>
+    <message>
+        <source>Fix thread</source>
+        <comment>fixThreadText</comment>
+        <translation>Закрепить тред</translation>
+    </message>
+    <message>
+        <source>Open thread</source>
+        <comment>openThreadText</comment>
+        <translation>Открыть тред</translation>
+    </message>
+    <message>
+        <source>Unfix thread</source>
+        <comment>unfixThreadText</comment>
+        <translation>Открепить тред</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <comment>enterPasswordTitle</comment>
+        <translation>Введите пароль</translation>
+    </message>
+    <message>
+        <source>If password is empty, current hashpass will be used</source>
+        <comment>enterPasswordText</comment>
+        <translation>Если пароль пуст, будет использован текущий хешпасс</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -823,78 +923,8 @@ Your choice:</source>
         <translation>Это ololord. Введите &quot;help --all&quot; чтобы увидеть полную Справку</translation>
     </message>
     <message>
-        <source>Ban a user.
-The parameters are:
-  --ip-address|-i=&lt;ip&gt;, where &lt;ip&gt; must be a valid IP address.
-  --board|-b=&lt;board&gt; (optional), where &lt;board&gt; must be one of the existing boards or *.
-    The user will be banned for the board specified or for all boards in case of *).
-    The default is *.
-  --level|-l=&lt;level&gt; (optional), where &lt;level&gt; must be one of the following:
-    0 - user is not banned,
-    1 - user is banned from posting,
-    10 - user is banned from reading.
-  --reason|-r=&lt;reason&gt; (optional), where &lt;reason&gt; is a reason for (un)banning.
-  --expires|-e=&lt;date&gt; (optional), where &lt;date&gt; must be the expiration date in the following format:
-    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
-Example:
-  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015</source>
-        <translation>Забанить пользователя.
-Параметры:
-  --ip-address|-i=&lt;ip&gt;, где &lt;ip&gt; должен быть правильным IP-адресом.
-  --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
-    Пользователь будет забанен на указанной доске, либо на всех досках, если указано *).
-  --level|-l=&lt;level&gt; (опционально), где &lt;level&gt; должен быть одним из следующих:
-    0 - пользователь не забанен,
-    1 - пользователю запрещено постить,
-    10 - пользователю запрещено читать.
-  --reason|-r=&lt;reason&gt; (опционально), где &lt;reason&gt; - причниа (раз)бана.
-  --expires|-e=&lt;date&gt; (опционально), где &lt;date&gt; должна быть датой окончания бана в следующем формате:
-    dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
-Пример:
-  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015</translation>
-    </message>
-    <message>
-        <source>Ban a user.
-The parameters are:
-  --source-board|-s=&lt;board&gt;, where &lt;board&gt; must be one of the existing boards.
-  --post-number|-p=&lt;number&gt;, where &lt;number&gt; must be a number of a post.
-  --board|-b=&lt;board&gt; (optional), where &lt;board&gt; must be one of the existing boards or *.
-    The user will be banned for the board specified or for all boards in case of *).
-    The default is *.
-  --level|-l=&lt;level&gt; (optional), where &lt;level&gt; must be one of the following:
-    0 - user is not banned,
-    1 - user is banned from posting,
-    10 - user is banned from reading.
-  --reason|-r=&lt;reason&gt; (optional), where &lt;reason&gt; is a reason for (un)banning.
-  --expires|-e=&lt;date&gt; (optional), where &lt;date&gt; must be the expiration date in the following format:
-    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
-Example:
-  ban-poster -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015</source>
-        <translation>Забанить пользователя.
-Параметры:
-  --source-board|-s=&lt;board&gt;, где &lt;board&gt; должна быть одной из существующих досок.
-  --post-number|-p=&lt;number&gt;, где &lt;number&gt; должен быть номером поста.
-  --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
-    Пользователь будет забанен на указанной доске, либо на всех досках, если указано *).
-  --level|-l=&lt;level&gt; (опционально), где &lt;level&gt; должен быть одним из следующих:
-    0 - пользователь не забанен,
-    1 - пользователю запрещено постить,
-    10 - пользователю запрещено читать.
-  --reason|-r=&lt;reason&gt; (опционально), где &lt;reason&gt; - причниа (раз)бана.
-  --expires|-e=&lt;date&gt; (опционально), где &lt;date&gt; должна быть датой окончания бана в следующем формате:
-    dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
-Пример:
-  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015</translation>
-    </message>
-    <message>
         <source>Make a thread &lt;thread-number&gt; at &lt;board&gt; not available for posting (closed).</source>
         <translation>Сделать тред &lt;thread-number&gt; на &lt;board&gt; недоступным для постинга (закрытым).</translation>
-    </message>
-    <message>
-        <source>Create the database schema.
-Warning: all existing data will be lost!</source>
-        <translation>Создать схему базы данных.
-Предупреждение: все имеющиеся данные будут потеряны!</translation>
     </message>
     <message>
         <source>Make a thread &lt;thread-number&gt; at &lt;board&gt; fixed (always above regular threads).</source>
@@ -917,12 +947,6 @@ Warning: all existing data will be lost!</source>
         <translation>Перезагрузить все доски: встроенные и предоставленные плагинами.</translation>
     </message>
     <message>
-        <source>Clear the cache specified by [cache-name].
-If [cache-name] is not specified, all caches are cleared.</source>
-        <translation>Очистить кеш с именем [cache-name].
-Если [cache-name] не задано, очищаются все кеши.</translation>
-    </message>
-    <message>
         <source>Registers a user.</source>
         <translation>Регистрирует пользователя.</translation>
     </message>
@@ -931,6 +955,80 @@ If [cache-name] is not specified, all caches are cleared.</source>
 If &lt;post-number&gt; is a thread, that thread and all posts in it are deleted.</source>
         <translation>Удаляет пост с номером &lt;post-number&gt; на доске &lt;board&gt;.
 Если &lt;post-number&gt; является тредом, этот тред будет удален вместе со всеми постами в нем.</translation>
+    </message>
+    <message>
+        <source>Ban a user.
+The parameters are:
+  --ip-address|-i=&lt;ip&gt;, where &lt;ip&gt; must be a valid IP address.
+  --board|-b=&lt;board&gt; (optional), where &lt;board&gt; must be one of the existing boards or *.
+    The user will be banned for the board specified or for all boards in case of *).
+    The default is *.
+  --level|-l=&lt;level&gt; (optional), where &lt;level&gt; must be one of the following:
+    0 - user is not banned,
+    1 - user is banned from posting,
+    10 - user is banned from reading.
+  --reason|-r=&lt;reason&gt; (optional), where &lt;reason&gt; is a reason for (un)banning.
+  --expires|-e=&lt;date&gt; (optional), where &lt;date&gt; must be the expiration date in the following format:
+    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
+Example:
+  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015:22</source>
+        <translation>Забанить пользователя.
+Параметры:
+  --ip-address|-i=&lt;ip&gt;, где &lt;ip&gt; должен быть правильным IP-адресом.
+  --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
+    Пользователь будет забанен на указанной доске, либо на всех досках, если указано *).
+  --level|-l=&lt;level&gt; (опционально), где &lt;level&gt; должен быть одним из следующих:
+    0 - пользователь не забанен,
+    1 - пользователю запрещено постить,
+    10 - пользователю запрещено читать.
+  --reason|-r=&lt;reason&gt; (опционально), где &lt;reason&gt; - причниа (раз)бана.
+  --expires|-e=&lt;date&gt; (опционально), где &lt;date&gt; должна быть датой окончания бана в следующем формате:
+    dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
+Пример:
+  ban-user -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015:22</translation>
+    </message>
+    <message>
+        <source>Ban a user.
+The parameters are:
+  --source-board|-s=&lt;board&gt;, where &lt;board&gt; must be one of the existing boards.
+  --post-number|-p=&lt;number&gt;, where &lt;number&gt; must be a number of a post.
+  --board|-b=&lt;board&gt; (optional), where &lt;board&gt; must be one of the existing boards or *.
+    The user will be banned for the board specified or for all boards in case of *).
+    The default is *.
+  --level|-l=&lt;level&gt; (optional), where &lt;level&gt; must be one of the following:
+    0 - user is not banned,
+    1 - user is banned from posting,
+    10 - user is banned from reading.
+  --reason|-r=&lt;reason&gt; (optional), where &lt;reason&gt; is a reason for (un)banning.
+  --expires|-e=&lt;date&gt; (optional), where &lt;date&gt; must be the expiration date in the following format:
+    dd.MM.yyyy:hh - day.month.year:hour. If omitted, the ban will never expire.
+Example:
+  ban-poster -i=192.168.0.2 -b=vg -l=1 &quot;-r=posting shit&quot; -e=01.04.2015:22</source>
+        <translation>Забанить пользователя.
+Параметры:
+  --source-board|-s=&lt;board&gt;, где &lt;board&gt; должна быть одной из существующих досок.
+  --post-number|-p=&lt;number&gt;, где &lt;number&gt; должен быть номером поста.
+  --board|-b=&lt;board&gt; (опционально), где &lt;board&gt; должна быть одной из существующих досок, либо *.
+    Пользователь будет забанен на указанной доске, либо на всех досках, если указано *).
+  --level|-l=&lt;level&gt; (опционально), где &lt;level&gt; должен быть одним из следующих:
+    0 - пользователь не забанен,
+    1 - пользователю запрещено постить,
+    10 - пользователю запрещено читать.
+  --reason|-r=&lt;reason&gt; (опционально), где &lt;reason&gt; - причниа (раз)бана.
+  --expires|-e=&lt;date&gt; (опционально), где &lt;date&gt; должна быть датой окончания бана в следующем формате:
+    dd.MM.yyyy:hh - день.месяц.год:час. Если пропущено, бан не кончится никогда.
+Пример:
+  ban-poster -i=192.168.0.2 -b=vg -l=1 &quot;-r=постинг фигни&quot; -e=01.04.2015:22</translation>
+    </message>
+    <message>
+        <source>Clear the cache specified by [cache-name].
+If [cache-name] is not specified, all caches are cleared.
+The following caches may be cleared:
+%1</source>
+        <translation>Очистить кеш с именем [cache-name].
+Если [cache-name] не задано, очищаются все кеши.
+Могут быть очищены следующие кеши:
+%1</translation>
     </message>
 </context>
 <context>
@@ -1085,6 +1183,20 @@ The default is 1.</source>
         <translation>Максимальное количество прикрепленных файлов.
 По умолчанию 1.</translation>
     </message>
+    <message>
+        <source>Maximum archived thread count per board.
+The default is 0 (do not archive).</source>
+        <translation>Максимальное количество архивируемых тредов на каждой доске.
+По умолчанию 0 (не архивировать).</translation>
+    </message>
+</context>
+<context>
+    <name>intBoard</name>
+    <message>
+        <source>/int/ernational</source>
+        <comment>board title</comment>
+        <translation>/int/ernational</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>
@@ -1097,11 +1209,6 @@ The default is 1.</source>
         <source>Invalid board name</source>
         <comment>error</comment>
         <translation>Неверное имя доски</translation>
-    </message>
-    <message>
-        <source>Internal database error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>
@@ -1125,39 +1232,6 @@ The default is 1.</source>
     <message>
         <source>Failed to read configuration file</source>
         <translation>Не удалось прочитать файл конфигурации</translation>
-    </message>
-</context>
-<context>
-    <name>mayDeletePost</name>
-    <message>
-        <source>Invalid board name</source>
-        <comment>error</comment>
-        <translation>Неверное имя доски</translation>
-    </message>
-    <message>
-        <source>Invalid post number</source>
-        <comment>error</comment>
-        <translation>Неверный номер поста</translation>
-    </message>
-    <message>
-        <source>Invalid password</source>
-        <comment>error</comment>
-        <translation>Неправильный пароль</translation>
-    </message>
-    <message>
-        <source>Internal database error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
-    </message>
-    <message>
-        <source>No such post</source>
-        <comment>error</comment>
-        <translation>Нет такого поста</translation>
-    </message>
-    <message>
-        <source>Incorrect password</source>
-        <comment>error</comment>
-        <translation>Неправильный пароль</translation>
     </message>
 </context>
 <context>
@@ -1192,6 +1266,11 @@ The default is 1.</source>
         <source>Invalid hashpass</source>
         <comment>error</comment>
         <translation>Неправильный хешпасс</translation>
+    </message>
+    <message>
+        <source>Invalid board(s)</source>
+        <comment>error</comment>
+        <translation>Неправильная(ые) доска(и)</translation>
     </message>
 </context>
 <context>
@@ -1266,6 +1345,29 @@ The default is 1.</source>
     </message>
 </context>
 <context>
+    <name>renderIpBan</name>
+    <message>
+        <source>Ban</source>
+        <comment>pageTitle</comment>
+        <translation>Бан</translation>
+    </message>
+    <message>
+        <source>You are banned</source>
+        <comment>pageTitle</comment>
+        <translation>Вы забанены</translation>
+    </message>
+    <message>
+        <source>Your IP address is in the ban list. You are not allowed to read or make posts.</source>
+        <comment>pageTitle</comment>
+        <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить или читать.</translation>
+    </message>
+    <message>
+        <source>Your IP address is in the ban list. You are not allowed to make posts.</source>
+        <comment>pageTitle</comment>
+        <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить.</translation>
+    </message>
+</context>
+<context>
     <name>renderNotFound</name>
     <message>
         <source>Page or file not found</source>
@@ -1333,6 +1435,34 @@ The default is 1.</source>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
     <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>не залогинен</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+</context>
+<context>
+    <name>setThreadFixedInternal</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
         <source>No such thread</source>
         <comment>error</comment>
         <translation>Нет такого треда</translation>
@@ -1340,6 +1470,34 @@ The default is 1.</source>
 </context>
 <context>
     <name>setThreadOpened</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+</context>
+<context>
+    <name>setThreadOpenedInternal</name>
     <message>
         <source>Internal database error</source>
         <comment>error</comment>
@@ -1460,6 +1618,24 @@ The default is 1.</source>
         <source>3D pron</source>
         <comment>board title</comment>
         <translation>3D прон</translation>
+    </message>
+</context>
+<context>
+    <name>toController</name>
+    <message>
+        <source>KB</source>
+        <comment>fileSize</comment>
+        <translation>Кб</translation>
+    </message>
+    <message>
+        <source>Anonymous</source>
+        <comment>name</comment>
+        <translation>Аноним</translation>
+    </message>
+    <message>
+        <source>Unknown country</source>
+        <comment>countryName</comment>
+        <translation>Неизвестная страна</translation>
     </message>
 </context>
 <context>

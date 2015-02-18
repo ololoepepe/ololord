@@ -43,6 +43,7 @@ public:
     static QStringList boardNames(bool includeHidden = true);
     static void reloadBoards();
 public:
+    unsigned int archiveLimit() const;
     QString bannerFileName() const;
     unsigned int bumpLimit() const;
     virtual void createPost(cppcms::application &app);
@@ -57,6 +58,7 @@ public:
     unsigned int postLimit() const;
     virtual bool processCode() const;
     virtual QStringList rules(const QLocale &l) const;
+    virtual bool showWhois() const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
     virtual QString title(const QLocale &l) const = 0;

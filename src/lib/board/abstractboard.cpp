@@ -4,6 +4,7 @@
 #include "board/bboard.h"
 #include "board/cgboard.h"
 #include "board/hboard.h"
+#include "board/intboard.h"
 #include "board/mlpboard.h"
 #include "board/prboard.h"
 #include "board/rfboard.h"
@@ -22,6 +23,7 @@
 #include "stored/thread.h"
 #include "stored/thread-odb.hxx"
 #include "tools.h"
+#include "transaction.h"
 #include "translator.h"
 
 #include <BCoreApplication>
@@ -136,6 +138,12 @@ void AbstractBoard::reloadBoards()
     initBoards(true);
 }
 
+unsigned int AbstractBoard::archiveLimit() const
+{
+    SettingsLocker s;
+    return s->value("Board/" + name() + "/archive_limit", s->value("Board/archive_limit", 0)).toUInt();
+}
+
 QString AbstractBoard::bannerFileName() const
 {
     QString path = BDirTools::findResource("static/img/banner", BDirTools::AllResources);
@@ -165,7 +173,7 @@ void AbstractBoard::createPost(cppcms::application &app)
     if (!Controller::testParams(app, params, files, name()))
         return;
     TranslatorQt tq(req);
-    if (!Tools::postingEnabled(name())) {
+    if (!postingEnabled()) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Posting disabled", "error"),
             tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
     }
@@ -194,13 +202,14 @@ void AbstractBoard::createThread(cppcms::application &app)
     if (!Controller::testParams(app, params, files, name()))
         return;
     TranslatorQt tq(req);
-    if (!Tools::postingEnabled(name())) {
+    if (!postingEnabled()) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Posting disabled", "error"),
             tq.translate("AbstractBoard", "Posting is disabled for this board", "description"));
     }
     QString err;
     QString desc;
     Database::CreateThreadParameters p(req, params, files, tq.locale());
+    p.archiveLimit = archiveLimit();
     p.threadLimit = threadLimit();
     p.error = &err;
     p.description = &desc;
@@ -222,16 +231,13 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     unsigned int pageCount = 0;
     bool postingEn = postingEnabled();
     try {
-        odb::database *db = Database::createConnection();
-        if (!db) {
+        Transaction t;
+        if (!t) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
-        odb::transaction transaction(db->begin());
-        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == name()));
-        QList<Thread> list;
-        for (odb::result<Thread>::iterator i = r.begin(); i != r.end(); ++i)
-            list << *i;
+        QList<Thread> list = Database::query<Thread, Thread>(odb::query<Thread>::board == name()
+                                                             && odb::query<Thread>::archived == false);
         qSort(list.begin(), list.end(), &threadLessThan);
         pageCount = (list.size() / threadsPerPage()) + ((list.size() % threadsPerPage()) ? 1 : 0);
         if (!pageCount)
@@ -242,21 +248,27 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             Content::Board::Thread thread;
             const Thread::Posts &posts = tt.posts();
             thread.bumpLimit = bumpLimit();
+            thread.closed = !tt.postingEnabled();
             thread.fixed = tt.fixed();
             thread.postLimit = postLimit();
             thread.postCount = posts.size();
             thread.postingEnabled = postingEn && tt.postingEnabled();
-            thread.opPost = Controller::toController(*posts.first().load(), name(), tt.number(), ts.locale(),
+            thread.opPost = Controller::toController(*posts.first().load(), this, tt.number(), ts.locale(),
                                                      app.request(), processCode());
             foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
                 if (i <= 0)
                     break;
-                thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), name(), tt.number(),
+                thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), this, tt.number(),
                                                                      ts.locale(), app.request(), processCode()));
             }
             c.threads.push_back(thread);
         }
-        transaction.commit();
+        c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
+        if (c.moder) {
+            QStringList boards = Database::registeredUserBoards(app.request());
+            c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
+        }
+        t.commit();
     }  catch (const odb::exception &e) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                        Tools::fromStd(e.what()));
@@ -299,40 +311,44 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     Content::Thread c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    bool postingEn = false;
+    bool postingEn = postingEnabled();
     QString pageTitle;
     try {
-        odb::database *db = Database::createConnection();
-        if (!db) {
+        Transaction t;
+        if (!t) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
-        odb::transaction transaction(db->begin());
-        odb::result<Thread> r(db->query<Thread>(odb::query<Thread>::board == name()));
-        bool threadFound = false;
-        for (odb::result<Thread>::iterator i = r.begin(); i != r.end(); ++i) {
-            if (i->number() == threadNumber) {
-                const Thread::Posts posts = i->posts();
-                if (posts.isEmpty()) {
-                    return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
-                        tq.translate("AbstractBoard", "Internal database error", "description"));
-                }
-                c.fixed = i->fixed();
-                pageTitle = posts.first().load()->subject();
-                postingEn = Tools::postingEnabled(name()) && i->postingEnabled();
-                c.opPost = Controller::toController(*posts.first().load(), name(), i->number(), ts.locale(),
-                                                    app.request(), processCode());
-                foreach (int j, bRangeD(1, posts.size() - 1)) {
-                    c.posts.push_back(Controller::toController(*posts.at(j).load(), name(), i->number(), ts.locale(),
-                                                               app.request(), processCode()));
-                }
-                threadFound = true;
-                break;
-            }
+        Database::Result<Thread> thread = Database::queryOne<Thread, Thread>(
+                    odb::query<Thread>::board == name() && odb::query<Thread>::number == threadNumber
+                    && odb::query<Thread>::archived == false);
+        if (thread.error) {
+            return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
+                                           tq.translate("AbstractBoard", "Internal database error", "description"));
         }
-        if (!threadFound)
+        if (!thread)
             return Controller::renderNotFound(app);
-        transaction.commit();
+        const Thread::Posts &posts = thread->posts();
+        if (posts.isEmpty()) {
+            return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
+                tq.translate("AbstractBoard", "Internal database error", "description"));
+        }
+        c.closed = !thread->postingEnabled();
+        c.fixed = thread->fixed();
+        pageTitle = posts.first().load()->subject();
+        postingEn = postingEn && thread->postingEnabled();
+        c.opPost = Controller::toController(*posts.first().load(), this, thread->number(), ts.locale(),
+                                            app.request(), processCode());
+        foreach (int j, bRangeD(1, posts.size() - 1)) {
+            c.posts.push_back(Controller::toController(*posts.at(j).load(), this, thread->number(), ts.locale(),
+                                                       app.request(), processCode()));
+        }
+        c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
+        if (c.moder) {
+            QStringList boards = Database::registeredUserBoards(app.request());
+            c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
+        }
+        t.commit();
     }  catch (const odb::exception &e) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                        Tools::fromStd(e.what()));
@@ -374,6 +390,11 @@ bool AbstractBoard::processCode() const
 QStringList AbstractBoard::rules(const QLocale &l) const
 {
     return Tools::rules("rules", l) + Tools::rules("rules/" + name(), l);
+}
+
+bool AbstractBoard::showWhois() const
+{
+    return false;
 }
 
 unsigned int AbstractBoard::threadLimit() const
@@ -421,6 +442,8 @@ void AbstractBoard::initBoards(bool reinit)
     b = new cgBoard;
     boards.insert(b->name(), b);
     b = new hBoard;
+    boards.insert(b->name(), b);
+    b = new intBoard;
     boards.insert(b->name(), b);
     b = new mlpBoard;
     boards.insert(b->name(), b);
@@ -514,6 +537,9 @@ void AbstractBoard::initBoards(bool reinit)
         nnn->setDescription(BTranslation::translate("AbstractBoard",
                                                     "Maximum attached file count for this board.\n"
                                                     "The default is 1."));
+        nnn = new BSettingsNode(QVariant::UInt, "archive_limit", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum archived thread count for this board.\n"
+                                                   "The default is 0 (do not archive)."));
     }
     if (!reinit)
         qAddPostRoutine(&cleanupBoards);

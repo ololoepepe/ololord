@@ -21,6 +21,7 @@ SOURCES += \
     ololordapplication.cpp \
     settingslocker.cpp \
     tools.cpp \
+    transaction.cpp \
     translator.cpp
 
 HEADERS += \
@@ -30,7 +31,8 @@ HEADERS += \
     ololordapplication.h \
     settingslocker.h \
     tools.h \
-    translator.h \
+    transaction.h \
+    translator.h
 
 include(ajax/ajax.pri)
 include(board/board.pri)

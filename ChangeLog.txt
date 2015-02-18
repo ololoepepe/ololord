@@ -1,3 +1,20 @@
+=== ololord 0.1.0-beta4 (18 February 2015) ===
+    * Check for unbanned users periodically
+    * Add ability for admins to delete any posts
+    * Implement thread archiving
+    * Fix database connection cleanup
+    * Remove banned user from database when unbanned
+    * Fix closed threads
+    * Add ablility to close/unclose threads form the web
+    * Add ablility to fix/unfix threads form the web
+    * Implement secure password input
+    * Delete post files if transaction rolls back
+    * Implement ODB wrappers
+    * Implement thread-local transaction singleton
+    * Add ability to be logged in but post without a tripcode
+    * Add /int/ board
+    * Add IP ban list
+
 === ololord 0.1.0-beta3 (16 February 2015) ===
     * Implement search
     * Use plugins for routes

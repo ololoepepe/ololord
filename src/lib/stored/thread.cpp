@@ -1,11 +1,14 @@
 #include "thread.h"
 
+#include <BeQt>
+
 #include <QByteArray>
 #include <QDateTime>
 #include <QDebug>
 #include <QList>
 #include <QSharedPointer>
 #include <QString>
+#include <QStringList>
 
 #include <odb/qt/lazy-ptr.hxx>
 
@@ -15,6 +18,7 @@ Thread::Thread(const QString &board, quint64 number, const QDateTime &dateTime)
     board_ = board;
     number_ = number;
     dateTime_ = dateTime.toUTC();
+    archived_ = false;
     fixed_ = false;
     postingEnabled_ = true;
 }
@@ -44,6 +48,11 @@ QDateTime Thread::dateTime() const
     return QDateTime(dateTime_.date(), dateTime_.time(), Qt::UTC);
 }
 
+bool Thread::archived() const
+{
+    return archived_;
+}
+
 bool Thread::fixed() const
 {
     return fixed_;
@@ -62,6 +71,11 @@ const Thread::Posts &Thread::posts() const
 Thread::Posts &Thread::posts()
 {
     return posts_;
+}
+
+void Thread::setArchived(bool archived)
+{
+    archived_ = archived;
 }
 
 void Thread::setBoard(const QString &board)
@@ -93,6 +107,7 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     dateTime_ = dateTime.toUTC();
     hashpass_ = hashpass;
     bannedFor_ = false;
+    showTripcode_ = false;
     thread_ = thread;
     posterIp_ = posterIp;
     password_ = password;
@@ -128,14 +143,19 @@ bool Post::bannedFor() const
     return bannedFor_;
 }
 
+bool Post::showTripcode() const
+{
+    return showTripcode_;
+}
+
 QString Post::email() const
 {
     return email_;
 }
 
-QByteArray Post::files() const
+QStringList Post::files() const
 {
-    return files_;
+    return BeQt::deserialize(files_).toStringList();
 }
 
 QByteArray Post::hashpass() const
@@ -163,14 +183,19 @@ void Post::setBannedFor(bool banned)
     bannedFor_ = banned;
 }
 
+void Post::setShowTripcode(bool show)
+{
+    showTripcode_ = show;
+}
+
 void Post::setEmail(const QString &email)
 {
     email_ = email;
 }
 
-void Post::setFiles(const QByteArray &files)
+void Post::setFiles(const QStringList &files)
 {
-    files_ = files;
+    files_ = BeQt::serialize(files);
 }
 
 void Post::setName(const QString &name)

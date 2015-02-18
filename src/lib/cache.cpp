@@ -22,6 +22,8 @@ namespace Cache
 
 static QCache<QString, QByteArray> dynamicFiles;
 static QMutex dynamicFilesMutex(QMutex::Recursive);
+static QCache<QString, IpBanInfoList> theIpBanInfoList;
+static QMutex ipBanInfoListMutex(QMutex::Recursive);
 static QCache<QString, QStringList> theRules;
 static QMutex rulesMutex(QMutex::Recursive);
 static QCache<QString, QByteArray> staticFiles;
@@ -44,6 +46,7 @@ ClearCacheFunctionMap availableClearCacheFunctions()
 {
     init_once(ClearCacheFunctionMap, map, ClearCacheFunctionMap()) {
         map.insert("dynamic_files", &clearDynamicFilesCache);
+        map.insert("ip_ban_info_list", &clearIpBanInfoListCache);
         map.insert("rules", &clearRulesCache);
         map.insert("static_files", &clearStaticFilesCache);
         map.insert("translators", &clearTranslatorsCache);
@@ -55,6 +58,7 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 {
     init_once(SetMaxCacheSizeFunctionMap, map, SetMaxCacheSizeFunctionMap()) {
         map.insert("dynamic_files", &setDynamicFilesMaxCacheSize);
+        map.insert("ip_ban_info_list", &setIpBanInfoListMaxCacheSize);
         map.insert("rules", &setRulesMaxCacheSize);
         map.insert("static_files", &setStaticFilesMaxCacheSize);
         map.insert("translators", &setTranslatorsMaxCacheSize);
@@ -66,6 +70,7 @@ QStringList availableCacheNames()
 {
     init_once(QStringList, names, QStringList()) {
         names << "dynamic_files";
+        names << "ip_ban_info_list";
         names << "rules";
         names << "static_files";
         names << "translators";
@@ -83,6 +88,20 @@ bool cacheDynamicFile(const QString &path, QByteArray *data)
     if (dynamicFiles.maxCost() < data->size())
         return false;
     dynamicFiles.insert(path, data, data->size());
+    return true;
+}
+
+bool cacheIpBanInfoList(IpBanInfoList *list)
+{
+    if (!list)
+        return false;
+    QMutexLocker locker(&ipBanInfoListMutex);
+    do_once(init)
+        initCache(theIpBanInfoList, "ip_ban_info_list", 10 * BeQt::Megabyte);
+    int sz = list->size() * 2 * sizeof(int);
+    if (theIpBanInfoList.maxCost() < sz)
+        return false;
+    theIpBanInfoList.insert("x", list, sz);
     return true;
 }
 
@@ -144,6 +163,12 @@ void clearDynamicFilesCache()
     dynamicFiles.clear();
 }
 
+void clearIpBanInfoListCache()
+{
+    QMutexLocker locker(&ipBanInfoListMutex);
+    theIpBanInfoList.clear();
+}
+
 void clearRulesCache()
 {
     QMutexLocker locker(&rulesMutex);
@@ -167,6 +192,7 @@ int defaultCacheSize(const QString &name)
     typedef QMap<QString, int> IntMap;
     init_once(IntMap, map, IntMap()) {
         map.insert("dynamic_files", defaultDynamicFilesCacheSize);
+        map.insert("ip_ban_info_list", defaultIpBanInfoListCacheSize);
         map.insert("rules", defaultRulesCacheSize);
         map.insert("static_files", defaultStaticFilesCacheSize);
         map.insert("translators", defaultTranslationsCacheSize);
@@ -180,6 +206,12 @@ QByteArray *dynamicFile(const QString &path)
         return 0;
     QMutexLocker locker(&dynamicFilesMutex);
     return dynamicFiles.object(path);
+}
+
+IpBanInfoList *ipBanInfoList()
+{
+    QMutexLocker locker(&ipBanInfoListMutex);
+    return theIpBanInfoList.object("x");
 }
 
 QStringList *rules(const QLocale &locale, const QString &prefix)
@@ -196,6 +228,14 @@ void setDynamicFilesMaxCacheSize(int size)
         return;
     QMutexLocker locker(&dynamicFilesMutex);
     dynamicFiles.setMaxCost(size);
+}
+
+void setIpBanInfoListMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QMutexLocker locker(&ipBanInfoListMutex);
+    theIpBanInfoList.setMaxCost(size);
 }
 
 bool setMaxCacheSize(const QString &name, int size, QString *err, const QLocale &l)

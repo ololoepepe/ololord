@@ -27,6 +27,8 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
     };
 public:
     AbstractBoard::BoardInfoList boards;
+    std::string cancelButtonText;
+    std::string confirmButtonText;
     Locale currentLocale;
     std::string currentTime;
     std::string hideSearchFormText;
@@ -40,9 +42,10 @@ public:
     std::string loginPlaceholderText;
     std::string pageTitle;
     std::string searchApiKey;
+    std::string showPasswordText;
     std::string showSearchFormText;
+    std::string showTripcodeText;
     std::string sitePathPrefix;
-    std::string switchLoginButtonTitle;
     std::string timeLabelText;
     std::string timeLocalText;
     std::string timeServerText;
