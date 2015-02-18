@@ -96,6 +96,7 @@ OLOLORD_EXPORT QLocale locale(const cppcms::http::request &req,
                               const QLocale &defaultLocale = BCoreApplication::locale());
 OLOLORD_EXPORT void log(const cppcms::application &app, const QString &what);
 OLOLORD_EXPORT void log(const cppcms::http::request &req, const QString &what);
+OLOLORD_EXPORT QStringList news(const QLocale &l);
 OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request);
 OLOLORD_EXPORT PostParameters postParameters(const cppcms::http::request &request);
 OLOLORD_EXPORT cppcms::json::value readJsonValue(const QString &fileName, bool *ok = 0);

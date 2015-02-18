@@ -398,6 +398,26 @@ void log(const cppcms::http::request &req, const QString &what)
     bLog("[" + userIp(req) + "] " + what);
 }
 
+QStringList news(const QLocale &l)
+{
+    QStringList *sl = Cache::news(l);
+    if (!sl) {
+        QString path = BDirTools::findResource("news", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return QStringList();
+        QString fn = BDirTools::localeBasedFileName(path + "/news.txt", l);
+        if (fn.isEmpty())
+            return QStringList();
+        sl = new QStringList(BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts));
+        if (!Cache::cacheNews(l, sl)) {
+            QStringList sll = *sl;
+            delete sl;
+            return sll;
+        }
+    }
+    return *sl;
+}
+
 FileList postFiles(const cppcms::http::request &request)
 {
     FileList list;

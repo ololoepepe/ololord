@@ -26,9 +26,12 @@
             <h1><%= welcomeMessage %></h1>
         </div>
         <% if ( !content.rules.empty() ) %>
+            <div class="sectionHeader">
+                <h3><%= rulesHeader %></h3>
+            </div>
             <div class="rules">
                 <ol>
-                <%foreach rule in rules %>
+                <% foreach rule in rules %>
                      <% item %>
                         <li>
                             <%= rule | raw %>
@@ -36,6 +39,22 @@
                     <% end %>
                 <% end %>
                 </ol>
+            </div>
+        <% end %>
+        <% if ( !content.news.empty() ) %>
+            <div class="sectionHeader">
+                <h3><%= newsHeader %></h3>
+            </div>
+            <div class="rules">
+                <ul>
+                <% foreach n in news %>
+                     <% item %>
+                        <li>
+                            <%= n | raw %>
+                        </li>
+                    <% end %>
+                <% end %>
+                </ul>
             </div>
         <% end %>
     </body>

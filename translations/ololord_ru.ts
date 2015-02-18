@@ -198,6 +198,16 @@ The default is 0 (do not archive).</source>
         <comment>pageTitle</comment>
         <translation>ololord - (почти) свободное общение</translation>
     </message>
+    <message>
+        <source>News</source>
+        <comment>newsHeader</comment>
+        <translation>Новости</translation>
+    </message>
+    <message>
+        <source>Rules</source>
+        <comment>rulesHeader</comment>
+        <translation>Правила</translation>
+    </message>
 </context>
 <context>
     <name>aBoard</name>
