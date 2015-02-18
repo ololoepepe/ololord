@@ -12,6 +12,7 @@ class OLOLORD_EXPORT rfBoard : public AbstractBoard
 public:
     explicit rfBoard();
 public:
+    QString defaultUserName(const QLocale &l) const;
     QString name() const;
     QString title(const QLocale &l) const;
 };

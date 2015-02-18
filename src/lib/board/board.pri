@@ -8,6 +8,7 @@ HEADERS += \
     $${PWD}/mlpboard.h \
     $${PWD}/prboard.h \
     $${PWD}/rfboard.h \
+    $${PWD}/socboard.h \
     $${PWD}/threedpdboard.h \
     $${PWD}/vgboard.h
 
@@ -21,5 +22,6 @@ SOURCES += \
     $${PWD}/mlpboard.cpp \
     $${PWD}/prboard.cpp \
     $${PWD}/rfboard.cpp \
+    $${PWD}/socboard.cpp \
     $${PWD}/threedpdboard.cpp \
     $${PWD}/vgboard.cpp

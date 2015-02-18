@@ -12,6 +12,7 @@ class OLOLORD_EXPORT aBoard : public AbstractBoard
 public:
     explicit aBoard();
 public:
+    QString defaultUserName(const QLocale &l) const;
     QString name() const;
     QString title(const QLocale &l) const;
 };

@@ -220,6 +220,11 @@ void AbstractBoard::createThread(cppcms::application &app)
     Tools::log(app, "Handled thread creation");
 }
 
+QString AbstractBoard::defaultUserName(const QLocale &l) const
+{
+    return TranslatorQt(l).translate("AbstractBoard", "Anonymous", "defaultUserName");
+}
+
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
     Tools::log(app, "Handling board");

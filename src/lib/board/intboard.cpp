@@ -10,6 +10,11 @@ intBoard::intBoard()
     //
 }
 
+QString intBoard::defaultUserName(const QLocale &l) const
+{
+    return TranslatorQt(l).translate("intBoard", "Vladimir Putin", "defaultUserName");
+}
+
 QString intBoard::name() const
 {
     return "int";

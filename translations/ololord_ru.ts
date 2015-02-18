@@ -162,6 +162,11 @@ The default is 0 (do not archive).</source>
         <translation>Максимальное количество архивируемых тредов для этой доски.
 По умолчанию 0 (не архивировать).</translation>
     </message>
+    <message>
+        <source>Anonymous</source>
+        <comment>defaultUserName</comment>
+        <translation>Аноним</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -215,6 +220,11 @@ The default is 0 (do not archive).</source>
         <source>/a/nime</source>
         <comment>board title</comment>
         <translation>/a/ниме</translation>
+    </message>
+    <message>
+        <source>Kamina</source>
+        <comment>defaultUserName</comment>
+        <translation>Камина</translation>
     </message>
 </context>
 <context>
@@ -1207,6 +1217,11 @@ The default is 0 (do not archive).</source>
         <comment>board title</comment>
         <translation>/int/ernational</translation>
     </message>
+    <message>
+        <source>Vladimir Putin</source>
+        <comment>defaultUserName</comment>
+        <translation>Владимир Путин</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>
@@ -1397,6 +1412,11 @@ The default is 0 (do not archive).</source>
         <comment>board title</comment>
         <translation>Убежище</translation>
     </message>
+    <message>
+        <source>Whiner</source>
+        <comment>defaultUserName</comment>
+        <translation>Нытик</translation>
+    </message>
 </context>
 <context>
     <name>setDefaultThreadPassword</name>
@@ -1554,6 +1574,19 @@ The default is 0 (do not archive).</source>
     </message>
 </context>
 <context>
+    <name>socBoard</name>
+    <message>
+        <source>Life of the party</source>
+        <comment>defaultUserName</comment>
+        <translation>Душа компании</translation>
+    </message>
+    <message>
+        <source>Communication</source>
+        <comment>board title</comment>
+        <translation>Общение</translation>
+    </message>
+</context>
+<context>
     <name>testBan</name>
     <message>
         <source>Internal error</source>
@@ -1638,11 +1671,6 @@ The default is 0 (do not archive).</source>
         <translation>Кб</translation>
     </message>
     <message>
-        <source>Anonymous</source>
-        <comment>name</comment>
-        <translation>Аноним</translation>
-    </message>
-    <message>
         <source>Unknown country</source>
         <comment>countryName</comment>
         <translation>Неизвестная страна</translation>
@@ -1654,6 +1682,11 @@ The default is 0 (do not archive).</source>
         <source>Video games</source>
         <comment>board title</comment>
         <translation>Видеоигры</translation>
+    </message>
+    <message>
+        <source>PC Nobleman</source>
+        <comment>defaultUserName</comment>
+        <translation>Пекабоярин</translation>
     </message>
 </context>
 </TS>

@@ -551,15 +551,11 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         p.files.push_back(f);
     }
     p.name = Tools::toStd(toHtml(post.name()));
-    if (p.name.empty()) {
-        TranslatorStd ts(l);
-        p.name = ts.translate("toController", "Anonymous", "name");
-    }
+    if (p.name.empty())
+        p.name = Tools::toStd(board->defaultUserName(l));
     p.nameRaw = Tools::toStd(post.name());
-    if (p.nameRaw.empty()) {
-        TranslatorStd ts(l);
-        p.nameRaw = ts.translate("toController", "Anonymous", "name");
-    }
+    if (p.nameRaw.empty())
+        p.nameRaw = Tools::toStd(board->defaultUserName(l));
     p.number = post.number();
     p.subject = Tools::toStd(post.subject());
     p.text = processPostText(post.text(), board->name(), threadNumber, processCode);
@@ -579,10 +575,8 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
                 name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
         }
         p.name = Tools::toStd(name);
-        if (p.name.empty()) {
-            TranslatorStd ts(l);
-            p.name = ts.translate("toController", "Anonymous", "name");
-        }
+        if (p.name.empty())
+            p.name = Tools::toStd(board->defaultUserName(l));
         QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);

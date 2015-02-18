@@ -10,6 +10,11 @@ vgBoard::vgBoard()
     //
 }
 
+QString vgBoard::defaultUserName(const QLocale &l) const
+{
+    return TranslatorQt(l).translate("vgBoard", "PC Nobleman", "defaultUserName");
+}
+
 QString vgBoard::name() const
 {
     return "vg";
