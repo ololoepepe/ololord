@@ -48,16 +48,9 @@ static QMutex localeMutex(QMutex::Recursive);
 static Content::Base::Locale toWithLocale(const QLocale &l)
 {
     Content::Base::Locale ll;
-    QString country = QLocale::countryToString(l.country());
-    foreach (int i, bRangeR(country.length() - 1, 1)) {
-        const QChar &c = country.at(i);
-        if (!c.isUpper())
-            continue;
-        country.insert(i, ' ');
-    }
-    ll.country = Tools::toStd(country);
+    ll.country = Tools::toStd(l.nativeCountryName());
     ll.name = Tools::toStd(l.name());
-    ll.language = Tools::toStd(QLocale::languageToString(l.language()));
+    ll.language = Tools::toStd(l.nativeLanguageName());
     return ll;
 }
 

@@ -28,5 +28,5 @@ QString socBoard::name() const
 QString socBoard::title(const QLocale &l) const
 {
     TranslatorQt tq(l);
-    return tq.translate("socBoard", "Communication", "board title");
+    return tq.translate("socBoard", "Social life", "board title");
 }

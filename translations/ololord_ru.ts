@@ -1589,9 +1589,9 @@ The default is true.</source>
         <translation>Душа компании</translation>
     </message>
     <message>
-        <source>Communication</source>
+        <source>Social life</source>
         <comment>board title</comment>
-        <translation>Общение</translation>
+        <translation>Жизнь в обществе</translation>
     </message>
 </context>
 <context>
