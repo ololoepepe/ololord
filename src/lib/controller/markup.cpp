@@ -594,7 +594,8 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         p.flagName = Tools::toStd(Tools::flagName(countryCode));
         if (!p.flagName.empty()) {
             p.countryName = Tools::toStd(Tools::countryName(countryCode));
-            p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
+            if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
+                p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
         } else {
             p.flagName = "default.png";
             p.countryName = ts.translate("toController", "Unknown country", "countryName");

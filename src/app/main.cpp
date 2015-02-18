@@ -627,6 +627,11 @@ void initSettings()
     nn = new BSettingsNode(QVariant::UInt, "archive_limit", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum archived thread count per board.\n"
                                                "The default is 0 (do not archive)."));
+    nn = new BSettingsNode(QVariant::Bool, "guess_city_name", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines if poster city name should be guessed on "
+                                               "boards that allow this (e.g. /int/).\n"
+                                               "This operation is rather heavy, so you may turn it off.\n"
+                                               "The default is true."));
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"

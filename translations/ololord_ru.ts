@@ -1209,6 +1209,14 @@ The default is 0 (do not archive).</source>
         <translation>Максимальное количество архивируемых тредов на каждой доске.
 По умолчанию 0 (не архивировать).</translation>
     </message>
+    <message>
+        <source>Determines if poster city name should be guessed on boards that allow this (e.g. /int/).
+This operation is rather heavy, so you may turn it off.
+The default is true.</source>
+        <translation>Определяет, угадывать ли город автора поста на досках, где это разрешено (напр. /int/).
+Эта операция довольно &quot;тяжелая&quot;, поэтому вы можете отключить ее.
+По умолчанию true.</translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>

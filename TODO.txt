@@ -6,3 +6,4 @@
 [done] Optimise Transaction wrapper class
 [done] Add ability to customize default user name (Anonymous)
 [done] Add a hidden board
+[done] Add ability to disable city name guessing
