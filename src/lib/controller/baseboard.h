@@ -33,6 +33,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string email;
         std::list<File> files;
         std::string flagName;
+        bool hidden;
         std::string name;
         std::string nameRaw;
         unsigned long long number;
@@ -84,6 +85,7 @@ public:
     bool postingEnabled;
     std::string postLimitReachedText;
     std::string registeredText;
+    std::string showHidePostText;
     std::string showPostFormText;
     bool showWhois;
     std::string unfixThreadText;

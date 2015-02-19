@@ -267,6 +267,8 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                 thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), this, tt.number(),
                                                                      ts.locale(), app.request(), processCode()));
             }
+            thread.hidden = (Tools::cookieValue(app.request(), "postHidden" + name()
+                                                + QString::number(tt.number())) == "true");
             c.threads.push_back(thread);
         }
         c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
@@ -362,6 +364,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber);
     c.bumpLimit = bumpLimit();
     c.postLimit = postLimit();
+    c.hidden = (Tools::cookieValue(app.request(), "postHidden" + name() + QString::number(threadNumber)) == "true");
     app.render("thread", c);
     Tools::log(app, "Handled thread");
 }

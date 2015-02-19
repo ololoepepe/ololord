@@ -7,11 +7,27 @@
     padding-left: 10px;
 }
 
+.hiddenPost > .threadPost {
+    display: none;
+}
+
+.opPost.hiddenPost ~ .post {
+    display: none;
+}
+
+.omittedPosts.hiddenPosts {
+    display: none;
+}
+
+.threadPosts.hiddenPosts {
+    display: none;
+}
+
 .postHeader, .postFileName, .postFileSize {
     white-space: nowrap;
 }
 
-.threadPosts {
+.threadPost {
     horizontal-align: left;
 }
 

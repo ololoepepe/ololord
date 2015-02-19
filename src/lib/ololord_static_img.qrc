@@ -242,5 +242,6 @@
         <file>static/img/flag/ZM.png</file>
         <file>static/img/flag/ZW.png</file>
         <file>static/img/ban.png</file>
+        <file>static/img/hide.png</file>
     </qresource>
 </RCC>

@@ -4,9 +4,17 @@
 
 <% template post(Content::BaseBoard::Post post, Content::Board::Thread thread) %>
 <% if ( post.number == thread.opPost.number ) %>
-    <div id="opPost<%= post.number %>" class="opPost">
+    <% if ( post.hidden ) %>
+        <div id="post<%= post.number %>" class="opPost hiddenPost">
+    <% else %>
+        <div id="post<%= post.number %>" class="opPost">
+    <% end %>
 <% else %>
-    <div id="post<%= post.number %>" class="post">
+    <% if ( post.hidden ) %>
+        <div id="post<%= post.number %>" class="post hiddenPost">
+    <% else %>
+        <div id="post<%= post.number %>" class="post">
+    <% end %>
 <% end %>
     <div class="postHeader">
         <% if ( post.number == thread.opPost.number && thread.fixed ) %>
@@ -68,6 +76,27 @@
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
         <% end %>
         <% if ( post.number == thread.opPost.number ) %>
+            <% if ( post.hidden ) %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% else %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
+        <% else %>
+            <% if ( post.hidden ) %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% else %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
+        <% end %>
+        <% if ( post.number == thread.opPost.number ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
         <% end %>
         <% if ( post.number == thread.opPost.number && thread.postLimitReached() ) %>
@@ -76,7 +105,7 @@
             <span class="bumpLimitReached"><%= bumpLimitReachedText %></span>
         <% end %>
     </div>
-    <table class="threadPosts">
+    <table class="threadPost">
         <tbody>
             <tr>
                 <%foreach file in post.files %>
@@ -104,14 +133,26 @@
 <% foreach thread in threads %>
     <% item %>
         <hr />
-        <div id="thread<%= thread.opPost.number %>">
+        <% if ( thread.hidden ) %>
+            <div id="thread<%= thread.opPost.number %>" class="hiddenThread">
+        <% else %>
+            <div id="thread<%= thread.opPost.number %>">
+        <% end %>
             <% include post(thread.opPost, thread) %>
         </div>
         <% if ( thread.omittedPosts() > 0 ) %>
-            <div>
+            <% if ( thread.hidden ) %>
+                <div id="threadOmitted<%= thread.opPost.number %>" class="omittedPosts hiddenPosts">
+            <% else %>
+                <div id="threadOmitted<%= thread.opPost.number %>" class="omittedPosts">
+            <% end %>
                 <%= omittedPostsText %> <%= thread.omittedPosts() %>
             </div>
+        <% end %>
+        <% if ( thread.hidden ) %>
+            <div id="threadPosts<%= thread.opPost.number %>" class="threadPosts hiddenPosts">
         <% else %>
+            <div id="threadPosts<%= thread.opPost.number %>" class="threadPosts">
         <% end %>
         <% foreach p in thread.lastPosts %>
             <% item %>
@@ -120,6 +161,7 @@
                 </div>
             <% end %>
         <% end %>
+        </div>
     <% end %>
 <% empty %>
 <% end %>

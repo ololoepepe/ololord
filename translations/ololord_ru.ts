@@ -1018,6 +1018,11 @@ Your choice:</source>
         <comment>boardLabelText</comment>
         <translation>Доска:</translation>
     </message>
+    <message>
+        <source>Hide/show</source>
+        <comment>showHidePostText</comment>
+        <translation>Скрыть/показать</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

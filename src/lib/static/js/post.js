@@ -143,3 +143,58 @@ function setThreadOpened(boardName, postNumber, opened) {
         return alert(document.getElementById("notLoggedInText").value);
     ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, reloadPage);
 }
+
+function setPostHidden(boardName, postNumber, hidden) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var post = document.getElementById("post" + postNumber);
+    var sw = document.getElementById("hidePost" + postNumber);
+    if (!!hidden) {
+        post.className += " hiddenPost";
+        sw.href = sw.href.replace("true", "false");
+        setCookie("postHidden" + boardName + postNumber, "true", {
+            "expires": Billion, "path": "/"
+        });
+    } else {
+        post.className = post.className.replace(" hiddenPost", "");
+        sw.href = sw.href.replace("false", "true");
+        setCookie("postHidden" + boardName + postNumber, "true", {
+            "expires": -1, "path": "/"
+        });
+    }
+}
+
+function setThreadHidden(boardName, postNumber, hidden) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var post = document.getElementById("post" + postNumber);
+    var sw = document.getElementById("hidePost" + postNumber);
+    var thread = document.getElementById("thread" + postNumber);
+    var omitted = document.getElementById("threadOmitted" + postNumber);
+    var posts = document.getElementById("threadPosts" + postNumber);
+    if (!!hidden) {
+        post.className += " hiddenPost";
+        if (!!thread)
+            thread.className = "hiddenThread";
+        if (!!omitted)
+            omitted.className += " hiddenPosts";
+        if (!!posts)
+            posts.className += " hiddenPosts";
+        sw.href = sw.href.replace("true", "false");
+        setCookie("postHidden" + boardName + postNumber, "true", {
+            "expires": Billion, "path": "/"
+        });
+    } else {
+        post.className = post.className.replace(" hiddenPost", "");
+        if (!!thread)
+            thread.className = "";
+        if (!!omitted)
+            omitted.className = omitted.className.replace(" hiddenPosts", "");
+        if (!!posts)
+            posts.className = posts.className.replace(" hiddenPosts", "");
+        sw.href = sw.href.replace("false", "true");
+        setCookie("postHidden" + boardName + postNumber, "true", {
+            "expires": -1, "path": "/"
+        });
+    }
+}

@@ -194,6 +194,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
+    c.showHidePostText = ts.translate("initBaseBoard", "Hide/show", "showHidePostText");
     c.showWhois = board->showWhois();
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
 }

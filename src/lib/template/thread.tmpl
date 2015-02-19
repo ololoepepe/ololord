@@ -4,9 +4,17 @@
 
 <% template post(Content::BaseBoard::Post post, bool op) %>
 <% if ( op ) %>
-    <div id="opPost<%= post.number %>" class="opPost">
+    <% if ( post.hidden ) %>
+        <div id="post<%= post.number %>" class="opPost hiddenPost">
+    <% else %>
+        <div id="post<%= post.number %>" class="opPost">
+    <% end %>
 <% else %>
-    <div id="post<%= post.number %>" class="post">
+    <% if ( post.hidden ) %>
+        <div id="post<%= post.number %>" class="post hiddenPost">
+    <% else %>
+        <div id="post<%= post.number %>" class="post">
+    <% end %>
 <% end %>
     <div class="postHeader">
         <a id="<%= post.number %>"></a>
@@ -68,8 +76,29 @@
         <% else %>
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
         <% end %>
+        <% if ( op ) %>
+            <% if ( post.hidden ) %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% else %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
+        <% else %>
+            <% if ( post.hidden ) %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% else %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
+        <% end %>
     </div>
-    <table class="threadPosts">
+    <table class="threadPost">
         <tbody>
             <tr>
                 <%foreach file in post.files %>

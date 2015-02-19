@@ -608,6 +608,7 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
             p.countryName = ts.translate("toController", "Unknown country", "countryName");
         }
     }
+    p.hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
     return p;
 }
 

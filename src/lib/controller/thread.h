@@ -16,6 +16,7 @@ struct OLOLORD_EXPORT Thread : public BaseBoard
     unsigned int bumpLimit;
     bool closed;
     bool fixed;
+    bool hidden;
     Post opPost;
     unsigned int postLimit;
     std::list<Post> posts;
