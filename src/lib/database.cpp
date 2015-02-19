@@ -171,9 +171,17 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
             return bRet(error, tq.translate("createPostInternalt", "No such thread", "error"), description,
                         tq.translate("createPostInternalt", "There is no such thread", "description"), false);
         }
-        if (Tools::captchaEnabled(boardName) && !board->isCaptchaValid(req, param, err)) {
-            return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description, err,
-                        false);
+        QString ip = Tools::userIp(req);
+        if (Tools::captchaEnabled(boardName)) {
+            if (board->captchaQuota(ip)) {
+                board->captchaUsed(ip);
+            } else {
+                if (!board->isCaptchaValid(req, param, err)) {
+                    return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description, err,
+                                false);
+                }
+                board->captchaSolved(ip);
+            }
         }
         if (dt.isValid() && post.files.isEmpty()) {
             return bRet(error, tq.translate("createPostInternalt", "No file", "error"), description,
@@ -203,7 +211,7 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         if (!dt.isValid())
             dt = QDateTime::currentDateTimeUtc();
         QByteArray hp = Tools::hashpass(req);
-        QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread.data, Tools::userIp(req), post.password, hp));
+        QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread.data, ip, post.password, hp));
         p->setEmail(post.email);
         FileTransaction ft(boardName);
         foreach (const Tools::File &f, post.files) {

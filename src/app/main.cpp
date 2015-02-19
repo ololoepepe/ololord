@@ -632,6 +632,10 @@ void initSettings()
                                                "boards that allow this (e.g. /int/).\n"
                                                "This operation is rather heavy, so you may turn it off.\n"
                                                "The default is true."));
+    nn = new BSettingsNode(QVariant::UInt, "captcha_quota", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum count of extra posts a user may make before "
+                                               "solving captcha again.\n"
+                                               "The default is 0 (solve captcha every time)."));
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"

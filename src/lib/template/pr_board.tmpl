@@ -4,11 +4,16 @@
 
 <% template captchaField(std::string position) %>
 <% if ( "Top" == position ) %>
-    <div id="googleCaptcha">
+    <div id="googleCaptcha" class="codechaContainer">
         <script type="text/javascript" src="//codecha.org/api/challenge?k=<%= codechaPublicKey %>"> </script>
     </div>
 <% end %>
 <% end template %>
+
+<% template boardHead() %>
+<% include board::boardHead() %>
+<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/create_action_pr.css">
+<% end %>
 
 <% end view %>
 <% end skin %>

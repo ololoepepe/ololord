@@ -32,6 +32,7 @@ class request;
 
 #include <QMap>
 #include <QMutex>
+#include <QString>
 
 #include <list>
 #include <string>
@@ -50,6 +51,9 @@ private:
     static QMap<QString, AbstractBoard *> boards;
     static bool boardsInitialized;
     static QMutex boardsMutex;
+private:
+    QMap<QString, unsigned int> captchaQuotaMap;
+    mutable QMutex captchaQuotaMutex;
 public:
     explicit AbstractBoard();
     virtual ~AbstractBoard();
@@ -62,6 +66,10 @@ public:
     unsigned int archiveLimit() const;
     QString bannerFileName() const;
     unsigned int bumpLimit() const;
+    unsigned int captchaQuota() const;
+    unsigned int captchaQuota(const QString &ip) const;
+    void captchaSolved(const QString &ip);
+    void captchaUsed(const QString &ip);
     virtual void createPost(cppcms::application &app);
     virtual void createThread(cppcms::application &app);
     virtual QString defaultUserName(const QLocale &l) const;

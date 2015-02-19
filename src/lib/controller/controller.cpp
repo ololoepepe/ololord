@@ -156,7 +156,8 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.banUserText = ts.translate("initBaseBoard", "Ban user", "banUserText");
     c.boardLabelText = ts.translate("initBaseBoard", "Board:", "boardLabelText");
     c.bumpLimitReachedText = ts.translate("initBaseBoard", "Bump limit reached", "bumpLimitReachedText");
-    c.captchaEnabled = Tools::captchaEnabled(board->name());
+    QString ip = Tools::userIp(req);
+    c.captchaEnabled = Tools::captchaEnabled(board->name()) && !board->captchaQuota(ip);
     c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
     c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
@@ -171,6 +172,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
+    c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");

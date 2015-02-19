@@ -11,8 +11,6 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QLocale>
-#include <QMap>
-#include <QMutex>
 #include <QRegExp>
 #include <QSettings>
 #include <QString>

@@ -88,7 +88,8 @@ QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
 
-AbstractBoard::AbstractBoard()
+AbstractBoard::AbstractBoard() :
+    captchaQuotaMutex(QMutex::Recursive)
 {
     //
 }
@@ -166,6 +167,42 @@ unsigned int AbstractBoard::bumpLimit() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/bump_limit", s->value("Board/bump_limit", 500)).toUInt();
+}
+
+unsigned int AbstractBoard::captchaQuota() const
+{
+    SettingsLocker s;
+    return s->value("Board/" + name() + "/captcha_quota", s->value("Board/captcha_quota", 0)).toUInt();
+}
+
+unsigned int AbstractBoard::captchaQuota(const QString &ip) const
+{
+    if (ip.isEmpty())
+        return 0;
+    QMutexLocker locker(&captchaQuotaMutex);
+    return captchaQuotaMap.value(ip);
+}
+
+void AbstractBoard::captchaSolved(const QString &ip)
+{
+    if (ip.isEmpty())
+        return;
+    QMutexLocker locker(&captchaQuotaMutex);
+    captchaQuotaMap[ip] = captchaQuota();
+}
+
+void AbstractBoard::captchaUsed(const QString &ip)
+{
+    if (ip.isEmpty())
+        return;
+    QMutexLocker locker(&captchaQuotaMutex);
+    unsigned int &q = captchaQuotaMap[ip];
+    if (!q)
+        captchaQuotaMap.remove(ip);
+    else
+        --q;
+    if (!q)
+        captchaQuotaMap.remove(ip);
 }
 
 void AbstractBoard::createPost(cppcms::application &app)
@@ -623,6 +660,10 @@ void AbstractBoard::initBoards(bool reinit)
         nnn = new BSettingsNode(QVariant::UInt, "archive_limit", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum archived thread count for this board.\n"
                                                    "The default is 0 (do not archive)."));
+        nnn = new BSettingsNode(QVariant::UInt, "captcha_quota", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum count of extra posts a user may make "
+                                                    "before solving captcha again on this board.\n"
+                                                    "The default is 0 (solve captcha every time)."));
     }
     if (!reinit)
         qAddPostRoutine(&cleanupBoards);

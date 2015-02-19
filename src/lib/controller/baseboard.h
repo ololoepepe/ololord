@@ -70,6 +70,7 @@ public:
     std::string fixThreadText;
     std::string hidePostFormText;
     bool moder;
+    std::string noCaptchaText;
     std::string notLoggedInText;
     std::string openThreadText;
     std::string postFormButtonSubmit;

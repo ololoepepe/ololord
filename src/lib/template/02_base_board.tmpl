@@ -91,16 +91,18 @@
                                    name="password" size="43" />
                         </td>
                     </tr>
-                    <% if ( content.captchaEnabled ) %>
-                        <tr>
-                            <td class="postformLabel">
-                                <b><%= postFormLabelCaptcha %></b>
-                            </td>
-                            <td id="googleCaptcha<%= position %>" class="postformField">
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelCaptcha %></b>
+                        </td>
+                        <td id="googleCaptcha<%= position %>" class="postformField">
+                            <% if ( content.captchaEnabled ) %>
                                 <% include captchaField(position) %>
-                            </td>
-                        </tr>
-                    <% end %>
+                            <% else %>
+                                <span class="noCaptchaText"><%= noCaptchaText %></span>
+                            <% end %>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </form>

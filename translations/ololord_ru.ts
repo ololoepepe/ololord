@@ -182,6 +182,12 @@ The default is 0 (do not archive).</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
     </message>
+    <message>
+        <source>Maximum count of extra posts a user may make before solving captcha again on this board.
+The default is 0 (solve captcha every time).</source>
+        <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи на данной доске.
+По умолчанию 0 (капча вводится каждый раз).</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -1038,6 +1044,11 @@ Your choice:</source>
         <comment>showHidePostText</comment>
         <translation>Скрыть/показать</translation>
     </message>
+    <message>
+        <source>You don&apos;t have to enter captcha</source>
+        <comment>noCaptchaText</comment>
+        <translation>Вам не нужно вводить капчу</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -1331,6 +1342,12 @@ Is stored locally, does not appear anywhere in any HTML pages or other resources
 Apperas in the HTML pages.</source>
         <translation>Открытый ключ сервиса кодечи.
 Появляется в HTML-страницах.</translation>
+    </message>
+    <message>
+        <source>Maximum count of extra posts a user may make before solving captcha again.
+The default is 0 (solve captcha every time).</source>
+        <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи.
+По умолчанию 0 (капча вводится каждый раз).</translation>
     </message>
 </context>
 <context>
