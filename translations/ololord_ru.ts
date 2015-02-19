@@ -267,6 +267,11 @@ The default is 0 (do not archive).</source>
         <comment>error</comment>
         <translation>Недостаточно прав</translation>
     </message>
+    <message>
+        <source>You can&apos;t ban youself, baka</source>
+        <comment>error</comment>
+        <translation>Нельзя забанить самого себя, бака</translation>
+    </message>
 </context>
 <context>
     <name>banUserInternal</name>

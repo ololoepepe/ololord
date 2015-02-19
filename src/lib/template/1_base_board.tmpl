@@ -133,14 +133,22 @@
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
         <% item %>
-            <option value="<%= board.name %>"><%= board.title %></option>
+            <% if ( board.name == content.currentBoard.name ) %>
+                <option value="<%= board.name %>" selected="true">[<%= board.name %>] <%= board.title %></option>
+            <% else %>
+                <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+            <% end %>
         <% end %>
     <% end %>
 </select>
 <select id="banLevelsSelect" class="select" style="display: none;">
     <%foreach level in banLevels %>
         <% item %>
-            <option value="<%= level.level %>"><%= level.description %></option>
+            <% if ( 1 == level.level ) %>
+                <option value="<%= level.level %>" selected="true"><%= level.description %></option>
+            <% else %>
+                <option value="<%= level.level %>"><%= level.description %></option>
+            <% end %>
         <% end %>
     <% end %>
 </select>

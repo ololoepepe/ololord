@@ -362,6 +362,8 @@ bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint
             return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
         if (!post)
             return bRet(error, tq.translate("banUser", "No such post", "error"), false);
+        if (hashpass == post->hashpass())
+            return bRet(error, tq.translate("banUser", "You can't ban youself, baka", "error"), false);
         int lvl = registeredUserLevel(req);
         if (lvl < RegisteredUser::ModerLevel || registeredUserLevel(post->hashpass()) >= lvl)
             return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
