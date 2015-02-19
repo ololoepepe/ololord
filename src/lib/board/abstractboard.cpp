@@ -45,6 +45,7 @@
 #include <QMap>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QScopedPointer>
 #include <QSet>
 #include <QSettings>
 #include <QSharedPointer>
@@ -62,6 +63,10 @@
 #include <odb/query.hxx>
 #include <odb/result.hxx>
 #include <odb/transaction.hxx>
+
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
 
 #include <ostream>
 #include <string>
@@ -231,9 +236,17 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     Tools::log(app, "Handling board");
     if (!Controller::testBan(app, Controller::ReadAction, name()))
         return;
-    Content::Board c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
+    QString viewName;
+    QScopedPointer<Content::Board> cc(createBoardController(viewName, tq.locale()));
+    if (cc.isNull()) {
+        return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
+                                       tq.translate("AbstractBoard", "Internal logic error", "description"));
+    }
+    if (viewName.isEmpty())
+        viewName = "board";
+    Content::Board &c = *cc;
     unsigned int pageCount = 0;
     bool postingEn = postingEnabled();
     try {
@@ -290,7 +303,8 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     c.toNextPageText = ts.translate("AbstractBoard", "Next page", "toNextPageText");
     c.toPreviousPageText = ts.translate("AbstractBoard", "Previous page", "toPreviousPageText");
     c.toThread = ts.translate("AbstractBoard", "Answer", "toThread");
-    app.render("board", c);
+    beforeRenderBoard(cc.data(), tq.locale());
+    app.render(Tools::toStd(viewName), c);
     Tools::log(app, "Handled board");
 }
 
@@ -316,9 +330,17 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     Tools::log(app, "Handling thread");
     if (!Controller::testBan(app, Controller::ReadAction, name()))
         return;
-    Content::Thread c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
+    QString viewName;
+    QScopedPointer<Content::Thread> cc(createThreadController(viewName, tq.locale()));
+    if (cc.isNull()) {
+        return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
+                                       tq.translate("AbstractBoard", "Internal logic error", "description"));
+    }
+    if (viewName.isEmpty())
+        viewName = "thread";
+    Content::Thread &c = *cc;
     bool postingEn = postingEnabled();
     QString pageTitle;
     try {
@@ -365,8 +387,37 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     c.bumpLimit = bumpLimit();
     c.postLimit = postLimit();
     c.hidden = (Tools::cookieValue(app.request(), "postHidden" + name() + QString::number(threadNumber)) == "true");
-    app.render("thread", c);
+    beforeRenderThread(cc.data(), tq.locale());
+    app.render(Tools::toStd(viewName), c);
     Tools::log(app, "Handled thread");
+}
+
+bool AbstractBoard::isCaptchaValid(const Tools::PostParameters &params, QString &error, const QLocale &l) const
+{
+    QString captcha = params.value("g-recaptcha-response");
+    TranslatorQt tq(l);
+    if (captcha.isEmpty())
+        return bRet(&error, tq.translate("AbstractBoard", "Captcha is empty", "error"), false);
+    try {
+        curlpp::Cleanup curlppCleanup;
+        Q_UNUSED(curlppCleanup)
+        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2";
+        url = url.arg(SettingsLocker()->value("Site/captcha_private_key").toString()).arg(captcha);
+        curlpp::Easy request;
+        request.setOpt(curlpp::options::Url(Tools::toStd(url)));
+        std::ostringstream os;
+        os << request;
+        QString result = Tools::fromStd(os.str());
+        result.remove(QRegExp(".*\"success\":\\s*\"?"));
+        result.remove(QRegExp("\"?\\,?\\s+.+"));
+        if (result.compare("true", Qt::CaseInsensitive))
+            return bRet(&error, tq.translate("AbstractBoard", "Captcha is incorrect", "error"), false);
+        return true;
+    } catch (curlpp::RuntimeError &e) {
+        return bRet(&error, Tools::fromStd(e.what()), false);
+    } catch(curlpp::LogicError &e) {
+        return bRet(&error, Tools::fromStd(e.what()), false);
+    }
 }
 
 bool AbstractBoard::isEnabled() const
@@ -416,6 +467,26 @@ unsigned int AbstractBoard::threadsPerPage() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/threads_per_page", s->value("Board/threads_per_page", 20)).toUInt();
+}
+
+void AbstractBoard::beforeRenderBoard(Content::Board */*c*/, const QLocale &/*l*/)
+{
+    //
+}
+
+void AbstractBoard::beforeRenderThread(Content::Thread */*c*/, const QLocale &/*l*/)
+{
+    //
+}
+
+Content::Board *AbstractBoard::createBoardController(QString &/*viewName*/, const QLocale &/*l*/)
+{
+    return new Content::Board;
+}
+
+Content::Thread *AbstractBoard::createThreadController(QString &/*viewName*/, const QLocale &/*l*/)
+{
+    return new Content::Thread;
 }
 
 void AbstractBoard::cleanupBoards()

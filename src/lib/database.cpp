@@ -139,10 +139,15 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
                                quint64 threadNumber = 0L)
 {
     QString boardName = param.value("board");
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    TranslatorQt tq(l);
+    if (!board) {
+        return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
+                           tq.translate("createPostInternalt", "Internal logic error", "description"), false);
+    }
     if (!threadNumber)
         threadNumber = param.value("thread").toULongLong();
     Tools::Post post = Tools::toPost(param, files);
-    TranslatorQt tq(l);
     try {
         Transaction t;
         if (!t) {
@@ -166,9 +171,9 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
             return bRet(error, tq.translate("createPostInternalt", "No such thread", "error"), description,
                         tq.translate("createPostInternalt", "There is no such thread", "description"), false);
         }
-        if (Tools::captchaEnabled(boardName) && !Tools::isCaptchaValid(post.captcha)) {
-            return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description,
-                        tq.translate("createPostInternalt", "Captcha is missing or invalid", "description"), false);
+        if (Tools::captchaEnabled(boardName) && !board->isCaptchaValid(param, err, l)) {
+            return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description, err,
+                        false);
         }
         if (dt.isValid() && post.files.isEmpty()) {
             return bRet(error, tq.translate("createPostInternalt", "No file", "error"), description,

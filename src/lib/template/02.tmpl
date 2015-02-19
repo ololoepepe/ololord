@@ -10,6 +10,12 @@
 <% end %>
 <% end template %>
 
+<% template captchaField(std::string position) %>
+<% if ( "Top" == position ) %>
+    <div id="googleCaptcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
+<% end %>
+<% end template %>
+
 <% template createAction(std::string position) %>
 <% if ( content.postingEnabled ) %>
     <div class="createAction">
@@ -91,9 +97,7 @@
                                 <b><%= postFormLabelCaptcha %></b>
                             </td>
                             <td id="googleCaptcha<%= position %>" class="postformField">
-                                <% if ( "Top" == position ) %>
-                                    <div id="googleCaptcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
-                                <% end %>
+                                <% include captchaField(position) %>
                             </td>
                         </tr>
                     <% end %>

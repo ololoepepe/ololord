@@ -181,7 +181,7 @@ public:
     QString *description;
 public:
     explicit CreatePostParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
-                                   const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale()) :
+                                  const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale()) :
         files(fs), locale(l), params(ps), request(req)
     {
         bumpLimit = 0;

@@ -60,7 +60,6 @@ typedef QList<File> FileList;
 
 struct Post
 {
-    QString captcha;
     QString email;
     FileList files;
     QString name;
@@ -90,7 +89,6 @@ OLOLORD_EXPORT QByteArray hashpass(const cppcms::http::request &req);
 OLOLORD_EXPORT QString hashpassString(const cppcms::http::request &req);
 OLOLORD_EXPORT int ipBanLevel(const QString &ip);
 OLOLORD_EXPORT int ipBanLevel(const cppcms::http::request &req);
-OLOLORD_EXPORT bool isCaptchaValid(const QString &captcha);
 OLOLORD_EXPORT QDateTime localDateTime(const QDateTime &dt, int offsetMinutes = -1000);
 OLOLORD_EXPORT QLocale locale(const cppcms::http::request &req,
                               const QLocale &defaultLocale = BCoreApplication::locale());

@@ -35,10 +35,6 @@
 #include <cppcms/http_request.h>
 #include <cppcms/json.h>
 
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
-
 #include <cmath>
 #include <istream>
 #include <list>
@@ -332,32 +328,6 @@ int ipBanLevel(const cppcms::http::request &req)
     return ipBanLevel(userIp(req));
 }
 
-bool isCaptchaValid(const QString &captcha)
-{
-    if (captcha.isEmpty())
-        return false;
-    try {
-        curlpp::Cleanup curlppCleanup;
-        Q_UNUSED(curlppCleanup)
-        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2";
-        url = url.arg(SettingsLocker()->value("Site/captcha_private_key").toString()).arg(captcha);
-        curlpp::Easy request;
-        request.setOpt(curlpp::options::Url(Tools::toStd(url)));
-        std::ostringstream os;
-        os << request;
-        QString result = Tools::fromStd(os.str());
-        result.remove(QRegExp(".*\"success\":\\s*\"?"));
-        result.remove(QRegExp("\"?\\,?\\s+.+"));
-        return !result.compare("true", Qt::CaseInsensitive);
-    } catch (curlpp::RuntimeError &e) {
-        qDebug() << e.what();
-        return false;
-    } catch(curlpp::LogicError &e) {
-        qDebug() << e.what();
-        return false;
-    }
-}
-
 QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
 {
     static const int MaxMsecs = 24 * BeQt::Hour;
@@ -584,7 +554,6 @@ QByteArray toHashpass(const QString &s, bool *ok)
 Post toPost(const PostParameters &params, const FileList &files)
 {
     Post p;
-    p.captcha = params.value("g-recaptcha-response");
     p.email = params.value("email");
     p.files = files;
     p.name = params.value("name");

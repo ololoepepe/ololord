@@ -10,6 +10,8 @@ HEADERS += \
     $${PWD}/home.h \
     $${PWD}/ipban.h \
     $${PWD}/notfound.h \
+    $${PWD}/prboard.h \
+    $${PWD}/prthread.h \
     $${PWD}/rules.h \
     $${PWD}/thread.h
 

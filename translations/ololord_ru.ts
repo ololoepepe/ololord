@@ -167,6 +167,21 @@ The default is 0 (do not archive).</source>
         <comment>defaultUserName</comment>
         <translation>Аноним</translation>
     </message>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -386,11 +401,6 @@ The default is 0 (do not archive).</source>
         <translation>Неправильная капча</translation>
     </message>
     <message>
-        <source>Captcha is missing or invalid</source>
-        <comment>description</comment>
-        <translation>Капча отсутствует либо неправильная</translation>
-    </message>
-    <message>
         <source>No file</source>
         <comment>error</comment>
         <translation>Отсутствует файл</translation>
@@ -424,6 +434,11 @@ The default is 0 (do not archive).</source>
         <source>Internal file system error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка файловой системы</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
