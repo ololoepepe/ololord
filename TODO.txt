@@ -1,5 +1,5 @@
 * Add ability to post files of different types
-* Add code/math captcha to /pr/
+* Implement captcha quota
 [done] Add news block to the home page
 [done] Optimise Transaction wrapper class
 [done] Add ability to customize default user name (Anonymous)
@@ -9,3 +9,4 @@
 [done] Add ability to ban users from the web
 [done] Add ability to hide posts/threads
 [done] Add ability to customize captcha
+[done] Add code captcha to /pr/

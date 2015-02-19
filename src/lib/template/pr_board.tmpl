@@ -2,7 +2,13 @@
 <% skin my_skin %>
 <% view pr_board uses Content::prBoard extends board %>
 
-<!-- TODO: captcha -->
+<% template captchaField(std::string position) %>
+<% if ( "Top" == position ) %>
+    <div id="googleCaptcha">
+        <script type="text/javascript" src="//codecha.org/api/challenge?k=<%= codechaPublicKey %>"> </script>
+    </div>
+<% end %>
+<% end template %>
 
 <% end view %>
 <% end skin %>

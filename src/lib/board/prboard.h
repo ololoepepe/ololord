@@ -12,6 +12,18 @@ class Thread;
 class QLocale;
 class QString;
 
+namespace cppcms
+{
+
+namespace http
+{
+
+class request;
+
+}
+
+}
+
 #include "abstractboard.h"
 
 #include "tools.h"
@@ -21,15 +33,15 @@ class OLOLORD_EXPORT prBoard : public AbstractBoard
 public:
     explicit prBoard();
 public:
-    bool isCaptchaValid(const Tools::PostParameters &params, QString &error, const QLocale &l) const;
+    bool isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params, QString &error) const;
     QString name() const;
     bool processCode() const;
     QString title(const QLocale &l) const;
 protected:
-    void beforeRenderBoard(Content::Board *c, const QLocale &l);
-    void beforeRenderThread(Content::Thread *c, const QLocale &l);
-    Content::Board *createBoardController(QString &viewName, const QLocale &l);
-    Content::Thread *createThreadController(QString &viewName, const QLocale &l);
+    void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
+    void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
+    Content::Board *createBoardController(const cppcms::http::request &req, QString &viewName);
+    Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 };
 
 #endif // PRBOARD_H

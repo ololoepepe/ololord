@@ -18,6 +18,13 @@ namespace cppcms
 
 class application;
 
+namespace http
+{
+
+class request;
+
+}
+
 }
 
 #include "../global.h"
@@ -61,7 +68,8 @@ public:
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
-    virtual bool isCaptchaValid(const Tools::PostParameters &params, QString &error, const QLocale &l) const;
+    virtual bool isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params,
+                                QString &error) const;
     bool isEnabled() const;
     virtual bool isHidden() const;
     virtual QString name() const = 0;
@@ -74,10 +82,10 @@ public:
     unsigned int threadsPerPage() const;
     virtual QString title(const QLocale &l) const = 0;
 protected:
-    virtual void beforeRenderBoard(Content::Board *c, const QLocale &l);
-    virtual void beforeRenderThread(Content::Thread *c, const QLocale &l);
-    virtual Content::Board *createBoardController(QString &viewName, const QLocale &l);
-    virtual Content::Thread *createThreadController(QString &viewName, const QLocale &l);
+    virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
+    virtual void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
+    virtual Content::Board *createBoardController(const cppcms::http::request &req, QString &viewName);
+    virtual Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 private:
     static void cleanupBoards();
     static void initBoards(bool reinit = false);

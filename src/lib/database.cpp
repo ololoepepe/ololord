@@ -171,7 +171,7 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
             return bRet(error, tq.translate("createPostInternalt", "No such thread", "error"), description,
                         tq.translate("createPostInternalt", "There is no such thread", "description"), false);
         }
-        if (Tools::captchaEnabled(boardName) && !board->isCaptchaValid(param, err, l)) {
+        if (Tools::captchaEnabled(boardName) && !board->isCaptchaValid(req, param, err)) {
             return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description, err,
                         false);
         }

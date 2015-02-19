@@ -239,7 +239,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     QString viewName;
-    QScopedPointer<Content::Board> cc(createBoardController(viewName, tq.locale()));
+    QScopedPointer<Content::Board> cc(createBoardController(app.request(), viewName));
     if (cc.isNull()) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                        tq.translate("AbstractBoard", "Internal logic error", "description"));
@@ -303,7 +303,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     c.toNextPageText = ts.translate("AbstractBoard", "Next page", "toNextPageText");
     c.toPreviousPageText = ts.translate("AbstractBoard", "Previous page", "toPreviousPageText");
     c.toThread = ts.translate("AbstractBoard", "Answer", "toThread");
-    beforeRenderBoard(cc.data(), tq.locale());
+    beforeRenderBoard(app.request(), cc.data());
     app.render(Tools::toStd(viewName), c);
     Tools::log(app, "Handled board");
 }
@@ -333,7 +333,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     QString viewName;
-    QScopedPointer<Content::Thread> cc(createThreadController(viewName, tq.locale()));
+    QScopedPointer<Content::Thread> cc(createThreadController(app.request(), viewName));
     if (cc.isNull()) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                        tq.translate("AbstractBoard", "Internal logic error", "description"));
@@ -387,15 +387,16 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     c.bumpLimit = bumpLimit();
     c.postLimit = postLimit();
     c.hidden = (Tools::cookieValue(app.request(), "postHidden" + name() + QString::number(threadNumber)) == "true");
-    beforeRenderThread(cc.data(), tq.locale());
+    beforeRenderThread(app.request(), cc.data());
     app.render(Tools::toStd(viewName), c);
     Tools::log(app, "Handled thread");
 }
 
-bool AbstractBoard::isCaptchaValid(const Tools::PostParameters &params, QString &error, const QLocale &l) const
+bool AbstractBoard::isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params,
+                                   QString &error) const
 {
     QString captcha = params.value("g-recaptcha-response");
-    TranslatorQt tq(l);
+    TranslatorQt tq(req);
     if (captcha.isEmpty())
         return bRet(&error, tq.translate("AbstractBoard", "Captcha is empty", "error"), false);
     try {
@@ -469,22 +470,22 @@ unsigned int AbstractBoard::threadsPerPage() const
     return s->value("Board/" + name() + "/threads_per_page", s->value("Board/threads_per_page", 20)).toUInt();
 }
 
-void AbstractBoard::beforeRenderBoard(Content::Board */*c*/, const QLocale &/*l*/)
+void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Content::Board */*c*/)
 {
     //
 }
 
-void AbstractBoard::beforeRenderThread(Content::Thread */*c*/, const QLocale &/*l*/)
+void AbstractBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content::Thread */*c*/)
 {
     //
 }
 
-Content::Board *AbstractBoard::createBoardController(QString &/*viewName*/, const QLocale &/*l*/)
+Content::Board *AbstractBoard::createBoardController(const cppcms::http::request &/*req*/, QString &/*viewName*/)
 {
     return new Content::Board;
 }
 
-Content::Thread *AbstractBoard::createThreadController(QString &/*viewName*/, const QLocale &/*l*/)
+Content::Thread *AbstractBoard::createThreadController(const cppcms::http::request &/*req*/, QString &/*viewName*/)
 {
     return new Content::Thread;
 }

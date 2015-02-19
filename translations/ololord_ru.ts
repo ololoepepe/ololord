@@ -1320,6 +1320,18 @@ The default is true.</source>
 Эта операция довольно &quot;тяжелая&quot;, поэтому вы можете отключить ее.
 По умолчанию true.</translation>
     </message>
+    <message>
+        <source>Private codecha key.
+Is stored locally, does not appear anywhere in any HTML pages or other resources.</source>
+        <translation>Закрытый ключ кодечи.
+Хранится локально, не появляется ни в каких HTML-страницах или других ресурсах.</translation>
+    </message>
+    <message>
+        <source>Public key for codecha service.
+Apperas in the HTML pages.</source>
+        <translation>Открытый ключ сервиса кодечи.
+Появляется в HTML-страницах.</translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>
@@ -1389,6 +1401,16 @@ The default is true.</source>
         <source>/pr/ogramming</source>
         <comment>board title</comment>
         <translation>Программирование</translation>
+    </message>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
     </message>
 </context>
 <context>

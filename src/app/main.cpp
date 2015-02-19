@@ -644,6 +644,13 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "captcha_public_key", n);
     nn->setDescription(BTranslation::translate("initSettings", "Public key for captcha service.\n"
                                                "Apperas in the HTML pages."));
+    nn = new BSettingsNode(QVariant::String, "codecha_private_key", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Private codecha key.\n"
+                                               "Is stored locally, does not appear anywhere in any HTML pages or "
+                                               "other resources."));
+    nn = new BSettingsNode(QVariant::String, "codecha_public_key", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Public key for codecha service.\n"
+                                               "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
     nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));
     nn = new BSettingsNode(QVariant::String, "search_api_key", n);

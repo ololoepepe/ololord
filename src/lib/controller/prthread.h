@@ -5,12 +5,14 @@
 
 #include "../global.h"
 
+#include <string>
+
 namespace Content
 {
 
 struct OLOLORD_EXPORT prThread : public Thread
 {
-    //
+    std::string codechaPublicKey;
 };
 
 }
