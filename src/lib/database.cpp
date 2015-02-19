@@ -105,7 +105,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
         QDateTime dt = QDateTime::currentDateTimeUtc();
         if (!user) {
-            if (level < 1 || expires.toUTC() <= dt) {
+            if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
                 t.commit();
                 return bRet(error, QString(), true);
             }
@@ -115,7 +115,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             user->setReason(reason);
             persist(user);
         } else {
-            if (level < 1 || expires.toUTC() <= dt) {
+            if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
                 t->erase(*user);
                 t.commit();
                 return bRet(error, QString(), true);
