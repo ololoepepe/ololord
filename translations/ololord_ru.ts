@@ -1049,6 +1049,11 @@ Your choice:</source>
         <comment>noCaptchaText</comment>
         <translation>Вам не нужно вводить капчу</translation>
     </message>
+    <message>
+        <source>Posts without captcha left:</source>
+        <comment>captchaQuotaText</comment>
+        <translation>Осталось постов без капчи:</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

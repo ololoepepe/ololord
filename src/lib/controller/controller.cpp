@@ -159,6 +159,8 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     QString ip = Tools::userIp(req);
     c.captchaEnabled = Tools::captchaEnabled(board->name()) && !board->captchaQuota(ip);
     c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
+    c.captchaQuota = board->captchaQuota(ip);
+    c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
     c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
     c.currentBoard.name = Tools::toStd(board->name());

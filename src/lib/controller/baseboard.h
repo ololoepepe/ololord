@@ -58,6 +58,8 @@ public:
     std::string bumpLimitReachedText;
     bool captchaEnabled;
     std::string captchaKey;
+    unsigned long long captchaQuota;
+    std::string captchaQuotaText;
     std::string closedText;
     std::string closeThreadText;
     AbstractBoard::BoardInfo currentBoard;

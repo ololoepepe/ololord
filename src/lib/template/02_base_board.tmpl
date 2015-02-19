@@ -99,7 +99,12 @@
                             <% if ( content.captchaEnabled ) %>
                                 <% include captchaField(position) %>
                             <% else %>
-                                <span class="noCaptchaText"><%= noCaptchaText %></span>
+                                <% if ( content.captchaQuota > 0 ) %>
+                                    <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
+                                        <%= captchaQuota %></span>
+                                <% else %>
+                                    <span class="noCaptchaText"><%= noCaptchaText %></span>
+                                <% end %>
                             <% end %>
                         </td>
                     </tr>
