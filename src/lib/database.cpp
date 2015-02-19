@@ -105,14 +105,17 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
         QDateTime dt = QDateTime::currentDateTimeUtc();
         if (!user) {
-            if (level < 1) {
+            if (level < 1 || expires.toUTC() <= dt) {
                 t.commit();
                 return bRet(error, QString(), true);
             }
             user = new BannedUser(board, ip, dt, postId);
+            user->setExpirationDateTime(expires);
+            user->setLevel(level);
+            user->setReason(reason);
             persist(user);
         } else {
-            if (level < 1) {
+            if (level < 1 || expires.toUTC() <= dt) {
                 t->erase(*user);
                 t.commit();
                 return bRet(error, QString(), true);
@@ -335,6 +338,45 @@ bool banUser(const QString &sourceBoard, quint64 postNumber, const QString &boar
              const QDateTime &expires, QString *error, const QLocale &l)
 {
     return banUserInternal(sourceBoard, postNumber, board, level, reason, expires, error, l);
+}
+
+bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber, const QString &board,
+             int level, const QString &reason, const QDateTime &expires, QString *error)
+{
+    TranslatorQt tq(req);
+    QStringList boardNames = AbstractBoard::boardNames();
+    if (board != "*" && (!boardNames.contains(board) || !boardNames.contains(sourceBoard)))
+        return bRet(error, tq.translate("banUser", "Invalid board name", "error"), false);
+    if (!postNumber)
+        return bRet(error, tq.translate("banUser", "Invalid post number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("banUser", "Not logged in", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == sourceBoard
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error)
+            return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("banUser", "No such post", "error"), false);
+        int lvl = registeredUserLevel(req);
+        if (lvl < RegisteredUser::ModerLevel || registeredUserLevel(post->hashpass()) >= lvl)
+            return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+        if (lvl < RegisteredUser::AdminLevel) {
+            QStringList boards = registeredUserBoards(req);
+            if (!boards.contains("*") && (!boards.contains(sourceBoard) || !boards.contains(board)))
+                return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+        }
+        if (!banUser(sourceBoard, postNumber, board, level, reason, expires, error, tq.locale()))
+            return false;
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
 }
 
 void checkOutdatedEntries()

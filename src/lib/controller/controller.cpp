@@ -126,51 +126,76 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     initBase(c, req, pageTitle);
     if (c.pageTitle.empty() && currentThread)
         c.pageTitle = Tools::toStd(board->title(ts.locale()) + " - " + QString::number(currentThread));
+    QStringList userBoards = Database::registeredUserBoards(req);
+    if (userBoards.size() == 1 && userBoards.first() == "*")
+        userBoards << AbstractBoard::boardNames();
+    foreach (const QString &s, userBoards) {
+        AbstractBoard::BoardInfo inf;
+        inf.name = Tools::toStd(s);
+        AbstractBoard *b = AbstractBoard::board(s);
+        inf.title = Tools::toStd(b ? b->title(tq.locale()) : tq.translate("initBaseBoard", "All boards", "boardName"));
+        c.availableBoards.push_back(inf);
+    }
     c.action = currentThread ? "create_post" : "create_thread";
-    c.ajaxErrorText = ts.translate("initBaseThread", "AJAX request returned status", "ajaxErrorText");
-    c.bannedForText = ts.translate("initBaseThread", "User was banned for this post", "bannedForText");
+    c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
+    c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
+    c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");
+    Content::BaseBoard::BanLevel bl;
+    bl.level = 0;
+    bl.description = ts.translate("initBaseBoard", "Not banned", "banLevelDesctiption");
+    c.banLevels.push_back(bl);
+    bl.level = 1;
+    bl.description = ts.translate("initBaseBoard", "Posting prohibited", "banLevelDesctiption");
+    c.banLevels.push_back(bl);
+    bl.level = 10;
+    bl.description = ts.translate("initBaseBoard", "Posting and reading prohibited", "banLevelDesctiption");
+    c.banLevels.push_back(bl);
+    c.bannedForText = ts.translate("initBaseBoard", "User was banned for this post", "bannedForText");
     c.bannerFileName = Tools::toStd(board->bannerFileName());
-    c.bumpLimitReachedText = ts.translate("initBaseThread", "Bump limit reached", "bumpLimitReachedText");
+    c.banReasonLabelText = ts.translate("initBaseBoard", "Reason:", "banReasonLabelText");
+    c.banUserText = ts.translate("initBaseBoard", "Ban user", "banUserText");
+    c.boardLabelText = ts.translate("initBaseBoard", "Board:", "boardLabelText");
+    c.bumpLimitReachedText = ts.translate("initBaseBoard", "Bump limit reached", "bumpLimitReachedText");
     c.captchaEnabled = Tools::captchaEnabled(board->name());
     c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
-    c.closedText = ts.translate("initBaseThread", "The thread is closed", "closedText");
-    c.closeThreadText = ts.translate("initBaseThread", "Close thread", "closeThreadText");
+    c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
+    c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;
-    c.deletePostText = ts.translate("initBaseThread", "Delete post", "fixedText");
-    c.deleteThreadText = ts.translate("initBaseThread", "Delete thread", "fixedText");
-    c.enterPasswordText = ts.translate("initBaseThread", "If password is empty, current hashpass will be used",
+    c.deletePostText = ts.translate("initBaseBoard", "Delete post", "fixedText");
+    c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "fixedText");
+    c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");
-    c.enterPasswordTitle = ts.translate("initBaseThread", "Enter password", "enterPasswordTitle");
-    c.fixedText = ts.translate("initBaseThread", "Fixed", "fixedText");
-    c.fixThreadText = ts.translate("initBaseThread", "Fix thread", "fixThreadText");
-    c.hidePostFormText = ts.translate("initBaseThread", "Hide post form", "hidePostFormText");
-    c.notLoggedInText = ts.translate("initBaseThread", "You are not logged in!", "notLoggedInText");
-    c.openThreadText = ts.translate("initBaseThread", "Open thread", "openThreadText");
-    c.postFormButtonSubmit = ts.translate("initBaseThread", "Send", "postFormButtonSubmit");
-    c.postFormInputFile = ts.translate("initBaseThread", "File:", "postFormInputFile");
-    c.postFormInputText = ts.translate("initBaseThread", "Post:", "postFormInputText");
+    c.enterPasswordTitle = ts.translate("initBaseBoard", "Enter password", "enterPasswordTitle");
+    c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
+    c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
+    c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
+    c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
+    c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
+    c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
+    c.postFormInputFile = ts.translate("initBaseBoard", "File:", "postFormInputFile");
+    c.postFormInputText = ts.translate("initBaseBoard", "Post:", "postFormInputText");
     SettingsLocker s;
     int maxText = s->value("Board/" + board->name() + "/max_text_length",
                            s->value("Board/max_text_length", 15000)).toInt();
-    c.postFormInputTextPlaceholder = Tools::toStd(tq.translate("initBaseThread", "Comment. Max length %1",
+    c.postFormInputTextPlaceholder = Tools::toStd(tq.translate("initBaseBoard", "Comment. Max length %1",
                                                                "postFormInputTextPlaceholder").arg(maxText));
-    c.postFormLabelCaptcha = ts.translate("initBaseThread", "Captcha:", "postFormLabelCaptcha");
-    c.postFormLabelEmail = ts.translate("initBaseThread", "E-mail:", "postFormLabelEmail");
-    c.postFormLabelName = ts.translate("initBaseThread", "Name:", "postFormLabelName");
-    c.postFormLabelPassword = ts.translate("initBaseThread", "Password:", "postFormLabelPassword");
-    c.postFormLabelSubject = ts.translate("initBaseThread", "Subject:", "postFormLabelSubject");
+    c.postFormLabelCaptcha = ts.translate("initBaseBoard", "Captcha:", "postFormLabelCaptcha");
+    c.postFormLabelEmail = ts.translate("initBaseBoard", "E-mail:", "postFormLabelEmail");
+    c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
+    c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
+    c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postingDisabledText = currentThread
-            ? ts.translate("initBaseThread", "Posting is disabled for this thread", "postingDisabledText")
-            : ts.translate("initBaseThread", "Posting is disabled for this board", "postingDisabledText");
+            ? ts.translate("initBaseBoard", "Posting is disabled for this thread", "postingDisabledText")
+            : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
-    c.postLimitReachedText = ts.translate("initBaseThread", "Post limit reached", "postLimitReachedText");
-    c.registeredText = ts.translate("initBaseThread", "This user is registered", "registeredText");
+    c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
+    c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
+    c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
+                                       : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
     c.showWhois = board->showWhois();
-    c.showPostFormText = currentThread ? ts.translate("initBaseThread", "Answer in this thread", "showPostFormText")
-                                       : ts.translate("initBaseThread", "Create thread", "showPostFormText");
-    c.unfixThreadText = ts.translate("initBaseThread", "Unfix thread", "unfixThreadText");
+    c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
 }
 
 void redirect(cppcms::application &app, const QString &where)

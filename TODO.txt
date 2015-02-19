@@ -1,5 +1,4 @@
 * Add ability to post files of different types
-* Add ability to ban users from the web
 * Add ability to hide posts/threads
 * Add ability to customize captcha
 [done] Add news block to the home page
@@ -8,3 +7,4 @@
 [done] Add a hidden board
 [done] Add ability to disable city name guessing
 [done] Fix external link markup
+[done] Add ability to ban users from the web

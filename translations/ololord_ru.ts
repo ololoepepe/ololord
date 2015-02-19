@@ -236,6 +236,39 @@ The default is 0 (do not archive).</source>
     </message>
 </context>
 <context>
+    <name>banUser</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+</context>
+<context>
     <name>banUserInternal</name>
     <message>
         <source>Internal database error</source>
@@ -753,11 +786,6 @@ Your choice:</source>
         <translation>Пароль/хешпасс</translation>
     </message>
     <message>
-        <source>Show password</source>
-        <comment>showPasswordText</comment>
-        <translation>Показать пароль</translation>
-    </message>
-    <message>
         <source>Cancel</source>
         <comment>cancelButtonText</comment>
         <translation>Отмена</translation>
@@ -782,9 +810,19 @@ Your choice:</source>
         <comment>showTripcodeText</comment>
         <translation>Я - вниманиешлюха!</translation>
     </message>
+    <message>
+        <source>Show password</source>
+        <comment>showPasswordText</comment>
+        <translation>Показать пароль</translation>
+    </message>
 </context>
 <context>
-    <name>initBaseThread</name>
+    <name>initBaseBoard</name>
+    <message>
+        <source>AJAX request returned status</source>
+        <comment>ajaxErrorText</comment>
+        <translation>AJAX-запрос вернул статус</translation>
+    </message>
     <message>
         <source>User was banned for this post</source>
         <comment>bannedForText</comment>
@@ -801,14 +839,54 @@ Your choice:</source>
         <translation>Тред закрыт</translation>
     </message>
     <message>
+        <source>Close thread</source>
+        <comment>closeThreadText</comment>
+        <translation>Закрыть тред</translation>
+    </message>
+    <message>
+        <source>Delete post</source>
+        <comment>fixedText</comment>
+        <translation>Удалить пост</translation>
+    </message>
+    <message>
+        <source>Delete thread</source>
+        <comment>fixedText</comment>
+        <translation>Удалить тред</translation>
+    </message>
+    <message>
+        <source>If password is empty, current hashpass will be used</source>
+        <comment>enterPasswordText</comment>
+        <translation>Если пароль пуст, будет использован текущий хешпасс</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <comment>enterPasswordTitle</comment>
+        <translation>Введите пароль</translation>
+    </message>
+    <message>
         <source>Fixed</source>
         <comment>fixedText</comment>
         <translation>Закрепленный</translation>
     </message>
     <message>
+        <source>Fix thread</source>
+        <comment>fixThreadText</comment>
+        <translation>Закрепить тред</translation>
+    </message>
+    <message>
         <source>Hide post form</source>
         <comment>hidePostFormText</comment>
         <translation>Скрыть форму постинга</translation>
+    </message>
+    <message>
+        <source>You are not logged in!</source>
+        <comment>notLoggedInText</comment>
+        <translation>Вы не залогинены!</translation>
+    </message>
+    <message>
+        <source>Open thread</source>
+        <comment>openThreadText</comment>
+        <translation>Открыть тред</translation>
     </message>
     <message>
         <source>Send</source>
@@ -824,6 +902,11 @@ Your choice:</source>
         <source>Post:</source>
         <comment>postFormInputText</comment>
         <translation>Пост:</translation>
+    </message>
+    <message>
+        <source>Comment. Max length %1</source>
+        <comment>postFormInputTextPlaceholder</comment>
+        <translation>Комментарий. Макс. длина %1</translation>
     </message>
     <message>
         <source>Captcha:</source>
@@ -866,6 +949,11 @@ Your choice:</source>
         <translation>Достигнут лимит постов</translation>
     </message>
     <message>
+        <source>This user is registered</source>
+        <comment>registeredText</comment>
+        <translation>Этот пользователь зарегистрирован</translation>
+    </message>
+    <message>
         <source>Answer in this thread</source>
         <comment>showPostFormText</comment>
         <translation>Ответить в тред</translation>
@@ -876,64 +964,54 @@ Your choice:</source>
         <translation>Создать тред</translation>
     </message>
     <message>
-        <source>Delete post</source>
-        <comment>fixedText</comment>
-        <translation>Удалить пост</translation>
-    </message>
-    <message>
-        <source>Delete thread</source>
-        <comment>fixedText</comment>
-        <translation>Удалить тред</translation>
-    </message>
-    <message>
-        <source>You are not logged in!</source>
-        <comment>notLoggedInText</comment>
-        <translation>Вы не залогинены!</translation>
-    </message>
-    <message>
-        <source>Comment. Max length %1</source>
-        <comment>postFormInputTextPlaceholder</comment>
-        <translation>Комментарий. Макс. длина %1</translation>
-    </message>
-    <message>
-        <source>AJAX request returned status</source>
-        <comment>ajaxErrorText</comment>
-        <translation>AJAX-запрос вернул статус</translation>
-    </message>
-    <message>
-        <source>This user is registered</source>
-        <comment>registeredText</comment>
-        <translation>Этот пользователь зарегистрирован</translation>
-    </message>
-    <message>
-        <source>Close thread</source>
-        <comment>closeThreadText</comment>
-        <translation>Закрыть тред</translation>
-    </message>
-    <message>
-        <source>Fix thread</source>
-        <comment>fixThreadText</comment>
-        <translation>Закрепить тред</translation>
-    </message>
-    <message>
-        <source>Open thread</source>
-        <comment>openThreadText</comment>
-        <translation>Открыть тред</translation>
-    </message>
-    <message>
         <source>Unfix thread</source>
         <comment>unfixThreadText</comment>
         <translation>Открепить тред</translation>
     </message>
     <message>
-        <source>Enter password</source>
-        <comment>enterPasswordTitle</comment>
-        <translation>Введите пароль</translation>
+        <source>Ban user</source>
+        <comment>banUserText</comment>
+        <translation>Забанить пользователя</translation>
     </message>
     <message>
-        <source>If password is empty, current hashpass will be used</source>
-        <comment>enterPasswordText</comment>
-        <translation>Если пароль пуст, будет использован текущий хешпасс</translation>
+        <source>All boards</source>
+        <comment>boardName</comment>
+        <translation>Все доски</translation>
+    </message>
+    <message>
+        <source>Expiration time:</source>
+        <comment>banExpiresLabelText</comment>
+        <translation>Истекает:</translation>
+    </message>
+    <message>
+        <source>Level:</source>
+        <comment>banLevelLabelText</comment>
+        <translation>Уровень:</translation>
+    </message>
+    <message>
+        <source>Not banned</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Не забанен</translation>
+    </message>
+    <message>
+        <source>Posting prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещен постинг</translation>
+    </message>
+    <message>
+        <source>Posting and reading prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещены постинг и чтение</translation>
+    </message>
+    <message>
+        <source>Reason:</source>
+        <comment>banReasonLabelText</comment>
+        <translation>Причина:</translation>
+    </message>
+    <message>
+        <source>Board:</source>
+        <comment>boardLabelText</comment>
+        <translation>Доска:</translation>
     </message>
 </context>
 <context>

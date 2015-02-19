@@ -121,10 +121,29 @@
 <% end template %>
 
 <% template boardTexts() %>
+<input type="hidden" id="banUserText" value="<%= banUserText %>" />
+<input type="hidden" id="boardLabelText" value="<%= boardLabelText %>" />
+<input type="hidden" id="banLevelLabelText" value="<%= banLevelLabelText %>" />
+<input type="hidden" id="banReasonLabelText" value="<%= banReasonLabelText %>" />
+<input type="hidden" id="banExpiresLabelText" value="<%= banExpiresLabelText %>" />
 <input type="hidden" id="enterPasswordText" value="<%= enterPasswordText %>" />
 <input type="hidden" id="enterPasswordTitle" value="<%= enterPasswordTitle %>" />
 <input type="hidden" id="ajaxErrorText" value="<%= ajaxErrorText %>" />
 <input type="hidden" id="notLoggedInText" value="<%= notLoggedInText %>" />
+<select id="availableBoardsSelect" class="select" style="display: none;">
+    <%foreach board in availableBoards %>
+        <% item %>
+            <option value="<%= board.name %>"><%= board.title %></option>
+        <% end %>
+    <% end %>
+</select>
+<select id="banLevelsSelect" class="select" style="display: none;">
+    <%foreach level in banLevels %>
+        <% item %>
+            <option value="<%= level.level %>"><%= level.description %></option>
+        <% end %>
+    <% end %>
+</select>
 <% end template %>
 
 <% template bannerHead() %>

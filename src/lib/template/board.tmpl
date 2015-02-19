@@ -57,6 +57,10 @@
                     <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
             <% end %>
         <% end %>
+        <% if ( content.moder ) %>
+            <a href="javascript:banUser('<%= currentBoard.name %>', '<%= post.number %>');">
+                <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+        <% end %>
         <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>');">
         <% if ( post.number == thread.opPost.number ) %>
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>

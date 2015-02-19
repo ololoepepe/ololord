@@ -13,6 +13,11 @@ namespace Content
 
 struct OLOLORD_EXPORT BaseBoard : public Base
 {
+    struct OLOLORD_EXPORT BanLevel
+    {
+        int level;
+        std::string description;
+    };
     struct OLOLORD_EXPORT File
     {
         std::string size;
@@ -40,8 +45,15 @@ struct OLOLORD_EXPORT BaseBoard : public Base
 public:
     std::string action;
     std::string ajaxErrorText;
+    std::list<AbstractBoard::BoardInfo> availableBoards;
+    std::string banExpiresLabelText;
+    std::string banLevelLabelText;
+    std::list<BanLevel> banLevels;
     std::string bannedForText;
     std::string bannerFileName;
+    std::string banReasonLabelText;
+    std::string banUserText;
+    std::string boardLabelText;
     std::string bumpLimitReachedText;
     bool captchaEnabled;
     std::string captchaKey;
