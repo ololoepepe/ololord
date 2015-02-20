@@ -9,10 +9,7 @@
 #include "ipban.h"
 #include "notfound.h"
 #include "settingslocker.h"
-#include "stored/banneduser.h"
-#include "stored/banneduser-odb.hxx"
 #include "tools.h"
-#include "translator.h"
 #include "translator.h"
 
 #include <BCoreApplication>
@@ -32,11 +29,6 @@
 #include <cppcms/http_cookie.h>
 #include <cppcms/http_request.h>
 #include <cppcms/http_response.h>
-
-#include <odb/connection.hxx>
-#include <odb/database.hxx>
-#include <odb/query.hxx>
-#include <odb/transaction.hxx>
 
 #include <list>
 
@@ -214,31 +206,32 @@ void redirect(cppcms::application &app, const QString &where)
     app.response().set_redirect_header(Tools::toStd(where));
 }
 
-void renderBan(cppcms::application &app, const QString &board, int level, const QDateTime &dateTime,
-               const QString &reason, const QDateTime &expires)
+void renderBan(cppcms::application &app, const Database::BanInfo &info)
 {
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::Ban c;
     initBase(c, app.request(), tq.translate("renderBan", "Ban", "pageTitle"));
-    c.banBoard = ("*" != board) ? Tools::toStd(board) : ts.translate("renderBan", "all boards", "pageTitle");
+    c.banBoard = ("*" != info.boardName) ? Tools::toStd(info.boardName)
+                                         : ts.translate("renderBan", "all boards", "pageTitle");
     c.banBoardLabel = ts.translate("renderBan", "Board", "pageTitle");
-    c.banDateTime = Tools::toStd(ts.locale().toString(Tools::dateTime(dateTime, app.request()),
+    c.banDateTime = Tools::toStd(ts.locale().toString(Tools::dateTime(info.dateTime, app.request()),
                                                       "dd.MM.yyyy ddd hh:mm:ss"));
     c.banDateTimeLabel = ts.translate("renderBan", "Date", "pageTitle");
-    c.banExpires = expires.isValid() ? Tools::toStd(ts.locale().toString(Tools::dateTime(expires, app.request()),
-                                                                         "dd.MM.yyyy ddd hh:mm:ss"))
-                                     : ts.translate("renderBan", "never", "pageTitle");
+    c.banExpires = info.expires.isValid()
+            ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
+                                                "dd.MM.yyyy ddd hh:mm:ss"))
+            : ts.translate("renderBan", "never", "pageTitle");
     c.banExpiresLabel = ts.translate("renderBan", "Expires", "pageTitle");
-    if (level >= 10)
+    if (info.level >= 10)
         c.banLevel = ts.translate("renderBan", "reading and posting are restricted", "pageTitle");
-    else if (level >= 1)
+    else if (info.level >= 1)
         c.banLevel = ts.translate("renderBan", "posting is restricted (read-only access)", "pageTitle");
     else
         c.banLevel = ts.translate("renderBan", "no action is restricted", "pageTitle");
     c.banLevelLabel = ts.translate("renderBan", "Restricted actions", "pageTitle");
     c.banMessage = ts.translate("renderBan", "You are banned", "pageTitle");
-    c.banReason = Tools::toStd(reason);
+    c.banReason = Tools::toStd(info.reason);
     c.banReasonLabel = ts.translate("renderBan", "Reason", "pageTitle");
     app.render("ban", c);
     Tools::log(app, "Banned");
@@ -302,57 +295,18 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
         return false;
     }
     TranslatorQt tq(app.request());
-    try {
-        Transaction t;
-        if (!t) {
-            renderError(app, tq.translate("testBan", "Internal error", "error"),
-                        tq.translate("testBan", "Internal database error", "description"));
-            return false;
-        }
-        QList<BannedUser> list = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
-                                                                         && odb::query<BannedUser>::ip == ip);
-        QString banBoard;
-        QDateTime banDateTime;
-        QString banReason;
-        QDateTime banExpires;
-        int banLevel = 0;
-        foreach (const BannedUser &u, list) {
-            QDateTime expires = u.expirationDateTime().toUTC();
-            if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                banLevel = u.level();
-                banBoard = u.board();
-                banDateTime = u.dateTime();
-                banReason = u.reason();
-                banExpires = u.expirationDateTime();
-                break;
-            }
-        }
-        if (banLevel <= 0) {
-            QList<BannedUser> listt = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == board
-                                                                              && odb::query<BannedUser>::ip == ip);
-            foreach (const BannedUser &u, listt) {
-                QDateTime expires = u.expirationDateTime().toUTC();
-                if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                    banLevel = u.level();
-                    banBoard = u.board();
-                    banDateTime = u.dateTime().toUTC();
-                    banReason = u.reason();
-                    banExpires = u.expirationDateTime();
-                    break;
-                }
-            }
-        }
-        if (banLevel <= 0)
-            return true;
-        if (banLevel < proposedAction)
-            return true;
-        renderBan(app, banBoard, banLevel, banDateTime, banReason, banExpires);
-        t.commit();
-        return false;
-    }  catch (const odb::exception &e) {
-        renderError(app, tq.translate("testBan", "Internal error", "error"), Tools::fromStd(e.what()));
+    bool ok = false;
+    QString err;
+    Database::BanInfo inf = Database::userBanInfo(ip, board, &ok, &err, tq.locale());
+    if (!ok) {
+        renderError(app, tq.translate("testBan", "Internal error", "error"), err);
         return false;
     }
+    if (inf.level >= proposedAction) {
+        renderBan(app, inf);
+        return false;
+    }
+    return true;
 }
 
 bool testParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,

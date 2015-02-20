@@ -11,6 +11,13 @@ class Base;
 
 }
 
+namespace Database
+{
+
+class BanInfo;
+
+}
+
 class QLocale;
 
 namespace cppcms
@@ -54,8 +61,7 @@ OLOLORD_EXPORT void initBaseBoard(Content::BaseBoard &c, const cppcms::http::req
                                   bool postingEnabled, const QString &pageTitle = QString(),
                                   quint64 currentThread = 0);
 OLOLORD_EXPORT void redirect(cppcms::application &app, const QString &where);
-OLOLORD_EXPORT void renderBan(cppcms::application &app, const QString &board, int level, const QDateTime &dateTime,
-                              const QString &reason = QString(), const QDateTime &expires = QDateTime());
+OLOLORD_EXPORT void renderBan(cppcms::application &app, const Database::BanInfo &info);
 OLOLORD_EXPORT void renderError(cppcms::application &app, const QString &error,
                                 const QString &description = QString());
 OLOLORD_EXPORT void renderIpBan(cppcms::application &app, int level);

@@ -213,6 +213,15 @@ public:
     }
 };
 
+struct OLOLORD_EXPORT BanInfo
+{
+    QString boardName;
+    QDateTime dateTime;
+    QString reason;
+    QDateTime expires;
+    int level;
+};
+
 OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int level = 1,
                             const QString &reason = QString(), const QDateTime &expires = QDateTime(),
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
@@ -252,6 +261,8 @@ OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumb
                                     const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened,
                                     const cppcms::http::request &req, QString *error = 0);
+OLOLORD_EXPORT BanInfo userBanInfo(const QString &ip, const QString &boardName = QString(), bool *ok = 0,
+                                   QString *error = 0, const QLocale &l = BCoreApplication::locale());
 
 }
 

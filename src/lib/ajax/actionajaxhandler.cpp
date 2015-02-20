@@ -27,6 +27,8 @@ void ActionAjaxHandler::banUser(const cppcms::json::object &params)
     long long pn = (long long) params.at("postNumber").number();
     quint64 postNumber = pn > 0 ? quint64(pn) : 0;
     QString board = Tools::fromStd(params.at("board").str());
+    if (!testBan(sourceBoard) || !testBan(board))
+        return;
     QString reason = Tools::fromStd(params.at("reason").str());
     int level = (int) params.at("level").number();
     QDateTime expires = QDateTime::fromString(Tools::fromStd(params.at("expires").str()), "dd.MM.yyyy:hh");
@@ -38,6 +40,8 @@ void ActionAjaxHandler::banUser(const cppcms::json::object &params)
 
 void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string password)
 {
+    if (!testBan(Tools::fromStd(boardName)))
+        return;
     QString err;
     if (!Database::deletePost(Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0, server.request(),
                               Tools::toHashpass(Tools::fromStd(password)), &err)) {
@@ -48,6 +52,8 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
 
 void ActionAjaxHandler::editPost(std::string boardName, long long postNumber, std::string text)
 {
+    if (!testBan(Tools::fromStd(boardName)))
+        return;
     QString err;
     if (!Database::editPost(server.request(), Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0,
                             Tools::fromStd(text), &err)) {
@@ -72,6 +78,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
 
 void ActionAjaxHandler::setThreadFixed(std::string boardName, long long postNumber, bool fixed)
 {
+    if (!testBan(Tools::fromStd(boardName)))
+        return;
     QString err;
     if (!Database::setThreadFixed(Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0, fixed,
                                   server.request(), &err)) {
@@ -82,6 +90,8 @@ void ActionAjaxHandler::setThreadFixed(std::string boardName, long long postNumb
 
 void ActionAjaxHandler::setThreadOpened(std::string boardName, long long postNumber, bool opened)
 {
+    if (!testBan(Tools::fromStd(boardName)))
+        return;
     QString err;
     if (!Database::setThreadOpened(Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0, opened,
                                    server.request(), &err)) {

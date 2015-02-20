@@ -2,6 +2,14 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
+    <name>AbstractAjaxHandler</name>
+    <message>
+        <source>You are banned</source>
+        <comment>error</comment>
+        <translation>Вы забанены</translation>
+    </message>
+</context>
+<context>
     <name>AbstractBoard</name>
     <message>
         <source>Next page</source>
@@ -1822,11 +1830,6 @@ The default is %1.</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
     </message>
-    <message>
-        <source>Internal database error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
-    </message>
 </context>
 <context>
     <name>testParams</name>
@@ -1913,6 +1916,19 @@ The default is %1.</source>
         <source>Unknown country</source>
         <comment>countryName</comment>
         <translation>Неизвестная страна</translation>
+    </message>
+</context>
+<context>
+    <name>userBanInfo</name>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>

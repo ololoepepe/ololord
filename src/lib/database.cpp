@@ -847,4 +847,51 @@ bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened
     }
 }
 
+BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QString *error, const QLocale &l)
+{
+    BanInfo inf;
+    inf.level = 0;
+    TranslatorQt tq(l);
+    if (ip.isEmpty())
+        return bRet(ok, false, error, tq.translate("userBanInfo", "Internal logic error", "description"), inf);
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "description"), inf);
+        }
+        QList<BannedUser> list = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
+                                                                         && odb::query<BannedUser>::ip == ip);
+        foreach (const BannedUser &u, list) {
+            QDateTime expires = u.expirationDateTime().toUTC();
+            if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
+                inf.level = u.level();
+                inf.boardName = u.board();
+                inf.dateTime = u.dateTime();
+                inf.reason = u.reason();
+                inf.expires = expires;
+                break;
+            }
+        }
+        if (inf.level <= 0 && !boardName.isEmpty()) {
+            list = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == boardName
+                                                           && odb::query<BannedUser>::ip == ip);
+            foreach (const BannedUser &u, list) {
+                QDateTime expires = u.expirationDateTime().toUTC();
+                if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
+                    inf.level = u.level();
+                    inf.boardName = u.board();
+                    inf.dateTime = u.dateTime();
+                    inf.reason = u.reason();
+                    inf.expires = expires;
+                    break;
+                }
+            }
+        }
+        t.commit();
+        return bRet(ok, true, error, QString(), inf);
+    }  catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), inf);
+    }
+}
+
 }
