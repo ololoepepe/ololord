@@ -126,7 +126,21 @@
     </div>
     <div>
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-            <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+            <% if ( "webm" == file.thumbName ) %>
+                <% if ( file.sizeX > 0 && file.sizeY > 0 ) %>
+                    <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.sizeX %>"
+                         height="<%= file.sizeY %>">
+                <% else %>
+                    <img src="/<%= sitePathPrefix %>img/webm_logo.png">
+                <% end %>
+            <% else %>
+                <% if ( file.sizeX > 0 && file.sizeY > 0 ) %>
+                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
+                         width="<%= file.sizeX %>" height="<%= file.sizeY %>">
+                <% else %>
+                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+                <% end %>
+            <% end %>
         </a>
     </div>
 </td>

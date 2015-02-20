@@ -90,7 +90,7 @@ static bool threadLessThan(const Thread &t1, const Thread &t2)
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
-const QString AbstractBoard::defaultFileTypes = "image/png,image/jpeg,image/gif";
+const QString AbstractBoard::defaultFileTypes = "image/png,image/jpeg,image/gif,video/webm";
 
 AbstractBoard::AbstractBoard() :
     captchaQuotaMutex(QMutex::Recursive)
@@ -282,7 +282,8 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
         QFile::remove(path + "/" + fn);
         QFileInfo fii(fn);
         QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
-        QFile::remove(path + "/" + fii.baseName() + "s." + suff);
+        if (suff.compare("webm", Qt::CaseInsensitive))
+            QFile::remove(path + "/" + fii.baseName() + "s." + suff);
     }
 }
 
@@ -535,6 +536,12 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         return bRet(ok, false, QString());
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
+    QString sfn = path + "/" + dt + "." + suffix;
+    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+        if (!BDirTools::writeFile(sfn, f.data))
+            return bRet(ok, false, QString());
+        return bRet(ok, true, QFileInfo(sfn).fileName());
+    }
     QImage img;
     QByteArray data = f.data;
     QBuffer buff(&data);
@@ -543,7 +550,6 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         return bRet(ok, false, QString());
     if (img.height() > 200 || img.width() > 200)
         img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    QString sfn = path + "/" + dt + "." + suffix;
     if (!BDirTools::writeFile(sfn, f.data))
         return bRet(ok, false, QString());
     if (!suffix.compare("gif", Qt::CaseInsensitive))
@@ -575,6 +581,47 @@ unsigned int AbstractBoard::threadsPerPage() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/threads_per_page", s->value("Board/threads_per_page", 20)).toUInt();
+}
+
+QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY, const QLocale &l) const
+{
+    if (fn.isEmpty())
+        return "";
+    QString storagePath = Tools::storagePath();
+    if (storagePath.isEmpty())
+        return "";
+    QFileInfo fi(storagePath + "/img/" + name() + "/" + QFileInfo(fn).fileName());
+    QString suffix = fi.suffix();
+    TranslatorQt tq(l);
+    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+        size = QString::number(fi.size() / BeQt::Kilobyte) + tq.translate("AbstractBoard", "KB", "fileSize");
+        sizeX = 200;
+        sizeY = 200;
+        return "webm";
+    }
+    if (!suffix.compare("gif", Qt::CaseInsensitive))
+        suffix = "png";
+    size = QString::number(fi.size() / BeQt::Kilobyte) + tq.translate("AbstractBoard", "KB", "fileSize");
+    QImage img(fi.filePath());
+    if (!img.isNull()) {
+        size += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
+        sizeX = img.width();
+        sizeY = img.height();
+        if (sizeX > 200) {
+            double k = double(sizeX) / 200.0;
+            sizeX = 200;
+            sizeY = int(double(sizeY) / k);
+        }
+        if (sizeY > 200) {
+            double k = double(sizeY) / 200.0;
+            sizeY = 200;
+            sizeX = int(double(sizeX) / k);
+        }
+    } else {
+        sizeX = -1;
+        sizeY = -1;
+    }
+    return fi.baseName() + "s." + suffix;
 }
 
 void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Content::Board */*c*/)

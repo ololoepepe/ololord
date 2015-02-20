@@ -531,6 +531,8 @@ void toHtml(QString *s)
 Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board, quint64 threadNumber,
                                       const QLocale &l, const cppcms::http::request &req, bool processCode)
 {
+    if (!board)
+        return Content::BaseBoard::Post();
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
         return Content::BaseBoard::Post();
@@ -538,21 +540,14 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
     p.bannedFor = post.bannedFor();
     p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
     p.email = Tools::toStd(post.email());
-    TranslatorQt tq(l);
     TranslatorStd ts(l);
     foreach (const QString &fn, post.files()) {
         Content::BaseBoard::File f;
-        f.sourceName = Tools::toStd(QFileInfo(fn).fileName());
-        QFileInfo fi(storagePath + "/img/" + board->name() + "/" + QFileInfo(fn).fileName());
-        QString suffix = fi.suffix();
-        if (!suffix.compare("gif", Qt::CaseInsensitive))
-            suffix = "png";
-        f.thumbName = Tools::toStd(fi.baseName() + "s." + suffix);
-        QString s = QString::number(fi.size() / BeQt::Kilobyte) + tq.translate("toController", "KB", "fileSize");
-        QImage img(fi.filePath());
-        if (!img.isNull())
-            s += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
-        f.size = Tools::toStd(s);
+        QFileInfo fi(fn);
+        f.sourceName = Tools::toStd(fi.fileName());
+        QString sz;
+        f.thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f.sizeX, f.sizeY, l));
+        f.size = Tools::toStd(sz);
         p.files.push_back(f);
     }
     p.name = Tools::toStd(toHtml(post.name()));

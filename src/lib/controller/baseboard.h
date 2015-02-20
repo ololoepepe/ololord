@@ -21,6 +21,8 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     struct OLOLORD_EXPORT File
     {
         std::string size;
+        int sizeX;
+        int sizeY;
         std::string sourceName;
         std::string thumbName;
     };
