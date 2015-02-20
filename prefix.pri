@@ -87,6 +87,18 @@ INCLUDEPATH *= $${SRCHILITE_PREFIX}/include
 DEPENDPATH *= $${SRCHILITE_PREFIX}/include
 LIBS *= -L$${SRCHILITE_PREFIX}/lib/ -lsource-highlight
 
+isEmpty(LIBMAGIC_PREFIX) {
+    mac|unix {
+        LIBMAGIC_PREFIX=/usr
+    } else:win32 {
+        error(libmagic path is not specified)
+    }
+}
+
+INCLUDEPATH *= $${LIBMAGIC_PREFIX}/include
+DEPENDPATH *= $${LIBMAGIC_PREFIX}/include
+LIBS *= -L$${LIBMAGIC_PREFIX}/lib/ -lmagic
+
 mac|unix {
     isEmpty(LORD_PREFIX):LORD_PREFIX=/usr
 } else:win32 {

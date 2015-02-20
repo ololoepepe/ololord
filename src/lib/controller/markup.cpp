@@ -609,6 +609,7 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         }
     }
     p.hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
+    p.ip = Tools::toStd(post.posterIp());
     return p;
 }
 

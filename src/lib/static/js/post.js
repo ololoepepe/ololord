@@ -122,8 +122,12 @@ function deletePost(boardName, postNumber, fromThread) {
                     reloadPage();
                 }
                 return;
+            } else if (post.className.indexOf("opPost") > -1) {
+                var suffix = "thread/" + postNumber + ".html";
+                window.location.href = window.location.href.replace(suffix, "");
+            } else {
+                post.parentNode.removeChild(post);
             }
-            post.parentNode.removeChild(post);
         });
     });
 }

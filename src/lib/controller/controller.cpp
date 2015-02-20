@@ -200,6 +200,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
     c.showHidePostText = ts.translate("initBaseBoard", "Hide/show", "showHidePostText");
     c.showWhois = board->showWhois();
+    c.supportedFileTypes = Tools::toStd(board->supportedFileTypes());
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
 }
 
@@ -349,11 +350,17 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
     }
 }
 
-bool testParams(cppcms::application &app, const Tools::PostParameters &params, const Tools::FileList &files,
-                const QString &boardName)
+bool testParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
+                const Tools::FileList &files)
 {
-    SettingsLocker s;
     TranslatorQt tq(app.request());
+    if (!board) {
+        renderError(app, tq.translate("testParams", "Internal error", "error"),
+                    tq.translate("testParams", "Internal logic error", "description"));
+        return false;
+    }
+    QString boardName = board->name();
+    SettingsLocker s;
     int maxEmail = s->value("Board/" + boardName + "/max_email_length",
                             s->value("Board/max_email_length", 150)).toInt();
     int maxName = s->value("Board/" + boardName + "/max_name_length",
@@ -404,6 +411,12 @@ bool testParams(cppcms::application &app, const Tools::PostParameters &params, c
                 renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                             tq.translate("testParams", "File is too big", "description"));
                 Tools::log(app, "File is too big");
+                return false;
+            }
+            if (!board->isFileTypeSupported(f.data)) {
+                renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
+                            tq.translate("testParams", "File type is not supported", "description"));
+                Tools::log(app, "File type is not supported");
                 return false;
             }
         }

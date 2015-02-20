@@ -188,6 +188,14 @@ The default is 0 (solve captcha every time).</source>
         <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи на данной доске.
 По умолчанию 0 (капча вводится каждый раз).</translation>
     </message>
+    <message>
+        <source>MIME types of files allowed for attaching on this board.
+Must be separated by commas. Wildcard matching is used.
+The default is image/png,image/jpeg,image/gif.</source>
+        <translation>MIME-типы файлов, которые разрешено прикреплять на этой доске.
+Должны быть разделены запятыми. Используется шаблон wildcard.
+По умолчанию image/png,image/jpeg,image/gif.</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -519,6 +527,11 @@ The default is 0 (solve captcha every time).</source>
         <source>No such post</source>
         <comment>error</comment>
         <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
@@ -1354,6 +1367,14 @@ The default is 0 (solve captcha every time).</source>
         <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи.
 По умолчанию 0 (капча вводится каждый раз).</translation>
     </message>
+    <message>
+        <source>MIME types of files allowed for attaching.
+Must be separated by commas. Wildcard matching is used.
+The default is image/png,image/jpeg,image/gif.</source>
+        <translation>MIME-типы файлов, которые разрешено прикреплять.
+Должны быть разделены запятыми. Используется шаблон wildcard.
+По умолчанию image/png,image/jpeg,image/gif.</translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>
@@ -1795,6 +1816,21 @@ The default is 0 (solve captcha every time).</source>
         <source>File is too big</source>
         <comment>description</comment>
         <translation>Файл слишком большой</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>File type is not supported</source>
+        <comment>description</comment>
+        <translation>Тип файла не поддерживается</translation>
     </message>
 </context>
 <context>

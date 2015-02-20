@@ -73,19 +73,24 @@ public:
     virtual void createPost(cppcms::application &app);
     virtual void createThread(cppcms::application &app);
     virtual QString defaultUserName(const QLocale &l) const;
+    virtual void deleteFiles(const QStringList &fileNames);
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
     virtual bool isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params,
                                 QString &error) const;
     bool isEnabled() const;
+    bool isFileTypeSupported(const QString &mimeType) const;
+    bool isFileTypeSupported(const QByteArray &data) const;
     virtual bool isHidden() const;
     virtual QString name() const = 0;
     virtual bool postingEnabled() const;
     unsigned int postLimit() const;
     virtual bool processCode() const;
     virtual QStringList rules(const QLocale &l) const;
+    virtual QString saveFile(const Tools::File &f, bool *ok = 0);
     virtual bool showWhois() const;
+    QString supportedFileTypes() const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
     virtual QString title(const QLocale &l) const = 0;

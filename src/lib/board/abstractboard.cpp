@@ -36,11 +36,14 @@
 #include <BTerminal>
 #include <BTranslation>
 
+#include <QBuffer>
+#include <QByteArray>
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QFileInfo>
+#include <QImage>
 #include <QList>
 #include <QMap>
 #include <QMutex>
@@ -213,7 +216,7 @@ void AbstractBoard::createPost(cppcms::application &app)
         return;
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
-    if (!Controller::testParams(app, params, files, name()))
+    if (!Controller::testParams(this, app, params, files))
         return;
     TranslatorQt tq(req);
     if (!postingEnabled()) {
@@ -242,7 +245,7 @@ void AbstractBoard::createThread(cppcms::application &app)
         return;
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
-    if (!Controller::testParams(app, params, files, name()))
+    if (!Controller::testParams(this, app, params, files))
         return;
     TranslatorQt tq(req);
     if (!postingEnabled()) {
@@ -266,6 +269,20 @@ void AbstractBoard::createThread(cppcms::application &app)
 QString AbstractBoard::defaultUserName(const QLocale &l) const
 {
     return TranslatorQt(l).translate("AbstractBoard", "Anonymous", "defaultUserName");
+}
+
+void AbstractBoard::deleteFiles(const QStringList &fileNames)
+{
+    QString path = Tools::storagePath() + "/img/" + name();
+    QFileInfo fi(path);
+    if (!fi.exists() || !fi.isDir())
+        return;
+    foreach (const QString &fn, fileNames) {
+        QFile::remove(path + "/" + fn);
+        QFileInfo fii(fn);
+        QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
+        QFile::remove(path + "/" + fii.baseName() + "s." + suff);
+    }
 }
 
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
@@ -463,6 +480,23 @@ bool AbstractBoard::isEnabled() const
     return SettingsLocker()->value("Board/" + name() + "/enabled", true).toBool();
 }
 
+bool AbstractBoard::isFileTypeSupported(const QString &mimeType) const
+{
+    if (mimeType.isEmpty())
+        return false;
+    QStringList fileTypes = supportedFileTypes().split(',');
+    foreach (const QString &ft, fileTypes) {
+        if (QRegExp(ft, Qt::CaseInsensitive, QRegExp::Wildcard).exactMatch(mimeType))
+            return true;
+    }
+    return false;
+}
+
+bool AbstractBoard::isFileTypeSupported(const QByteArray &data) const
+{
+    return isFileTypeSupported(Tools::mimeType(data));
+}
+
 bool AbstractBoard::isHidden() const
 {
     return SettingsLocker()->value("Board/" + name() + "/hidden", false).toBool();
@@ -490,9 +524,45 @@ QStringList AbstractBoard::rules(const QLocale &l) const
     return Tools::rules("rules", l) + Tools::rules("rules/" + name(), l);
 }
 
+QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
+{
+    QString storagePath = Tools::storagePath();
+    if (storagePath.isEmpty())
+        return bRet(ok, false, QString());
+    QString path = storagePath + "/img/" + name();
+    if (!BDirTools::mkpath(path))
+        return bRet(ok, false, QString());
+    QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+    QString suffix = QFileInfo(f.fileName).suffix();
+    QImage img;
+    QByteArray data = f.data;
+    QBuffer buff(&data);
+    buff.open(QIODevice::ReadOnly);
+    if (!img.load(&buff, suffix.toLower().toLatin1().data()))
+        return bRet(ok, false, QString());
+    if (img.height() > 200 || img.width() > 200)
+        img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    QString sfn = path + "/" + dt + "." + suffix;
+    if (!BDirTools::writeFile(sfn, f.data))
+        return bRet(ok, false, QString());
+    if (!suffix.compare("gif", Qt::CaseInsensitive))
+        suffix = "png";
+    if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
+        return bRet(ok, false, QString());
+    return bRet(ok, true, QFileInfo(sfn).fileName());
+}
+
 bool AbstractBoard::showWhois() const
 {
     return false;
+}
+
+QString AbstractBoard::supportedFileTypes() const
+{
+    static const QString defaultFileTypes = "image/png,image/jpeg,image/gif";
+    SettingsLocker s;
+    return s->value("Board/" + name() + "/supported_file_types",
+                    s->value("Board/supported_file_types", defaultFileTypes)).toString();
 }
 
 unsigned int AbstractBoard::threadLimit() const
@@ -659,11 +729,16 @@ void AbstractBoard::initBoards(bool reinit)
                                                     "The default is 1."));
         nnn = new BSettingsNode(QVariant::UInt, "archive_limit", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum archived thread count for this board.\n"
-                                                   "The default is 0 (do not archive)."));
+                                                    "The default is 0 (do not archive)."));
         nnn = new BSettingsNode(QVariant::UInt, "captcha_quota", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum count of extra posts a user may make "
                                                     "before solving captcha again on this board.\n"
                                                     "The default is 0 (solve captcha every time)."));
+        nnn = new BSettingsNode(QVariant::String, "supported_file_types", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on "
+                                                    "this board.\n"
+                                                    "Must be separated by commas. Wildcard matching is used.\n"
+                                                    "The default is image/png,image/jpeg,image/gif."));
     }
     if (!reinit)
         qAddPostRoutine(&cleanupBoards);

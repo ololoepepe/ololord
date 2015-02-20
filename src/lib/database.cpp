@@ -37,13 +37,13 @@ namespace Database
 class FileTransaction
 {
 private:
-    const QString BoardName;
+    AbstractBoard * const board;
 private:
     bool commited;
     QStringList mfileNames;
 public:
-    explicit FileTransaction(const QString &boardName) :
-        BoardName(boardName)
+    explicit FileTransaction(AbstractBoard *b) :
+        board(b)
     {
         commited = false;
     }
@@ -51,7 +51,9 @@ public:
     {
         if (commited)
             return;
-        Tools::deleteFiles(BoardName, mfileNames);
+        if (!board)
+            return;
+        board->deleteFiles(mfileNames);
     }
 public:
     void commit()
@@ -64,10 +66,13 @@ public:
     }
     QString saveFile(const Tools::File &f, bool *ok = 0)
     {
+        if (!board)
+            return bRet(ok, false, QString());
         bool b = false;
-        QString fn = Tools::saveFile(f, BoardName, &b);
-        if (b)
-            mfileNames << fn;
+        QString fn = board->saveFile(f, &b);
+        if (!b)
+            return bRet(ok, false, QString());
+        mfileNames << fn;
         return bRet(ok, b, fn);
     }
 };
@@ -177,8 +182,8 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
                 board->captchaUsed(ip);
             } else {
                 if (!board->isCaptchaValid(req, param, err)) {
-                    return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description, err,
-                                false);
+                    return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description,
+                                err, false);
                 }
                 board->captchaSolved(ip);
             }
@@ -213,7 +218,7 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         QByteArray hp = Tools::hashpass(req);
         QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread.data, ip, post.password, hp));
         p->setEmail(post.email);
-        FileTransaction ft(boardName);
+        FileTransaction ft(board);
         foreach (const Tools::File &f, post.files) {
             bool ok = false;
             ft.saveFile(f, &ok);
@@ -245,6 +250,9 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     TranslatorQt tq(l);
     if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
         return bRet(error, tq.translate("deletePostInternal", "Invalid board name", "error"), false);
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    if (!board)
+        return bRet(error, tq.translate("deletePostInternal", "Internal logic error", "error"), false);
     if (!postNumber)
         return bRet(error, tq.translate("deletePostInternal", "Invalid post number", "error"), false);
     try {
@@ -262,7 +270,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                 files += p.files();
             t->erase_query<Post>(odb::query<Post>::thread == thread->id());
             t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
-            Tools::deleteFiles(boardName, files);
+            board->deleteFiles(files);
         } else {
             Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
                                                      && odb::query<Post>::number == postNumber);
@@ -272,7 +280,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                 return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
             QStringList files = post->files();
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
-            Tools::deleteFiles(boardName, files);
+            board->deleteFiles(files);
         }
         t.commit();
         return bRet(error, QString(), true);

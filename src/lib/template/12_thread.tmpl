@@ -46,9 +46,18 @@
         <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
-            #<a href="javascript:insertPostNumber('<%= post.number %>');"><%= post.number %></a>
+            <% if ( content.moder ) %>
+                #<a href="javascript:insertPostNumber('<%= post.number %>');"
+                    title="<%= post.ip %>"><%= post.number %></a>
+            <% else %>
+                #<a href="javascript:insertPostNumber('<%= post.number %>');"><%= post.number %></a>
+            <% end %>
         <% else %>
-            #<a href="#<%= post.number %>"><%= post.number %></a>
+            <% if ( content.moder ) %>
+                #<a href="#<%= post.number %>" title="<%= post.ip %>"><%= post.number %></a>
+            <% else %>
+                #<a href="#<%= post.number %>"><%= post.number %></a>
+            <% end %>
         <% end %>
         <% if ( content.moder && op ) %>
             <% if ( content.fixed ) %>

@@ -45,9 +45,19 @@
         <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
-            #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
+            <% if ( content.moder ) %>
+                #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>"
+                    title="<%= post.ip %>"><%= post.number %></a>
+            <% else %>
+                #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
+            <% end %>
         <% else %>
-            #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
+            <% if ( content.moder ) %>
+                #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"
+                    title="<%= post.ip %>"><%= post.number %></a>
+            <% else %>
+                #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
+            <% end %>
         <% end %>
         <% if ( content.moder && post.number == thread.opPost.number ) %>
             <% if ( thread.fixed ) %>

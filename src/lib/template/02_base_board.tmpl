@@ -79,7 +79,8 @@
                             <b><%= postFormInputFile %></b>
                         </td>
                         <td class="postformField">
-                            <input type="file" name="image" id="postFormInputFile<%= position %>" accept="image/*" />
+                            <input type="file" name="image" id="postFormInputFile<%= position %>"
+                                   accept="<%= supportedFileTypes %>" />
                         </td>
                     </tr>
                     <tr>
