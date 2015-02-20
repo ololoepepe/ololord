@@ -1,1 +1,3 @@
 [done] Add WebM support
+[done] Cache post file infos
+[done] Add ability to edit posts

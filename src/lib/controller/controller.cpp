@@ -168,12 +168,17 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.currentThread = currentThread;
     c.deletePostText = ts.translate("initBaseBoard", "Delete post", "fixedText");
     c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "fixedText");
+    c.editPostText = ts.translate("initBaseBoard", "Edit post", "editPostText");
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");
     c.enterPasswordTitle = ts.translate("initBaseBoard", "Enter password", "enterPasswordTitle");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
+    c.maxEmailLength = Tools::maxInfo(Tools::MaxEmailFieldLength, board->name());
+    c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, board->name());
+    c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, board->name());
+    c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
@@ -360,47 +365,33 @@ bool testParams(const AbstractBoard *board, cppcms::application &app, const Tool
         return false;
     }
     QString boardName = board->name();
-    SettingsLocker s;
-    int maxEmail = s->value("Board/" + boardName + "/max_email_length",
-                            s->value("Board/max_email_length", 150)).toInt();
-    int maxName = s->value("Board/" + boardName + "/max_name_length",
-                           s->value("Board/max_name_length", 50)).toInt();
-    int maxSubject = s->value("Board/" + boardName + "/max_subject_length",
-                              s->value("Board/max_subject_length", 150)).toInt();
-    int maxText = s->value("Board/" + boardName + "/max_text_length",
-                           s->value("Board/max_text_length", 15000)).toInt();
-    int maxPassword = s->value("Board/" + boardName + "/max_password_length",
-                                s->value("Board/max_password_length", 150)).toInt();
-    int maxFileCount = s->value("Board/" + boardName + "/max_file_count",
-                                s->value("Board/max_file_count", 1)).toInt();
-    int maxFileSize = s->value("Board/" + boardName + "/max_file_size",
-                               s->value("Board/max_file_size", 10 * BeQt::Megabyte)).toInt();
-    if (params.value("email").length() > maxEmail) {
+    int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, boardName);
+    if (params.value("email").length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "E-mail is too long", "description"));
         Tools::log(app, "E-mail is too long");
         return false;
-    } else if (params.value("name").length() > maxName) {
+    } else if (params.value("name").length() > int(Tools::maxInfo(Tools::MaxNameFieldLength, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Name is too long", "description"));
         Tools::log(app, "Name is too long");
         return false;
-    } else if (params.value("subject").length() > maxSubject) {
+    } else if (params.value("subject").length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Subject is too long", "description"));
         Tools::log(app, "Subject is too long");
         return false;
-    } else if (params.value("text").length() > maxText) {
+    } else if (params.value("text").length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Comment is too long", "description"));
         Tools::log(app, "Comment is too long");
         return false;
-    } else if (params.value("password").length() > maxPassword) {
+    } else if (params.value("password").length() > int(Tools::maxInfo(Tools::MaxPasswordFieldLength, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Password is too long", "description"));
         Tools::log(app, "Password is too long");
         return false;
-    } else if (files.size() > maxFileCount) {
+    } else if (files.size() > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Too many files", "description"));
         Tools::log(app, "File is too big");

@@ -59,6 +59,10 @@
                 #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
             <% end %>
         <% end %>
+        <% if ( content.moder ) %>
+            <a href="javascript:editPost('<%= currentBoard.name %>', '<%= post.number %>');">
+                <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+        <% end %>
         <% if ( content.moder && post.number == thread.opPost.number ) %>
             <% if ( thread.fixed ) %>
                 <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
@@ -124,7 +128,7 @@
                     <% end %>
                 <% end %>
                 <td class="postText">
-                    <blockquote><%= post.text | raw %></blockquote>
+                    <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
                 </td>
             </tr>
             <tr>

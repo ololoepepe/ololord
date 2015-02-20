@@ -540,6 +540,49 @@ The default is %1.</source>
     </message>
 </context>
 <context>
+    <name>editPost</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>No text provided</source>
+        <comment>error</comment>
+        <translation>Отсутствует текст</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Text is too long</source>
+        <comment>error</comment>
+        <translation>Текст слишком длинный</translation>
+    </message>
+</context>
+<context>
     <name>hBoard</name>
     <message>
         <source>/h/entai</source>
@@ -1071,6 +1114,11 @@ Your choice:</source>
         <source>Posts without captcha left:</source>
         <comment>captchaQuotaText</comment>
         <translation>Осталось постов без капчи:</translation>
+    </message>
+    <message>
+        <source>Edit post</source>
+        <comment>editPostText</comment>
+        <translation>Редактировать пост</translation>
     </message>
 </context>
 <context>

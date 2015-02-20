@@ -51,6 +51,40 @@ function showPasswordDialog(title, label, callback) {
     });
 }
 
+function editPost(boardName, postNumber) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var postText = document.getElementById("post" + postNumber + "Text");
+    if (!postText)
+        return;
+    var title = document.getElementById("editPostText").value;
+    var div = document.createElement("div");
+    var textarea = document.createElement("textarea");
+    textarea.appendChild(document.createTextNode(postText.innerText || postText.textContent));
+    div.appendChild(textarea);
+    showDialog(title, null, div, function() {
+        ajaxRequest("edit_post", [boardName, +postNumber, textarea.value], 5, function(res) {
+            reloadPage();
+        });
+    });
+}
+
+function setThreadFixed(boardName, postNumber, fixed) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    if (!getCookie("hashpass"))
+        return alert(document.getElementById("notLoggedInText").value);
+    ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, reloadPage);
+}
+
+function setThreadOpened(boardName, postNumber, opened) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    if (!getCookie("hashpass"))
+        return alert(document.getElementById("notLoggedInText").value);
+    ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, reloadPage);
+}
+
 function banUser(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
@@ -130,22 +164,6 @@ function deletePost(boardName, postNumber, fromThread) {
             }
         });
     });
-}
-
-function setThreadFixed(boardName, postNumber, fixed) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    if (!getCookie("hashpass"))
-        return alert(document.getElementById("notLoggedInText").value);
-    ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, reloadPage);
-}
-
-function setThreadOpened(boardName, postNumber, opened) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    if (!getCookie("hashpass"))
-        return alert(document.getElementById("notLoggedInText").value);
-    ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, reloadPage);
 }
 
 function setPostHidden(boardName, postNumber, hidden) {

@@ -41,8 +41,8 @@
                             <b><%= postFormLabelEmail %></b>
                         </td>
                         <td class="postformField">
-                            <input id="postFormInputEmail<%= position %>" type="text" maxlength="150" name="email"
-                                   size="30" />
+                            <input id="postFormInputEmail<%= position %>" type="text" maxlength="<%= maxEmailLength %>"
+                                   name="email" size="30" />
                             <input type="submit" value="<%= postFormButtonSubmit %>" />
                         </td>
                     </tr>
@@ -51,8 +51,8 @@
                             <b><%= postFormLabelName %></b>
                         </td>
                         <td class="postformField">
-                            <input type="text" maxlength="50" id="postFormInputName<%= position %>" name="name"
-                                   size="43" />
+                            <input type="text" maxlength="<%= maxNameLength %>" id="postFormInputName<%= position %>"
+                                   name="name" size="43" />
                         </td>
                     </tr>
                     <tr>
@@ -60,8 +60,8 @@
                             <b><%= postFormLabelSubject %></b>
                         </td>
                         <td class="postformField">
-                            <input type="text" maxlength="150" id="postFormInputSubject<%= position %>" name="subject"
-                                   size="43" />
+                            <input type="text" maxlength="<%= maxSubjectLength %>"
+                                   id="postFormInputSubject<%= position %>" name="subject" size="43" />
                         </td>
                     </tr>
                     <tr>
@@ -88,8 +88,8 @@
                             <b><%= postFormLabelPassword %></b>
                         </td>
                         <td class="postformField">
-                            <input type="password" maxlength="150" id="postFormInputPassword<%= position %>"
-                                   name="password" size="43" />
+                            <input type="password" maxlength="<%= maxPasswordLength %>"
+                                   id="postFormInputPassword<%= position %>" name="password" size="43" />
                         </td>
                     </tr>
                     <tr>
@@ -147,6 +147,7 @@
 <% end template %>
 
 <% template boardTexts() %>
+<input type="hidden" id="editPostText" value="<%= editPostText %>" />
 <input type="hidden" id="showHidePostText" value="<%= showHidePostText %>" />
 <input type="hidden" id="banUserText" value="<%= banUserText %>" />
 <input type="hidden" id="boardLabelText" value="<%= boardLabelText %>" />

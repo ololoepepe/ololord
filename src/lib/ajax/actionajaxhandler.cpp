@@ -46,12 +46,23 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
     server.return_result(true);
 }
 
+void ActionAjaxHandler::editPost(std::string boardName, long long postNumber, std::string text)
+{
+    QString err;
+    if (!Database::editPost(server.request(), Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0,
+                            Tools::fromStd(text), &err)) {
+        return server.return_error(Tools::toStd(err));
+    }
+    server.return_result(true);
+}
+
 QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
 {
     QList<ActionAjaxHandler::Handler> list;
     ActionAjaxHandler *self = const_cast<ActionAjaxHandler *>(this);
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
+    list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
     list << Handler("set_thread_fixed", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadFixed, self),
                     method_role);
     list << Handler("set_thread_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadOpened, self),

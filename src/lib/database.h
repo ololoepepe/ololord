@@ -230,6 +230,8 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QSt
                                const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
+OLOLORD_EXPORT bool editPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
+                             const QString &text, QString *error = 0);
 OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *error = 0,
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT quint64 lastPostNumber(const QString &boardName, QString *error = 0,
