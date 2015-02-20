@@ -1,6 +1,7 @@
 #include "controller.h"
 
 #include "baseboard.h"
+#include "cache.h"
 #include "database.h"
 #include "settingslocker.h"
 #include "stored/registereduser.h"
@@ -542,13 +543,20 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
     p.email = Tools::toStd(post.email());
     TranslatorStd ts(l);
     foreach (const QString &fn, post.files()) {
-        Content::BaseBoard::File f;
         QFileInfo fi(fn);
-        f.sourceName = Tools::toStd(fi.fileName());
-        QString sz;
-        f.thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f.sizeX, f.sizeY, l));
-        f.size = Tools::toStd(sz);
-        p.files.push_back(f);
+        Content::BaseBoard::File *f = Cache::fileInfo(board->name(), fi.fileName());
+        bool cache = true;
+        if (!f) {
+            f = new Content::BaseBoard::File;
+            f->sourceName = Tools::toStd(fi.fileName());
+            QString sz;
+            f->thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f->sizeX, f->sizeY, l));
+            f->size = Tools::toStd(sz);
+            cache = Cache::cacheFileInfo(board->name(), fi.fileName(), f);
+        }
+        p.files.push_back(*f);
+        if (!cache)
+            delete f;
     }
     p.name = Tools::toStd(toHtml(post.name()));
     if (p.name.empty())
