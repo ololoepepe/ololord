@@ -1,3 +1,17 @@
+=== ololord 0.1.0-beta5 (20 February 2015) ===
+    * Add ability to post files of different types
+    * Add news block to the home page
+    * Optimise Transaction wrapper class
+    * Add ability to customize default user name (Anonymous)
+    * Add a hidden board
+    * Add ability to disable city name guessing
+    * Fix external link markup
+    * Add ability to ban users from the web
+    * Add ability to hide posts/threads
+    * Add ability to customize captcha
+    * Add code captcha to /pr/
+    * Implement captcha quota
+
 === ololord 0.1.0-beta4 (18 February 2015) ===
     * Check for unbanned users periodically
     * Add ability for admins to delete any posts
