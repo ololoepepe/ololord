@@ -636,10 +636,12 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Maximum count of extra posts a user may make before "
                                                "solving captcha again.\n"
                                                "The default is 0 (solve captcha every time)."));
+    BTranslation t = BTranslation::translate("initSettings", "MIME types of files allowed for attaching.\n"
+                                             "Must be separated by commas. Wildcard matching is used.\n"
+                                             "The default is %1.");
+    t.setArgument(AbstractBoard::defaultFileTypes);
     nn = new BSettingsNode(QVariant::String, "supported_file_types", n);
-    nn->setDescription(BTranslation::translate("initSettings", "MIME types of files allowed for attaching.\n"
-                                               "Must be separated by commas. Wildcard matching is used.\n"
-                                               "The default is image/png,image/jpeg,image/gif."));
+    nn->setDescription(t);
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"

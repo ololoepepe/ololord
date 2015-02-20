@@ -47,6 +47,8 @@ public:
     };
 public:
     typedef std::list<BoardInfo> BoardInfoList;
+public:
+    static const QString defaultFileTypes;
 private:
     static QMap<QString, AbstractBoard *> boards;
     static bool boardsInitialized;

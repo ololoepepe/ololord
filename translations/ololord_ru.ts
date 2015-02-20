@@ -191,10 +191,10 @@ The default is 0 (solve captcha every time).</source>
     <message>
         <source>MIME types of files allowed for attaching on this board.
 Must be separated by commas. Wildcard matching is used.
-The default is image/png,image/jpeg,image/gif.</source>
+The default is %1.</source>
         <translation>MIME-типы файлов, которые разрешено прикреплять на этой доске.
 Должны быть разделены запятыми. Используется шаблон wildcard.
-По умолчанию image/png,image/jpeg,image/gif.</translation>
+По умолчанию %1.</translation>
     </message>
 </context>
 <context>
@@ -1370,10 +1370,10 @@ The default is 0 (solve captcha every time).</source>
     <message>
         <source>MIME types of files allowed for attaching.
 Must be separated by commas. Wildcard matching is used.
-The default is image/png,image/jpeg,image/gif.</source>
+The default is %1.</source>
         <translation>MIME-типы файлов, которые разрешено прикреплять.
 Должны быть разделены запятыми. Используется шаблон wildcard.
-По умолчанию image/png,image/jpeg,image/gif.</translation>
+По умолчанию %1.</translation>
     </message>
 </context>
 <context>

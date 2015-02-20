@@ -90,6 +90,7 @@ static bool threadLessThan(const Thread &t1, const Thread &t2)
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
+const QString AbstractBoard::defaultFileTypes = "image/png,image/jpeg,image/gif";
 
 AbstractBoard::AbstractBoard() :
     captchaQuotaMutex(QMutex::Recursive)
@@ -559,7 +560,6 @@ bool AbstractBoard::showWhois() const
 
 QString AbstractBoard::supportedFileTypes() const
 {
-    static const QString defaultFileTypes = "image/png,image/jpeg,image/gif";
     SettingsLocker s;
     return s->value("Board/" + name() + "/supported_file_types",
                     s->value("Board/supported_file_types", defaultFileTypes)).toString();
@@ -735,10 +735,12 @@ void AbstractBoard::initBoards(bool reinit)
                                                     "before solving captcha again on this board.\n"
                                                     "The default is 0 (solve captcha every time)."));
         nnn = new BSettingsNode(QVariant::String, "supported_file_types", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on "
-                                                    "this board.\n"
-                                                    "Must be separated by commas. Wildcard matching is used.\n"
-                                                    "The default is image/png,image/jpeg,image/gif."));
+        BTranslation t = BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on "
+                                                 "this board.\n"
+                                                 "Must be separated by commas. Wildcard matching is used.\n"
+                                                 "The default is %1.");
+        t.setArgument(defaultFileTypes);
+        nnn->setDescription(t);
     }
     if (!reinit)
         qAddPostRoutine(&cleanupBoards);
