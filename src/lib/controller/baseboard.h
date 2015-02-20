@@ -13,6 +13,11 @@ namespace Content
 
 struct OLOLORD_EXPORT BaseBoard : public Base
 {
+    struct OLOLORD_EXPORT BanLevel
+    {
+        int level;
+        std::string description;
+    };
     struct OLOLORD_EXPORT File
     {
         std::string size;
@@ -28,6 +33,8 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string email;
         std::list<File> files;
         std::string flagName;
+        bool hidden;
+        std::string ip;
         std::string name;
         std::string nameRaw;
         unsigned long long number;
@@ -40,11 +47,20 @@ struct OLOLORD_EXPORT BaseBoard : public Base
 public:
     std::string action;
     std::string ajaxErrorText;
+    std::list<AbstractBoard::BoardInfo> availableBoards;
+    std::string banExpiresLabelText;
+    std::string banLevelLabelText;
+    std::list<BanLevel> banLevels;
     std::string bannedForText;
     std::string bannerFileName;
+    std::string banReasonLabelText;
+    std::string banUserText;
+    std::string boardLabelText;
     std::string bumpLimitReachedText;
     bool captchaEnabled;
     std::string captchaKey;
+    unsigned long long captchaQuota;
+    std::string captchaQuotaText;
     std::string closedText;
     std::string closeThreadText;
     AbstractBoard::BoardInfo currentBoard;
@@ -57,6 +73,7 @@ public:
     std::string fixThreadText;
     std::string hidePostFormText;
     bool moder;
+    std::string noCaptchaText;
     std::string notLoggedInText;
     std::string openThreadText;
     std::string postFormButtonSubmit;
@@ -72,8 +89,10 @@ public:
     bool postingEnabled;
     std::string postLimitReachedText;
     std::string registeredText;
+    std::string showHidePostText;
     std::string showPostFormText;
     bool showWhois;
+    std::string supportedFileTypes;
     std::string unfixThreadText;
 };
 

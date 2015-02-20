@@ -119,11 +119,16 @@ static void processWakabaMarkExternalLink(QString &text, int start, int len, con
         QString cap = rx.cap();
         if (!cap.startsWith("http"))
             cap.prepend("http://");
-        t.insert(ind + rx.matchedLength(), "</a>");
+        int ml = rx.matchedLength();
+        if (cap.endsWith('.')) {
+            cap.remove(cap.length() - 1, 1);
+            ml -= 1;
+        }
+        t.insert(ind + ml, "</a>");
         t.insert(ind, "<a href=\"" + cap + "\">");
         skip << qMakePair(ind, cap.length() + 11);
-        skip << qMakePair(ind + rx.matchedLength() + cap.length() + 11, 4);
-        ind = rx.indexIn(t, ind + rx.matchedLength() + cap.length() + 15);
+        skip << qMakePair(ind + ml + cap.length() + 11, 4);
+        ind = rx.indexIn(t, ind + ml + cap.length() + 15);
     }
     processPostText(t, skip, boardName, threadNumber, processCode, &toHtml);
     text.replace(start, len, t);
@@ -551,15 +556,13 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         p.files.push_back(f);
     }
     p.name = Tools::toStd(toHtml(post.name()));
-    if (p.name.empty()) {
-        TranslatorStd ts(l);
-        p.name = ts.translate("toController", "Anonymous", "name");
-    }
+    if (p.name.empty())
+        p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+    else
+        p.name = "<span class=\"userName\">" + p.name + "</span>";
     p.nameRaw = Tools::toStd(post.name());
-    if (p.nameRaw.empty()) {
-        TranslatorStd ts(l);
-        p.nameRaw = ts.translate("toController", "Anonymous", "name");
-    }
+    if (p.nameRaw.empty())
+        p.nameRaw = Tools::toStd(board->defaultUserName(l));
     p.number = post.number();
     p.subject = Tools::toStd(post.subject());
     p.text = processPostText(post.text(), board->name(), threadNumber, processCode);
@@ -579,10 +582,8 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
                 name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
         }
         p.name = Tools::toStd(name);
-        if (p.name.empty()) {
-            TranslatorStd ts(l);
-            p.name = ts.translate("toController", "Anonymous", "name");
-        }
+        if (p.name.empty())
+            p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
         QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
@@ -600,12 +601,15 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         p.flagName = Tools::toStd(Tools::flagName(countryCode));
         if (!p.flagName.empty()) {
             p.countryName = Tools::toStd(Tools::countryName(countryCode));
-            p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
+            if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
+                p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
         } else {
             p.flagName = "default.png";
             p.countryName = ts.translate("toController", "Unknown country", "countryName");
         }
     }
+    p.hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
+    p.ip = Tools::toStd(post.posterIp());
     return p;
 }
 

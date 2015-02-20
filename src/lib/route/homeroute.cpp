@@ -29,6 +29,10 @@ void HomeRoute::handle()
     TranslatorStd ts(application.request());
     Controller::initBase(c, application.request(),
                          tq.translate("HomeRoute", "ololord - (almost) free communication", "pageTitle"));
+    c.newsHeader = ts.translate("HomeRoute", "News", "newsHeader");
+    foreach (const QString &s, Tools::news(tq.locale()))
+        c.news.push_back(Tools::toStd(Controller::toHtml(s)));
+    c.rulesHeader = ts.translate("HomeRoute", "Rules", "rulesHeader");
     foreach (const QString &s, Tools::rules("rules/home", tq.locale()))
         c.rules.push_back(Tools::toStd(Controller::toHtml(s)));
     c.welcomeMessage = ts.translate("HomeRoute", "Welcome. Again.", "welcomeMessage");

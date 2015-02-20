@@ -13,7 +13,10 @@ namespace Content
 
 struct OLOLORD_EXPORT Home : public Base
 {
+    std::list<std::string> news;
+    std::string newsHeader;
     std::list<std::string> rules;
+    std::string rulesHeader;
     std::string welcomeMessage;
 };
 

@@ -162,6 +162,40 @@ The default is 0 (do not archive).</source>
         <translation>Максимальное количество архивируемых тредов для этой доски.
 По умолчанию 0 (не архивировать).</translation>
     </message>
+    <message>
+        <source>Anonymous</source>
+        <comment>defaultUserName</comment>
+        <translation>Аноним</translation>
+    </message>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Maximum count of extra posts a user may make before solving captcha again on this board.
+The default is 0 (solve captcha every time).</source>
+        <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи на данной доске.
+По умолчанию 0 (капча вводится каждый раз).</translation>
+    </message>
+    <message>
+        <source>MIME types of files allowed for attaching on this board.
+Must be separated by commas. Wildcard matching is used.
+The default is image/png,image/jpeg,image/gif.</source>
+        <translation>MIME-типы файлов, которые разрешено прикреплять на этой доске.
+Должны быть разделены запятыми. Используется шаблон wildcard.
+По умолчанию image/png,image/jpeg,image/gif.</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -198,6 +232,16 @@ The default is 0 (do not archive).</source>
         <comment>pageTitle</comment>
         <translation>ololord - (почти) свободное общение</translation>
     </message>
+    <message>
+        <source>News</source>
+        <comment>newsHeader</comment>
+        <translation>Новости</translation>
+    </message>
+    <message>
+        <source>Rules</source>
+        <comment>rulesHeader</comment>
+        <translation>Правила</translation>
+    </message>
 </context>
 <context>
     <name>aBoard</name>
@@ -206,6 +250,11 @@ The default is 0 (do not archive).</source>
         <comment>board title</comment>
         <translation>/a/ниме</translation>
     </message>
+    <message>
+        <source>Kamina</source>
+        <comment>defaultUserName</comment>
+        <translation>Камина</translation>
+    </message>
 </context>
 <context>
     <name>bBoard</name>
@@ -213,6 +262,44 @@ The default is 0 (do not archive).</source>
         <source>/b/rotherhood</source>
         <comment>board title</comment>
         <translation>/b/ратство</translation>
+    </message>
+</context>
+<context>
+    <name>banUser</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>You can&apos;t ban youself, baka</source>
+        <comment>error</comment>
+        <translation>Нельзя забанить самого себя, бака</translation>
     </message>
 </context>
 <context>
@@ -328,11 +415,6 @@ The default is 0 (do not archive).</source>
         <translation>Неправильная капча</translation>
     </message>
     <message>
-        <source>Captcha is missing or invalid</source>
-        <comment>description</comment>
-        <translation>Капча отсутствует либо неправильная</translation>
-    </message>
-    <message>
         <source>No file</source>
         <comment>error</comment>
         <translation>Отсутствует файл</translation>
@@ -366,6 +448,11 @@ The default is 0 (do not archive).</source>
         <source>Internal file system error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка файловой системы</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
@@ -440,6 +527,11 @@ The default is 0 (do not archive).</source>
         <source>No such post</source>
         <comment>error</comment>
         <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
@@ -733,11 +825,6 @@ Your choice:</source>
         <translation>Пароль/хешпасс</translation>
     </message>
     <message>
-        <source>Show password</source>
-        <comment>showPasswordText</comment>
-        <translation>Показать пароль</translation>
-    </message>
-    <message>
         <source>Cancel</source>
         <comment>cancelButtonText</comment>
         <translation>Отмена</translation>
@@ -762,9 +849,19 @@ Your choice:</source>
         <comment>showTripcodeText</comment>
         <translation>Я - вниманиешлюха!</translation>
     </message>
+    <message>
+        <source>Show password</source>
+        <comment>showPasswordText</comment>
+        <translation>Показать пароль</translation>
+    </message>
 </context>
 <context>
-    <name>initBaseThread</name>
+    <name>initBaseBoard</name>
+    <message>
+        <source>AJAX request returned status</source>
+        <comment>ajaxErrorText</comment>
+        <translation>AJAX-запрос вернул статус</translation>
+    </message>
     <message>
         <source>User was banned for this post</source>
         <comment>bannedForText</comment>
@@ -781,14 +878,54 @@ Your choice:</source>
         <translation>Тред закрыт</translation>
     </message>
     <message>
+        <source>Close thread</source>
+        <comment>closeThreadText</comment>
+        <translation>Закрыть тред</translation>
+    </message>
+    <message>
+        <source>Delete post</source>
+        <comment>fixedText</comment>
+        <translation>Удалить пост</translation>
+    </message>
+    <message>
+        <source>Delete thread</source>
+        <comment>fixedText</comment>
+        <translation>Удалить тред</translation>
+    </message>
+    <message>
+        <source>If password is empty, current hashpass will be used</source>
+        <comment>enterPasswordText</comment>
+        <translation>Если пароль пуст, будет использован текущий хешпасс</translation>
+    </message>
+    <message>
+        <source>Enter password</source>
+        <comment>enterPasswordTitle</comment>
+        <translation>Введите пароль</translation>
+    </message>
+    <message>
         <source>Fixed</source>
         <comment>fixedText</comment>
         <translation>Закрепленный</translation>
     </message>
     <message>
+        <source>Fix thread</source>
+        <comment>fixThreadText</comment>
+        <translation>Закрепить тред</translation>
+    </message>
+    <message>
         <source>Hide post form</source>
         <comment>hidePostFormText</comment>
         <translation>Скрыть форму постинга</translation>
+    </message>
+    <message>
+        <source>You are not logged in!</source>
+        <comment>notLoggedInText</comment>
+        <translation>Вы не залогинены!</translation>
+    </message>
+    <message>
+        <source>Open thread</source>
+        <comment>openThreadText</comment>
+        <translation>Открыть тред</translation>
     </message>
     <message>
         <source>Send</source>
@@ -804,6 +941,11 @@ Your choice:</source>
         <source>Post:</source>
         <comment>postFormInputText</comment>
         <translation>Пост:</translation>
+    </message>
+    <message>
+        <source>Comment. Max length %1</source>
+        <comment>postFormInputTextPlaceholder</comment>
+        <translation>Комментарий. Макс. длина %1</translation>
     </message>
     <message>
         <source>Captcha:</source>
@@ -846,6 +988,11 @@ Your choice:</source>
         <translation>Достигнут лимит постов</translation>
     </message>
     <message>
+        <source>This user is registered</source>
+        <comment>registeredText</comment>
+        <translation>Этот пользователь зарегистрирован</translation>
+    </message>
+    <message>
         <source>Answer in this thread</source>
         <comment>showPostFormText</comment>
         <translation>Ответить в тред</translation>
@@ -856,64 +1003,69 @@ Your choice:</source>
         <translation>Создать тред</translation>
     </message>
     <message>
-        <source>Delete post</source>
-        <comment>fixedText</comment>
-        <translation>Удалить пост</translation>
-    </message>
-    <message>
-        <source>Delete thread</source>
-        <comment>fixedText</comment>
-        <translation>Удалить тред</translation>
-    </message>
-    <message>
-        <source>You are not logged in!</source>
-        <comment>notLoggedInText</comment>
-        <translation>Вы не залогинены!</translation>
-    </message>
-    <message>
-        <source>Comment. Max length %1</source>
-        <comment>postFormInputTextPlaceholder</comment>
-        <translation>Комментарий. Макс. длина %1</translation>
-    </message>
-    <message>
-        <source>AJAX request returned status</source>
-        <comment>ajaxErrorText</comment>
-        <translation>AJAX-запрос вернул статус</translation>
-    </message>
-    <message>
-        <source>This user is registered</source>
-        <comment>registeredText</comment>
-        <translation>Этот пользователь зарегистрирован</translation>
-    </message>
-    <message>
-        <source>Close thread</source>
-        <comment>closeThreadText</comment>
-        <translation>Закрыть тред</translation>
-    </message>
-    <message>
-        <source>Fix thread</source>
-        <comment>fixThreadText</comment>
-        <translation>Закрепить тред</translation>
-    </message>
-    <message>
-        <source>Open thread</source>
-        <comment>openThreadText</comment>
-        <translation>Открыть тред</translation>
-    </message>
-    <message>
         <source>Unfix thread</source>
         <comment>unfixThreadText</comment>
         <translation>Открепить тред</translation>
     </message>
     <message>
-        <source>Enter password</source>
-        <comment>enterPasswordTitle</comment>
-        <translation>Введите пароль</translation>
+        <source>Ban user</source>
+        <comment>banUserText</comment>
+        <translation>Забанить пользователя</translation>
     </message>
     <message>
-        <source>If password is empty, current hashpass will be used</source>
-        <comment>enterPasswordText</comment>
-        <translation>Если пароль пуст, будет использован текущий хешпасс</translation>
+        <source>All boards</source>
+        <comment>boardName</comment>
+        <translation>Все доски</translation>
+    </message>
+    <message>
+        <source>Expiration time:</source>
+        <comment>banExpiresLabelText</comment>
+        <translation>Истекает:</translation>
+    </message>
+    <message>
+        <source>Level:</source>
+        <comment>banLevelLabelText</comment>
+        <translation>Уровень:</translation>
+    </message>
+    <message>
+        <source>Not banned</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Не забанен</translation>
+    </message>
+    <message>
+        <source>Posting prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещен постинг</translation>
+    </message>
+    <message>
+        <source>Posting and reading prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещены постинг и чтение</translation>
+    </message>
+    <message>
+        <source>Reason:</source>
+        <comment>banReasonLabelText</comment>
+        <translation>Причина:</translation>
+    </message>
+    <message>
+        <source>Board:</source>
+        <comment>boardLabelText</comment>
+        <translation>Доска:</translation>
+    </message>
+    <message>
+        <source>Hide/show</source>
+        <comment>showHidePostText</comment>
+        <translation>Скрыть/показать</translation>
+    </message>
+    <message>
+        <source>You don&apos;t have to enter captcha</source>
+        <comment>noCaptchaText</comment>
+        <translation>Вам не нужно вводить капчу</translation>
+    </message>
+    <message>
+        <source>Posts without captcha left:</source>
+        <comment>captchaQuotaText</comment>
+        <translation>Осталось постов без капчи:</translation>
     </message>
 </context>
 <context>
@@ -1189,6 +1341,40 @@ The default is 0 (do not archive).</source>
         <translation>Максимальное количество архивируемых тредов на каждой доске.
 По умолчанию 0 (не архивировать).</translation>
     </message>
+    <message>
+        <source>Determines if poster city name should be guessed on boards that allow this (e.g. /int/).
+This operation is rather heavy, so you may turn it off.
+The default is true.</source>
+        <translation>Определяет, угадывать ли город автора поста на досках, где это разрешено (напр. /int/).
+Эта операция довольно &quot;тяжелая&quot;, поэтому вы можете отключить ее.
+По умолчанию true.</translation>
+    </message>
+    <message>
+        <source>Private codecha key.
+Is stored locally, does not appear anywhere in any HTML pages or other resources.</source>
+        <translation>Закрытый ключ кодечи.
+Хранится локально, не появляется ни в каких HTML-страницах или других ресурсах.</translation>
+    </message>
+    <message>
+        <source>Public key for codecha service.
+Apperas in the HTML pages.</source>
+        <translation>Открытый ключ сервиса кодечи.
+Появляется в HTML-страницах.</translation>
+    </message>
+    <message>
+        <source>Maximum count of extra posts a user may make before solving captcha again.
+The default is 0 (solve captcha every time).</source>
+        <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи.
+По умолчанию 0 (капча вводится каждый раз).</translation>
+    </message>
+    <message>
+        <source>MIME types of files allowed for attaching.
+Must be separated by commas. Wildcard matching is used.
+The default is image/png,image/jpeg,image/gif.</source>
+        <translation>MIME-типы файлов, которые разрешено прикреплять.
+Должны быть разделены запятыми. Используется шаблон wildcard.
+По умолчанию image/png,image/jpeg,image/gif.</translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>
@@ -1196,6 +1382,11 @@ The default is 0 (do not archive).</source>
         <source>/int/ernational</source>
         <comment>board title</comment>
         <translation>/int/ernational</translation>
+    </message>
+    <message>
+        <source>Vladimir Putin</source>
+        <comment>defaultUserName</comment>
+        <translation>Владимир Путин</translation>
     </message>
 </context>
 <context>
@@ -1253,6 +1444,16 @@ The default is 0 (do not archive).</source>
         <source>/pr/ogramming</source>
         <comment>board title</comment>
         <translation>Программирование</translation>
+    </message>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
     </message>
 </context>
 <context>
@@ -1386,6 +1587,11 @@ The default is 0 (do not archive).</source>
         <source>Refuge</source>
         <comment>board title</comment>
         <translation>Убежище</translation>
+    </message>
+    <message>
+        <source>Whiner</source>
+        <comment>defaultUserName</comment>
+        <translation>Нытик</translation>
     </message>
 </context>
 <context>
@@ -1544,6 +1750,19 @@ The default is 0 (do not archive).</source>
     </message>
 </context>
 <context>
+    <name>socBoard</name>
+    <message>
+        <source>Life of the party</source>
+        <comment>defaultUserName</comment>
+        <translation>Душа компании</translation>
+    </message>
+    <message>
+        <source>Social life</source>
+        <comment>board title</comment>
+        <translation>Жизнь в обществе</translation>
+    </message>
+</context>
+<context>
     <name>testBan</name>
     <message>
         <source>Internal error</source>
@@ -1598,6 +1817,21 @@ The default is 0 (do not archive).</source>
         <comment>description</comment>
         <translation>Файл слишком большой</translation>
     </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>File type is not supported</source>
+        <comment>description</comment>
+        <translation>Тип файла не поддерживается</translation>
+    </message>
 </context>
 <context>
     <name>testRequest</name>
@@ -1628,11 +1862,6 @@ The default is 0 (do not archive).</source>
         <translation>Кб</translation>
     </message>
     <message>
-        <source>Anonymous</source>
-        <comment>name</comment>
-        <translation>Аноним</translation>
-    </message>
-    <message>
         <source>Unknown country</source>
         <comment>countryName</comment>
         <translation>Неизвестная страна</translation>
@@ -1644,6 +1873,11 @@ The default is 0 (do not archive).</source>
         <source>Video games</source>
         <comment>board title</comment>
         <translation>Видеоигры</translation>
+    </message>
+    <message>
+        <source>PC Nobleman</source>
+        <comment>defaultUserName</comment>
+        <translation>Пекабоярин</translation>
     </message>
 </context>
 </TS>

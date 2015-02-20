@@ -18,8 +18,17 @@
 
 #include <exception>
 
-static QMutex mutex;
-static QMap<odb::transaction *, int> transactions;
+class Hack : public odb::transaction
+{
+public:
+    int counter;
+public:
+    explicit Hack(odb::transaction_impl *impl) :
+        odb::transaction(impl)
+    {
+        counter = 1;
+    }
+};
 
 Transaction::Transaction(bool commitOnDestruction) :
     CommitOnDestruction(commitOnDestruction)
@@ -41,20 +50,17 @@ void Transaction::commit()
     if (finalized)
         return;
     try {
-        odb::transaction &t = odb::transaction::current();
-        QMutexLocker locker(&mutex);
-        if (transactions.value(&t) > 1) {
-            transactions[&t] -= 1;
+        Hack *h = reinterpret_cast<Hack *>(&odb::transaction::current());
+        if (h->counter > 1) {
+            h->counter -= 1;
         } else {
-            transactions.remove(&t);
-            locker.unlock();
             try {
-                t.commit();
-                delete &t;
+                h->commit();
+                odb::database *db = &h->database();
+                delete h;
+                delete db;
             } catch (const std::exception &e) {
                 qDebug() << e.what();
-                locker.relock();
-                transactions.insert(&t, 1);
                 return;
             }
         }
@@ -81,8 +87,7 @@ void Transaction::reset()
     if (!finalized)
         return;
     if (odb::transaction::has_current()) {
-        QMutexLocker locker(&mutex);
-        transactions[&odb::transaction::current()] += 1;
+        reinterpret_cast<Hack *>(&odb::transaction::current())->counter += 1;
     } else {
         QString storagePath = Tools::storagePath();
         if (storagePath.isEmpty())
@@ -93,9 +98,7 @@ void Transaction::reset()
         try {
             odb::database *db = new odb::sqlite::database(Tools::toStd(fileName),
                                                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-            odb::transaction *t = new odb::transaction(db->begin());
-            QMutexLocker locker(&mutex);
-            transactions.insert(t, 1);
+            new Hack(db->begin());
         } catch (const std::exception &e) {
             qDebug() << e.what();
             return;
@@ -109,20 +112,17 @@ void Transaction::rollback()
     if (finalized)
         return;
     try {
-        odb::transaction &t = odb::transaction::current();
-        QMutexLocker locker(&mutex);
-        if (transactions.value(&t) > 1) {
-            transactions[&t] -= 1;
+        Hack *h = reinterpret_cast<Hack *>(&odb::transaction::current());
+        if (h->counter > 1) {
+            h->counter -= 1;
         } else {
-            transactions.remove(&t);
-            locker.unlock();
             try {
-                t.rollback();
-                delete &t;
+                h->rollback();
+                odb::database *db = &h->database();
+                delete h;
+                delete db;
             } catch (const std::exception &e) {
                 qDebug() << e.what();
-                locker.relock();
-                transactions.insert(&t, 1);
                 return;
             }
         }

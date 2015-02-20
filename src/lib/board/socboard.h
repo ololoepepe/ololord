@@ -1,5 +1,5 @@
-#ifndef INTBOARD_H
-#define INTBOARD_H
+#ifndef SOCBOARD_H
+#define SOCBOARD_H
 
 class QLocale;
 class QString;
@@ -7,15 +7,15 @@ class QString;
 #include "abstractboard.h"
 #include "../global.h"
 
-class OLOLORD_EXPORT intBoard : public AbstractBoard
+class OLOLORD_EXPORT socBoard : public AbstractBoard
 {
 public:
-    explicit intBoard();
+    explicit socBoard();
 public:
     QString defaultUserName(const QLocale &l) const;
+    bool isHidden() const;
     QString name() const;
     QString title(const QLocale &l) const;
-    bool showWhois() const;
 };
 
-#endif // INTBOARD_H
+#endif // SOCBOARD_H

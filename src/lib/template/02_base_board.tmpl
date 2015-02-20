@@ -10,6 +10,12 @@
 <% end %>
 <% end template %>
 
+<% template captchaField(std::string position) %>
+<% if ( "Top" == position ) %>
+    <div id="googleCaptcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
+<% end %>
+<% end template %>
+
 <% template createAction(std::string position) %>
 <% if ( content.postingEnabled ) %>
     <div class="createAction">
@@ -73,7 +79,8 @@
                             <b><%= postFormInputFile %></b>
                         </td>
                         <td class="postformField">
-                            <input type="file" name="image" id="postFormInputFile<%= position %>" accept="image/*" />
+                            <input type="file" name="image" id="postFormInputFile<%= position %>"
+                                   accept="<%= supportedFileTypes %>" />
                         </td>
                     </tr>
                     <tr>
@@ -85,18 +92,23 @@
                                    name="password" size="43" />
                         </td>
                     </tr>
-                    <% if ( content.captchaEnabled ) %>
-                        <tr>
-                            <td class="postformLabel">
-                                <b><%= postFormLabelCaptcha %></b>
-                            </td>
-                            <td id="googleCaptcha<%= position %>" class="postformField">
-                                <% if ( "Top" == position ) %>
-                                    <div id="googleCaptcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelCaptcha %></b>
+                        </td>
+                        <td id="googleCaptcha<%= position %>" class="postformField">
+                            <% if ( content.captchaEnabled ) %>
+                                <% include captchaField(position) %>
+                            <% else %>
+                                <% if ( content.captchaQuota > 0 ) %>
+                                    <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
+                                        <%= captchaQuota %></span>
+                                <% else %>
+                                    <span class="noCaptchaText"><%= noCaptchaText %></span>
                                 <% end %>
-                            </td>
-                        </tr>
-                    <% end %>
+                            <% end %>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </form>
@@ -121,10 +133,38 @@
 <% end template %>
 
 <% template boardTexts() %>
+<input type="hidden" id="showHidePostText" value="<%= showHidePostText %>" />
+<input type="hidden" id="banUserText" value="<%= banUserText %>" />
+<input type="hidden" id="boardLabelText" value="<%= boardLabelText %>" />
+<input type="hidden" id="banLevelLabelText" value="<%= banLevelLabelText %>" />
+<input type="hidden" id="banReasonLabelText" value="<%= banReasonLabelText %>" />
+<input type="hidden" id="banExpiresLabelText" value="<%= banExpiresLabelText %>" />
 <input type="hidden" id="enterPasswordText" value="<%= enterPasswordText %>" />
 <input type="hidden" id="enterPasswordTitle" value="<%= enterPasswordTitle %>" />
 <input type="hidden" id="ajaxErrorText" value="<%= ajaxErrorText %>" />
 <input type="hidden" id="notLoggedInText" value="<%= notLoggedInText %>" />
+<select id="availableBoardsSelect" class="select" style="display: none;">
+    <%foreach board in availableBoards %>
+        <% item %>
+            <% if ( board.name == content.currentBoard.name ) %>
+                <option value="<%= board.name %>" selected="true">[<%= board.name %>] <%= board.title %></option>
+            <% else %>
+                <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+            <% end %>
+        <% end %>
+    <% end %>
+</select>
+<select id="banLevelsSelect" class="select" style="display: none;">
+    <%foreach level in banLevels %>
+        <% item %>
+            <% if ( 1 == level.level ) %>
+                <option value="<%= level.level %>" selected="true"><%= level.description %></option>
+            <% else %>
+                <option value="<%= level.level %>"><%= level.description %></option>
+            <% end %>
+        <% end %>
+    <% end %>
+</select>
 <% end template %>
 
 <% template bannerHead() %>

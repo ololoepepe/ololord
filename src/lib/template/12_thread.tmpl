@@ -1,18 +1,27 @@
-<% c++ #include "controller/board.h" %>
+<% c++ #include "controller/thread.h" %>
 <% skin my_skin %>
-<% view board uses Content::Board extends base_board %>
+<% view thread uses Content::Thread extends base_board %>
 
-<% template post(Content::BaseBoard::Post post, Content::Board::Thread thread) %>
-<% if ( post.number == thread.opPost.number ) %>
-    <div id="opPost<%= post.number %>" class="opPost">
+<% template post(Content::BaseBoard::Post post, bool op) %>
+<% if ( op ) %>
+    <% if ( post.hidden ) %>
+        <div id="post<%= post.number %>" class="opPost hiddenPost">
+    <% else %>
+        <div id="post<%= post.number %>" class="opPost">
+    <% end %>
 <% else %>
-    <div id="post<%= post.number %>" class="post">
+    <% if ( post.hidden ) %>
+        <div id="post<%= post.number %>" class="post hiddenPost">
+    <% else %>
+        <div id="post<%= post.number %>" class="post">
+    <% end %>
 <% end %>
     <div class="postHeader">
-        <% if ( post.number == thread.opPost.number && thread.fixed ) %>
+        <a id="<%= post.number %>"></a>
+        <% if ( op && content.fixed ) %>
             <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>">
         <% end %>
-        <% if ( post.number == thread.opPost.number && thread.closed ) %>
+        <% if ( op && content.closed ) %>
             <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
         <% end %>
         <b><%= post.subject %></b>
@@ -37,19 +46,28 @@
         <% end %>
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
-            #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
+            <% if ( content.moder ) %>
+                #<a href="javascript:insertPostNumber('<%= post.number %>');"
+                    title="<%= post.ip %>"><%= post.number %></a>
+            <% else %>
+                #<a href="javascript:insertPostNumber('<%= post.number %>');"><%= post.number %></a>
+            <% end %>
         <% else %>
-            #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
+            <% if ( content.moder ) %>
+                #<a href="#<%= post.number %>" title="<%= post.ip %>"><%= post.number %></a>
+            <% else %>
+                #<a href="#<%= post.number %>"><%= post.number %></a>
+            <% end %>
         <% end %>
-        <% if ( content.moder && post.number == thread.opPost.number ) %>
-            <% if ( thread.fixed ) %>
+        <% if ( content.moder && op ) %>
+            <% if ( content.fixed ) %>
                 <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
                     <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
             <% else %>
                 <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
                     <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
             <% end %>
-            <% if ( thread.closed ) %>
+            <% if ( content.closed ) %>
                 <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
                     <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
             <% else %>
@@ -57,22 +75,39 @@
                     <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
             <% end %>
         <% end %>
-        <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>');">
-        <% if ( post.number == thread.opPost.number ) %>
+        <% if ( content.moder ) %>
+            <a href="javascript:banUser('<%= currentBoard.name %>', '<%= post.number %>');">
+                <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+        <% end %>
+        <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+        <% if ( op ) %>
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
         <% else %>
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
         <% end %>
-        <% if ( post.number == thread.opPost.number ) %>
-            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
-        <% end %>
-        <% if ( post.number == thread.opPost.number && thread.postLimitReached() ) %>
-            <span class="postLimitReached"><%= postLimitReachedText %></span>
-        <% elif ( post.number == thread.opPost.number && thread.bumpLimitReached() ) %>
-            <span class="bumpLimitReached"><%= bumpLimitReachedText %></span>
+        <% if ( op ) %>
+            <% if ( post.hidden ) %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% else %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
+        <% else %>
+            <% if ( post.hidden ) %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% else %>
+                <a id="hidePost<%= post.number %>"
+                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
         <% end %>
     </div>
-    <table class="threadPosts">
+    <table class="threadPost">
         <tbody>
             <tr>
                 <%foreach file in post.files %>
@@ -96,68 +131,6 @@
 </div>
 <% end template %>
 
-<% template threads() %>
-<% foreach thread in threads %>
-    <% item %>
-        <hr />
-        <div id="thread<%= thread.opPost.number %>">
-            <% include post(thread.opPost, thread) %>
-        </div>
-        <% if ( thread.omittedPosts() > 0 ) %>
-            <div>
-                <%= omittedPostsText %> <%= thread.omittedPosts() %>
-            </div>
-        <% else %>
-        <% end %>
-        <% foreach p in thread.lastPosts %>
-            <% item %>
-                <div>
-                    <% include post(p, thread) %>
-                </div>
-            <% end %>
-        <% end %>
-    <% end %>
-<% empty %>
-<% end %>
-<% end template %>
-
-<% template pages() %>
-<div class="pages">
-    <% if ( content.currentPage > 0 ) %>
-        <span class="pagesItem">
-        <% if ( 1 == content.currentPage ) %>
-            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= toPreviousPageText %></a>]
-        <% else %>
-            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= previousPage() %>.html">
-                <%= toPreviousPageText %>
-            </a>] 
-        <% end %>
-        </span>
-    <% end %>
-    <% foreach page in pages %>
-        <% item %>
-            <span class="pagesItem">
-            <% if ( page != content.currentPage ) %>
-                <% if ( page > 0 ) %>
-                    [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= page %>.html"><%= page %></a>]
-                <% else %>
-                    [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= page %></a>]
-                <% end %>
-            <% else %>
-                [<b><%= page %></b>]
-            <% end %>
-            </span>
-        <% end %>
-    <% empty %>
-    <% end %>
-    <% if ( content.currentPage < content.pages.size() - 1 ) %>
-        <span class="pagesItem">
-            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= nextPage() %>.html"><%= toNextPageText %></a>]
-        </span>
-    <% end %>
-</div>
-<%end template %>
-
 <% template render() %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -170,10 +143,10 @@
         <% include boardHead() %>
         <% include searchActionHead() %>
         <% include titleHead() %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/board.css">
-        <script type="text/javascript" src="/<%= sitePathPrefix %>js/board.js"></script>
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/thread.css">
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
     </head>
-    <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadBoard();">
+    <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadThread();">
         <% include baseTexts() %>
         <% include settingsTexts() %>
         <% include boardTexts() %>
@@ -189,27 +162,41 @@
         <% end %>
         <% include banner() %>
         <div class="theTitle">
-            <h1>
-                <%= currentBoard.title %>
-                <sup>[<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/rules.html"
-                         title="<%= boardRulesLinkText %>">?</a>]</sup>
-            </h1>
+            <% if ( !content.pageTitle.empty() ) %>
+                <h1><%= pageTitle %></h1>
+            <% else %>
+                <h1><%= currentBoard.title %> - <%= currentThread %></h1>
+            <% end %>
         </div>
         <% if ( !content.postingEnabled ) %>
-            <div class="postingDisabledMessage">
+            <div class="theMessage">
                 <h2><%= postingDisabledText %></h2>
+            </div>
+        <% elif ( content.postLimitReached() ) %>
+            <div class="theMessage">
+                <h2><%= postLimitReachedText %></h2>
             </div>
         <% else %>
             <hr />
         <% end %>
+        <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
+            <div class="theMessage">
+                <h3><%= bumpLimitReachedText %></h3>
+            </div>
+        <% end %>
         <% include createAction("Top") %>
-        <% include threads() %>
-        <% if ( content.postingEnabled ) %>
+        <hr />
+        <% include post(opPost, 1) %>
+        <% foreach p in posts %>
+            <% item %>
+                <% include post(p, 0) %>
+            <% end %>
+        <% empty %>
+        <% end %>
+        <% if ( content.postingEnabled && !content.postLimitReached() ) %>
             <hr />
         <% end %>
         <% include createAction("Bottom") %>
-        <hr />
-        <% include pages() %>
         <hr />
         <% include navbar() %>
         <% if ( !content.searchApiKey.empty() ) %>

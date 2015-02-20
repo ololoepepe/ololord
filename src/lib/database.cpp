@@ -37,13 +37,13 @@ namespace Database
 class FileTransaction
 {
 private:
-    const QString BoardName;
+    AbstractBoard * const board;
 private:
     bool commited;
     QStringList mfileNames;
 public:
-    explicit FileTransaction(const QString &boardName) :
-        BoardName(boardName)
+    explicit FileTransaction(AbstractBoard *b) :
+        board(b)
     {
         commited = false;
     }
@@ -51,7 +51,9 @@ public:
     {
         if (commited)
             return;
-        Tools::deleteFiles(BoardName, mfileNames);
+        if (!board)
+            return;
+        board->deleteFiles(mfileNames);
     }
 public:
     void commit()
@@ -64,10 +66,13 @@ public:
     }
     QString saveFile(const Tools::File &f, bool *ok = 0)
     {
+        if (!board)
+            return bRet(ok, false, QString());
         bool b = false;
-        QString fn = Tools::saveFile(f, BoardName, &b);
-        if (b)
-            mfileNames << fn;
+        QString fn = board->saveFile(f, &b);
+        if (!b)
+            return bRet(ok, false, QString());
+        mfileNames << fn;
         return bRet(ok, b, fn);
     }
 };
@@ -105,14 +110,17 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
         QDateTime dt = QDateTime::currentDateTimeUtc();
         if (!user) {
-            if (level < 1) {
+            if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
                 t.commit();
                 return bRet(error, QString(), true);
             }
             user = new BannedUser(board, ip, dt, postId);
+            user->setExpirationDateTime(expires);
+            user->setLevel(level);
+            user->setReason(reason);
             persist(user);
         } else {
-            if (level < 1) {
+            if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
                 t->erase(*user);
                 t.commit();
                 return bRet(error, QString(), true);
@@ -136,10 +144,15 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
                                quint64 threadNumber = 0L)
 {
     QString boardName = param.value("board");
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    TranslatorQt tq(l);
+    if (!board) {
+        return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
+                           tq.translate("createPostInternalt", "Internal logic error", "description"), false);
+    }
     if (!threadNumber)
         threadNumber = param.value("thread").toULongLong();
     Tools::Post post = Tools::toPost(param, files);
-    TranslatorQt tq(l);
     try {
         Transaction t;
         if (!t) {
@@ -163,9 +176,17 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
             return bRet(error, tq.translate("createPostInternalt", "No such thread", "error"), description,
                         tq.translate("createPostInternalt", "There is no such thread", "description"), false);
         }
-        if (Tools::captchaEnabled(boardName) && !Tools::isCaptchaValid(post.captcha)) {
-            return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description,
-                        tq.translate("createPostInternalt", "Captcha is missing or invalid", "description"), false);
+        QString ip = Tools::userIp(req);
+        if (Tools::captchaEnabled(boardName)) {
+            if (board->captchaQuota(ip)) {
+                board->captchaUsed(ip);
+            } else {
+                if (!board->isCaptchaValid(req, param, err)) {
+                    return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description,
+                                err, false);
+                }
+                board->captchaSolved(ip);
+            }
         }
         if (dt.isValid() && post.files.isEmpty()) {
             return bRet(error, tq.translate("createPostInternalt", "No file", "error"), description,
@@ -195,9 +216,9 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         if (!dt.isValid())
             dt = QDateTime::currentDateTimeUtc();
         QByteArray hp = Tools::hashpass(req);
-        QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread.data, Tools::userIp(req), post.password, hp));
+        QSharedPointer<Post> p(new Post(boardName, postNumber, dt, thread.data, ip, post.password, hp));
         p->setEmail(post.email);
-        FileTransaction ft(boardName);
+        FileTransaction ft(board);
         foreach (const Tools::File &f, post.files) {
             bool ok = false;
             ft.saveFile(f, &ok);
@@ -229,6 +250,9 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     TranslatorQt tq(l);
     if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
         return bRet(error, tq.translate("deletePostInternal", "Invalid board name", "error"), false);
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    if (!board)
+        return bRet(error, tq.translate("deletePostInternal", "Internal logic error", "error"), false);
     if (!postNumber)
         return bRet(error, tq.translate("deletePostInternal", "Invalid post number", "error"), false);
     try {
@@ -246,7 +270,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                 files += p.files();
             t->erase_query<Post>(odb::query<Post>::thread == thread->id());
             t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
-            Tools::deleteFiles(boardName, files);
+            board->deleteFiles(files);
         } else {
             Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
                                                      && odb::query<Post>::number == postNumber);
@@ -256,7 +280,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                 return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
             QStringList files = post->files();
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
-            Tools::deleteFiles(boardName, files);
+            board->deleteFiles(files);
         }
         t.commit();
         return bRet(error, QString(), true);
@@ -335,6 +359,47 @@ bool banUser(const QString &sourceBoard, quint64 postNumber, const QString &boar
              const QDateTime &expires, QString *error, const QLocale &l)
 {
     return banUserInternal(sourceBoard, postNumber, board, level, reason, expires, error, l);
+}
+
+bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber, const QString &board,
+             int level, const QString &reason, const QDateTime &expires, QString *error)
+{
+    TranslatorQt tq(req);
+    QStringList boardNames = AbstractBoard::boardNames();
+    if (board != "*" && (!boardNames.contains(board) || !boardNames.contains(sourceBoard)))
+        return bRet(error, tq.translate("banUser", "Invalid board name", "error"), false);
+    if (!postNumber)
+        return bRet(error, tq.translate("banUser", "Invalid post number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("banUser", "Not logged in", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == sourceBoard
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error)
+            return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("banUser", "No such post", "error"), false);
+        if (hashpass == post->hashpass())
+            return bRet(error, tq.translate("banUser", "You can't ban youself, baka", "error"), false);
+        int lvl = registeredUserLevel(req);
+        if (lvl < RegisteredUser::ModerLevel || registeredUserLevel(post->hashpass()) >= lvl)
+            return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+        if (lvl < RegisteredUser::AdminLevel) {
+            QStringList boards = registeredUserBoards(req);
+            if (!boards.contains("*") && (!boards.contains(sourceBoard) || !boards.contains(board)))
+                return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+        }
+        if (!banUser(sourceBoard, postNumber, board, level, reason, expires, error, tq.locale()))
+            return false;
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
 }
 
 void checkOutdatedEntries()

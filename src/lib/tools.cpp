@@ -35,9 +35,7 @@
 #include <cppcms/http_request.h>
 #include <cppcms/json.h>
 
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
+#include <magic.h>
 
 #include <cmath>
 #include <istream>
@@ -233,22 +231,6 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
-void deleteFiles(const QString &boardName, const QStringList &fileNames)
-{
-    if (boardName.isEmpty())
-        return;
-    QString path = storagePath() + "/img/" + boardName;
-    QFileInfo fi(path);
-    if (!fi.exists() || !fi.isDir())
-        return;
-    foreach (const QString &fn, fileNames) {
-        QFile::remove(path + "/" + fn);
-        QFileInfo fii(fn);
-        QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
-        QFile::remove(path + "/" + fii.baseName() + "s." + suff);
-    }
-}
-
 QString flagName(const QString &countryCode)
 {
     if (countryCode.length() != 2)
@@ -332,32 +314,6 @@ int ipBanLevel(const cppcms::http::request &req)
     return ipBanLevel(userIp(req));
 }
 
-bool isCaptchaValid(const QString &captcha)
-{
-    if (captcha.isEmpty())
-        return false;
-    try {
-        curlpp::Cleanup curlppCleanup;
-        Q_UNUSED(curlppCleanup)
-        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2";
-        url = url.arg(SettingsLocker()->value("Site/captcha_private_key").toString()).arg(captcha);
-        curlpp::Easy request;
-        request.setOpt(curlpp::options::Url(Tools::toStd(url)));
-        std::ostringstream os;
-        os << request;
-        QString result = Tools::fromStd(os.str());
-        result.remove(QRegExp(".*\"success\":\\s*\"?"));
-        result.remove(QRegExp("\"?\\,?\\s+.+"));
-        return !result.compare("true", Qt::CaseInsensitive);
-    } catch (curlpp::RuntimeError &e) {
-        qDebug() << e.what();
-        return false;
-    } catch(curlpp::LogicError &e) {
-        qDebug() << e.what();
-        return false;
-    }
-}
-
 QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
 {
     static const int MaxMsecs = 24 * BeQt::Hour;
@@ -396,6 +352,42 @@ void log(const cppcms::application &app, const QString &what)
 void log(const cppcms::http::request &req, const QString &what)
 {
     bLog("[" + userIp(req) + "] " + what);
+}
+
+QString mimeType(const QByteArray &data, bool *ok)
+{
+    if (data.isEmpty())
+        return bRet(ok, false, QString());
+    magic_t magicMimePredictor;
+    magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
+    if (!magicMimePredictor)
+        return bRet(ok, false, QString());
+    if (magic_load(magicMimePredictor, 0)) {
+        magic_close(magicMimePredictor);
+        return bRet(ok, false, QString());
+    }
+    QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
+    return bRet(ok, !result.isEmpty(), result);
+}
+
+QStringList news(const QLocale &l)
+{
+    QStringList *sl = Cache::news(l);
+    if (!sl) {
+        QString path = BDirTools::findResource("news", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return QStringList();
+        QString fn = BDirTools::localeBasedFileName(path + "/news.txt", l);
+        if (fn.isEmpty())
+            return QStringList();
+        sl = new QStringList(BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts));
+        if (!Cache::cacheNews(l, sl)) {
+            QStringList sll = *sl;
+            delete sl;
+            return sll;
+        }
+    }
+    return *sl;
 }
 
 FileList postFiles(const cppcms::http::request &request)
@@ -462,34 +454,6 @@ QStringList rules(const QString &prefix, const QLocale &l)
         }
     }
     return *sl;
-}
-
-QString saveFile(const File &f, const QString &boardName, bool *ok)
-{
-    QString storagePath = Tools::storagePath();
-    if (boardName.isEmpty() || storagePath.isEmpty())
-        return bRet(ok, false, QString());
-    QString path = storagePath + "/img/" + boardName;
-    if (!BDirTools::mkpath(path))
-        return bRet(ok, false, QString());
-    QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
-    QString suffix = QFileInfo(f.fileName).suffix();
-    QImage img;
-    QByteArray data = f.data;
-    QBuffer buff(&data);
-    buff.open(QIODevice::ReadOnly);
-    if (!img.load(&buff, suffix.toLower().toLatin1().data()))
-        return bRet(ok, false, QString());
-    if (img.height() > 200 || img.width() > 200)
-        img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    QString sfn = path + "/" + dt + "." + suffix;
-    if (!BDirTools::writeFile(sfn, f.data))
-        return bRet(ok, false, QString());
-    if (!suffix.compare("gif", Qt::CaseInsensitive))
-        suffix = "png";
-    if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
-        return bRet(ok, false, QString());
-    return bRet(ok, true, QFileInfo(sfn).fileName());
 }
 
 QString storagePath()
@@ -564,7 +528,6 @@ QByteArray toHashpass(const QString &s, bool *ok)
 Post toPost(const PostParameters &params, const FileList &files)
 {
     Post p;
-    p.captcha = params.value("g-recaptcha-response");
     p.email = params.value("email");
     p.files = files;
     p.name = params.value("name");

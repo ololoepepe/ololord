@@ -10,6 +10,11 @@ aBoard::aBoard()
     //
 }
 
+QString aBoard::defaultUserName(const QLocale &l) const
+{
+    return TranslatorQt(l).translate("aBoard", "Kamina", "defaultUserName");
+}
+
 QString aBoard::name() const
 {
     return "a";

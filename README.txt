@@ -53,7 +53,7 @@ the following commands:
 
  * "qmake [BEQT_PREFIX=<path>] [CPPCMS_PREFIX=<path>] [ODB_PREFIX=<path>]
    [ODB_QT_PREFIX=<path>] [LIBCURL_PREFIX=<path>] [CURLPP_PREFIX=<path>]
-   [BOOST_PREFIX=<path>] [SRCHILITE_PREFIX=<path>]"
+   [BOOST_PREFIX=<path>] [SRCHILITE_PREFIX=<path>] [LIBMAGIC_PREFIX=<path>]"
    Here, the paths to BeQt, CppCMS, ODB, ODB-Qt, libcurl, curlpp, boost and
    GNU Source-Highlight may be specified
 
@@ -125,6 +125,11 @@ When building ololord, you may pass some parameters to qmake:
  * "SRCHILITE_PREFIX=<path>"
    Set path to GNU Source-Highlight library. Must be used if the library
    was installed to a custom location and must be used anyway on Windows
+
+ * "LIBMAGIC_PREFIX=<path>"
+   Set path to libmagic library. Must be used if the library was installed
+   to a custom location and must be used anyway on Windows.
+   Note: The recommended implementation is http://www.darwinsys.com/file/
 
  * "LORD_PREFIX=<path>"
    Set install path. See the note below

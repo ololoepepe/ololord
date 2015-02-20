@@ -17,6 +17,9 @@ class json_rpc_server;
 
 #include <QList>
 
+#include <cppcms/json.h>
+
+#include <map>
 #include <string>
 
 class OLOLORD_EXPORT ActionAjaxHandler : public AbstractAjaxHandler
@@ -24,6 +27,7 @@ class OLOLORD_EXPORT ActionAjaxHandler : public AbstractAjaxHandler
 public:
     explicit ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv);
 public:
+    void banUser(const cppcms::json::object &params);
     void deletePost(std::string boardName, long long postNumber, std::string password);
     QList<Handler> handlers() const;
     void setThreadFixed(std::string boardName, long long postNumber, bool fixed);

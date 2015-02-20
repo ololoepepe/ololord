@@ -3,3 +3,17 @@
     margin-left: 80px;
     margin-right: 80px;
 }
+
+.news {
+    background-color: #DDDDDD;
+    margin-left: 80px;
+    margin-right: 80px;
+}
+
+.sectionHeader {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    white-space: nowrap;
+}

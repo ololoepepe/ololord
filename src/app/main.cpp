@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-beta4");
+        app.setApplicationVersion("0.1.0-beta5");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -627,6 +627,19 @@ void initSettings()
     nn = new BSettingsNode(QVariant::UInt, "archive_limit", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum archived thread count per board.\n"
                                                "The default is 0 (do not archive)."));
+    nn = new BSettingsNode(QVariant::Bool, "guess_city_name", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines if poster city name should be guessed on "
+                                               "boards that allow this (e.g. /int/).\n"
+                                               "This operation is rather heavy, so you may turn it off.\n"
+                                               "The default is true."));
+    nn = new BSettingsNode(QVariant::UInt, "captcha_quota", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum count of extra posts a user may make before "
+                                               "solving captcha again.\n"
+                                               "The default is 0 (solve captcha every time)."));
+    nn = new BSettingsNode(QVariant::String, "supported_file_types", n);
+    nn->setDescription(BTranslation::translate("initSettings", "MIME types of files allowed for attaching.\n"
+                                               "Must be separated by commas. Wildcard matching is used.\n"
+                                               "The default is image/png,image/jpeg,image/gif."));
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
@@ -638,6 +651,13 @@ void initSettings()
                                                "other resources."));
     nn = new BSettingsNode(QVariant::String, "captcha_public_key", n);
     nn->setDescription(BTranslation::translate("initSettings", "Public key for captcha service.\n"
+                                               "Apperas in the HTML pages."));
+    nn = new BSettingsNode(QVariant::String, "codecha_private_key", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Private codecha key.\n"
+                                               "Is stored locally, does not appear anywhere in any HTML pages or "
+                                               "other resources."));
+    nn = new BSettingsNode(QVariant::String, "codecha_public_key", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Public key for codecha service.\n"
                                                "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
     nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));

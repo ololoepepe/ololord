@@ -35,34 +35,27 @@ function reloadPage() {
     document.location.reload(true);
 }
 
-function showPasswordDialog(title, label, callback) {
-    var root = document.createElement("div"); 
-    var div = document.createElement("div");
-    var c = document.createElement("center");
-    var t = document.createElement("b");
-    t.appendChild(document.createTextNode(title));
-    c.appendChild(t);
-    div.appendChild(c);
-    div.appendChild(document.createElement("br"));
-    div.appendChild(document.createTextNode(label));
-    div.appendChild(document.createElement("br"));
-    var input = document.createElement("input");
-    input.type = "password";
-    input.maxlength = 150;
-    input.size = 30;
-    div.appendChild(input);
-    var sw = document.createElement("input");
-    sw.type = "checkbox";
-    sw.title = document.getElementById("showPasswordText").value;
-    sw.onclick = function() {
-        if (input.type === "password")
-            input.type = "text";
-        else if (input.type === "text")
-            input.type = "password";
-    };
-    div.appendChild(sw);
-    root.appendChild(div);
-    root.appendChild(document.createElement("br"));
+function showDialog(title, label, body, callback, afterShow) {
+    var root = document.createElement("div");
+    if (!!title && !!label) {
+        var div = document.createElement("div");
+        if (!!title) {
+            var c = document.createElement("center");
+            var t = document.createElement("b");
+            t.appendChild(document.createTextNode(title));
+            c.appendChild(t);
+            div.appendChild(c);
+            div.appendChild(document.createElement("br"));
+        }
+        if (!!label) {
+            div.appendChild(document.createTextNode(label));
+            div.appendChild(document.createElement("br"));
+        }
+        root.appendChild(div);
+        root.appendChild(document.createElement("br"));
+    }
+    if (!!body)
+        root.appendChild(body);
     var div2 = document.createElement("div");
     var dialog = null;
     var cancel = document.createElement("button");
@@ -73,7 +66,8 @@ function showPasswordDialog(title, label, callback) {
     div2.appendChild(cancel);
     var ok = document.createElement("button");
     ok.onclick = function() {
-        callback(input.value);
+        if (!!callback)
+            callback();
         dialog.close();
     };
     ok.innerHTML = document.getElementById("confirmButtonText").value;
@@ -82,7 +76,8 @@ function showPasswordDialog(title, label, callback) {
     dialog = picoModal({
         "content": root
     }).afterShow(function(modal) {
-        input.focus();
+        if (!!afterShow)
+            afterShow();
     }).afterClose(function(modal) {
         modal.destroy();
     });
