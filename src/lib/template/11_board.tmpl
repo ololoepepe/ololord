@@ -127,6 +127,7 @@
                         <% include postFile(file) %>
                     <% end %>
                 <% end %>
+                <input id="post<%= post.number %>RawText" type="hidden" value="<%= post.rawPostText %>" />
                 <td class="postText">
                     <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
                 </td>

@@ -40,6 +40,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string name;
         std::string nameRaw;
         unsigned long long number;
+        std::string rawPostText;
         bool showRegistered;
         std::string subject;
         std::string text;

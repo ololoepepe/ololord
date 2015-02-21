@@ -54,13 +54,13 @@ function showPasswordDialog(title, label, callback) {
 function editPost(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
-    var postText = document.getElementById("post" + postNumber + "Text");
+    var postText = document.getElementById("post" + postNumber + "RawText");
     if (!postText)
         return;
     var title = document.getElementById("editPostText").value;
     var div = document.createElement("div");
     var textarea = document.createElement("textarea");
-    textarea.appendChild(document.createTextNode(postText.innerText || postText.textContent));
+    textarea.appendChild(document.createTextNode(postText.value));
     div.appendChild(textarea);
     showDialog(title, null, div, function() {
         ajaxRequest("edit_post", [boardName, +postNumber, textarea.value], 5, function(res) {
