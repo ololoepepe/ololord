@@ -1,8 +1,9 @@
 blockquote {
     margin-top: 5px;
     margin-left: 10px;
-    overflow: auto;
-    max-height: 600px;
+    overflow-y: auto;
+    overflow-x: visible;
+    max-height: 800px;
     max-width: 2000px;
 }
 
