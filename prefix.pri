@@ -67,7 +67,7 @@ isEmpty(BOOST_PREFIX) {
     mac|unix {
         BOOST_PREFIX=/usr
     } else:win32 {
-        error(Boost path is not specified)
+        BOOST_PREFIX=$$(systemdrive)/Boost
     }
 }
 

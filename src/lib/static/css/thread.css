@@ -7,6 +7,10 @@ blockquote {
     max-width: 2000px;
 }
 
+.codeBlock {
+    /**/
+}
+
 span.spoiler, span.spoiler a {
     background: #BBBBBB;
     color: #BBBBBB;

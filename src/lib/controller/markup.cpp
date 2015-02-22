@@ -422,8 +422,7 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
                 qDebug() << e.what();
                 return;
             }
-            QString result = "<div style=\"overflow: auto; max-height: 280px; width: 800px;\">"
-                    + Tools::fromStd(out.str()) + "</div>";
+            QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
             t.replace(indStart, rx.matchedLength() + code.length() + 7, result);
             skip << qMakePair(indStart, result.length());
             indStart = rx.indexIn(t, indStart + result.length());

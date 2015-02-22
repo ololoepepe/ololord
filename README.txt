@@ -120,7 +120,7 @@ When building ololord, you may pass some parameters to qmake:
 
  * "BOOST_PREFIX=<path>"
    Set path to boost libraries. Must be used if boost libraries were
-   installed to a custom location and must be used anyway on Windows
+   installed to a custom location
 
  * "SRCHILITE_PREFIX=<path>"
    Set path to GNU Source-Highlight library. Must be used if the library
