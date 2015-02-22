@@ -15,11 +15,14 @@
 
 #include <string>
 
+namespace Translator
+{
+
 static QMutex translatorMutex(QMutex::Recursive);
 static QSet<QString> translatorNames;
 
-static QString translate(const char *context, const char *sourceText, const char *disambiguation, int n,
-                         const QLocale &l)
+static QString translateInternal(const char *context, const char *sourceText, const char *disambiguation, int n,
+                                 const QLocale &l)
 {
     QString src = QString::fromLatin1(sourceText);
     QMutexLocker locker(&translatorMutex);
@@ -40,9 +43,6 @@ static QString translate(const char *context, const char *sourceText, const char
     }
     return src;
 }
-
-namespace Translator
-{
 
 Qt::Qt(const QLocale &locale)
 {
@@ -66,7 +66,7 @@ QLocale Qt::locale() const
 
 QString Qt::translate(const char *context, const char *sourceText, const char *disambiguation, int n) const
 {
-    return ::translate(context, sourceText, disambiguation, n, mlocale);
+    return translateInternal(context, sourceText, disambiguation, n, mlocale);
 }
 
 Std::Std(const QLocale &locale)
@@ -91,14 +91,14 @@ QLocale Std::locale() const
 
 std::string Std::translate(const char *context, const char *sourceText, const char *disambiguation, int n) const
 {
-    return Tools::toStd(::translate(context, sourceText, disambiguation, n, mlocale));
+    return Tools::toStd(translateInternal(context, sourceText, disambiguation, n, mlocale));
 }
 
 void registerTranslator(const QString &name)
 {
     if (name.isEmpty())
         return;
-    QMutexLocker (&::translatorMutex);
+    QMutexLocker locker(&translatorMutex);
     translatorNames.insert(name);
 }
 
@@ -106,7 +106,7 @@ void unregisterTranslator(const QString &name)
 {
     if (name.isEmpty())
         return;
-    QMutexLocker (&::translatorMutex);
+    QMutexLocker locker(&translatorMutex);
     translatorNames.remove(name);
 }
 
