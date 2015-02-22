@@ -99,6 +99,18 @@ INCLUDEPATH *= $${LIBMAGIC_PREFIX}/include
 DEPENDPATH *= $${LIBMAGIC_PREFIX}/include
 LIBS *= -L$${LIBMAGIC_PREFIX}/lib/ -lmagic
 
+isEmpty(SQLITE_PREFIX) {
+    mac|unix {
+        SQLITE_PREFIX=/usr
+    } else:win32 {
+        error(SQLite path is not specified)
+    }
+}
+
+INCLUDEPATH *= $${SQLITE_PREFIX}/include
+DEPENDPATH *= $${SQLITE_PREFIX}/include
+LIBS *= -L$${SQLITE_PREFIX}/lib/ -lsqlite3
+
 mac|unix {
     isEmpty(LORD_PREFIX):LORD_PREFIX=/usr
 } else:win32 {

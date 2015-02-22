@@ -131,6 +131,10 @@ When building ololord, you may pass some parameters to qmake:
    to a custom location and must be used anyway on Windows.
    Note: The recommended implementation is http://www.darwinsys.com/file/
 
+ * "SQLITE_PREFIX=<path>"
+   Set path to SQLite library. Must be used if the library was installed
+   to a custom location and must be used anyway on Windows
+
  * "LORD_PREFIX=<path>"
    Set install path. See the note below
 
