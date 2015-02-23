@@ -1498,6 +1498,11 @@ The default is %1.</source>
         <comment>board title</comment>
         <translation>Мой маленький пони</translation>
     </message>
+    <message>
+        <source>Hands off my pony!!!!!11</source>
+        <comment>buttonText</comment>
+        <translation>Руки прочь от моих пони!!!!!11</translation>
+    </message>
 </context>
 <context>
     <name>prBoard</name>
