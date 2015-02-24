@@ -1,4 +1,5 @@
 var postPreviews = {};
+var lastPostPreview = null;
 
 function cumulativeOffset(element) {
     var top = 0;
@@ -253,25 +254,6 @@ function setThreadHidden(boardName, postNumber, hidden) {
     }
 }
 
-function viewPostStage2(link, postNumber, post) {
-    post.onmouseout = function(event) {
-        var list = traverseChildren(post);
-        var e = event.toElement || event.relatedTarget;
-        if (list.indexOf(e) >= 0)
-            return;
-        post.style.display = "none";
-    };
-    post.style.position = "absolute";
-    var offs = cumulativeOffset(link);
-    post.style.left = (offs.left + 50) + "px";
-    post.style.top = (offs.top - 50) + "px";
-    if (!postPreviews[postNumber])
-        postPreviews[postNumber] = post;
-    else
-        post.style.display = "";
-    document.body.appendChild(post);
-}
-
 function createPostFile(f) {
     if (!f)
         return null;
@@ -309,6 +291,35 @@ function createPostFile(f) {
     divImage.appendChild(aImage);
     file.appendChild(divImage);
     return file;
+}
+
+function viewPostStage2(link, postNumber, post) {
+    post.onmouseout = function(event) {
+        var next = post;
+        while (!!next) {
+            var list = traverseChildren(next);
+            var e = event.toElement || event.relatedTarget;
+            if (list.indexOf(e) >= 0)
+                return;
+            next = next.nextPostPreview;
+        }
+        post.style.display = "none";
+        if (post.previousPostPreview)
+            post.previousPostPreview.onmouseout(event);
+    };
+    post.style.position = "absolute";
+    var offs = cumulativeOffset(link);
+    post.style.left = (offs.left + 50) + "px";
+    post.style.top = (offs.top - 50) + "px";
+    if (!postPreviews[postNumber])
+        postPreviews[postNumber] = post;
+    else
+        post.style.display = "";
+    post.previousPostPreview = lastPostPreview;
+    if (!!lastPostPreview)
+        lastPostPreview.nextPostPreview = post;
+    lastPostPreview = post;
+    document.body.appendChild(post);
 }
 
 function viewPost(link, boardName, postNumber, threadNumber) {
