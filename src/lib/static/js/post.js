@@ -304,17 +304,16 @@ function viewPostStage2(link, postNumber, post) {
                 return;
             next = next.nextPostPreview;
         }
-        post.style.display = "none";
+        post.parentNode.removeChild(post);
         if (post.previousPostPreview)
             post.previousPostPreview.onmouseout(event);
     };
     post.onmouseover = function(event) {
         post.mustHide = false;
     };
-    post.style.position = "absolute";
-    var offs = cumulativeOffset(link);
+    /*var offs = cumulativeOffset(link);
     post.style.left = (offs.left + link.offsetWidth + 20) + "px";
-    post.style.top = offs.top + "px";
+    post.style.top = (offs.top - 40) + "px";*/
     if (!postPreviews[postNumber])
         postPreviews[postNumber] = post;
     else
@@ -327,6 +326,21 @@ function viewPostStage2(link, postNumber, post) {
     if (!!lastPostPreviewTimer)
         clearTimeout(lastPostPreviewTimer);
     document.body.appendChild(post);
+    post.style.position = "absolute";
+    var doc = document.documentElement;
+    var coords = link.getBoundingClientRect();
+    var linkCenter = coords.left + (coords.right - coords.left) / 2;
+    if (linkCenter < 0.6 * doc.clientWidth) {
+        post.style.maxWidth = doc.clientWidth - linkCenter + "px";
+        post.style.left = linkCenter + "px";
+    } else {
+        post.style.maxWidth = linkCenter + "px";
+        post.style.left = linkCenter - post.scrollWidth + "px";
+    }
+    post.style.top = (doc.clientHeight - coords.bottom >= post.scrollHeight)
+        ? (doc.scrollTop + coords.bottom - 4 + "px")
+        : (doc.scrollTop + coords.top - post.scrollHeight - 4 + "px");
+    post.style.zIndex = 9999;
 }
 
 function viewPost(link, boardName, postNumber, threadNumber) {
@@ -418,6 +432,6 @@ function noViewPost() {
         if (!lastPostPreview)
             return;
         if (!!lastPostPreview.mustHide)
-            lastPostPreview.style.display = "none";
+            lastPostPreview.parentNode.removeChild(lastPostPreview);
     }, 500);
 }
