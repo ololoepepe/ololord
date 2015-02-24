@@ -333,7 +333,7 @@ function viewPost(link, boardName, postNumber, threadNumber) {
                     c.appendChild(document.createTextNode(res["subject"]));
                     break;
                 case "postTemplateRegistered":
-                    if (!!res["showRegistered"] && !!res["showRegistered"])
+                    if (!!res["showRegistered"] && !!res["showTripcode"])
                         c.style.display = "";
                     break;
                 case "postTemplateName":
@@ -343,7 +343,7 @@ function viewPost(link, boardName, postNumber, threadNumber) {
                         c.innerHTML = res["name"];
                     break;
                 case "postTemplateTripcode":
-                    if (!!res["showRegistered"] && !!res["showRegistered"] && !!res["tripcode"])
+                    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"])
                         c.style.display = "";
                     break;
                 case "postTemplateWhois":
