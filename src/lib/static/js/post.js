@@ -413,9 +413,7 @@ function viewPost(link, boardName, postNumber, threadNumber) {
     }
 }
 
-function noViewPost(link, boardName, postNumber, threadNumber) {
-    if (!link || !boardName || isNaN(+postNumber) || isNaN(+threadNumber))
-        return;
+function noViewPost() {
     lastPostPreviewTimer = setTimeout(function() {
         if (!lastPostPreview)
             return;

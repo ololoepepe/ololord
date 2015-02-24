@@ -149,7 +149,7 @@ static void processWakabaMarkLink(QString &text, int start, int len, const QStri
         QString postNumber = cap.mid(2);
         QString param = "this, '" + boardName + "', " + postNumber + ", " + QString::number(threadNumber);
         QString a = "<a href=\"javascript:selectPost(" + postNumber + ", " + QString::number(threadNumber)
-                + ");\" onmouseover=\"viewPost(" + param + ");\" onmouseout=\"noViewPost(" + param + ");\">"
+                + ");\" onmouseover=\"viewPost(" + param + ");\" onmouseout=\"noViewPost();\">"
                 + cap.replace(">", "&gt;") + "</a>";
         t.replace(ind, rx.matchedLength(), a);
         skip << qMakePair(ind, a.length());
