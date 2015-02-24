@@ -147,6 +147,8 @@
 <% end template %>
 
 <% template boardTexts() %>
+<input type="hidden" id="currentBoardName" value="<%= currentBoard.name %>" />
+<input type="hidden" id="currentBoardTitle" value="<%= currentBoard.title %>" />
 <input type="hidden" id="editPostText" value="<%= editPostText %>" />
 <input type="hidden" id="showHidePostText" value="<%= showHidePostText %>" />
 <input type="hidden" id="banUserText" value="<%= banUserText %>" />
@@ -180,6 +182,33 @@
         <% end %>
     <% end %>
 </select>
+<div id="postTemplate" class="post" style="display: none;">
+    <div class="postHeader">
+        <b id="postTemplateSubject"></b>
+        <img id="postTemplateRegistered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
+             style="display: none;">
+        <span id="postTemplateName"></span>
+        <span id="postTemplateTripcode" class="tripcode" style="display: none;"></span>
+        <img id="postTemplateWhois" style="display: none;">
+        <span id="postTemplateDateTime"></span>
+        #<span id="postTemplateNumber"></span>
+    </div>
+    <table class="threadPost">
+        <tbody>
+            <tr id="postTemplateFiles">
+                <td class="postText">
+                    <blockquote id="postTemplateText"></blockquote>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span id="postTemplateBannedFor" class="bannedFor"
+                          style="display: none;"><%= bannedForText %></span>
+                <td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 <% end template %>
 
 <% template bannerHead() %>

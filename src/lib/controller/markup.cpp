@@ -147,8 +147,9 @@ static void processWakabaMarkLink(QString &text, int start, int len, const QStri
     while (ind >= 0) {
         QString cap = rx.cap();
         QString postNumber = cap.mid(2);
-        QString a = "<a href=\"javascript:selectPost('" + postNumber + "', '" + QString::number(threadNumber)
-                + "');\">" + cap.replace(">", "&gt;") + "</a>";
+        QString a = "<a href=\"javascript:selectPost(" + postNumber + ", " + QString::number(threadNumber)
+                + ");\" onmouseover=\"viewPost(this, '" + boardName + "', " + postNumber + ", "
+                + QString::number(threadNumber) + ");\">" + cap.replace(">", "&gt;") + "</a>";
         t.replace(ind, rx.matchedLength(), a);
         skip << qMakePair(ind, a.length());
         ind = rx.indexIn(t, ind + a.length());
@@ -528,8 +529,103 @@ void toHtml(QString *s)
     processPostText(*s, skip, "", 0L, false, &toHtml);
 }
 
+Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
+                                 quint64 threadNumber, bool *ok, QString *error)
+{
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (!board) {
+        return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"),
+                    Content::BaseBoard::Post());
+    }
+    bool b = false;
+    Post post = Database::getPost(req, boardName, postNumber, &b, error);
+    if (!b)
+        return bRet(ok, false, Content::BaseBoard::Post());
+    Content::BaseBoard::Post p;
+    QLocale l = Tools::locale(req);
+    p.bannedFor = post.bannedFor();
+    p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
+    p.email = Tools::toStd(post.email());
+    TranslatorStd ts(l);
+    foreach (const QString &fn, post.files()) {
+        QFileInfo fi(fn);
+        Content::BaseBoard::File *f = Cache::fileInfo(boardName, fi.fileName());
+        bool cache = true;
+        if (!f) {
+            f = new Content::BaseBoard::File;
+            f->sourceName = Tools::toStd(fi.fileName());
+            QString sz;
+            f->thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f->sizeX, f->sizeY, l));
+            f->size = Tools::toStd(sz);
+            cache = Cache::cacheFileInfo(boardName, fi.fileName(), f);
+        }
+        p.files.push_back(*f);
+        if (!cache)
+            delete f;
+    }
+    p.name = Tools::toStd(toHtml(post.name()));
+    if (p.name.empty())
+        p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+    else
+        p.name = "<span class=\"userName\">" + p.name + "</span>";
+    p.nameRaw = Tools::toStd(post.name());
+    if (p.nameRaw.empty())
+        p.nameRaw = Tools::toStd(board->defaultUserName(l));
+    p.number = post.number();
+    p.subject = Tools::toStd(post.subject());
+    p.text = processPostText(post.text(), boardName, threadNumber, board->processCode());
+    QByteArray hashpass = post.hashpass();
+    p.showRegistered = false;
+    p.showTripcode = post.showTripcode();
+    if (!hashpass.isEmpty()) {
+        int lvl = Database::registeredUserLevel(hashpass);
+        QString name;
+        p.showRegistered = lvl >= RegisteredUser::UserLevel;
+        if (!post.name().isEmpty()) {
+            if (lvl >= RegisteredUser::AdminLevel)
+                name = post.name();
+            else if (lvl >= RegisteredUser::ModerLevel)
+                name = "<span class=\"moderName\">" + toHtml(post.name()) + "</span>";
+            else if (lvl >= RegisteredUser::UserLevel)
+                name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
+        }
+        p.name = Tools::toStd(name);
+        if (p.name.empty())
+            p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+        QString s;
+        hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
+        QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
+        foreach (int i, bRangeD(0, tripcode.size() - 1)) {
+            QChar c(tripcode.at(i));
+            if (c.isLetterOrNumber() || c.isPunct())
+                s += c;
+            else
+                s += QString::number(uchar(tripcode.at(i)), 16);
+        }
+        p.tripcode = Tools::toStd(s);
+    }
+    if (board->showWhois()) {
+        QString countryCode = Tools::countryCode(post.posterIp());
+        p.flagName = Tools::toStd(Tools::flagName(countryCode));
+        if (!p.flagName.empty()) {
+            p.countryName = Tools::toStd(Tools::countryName(countryCode));
+            if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
+                p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
+        } else {
+            p.flagName = "default.png";
+            p.countryName = ts.translate("toController", "Unknown country", "countryName");
+        }
+    }
+    p.hidden = (Tools::cookieValue(req, "postHidden" + boardName + QString::number(post.number())) == "true");
+    p.ip = Tools::toStd(post.posterIp());
+    if (Database::registeredUserLevel(req) >= RegisteredUser::ModerLevel)
+        p.rawPostText = Tools::toStd(post.text());
+    return bRet(ok, true, error, QString(), p);
+}
+
 Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board, quint64 threadNumber,
-                                      const QLocale &l, const cppcms::http::request &req, bool processCode)
+                                      const QLocale &l, const cppcms::http::request &req)
 {
     if (!board)
         return Content::BaseBoard::Post();
@@ -567,7 +663,7 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         p.nameRaw = Tools::toStd(board->defaultUserName(l));
     p.number = post.number();
     p.subject = Tools::toStd(post.subject());
-    p.text = processPostText(post.text(), board->name(), threadNumber, processCode);
+    p.text = processPostText(post.text(), board->name(), threadNumber, board->processCode());
     QByteArray hashpass = post.hashpass();
     p.showRegistered = false;
     p.showTripcode = post.showTripcode();

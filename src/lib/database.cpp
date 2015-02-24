@@ -618,6 +618,31 @@ bool editPost(const cppcms::http::request &req, const QString &boardName, quint6
     }
 }
 
+Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok, QString *error)
+{
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (!board)
+        return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"), Post());
+    if (!postNumber)
+        return bRet(ok, false, error, tq.translate("getPost", "Invalid post number", "error"), Post());
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(ok, false, error, tq.translate("getPost", "Internal database error", "error"), Post());
+        Database::Result<Post> post = Database::queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                                     && odb::query<Post>::number == postNumber);
+        if (post.error)
+            return bRet(ok, false, error, tq.translate("getPost", "Internal database error", "error"), Post());
+        if (!post)
+            return bRet(ok, false, error, tq.translate("getPost", "No such post", "error"), Post());
+        t.commit();
+        return bRet(ok, true, error, QString(), *post);
+    }  catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), Post());
+    }
+}
+
 quint64 incrementPostCounter(const QString &boardName, QString *error, const QLocale &l)
 {
     TranslatorQt tq(l);

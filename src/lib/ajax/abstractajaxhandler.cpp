@@ -22,7 +22,7 @@ AbstractAjaxHandler::~AbstractAjaxHandler()
     //
 }
 
-bool AbstractAjaxHandler::testBan(const QString &boardName)
+bool AbstractAjaxHandler::testBan(const QString &boardName, bool readonly)
 {
     TranslatorStd ts(server.request());
     QString ip = Tools::userIp(server.request());
@@ -33,7 +33,7 @@ bool AbstractAjaxHandler::testBan(const QString &boardName)
         server.return_error(Tools::toStd(err));
         return false;
     }
-    if (inf.level >= 10) {
+    if ((readonly && inf.level >= 10) || (!readonly && inf.level >= 1)) {
         server.return_error(ts.translate("AbstractAjaxHandler", "You are banned", "error"));
         return false;
     }

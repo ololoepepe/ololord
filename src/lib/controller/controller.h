@@ -56,6 +56,9 @@ enum UserActionType
     WriteAction = 1
 };
 
+OLOLORD_EXPORT Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString &boardName,
+                                                quint64 postNumber, quint64 threadNumber, bool *ok = 0,
+                                                QString *error = 0);
 OLOLORD_EXPORT void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle = QString());
 OLOLORD_EXPORT void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
                                   bool postingEnabled, const QString &pageTitle = QString(),
@@ -74,7 +77,7 @@ OLOLORD_EXPORT QString toHtml(const QString &s);
 OLOLORD_EXPORT void toHtml(QString *s);
 OLOLORD_EXPORT Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board,
                                                      quint64 opPostId, const QLocale &l,
-                                                     const cppcms::http::request &req, bool processCode = false);
+                                                     const cppcms::http::request &req);
 
 }
 
