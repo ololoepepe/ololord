@@ -1,5 +1,6 @@
 var postPreviews = {};
 var lastPostPreview = null;
+var lastPostPreviewTimer = null;
 
 function cumulativeOffset(element) {
     var top = 0;
@@ -307,10 +308,13 @@ function viewPostStage2(link, postNumber, post) {
         if (post.previousPostPreview)
             post.previousPostPreview.onmouseout(event);
     };
+    post.onmouseover = function(event) {
+        post.mustHide = false;
+    };
     post.style.position = "absolute";
     var offs = cumulativeOffset(link);
-    post.style.left = (offs.left + 50) + "px";
-    post.style.top = (offs.top - 50) + "px";
+    post.style.left = (offs.left + link.offsetWidth + 20) + "px";
+    post.style.top = offs.top + "px";
     if (!postPreviews[postNumber])
         postPreviews[postNumber] = post;
     else
@@ -319,6 +323,9 @@ function viewPostStage2(link, postNumber, post) {
     if (!!lastPostPreview)
         lastPostPreview.nextPostPreview = post;
     lastPostPreview = post;
+    post.mustHide = true;
+    if (!!lastPostPreviewTimer)
+        clearTimeout(lastPostPreviewTimer);
     document.body.appendChild(post);
 }
 
@@ -404,4 +411,15 @@ function viewPost(link, boardName, postNumber, threadNumber) {
             list[i].id = "";
         viewPostStage2(link, postNumber, post);
     }
+}
+
+function noViewPost(link, boardName, postNumber, threadNumber) {
+    if (!link || !boardName || isNaN(+postNumber) || isNaN(+threadNumber))
+        return;
+    lastPostPreviewTimer = setTimeout(function() {
+        if (!lastPostPreview)
+            return;
+        if (!!lastPostPreview.mustHide)
+            lastPostPreview.style.display = "none";
+    }, 500);
 }
