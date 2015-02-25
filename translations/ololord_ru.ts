@@ -204,11 +204,6 @@ The default is %1.</source>
 Должны быть разделены запятыми. Используется шаблон wildcard.
 По умолчанию %1.</translation>
     </message>
-    <message>
-        <source>KB</source>
-        <comment>fileSize</comment>
-        <translation>Кб</translation>
-    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -611,6 +606,11 @@ The default is %1.</source>
         <source>No such post</source>
         <comment>error</comment>
         <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
@@ -1940,6 +1940,11 @@ The default is %1.</source>
 </context>
 <context>
     <name>toController</name>
+    <message>
+        <source>KB</source>
+        <comment>fileSize</comment>
+        <translation>Кб</translation>
+    </message>
     <message>
         <source>Unknown country</source>
         <comment>countryName</comment>

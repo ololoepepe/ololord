@@ -95,7 +95,7 @@ public:
     virtual QString supportedFileTypes() const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
-    virtual QString thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY, const QLocale &l) const;
+    virtual QString thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const;
     virtual QString title(const QLocale &l) const = 0;
 protected:
     virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);

@@ -543,85 +543,12 @@ Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString
     Post post = Database::getPost(req, boardName, postNumber, &b, error);
     if (!b)
         return bRet(ok, false, Content::BaseBoard::Post());
-    Content::BaseBoard::Post p;
-    QLocale l = Tools::locale(req);
-    p.bannedFor = post.bannedFor();
-    p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
-    p.email = Tools::toStd(post.email());
-    TranslatorStd ts(l);
-    foreach (const QString &fn, post.files()) {
-        QFileInfo fi(fn);
-        Content::BaseBoard::File *f = Cache::fileInfo(boardName, fi.fileName());
-        bool cache = true;
-        if (!f) {
-            f = new Content::BaseBoard::File;
-            f->sourceName = Tools::toStd(fi.fileName());
-            QString sz;
-            f->thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f->sizeX, f->sizeY, l));
-            f->size = Tools::toStd(sz);
-            cache = Cache::cacheFileInfo(boardName, fi.fileName(), f);
-        }
-        p.files.push_back(*f);
-        if (!cache)
-            delete f;
+
+    Content::BaseBoard::Post p = toController(post, board, threadNumber, tq.locale(), req);
+    if (!p.number) {
+        return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"),
+                    Content::BaseBoard::Post());
     }
-    p.name = Tools::toStd(toHtml(post.name()));
-    if (p.name.empty())
-        p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
-    else
-        p.name = "<span class=\"userName\">" + p.name + "</span>";
-    p.nameRaw = Tools::toStd(post.name());
-    if (p.nameRaw.empty())
-        p.nameRaw = Tools::toStd(board->defaultUserName(l));
-    p.number = post.number();
-    p.subject = Tools::toStd(post.subject());
-    p.text = processPostText(post.text(), boardName, threadNumber, board->processCode());
-    QByteArray hashpass = post.hashpass();
-    p.showRegistered = false;
-    p.showTripcode = post.showTripcode();
-    if (!hashpass.isEmpty()) {
-        int lvl = Database::registeredUserLevel(hashpass);
-        QString name;
-        p.showRegistered = lvl >= RegisteredUser::UserLevel;
-        if (!post.name().isEmpty()) {
-            if (lvl >= RegisteredUser::AdminLevel)
-                name = post.name();
-            else if (lvl >= RegisteredUser::ModerLevel)
-                name = "<span class=\"moderName\">" + toHtml(post.name()) + "</span>";
-            else if (lvl >= RegisteredUser::UserLevel)
-                name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
-        }
-        p.name = Tools::toStd(name);
-        if (p.name.empty())
-            p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
-        QString s;
-        hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
-        QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
-        foreach (int i, bRangeD(0, tripcode.size() - 1)) {
-            QChar c(tripcode.at(i));
-            if (c.isLetterOrNumber() || c.isPunct())
-                s += c;
-            else
-                s += QString::number(uchar(tripcode.at(i)), 16);
-        }
-        p.tripcode = Tools::toStd(s);
-    }
-    if (board->showWhois()) {
-        QString countryCode = Tools::countryCode(post.posterIp());
-        p.flagName = Tools::toStd(Tools::flagName(countryCode));
-        if (!p.flagName.empty()) {
-            p.countryName = Tools::toStd(Tools::countryName(countryCode));
-            if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
-                p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
-        } else {
-            p.flagName = "default.png";
-            p.countryName = ts.translate("toController", "Unknown country", "countryName");
-        }
-    }
-    p.hidden = (Tools::cookieValue(req, "postHidden" + boardName + QString::number(post.number())) == "true");
-    p.ip = Tools::toStd(post.posterIp());
-    if (Database::registeredUserLevel(req) >= RegisteredUser::ModerLevel)
-        p.rawPostText = Tools::toStd(post.text());
     return bRet(ok, true, error, QString(), p);
 }
 
@@ -633,45 +560,64 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
         return Content::BaseBoard::Post();
-    Content::BaseBoard::Post p;
-    p.bannedFor = post.bannedFor();
-    p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
-    p.email = Tools::toStd(post.email());
-    TranslatorStd ts(l);
-    foreach (const QString &fn, post.files()) {
-        QFileInfo fi(fn);
-        Content::BaseBoard::File *f = Cache::fileInfo(board->name(), fi.fileName());
-        bool cache = true;
-        if (!f) {
-            f = new Content::BaseBoard::File;
-            f->sourceName = Tools::toStd(fi.fileName());
-            QString sz;
-            f->thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f->sizeX, f->sizeY, l));
-            f->size = Tools::toStd(sz);
-            cache = Cache::cacheFileInfo(board->name(), fi.fileName(), f);
+    Content::BaseBoard::Post *p = Cache::post(board->name(), post.number());
+    bool inCache = p;
+    if (!p) {
+        p = new Content::BaseBoard::Post;
+        p->bannedFor = post.bannedFor();
+        p->email = Tools::toStd(post.email());
+        p->number = post.number();
+        p->subject = Tools::toStd(post.subject());
+        foreach (const QString &fn, post.files()) {
+            QFileInfo fi(fn);
+            Content::BaseBoard::File *f = Cache::fileInfo(board->name(), fi.fileName());
+            bool cache = true;
+            if (!f) {
+                f = new Content::BaseBoard::File;
+                f->sourceName = Tools::toStd(fi.fileName());
+                QString sz;
+                f->thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f->sizeX, f->sizeY));
+                f->size = Tools::toStd(sz);
+                cache = Cache::cacheFileInfo(board->name(), fi.fileName(), f);
+            }
+            p->files.push_back(*f);
+            if (!cache)
+                delete f;
         }
-        p.files.push_back(*f);
-        if (!cache)
-            delete f;
+        p->text = processPostText(post.text(), board->name(), threadNumber, board->processCode());
+        p->showRegistered = false;
+        p->showTripcode = post.showTripcode();
+        if (board->showWhois()) {
+            QString countryCode = Tools::countryCode(post.posterIp());
+            p->flagName = Tools::toStd(Tools::flagName(countryCode));
+            if (!p->flagName.empty()) {
+                p->countryName = Tools::toStd(Tools::countryName(countryCode));
+                if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
+                    p->cityName = Tools::toStd(Tools::cityName(post.posterIp()));
+            } else {
+                p->flagName = "default.png";
+                p->countryName = "Unknown country";
+            }
+        }
+        p->hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
+        p->ip = Tools::toStd(post.posterIp());
+        if (Database::registeredUserLevel(req) >= RegisteredUser::ModerLevel)
+            p->rawPostText = Tools::toStd(post.text());
     }
-    p.name = Tools::toStd(toHtml(post.name()));
-    if (p.name.empty())
-        p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+    p->dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
+    p->name = Tools::toStd(toHtml(post.name()));
+    if (p->name.empty())
+        p->name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
     else
-        p.name = "<span class=\"userName\">" + p.name + "</span>";
-    p.nameRaw = Tools::toStd(post.name());
-    if (p.nameRaw.empty())
-        p.nameRaw = Tools::toStd(board->defaultUserName(l));
-    p.number = post.number();
-    p.subject = Tools::toStd(post.subject());
-    p.text = processPostText(post.text(), board->name(), threadNumber, board->processCode());
+        p->name = "<span class=\"userName\">" + p->name + "</span>";
+    p->nameRaw = Tools::toStd(post.name());
+    if (p->nameRaw.empty())
+        p->nameRaw = Tools::toStd(board->defaultUserName(l));
     QByteArray hashpass = post.hashpass();
-    p.showRegistered = false;
-    p.showTripcode = post.showTripcode();
     if (!hashpass.isEmpty()) {
         int lvl = Database::registeredUserLevel(hashpass);
         QString name;
-        p.showRegistered = lvl >= RegisteredUser::UserLevel;
+        p->showRegistered = lvl >= RegisteredUser::UserLevel;
         if (!post.name().isEmpty()) {
             if (lvl >= RegisteredUser::AdminLevel)
                 name = post.name();
@@ -680,9 +626,9 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
             else if (lvl >= RegisteredUser::UserLevel)
                 name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
         }
-        p.name = Tools::toStd(name);
-        if (p.name.empty())
-            p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+        p->name = Tools::toStd(name);
+        if (p->name.empty())
+            p->name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
         QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
@@ -693,25 +639,18 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
             else
                 s += QString::number(uchar(tripcode.at(i)), 16);
         }
-        p.tripcode = Tools::toStd(s);
+        p->tripcode = Tools::toStd(s);
     }
-    if (board->showWhois()) {
-        QString countryCode = Tools::countryCode(post.posterIp());
-        p.flagName = Tools::toStd(Tools::flagName(countryCode));
-        if (!p.flagName.empty()) {
-            p.countryName = Tools::toStd(Tools::countryName(countryCode));
-            if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
-                p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
-        } else {
-            p.flagName = "default.png";
-            p.countryName = ts.translate("toController", "Unknown country", "countryName");
-        }
-    }
-    p.hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
-    p.ip = Tools::toStd(post.posterIp());
-    if (Database::registeredUserLevel(req) >= RegisteredUser::ModerLevel)
-        p.rawPostText = Tools::toStd(post.text());
-    return p;
+    Content::BaseBoard::Post pp = *p;
+    if (!inCache && !Cache::cachePost(board->name(), post.number(), p))
+        delete p;
+    TranslatorQt tq(l);
+    TranslatorStd ts(l);
+    for (std::list<Content::BaseBoard::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i)
+        i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("toController", "KB", "fileSize")));
+    if (board->showWhois() && "Unknown country" == pp.countryName)
+        pp.countryName = ts.translate("toController", "Unknown country", "countryName");
+    return pp;
 }
 
 }

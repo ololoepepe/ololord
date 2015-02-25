@@ -285,6 +285,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             board->deleteFiles(files);
             Cache::removeFileInfos(boardName, files);
         }
+        Cache::removePost(boardName, postNumber);
         t.commit();
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
@@ -611,6 +612,7 @@ bool editPost(const cppcms::http::request &req, const QString &boardName, quint6
             return bRet(error, tq.translate("editPost", "Text is too long", "error"), false);
         post->setText(text);
         update(post);
+        Cache::removePost(boardName, postNumber);
         t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {

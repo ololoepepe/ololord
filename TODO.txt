@@ -3,3 +3,4 @@
 [done] Add ability to edit posts
 [done] Check ban for AJAX requests
 [done] Add ability to view linked posts by hovering
+[done] Cache posts

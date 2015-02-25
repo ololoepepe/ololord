@@ -582,7 +582,7 @@ unsigned int AbstractBoard::threadsPerPage() const
     return s->value("Board/" + name() + "/threads_per_page", s->value("Board/threads_per_page", 20)).toUInt();
 }
 
-QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY, const QLocale &l) const
+QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const
 {
     if (fn.isEmpty())
         return "";
@@ -591,16 +591,15 @@ QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &size
         return "";
     QFileInfo fi(storagePath + "/img/" + name() + "/" + QFileInfo(fn).fileName());
     QString suffix = fi.suffix();
-    TranslatorQt tq(l);
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
-        size = QString::number(fi.size() / BeQt::Kilobyte) + tq.translate("AbstractBoard", "KB", "fileSize");
+        size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
         sizeX = 200;
         sizeY = 200;
         return "webm";
     }
     if (!suffix.compare("gif", Qt::CaseInsensitive))
         suffix = "png";
-    size = QString::number(fi.size() / BeQt::Kilobyte) + tq.translate("AbstractBoard", "KB", "fileSize");
+    size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
     QImage img(fi.filePath());
     if (!img.isNull()) {
         size += ", " + QString::number(img.width()) + "x" + QString::number(img.height());

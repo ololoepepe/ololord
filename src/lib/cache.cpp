@@ -29,6 +29,8 @@ static QCache<QString, IpBanInfoList> theIpBanInfoList;
 static QMutex ipBanInfoListMutex(QMutex::Recursive);
 static QCache<QString, QStringList> theNews;
 static QMutex newsMutex(QMutex::Recursive);
+static QCache<QString, Content::BaseBoard::Post> thePosts;
+static QMutex postsMutex(QMutex::Recursive);
 static QCache<QString, QStringList> theRules;
 static QMutex rulesMutex(QMutex::Recursive);
 static QCache<QString, QByteArray> staticFiles;
@@ -54,6 +56,7 @@ ClearCacheFunctionMap availableClearCacheFunctions()
         map.insert("file_infos", &clearFileInfosCache);
         map.insert("ip_ban_info_list", &clearIpBanInfoListCache);
         map.insert("news", &clearNewsCache);
+        map.insert("posts", &clearPostsCache);
         map.insert("rules", &clearRulesCache);
         map.insert("static_files", &clearStaticFilesCache);
         map.insert("translators", &clearTranslatorsCache);
@@ -68,6 +71,7 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
         map.insert("file_infos", &setFileInfosMaxCacheSize);
         map.insert("ip_ban_info_list", &setIpBanInfoListMaxCacheSize);
         map.insert("news", &setNewsMaxCacheSize);
+        map.insert("posts", &setPostsMaxCacheSize);
         map.insert("rules", &setRulesMaxCacheSize);
         map.insert("static_files", &setStaticFilesMaxCacheSize);
         map.insert("translators", &setTranslatorsMaxCacheSize);
@@ -82,6 +86,7 @@ QStringList availableCacheNames()
         names << "file_infos";
         names << "ip_ban_info_list";
         names << "news";
+        names << "posts";
         names << "rules";
         names << "static_files";
         names << "translators";
@@ -143,6 +148,19 @@ bool cacheNews(const QLocale &locale, QStringList *news)
     if (theNews.maxCost() < sz)
         return false;
     theNews.insert(locale.name(), news, sz);
+    return true;
+}
+
+bool cachePost(const QString &boardName, quint64 postNumber, Content::BaseBoard::Post *post)
+{
+    if (boardName.isEmpty() || !postNumber || !post)
+        return false;
+    QMutexLocker locker(&postsMutex);
+    do_once(init)
+        initCache(thePosts, "posts", defaultPostsCacheSize);
+    if (thePosts.maxCost() < 1)
+        return false;
+    thePosts.insert(boardName + "/" + QString::number(postNumber), post, 1);
     return true;
 }
 
@@ -222,6 +240,12 @@ void clearNewsCache()
     theNews.clear();
 }
 
+void clearPostsCache()
+{
+    QMutexLocker locker(&postsMutex);
+    thePosts.clear();
+}
+
 void clearRulesCache()
 {
     QMutexLocker locker(&rulesMutex);
@@ -283,6 +307,14 @@ QStringList *news(const QLocale &locale)
     return theNews.object(locale.name());
 }
 
+Content::BaseBoard::Post *post(const QString &boardName, quint64 postNumber)
+{
+    if (boardName.isEmpty() || !postNumber)
+        return 0;
+    QMutexLocker locker(&postsMutex);
+    return thePosts.object(boardName + "/" + QString::number(postNumber));
+}
+
 void removeFileInfos(const QString &boardName, const QStringList &fileNames)
 {
     if (boardName.isEmpty() || fileNames.isEmpty())
@@ -293,6 +325,14 @@ void removeFileInfos(const QString &boardName, const QStringList &fileNames)
             continue;
         fileInfos.remove(boardName + "/" + fn);
     }
+}
+
+void removePost(const QString &boardName, quint64 postNumber)
+{
+    if (boardName.isEmpty() || !postNumber)
+        return;
+    QMutexLocker locker(&postsMutex);
+    thePosts.remove(boardName + "/" + QString::number(postNumber));
 }
 
 QStringList *rules(const QLocale &locale, const QString &prefix)
@@ -345,6 +385,15 @@ void setNewsMaxCacheSize(int size)
         return;
     QMutexLocker locker(&newsMutex);
     theNews.setMaxCost(size);
+}
+
+
+void setPostsMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QMutexLocker locker(&postsMutex);
+    thePosts.setMaxCost(size);
 }
 
 void setRulesMaxCacheSize(int size)
