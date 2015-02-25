@@ -101,6 +101,8 @@ public:
     std::string showPostFormText;
     bool showWhois;
     std::string supportedFileTypes;
+    std::string toBottomText;
+    std::string toTopText;
     std::string unfixThreadText;
 };
 

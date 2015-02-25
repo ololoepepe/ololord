@@ -57,3 +57,24 @@
     font-weight: bold;
     color: #006000;
 }
+
+.navigationButton {
+    position: fixed;
+    right: 20px;
+    z-index: 9910;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
+
+.navigationButton:hover {
+    opacity: 1;
+    filter: alpha(opacity=100);
+}
+
+.navigationButtonTop {
+    top: 20px;
+}
+
+.navigationButtonBottom {
+    bottom: 20px;
+}

@@ -4,3 +4,5 @@
 [done] Check ban for AJAX requests
 [done] Add ability to view linked posts by hovering
 [done] Cache posts
+[done] Implement underlined markup
+[done] Add #top and #bottom anchors on thread/board pages

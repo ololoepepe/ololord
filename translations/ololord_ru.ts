@@ -1151,6 +1151,16 @@ Your choice:</source>
         <comment>editPostText</comment>
         <translation>Редактировать пост</translation>
     </message>
+    <message>
+        <source>Scroll to the bottom</source>
+        <comment>toBottomText</comment>
+        <translation>Отмотать вниз</translation>
+    </message>
+    <message>
+        <source>Scroll to the top</source>
+        <comment>toTopText</comment>
+        <translation>Отмотать наверх</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

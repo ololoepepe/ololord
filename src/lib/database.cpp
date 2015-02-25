@@ -142,11 +142,12 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
 static bool createPostInternal(const cppcms::http::request &req, const Tools::PostParameters &param,
                                const Tools::FileList &files, unsigned int bumpLimit, unsigned int postLimit,
                                QString *error, const QLocale &l, QString *description, QDateTime dt = QDateTime(),
-                               quint64 threadNumber = 0L)
+                               quint64 threadNumber = 0L, quint64 *pn = 0)
 {
     QString boardName = param.value("board");
     AbstractBoard *board = AbstractBoard::board(boardName);
     TranslatorQt tq(l);
+    bSet(pn, quint64(0L));
     if (!board) {
         return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
                            tq.translate("createPostInternalt", "Internal logic error", "description"), false);
@@ -238,6 +239,7 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
             update(thread);
         }
         t->persist(p);
+        bSet(pn, postNumber);
         ft.commit();
         return bRet(error, QString(), description, QString(), true);
     } catch (const odb::exception &e) {
@@ -432,14 +434,16 @@ void checkOutdatedEntries()
     }
 }
 
-bool createPost(CreatePostParameters &p)
+bool createPost(CreatePostParameters &p, quint64 *postNumber)
 {
+    bSet(postNumber, quint64(0L));
     TranslatorQt tq(p.locale);
     try {
         Transaction t;
         QString err;
         QString desc;
-        if (!createPostInternal(p.request, p.params, p.files, p.bumpLimit, p.postLimit, &err, p.locale, &desc))
+        if (!createPostInternal(p.request, p.params, p.files, p.bumpLimit, p.postLimit, &err, p.locale, &desc,
+                                QDateTime(), 0L, postNumber))
             return bRet(p.error, err, p.description, desc, false);
         t.commit();
         return bRet(p.error, QString(), p.description, QString(), true);

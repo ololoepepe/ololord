@@ -155,6 +155,9 @@
         <% include baseTexts() %>
         <% include settingsTexts() %>
         <% include boardTexts() %>
+        <% include navigationButton("bottom") %>
+        <% include navigationButton("top") %>
+        <a id="top"></a>
         <% include settings() %>
         <br />
         <% include navbar() %>
@@ -196,7 +199,6 @@
             <% item %>
                 <% include post(p, 0) %>
             <% end %>
-        <% empty %>
         <% end %>
         <% if ( content.postingEnabled && !content.postLimitReached() ) %>
             <hr />
@@ -208,6 +210,7 @@
             <br />
         <% end %>
         <% include searchAction("Bottom") %>
+        <a id="bottom"></a>
     </body>
 </html>
 <% end template %>

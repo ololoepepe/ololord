@@ -340,7 +340,7 @@ function viewPostStage2(link, postNumber, post) {
     post.style.top = (doc.clientHeight - coords.bottom >= post.scrollHeight)
         ? (doc.scrollTop + coords.bottom - 4 + "px")
         : (doc.scrollTop + coords.top - post.scrollHeight - 4 + "px");
-    post.style.zIndex = 9999;
+    post.style.zIndex = 9001;
 }
 
 function viewPost(link, boardName, postNumber, threadNumber) {

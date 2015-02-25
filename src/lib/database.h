@@ -234,7 +234,7 @@ OLOLORD_EXPORT bool banUser(const cppcms::http::request &req, const QString &sou
                             const QString &board, int level, const QString &reason, const QDateTime &expires,
                             QString *error = 0);
 OLOLORD_EXPORT void checkOutdatedEntries();
-OLOLORD_EXPORT bool createPost(CreatePostParameters &p);
+OLOLORD_EXPORT bool createPost(CreatePostParameters &p, quint64 *postNumber = 0);
 OLOLORD_EXPORT void createSchema();
 OLOLORD_EXPORT quint64 createThread(CreateThreadParameters &p);
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QString *error = 0,

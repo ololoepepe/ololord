@@ -246,6 +246,39 @@ static void processWakabaMarkBold(QString &text, int start, int len, const QStri
     text.replace(start, len, t);
 }
 
+static void processWakabaMarkUnderlined(QString &text, int start, int len, const QString &boardName,
+                                        quint64 threadNumber, bool processCode)
+{
+    if (start < 0 || len <= 0)
+        return;
+    SkipList skip;
+    QString t = text.mid(start, len);
+    int i = 0;
+    int s = -1;
+    QChar last = '\0';
+    SkipList links = externalLinks(t);
+    while (i < t.length()) {
+        if (i < t.length() - 2 && (t.mid(i, 3) == "***" || (t.mid(i, 3) == "___" && !in(links, i)))) {
+            if (s >= 0 && t.at(i) == last) {
+                t.replace(i, 3, "</u>");
+                t.replace(s, 3, "<u>");
+                skip << qMakePair(s, 3);
+                skip << qMakePair(i, 4);
+                s = -1;
+                last = '\0';
+            } else {
+                s = i;
+                last = t.at(i);
+            }
+            i += 3;
+        } else {
+            ++i;
+        }
+    }
+    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkBold);
+    text.replace(start, len, t);
+}
+
 static void processWakabaMarkSpoiler(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
                                      bool processCode)
 {
@@ -271,7 +304,7 @@ static void processWakabaMarkSpoiler(QString &text, int start, int len, const QS
             ++i;
         }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkBold);
+    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkUnderlined);
     text.replace(start, len, t);
 }
 

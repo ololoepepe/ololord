@@ -238,6 +238,9 @@
         <% include baseTexts() %>
         <% include settingsTexts() %>
         <% include boardTexts() %>
+        <% include navigationButton("bottom") %>
+        <% include navigationButton("top") %>
+        <a id="top"></a>
         <% include settings() %>
         <br />
         <% include navbar() %>
@@ -277,6 +280,7 @@
             <br />
         <% end %>
         <% include searchAction("Bottom") %>
+        <a id="bottom"></a>
     </body>
 </html>
 <% end template %>

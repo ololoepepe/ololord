@@ -231,10 +231,12 @@ void AbstractBoard::createPost(cppcms::application &app)
     p.postLimit = postLimit();
     p.error = &err;
     p.description = &desc;
-    if (!Database::createPost(p))
+    quint64 postNumber = 0L;
+    if (!Database::createPost(p, &postNumber))
         return Controller::renderError(app, err, desc);
     quint64 threadNumber = Tools::postParameters(req).value("thread").toULongLong();
-    Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html");
+    Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html#"
+                         + QString::number(postNumber));
     Tools::log(app, "Handled post creation");
 }
 
