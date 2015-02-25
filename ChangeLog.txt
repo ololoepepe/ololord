@@ -1,3 +1,13 @@
+=== ololord 0.1.0-beta6 (25 February 2015) ===
+    * Add WebM support
+    * Cache post file infos
+    * Add ability to edit posts
+    * Check ban for AJAX requests
+    * Add ability to view linked posts by hovering
+    * Cache posts
+    * Implement underlined markup
+    * Add #top and #bottom anchors on thread/board pages
+
 === ololord 0.1.0-beta5 (20 February 2015) ===
     * Add ability to post files of different types
     * Add news block to the home page

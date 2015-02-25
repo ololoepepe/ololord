@@ -90,6 +90,7 @@ static bool threadLessThan(const Thread &t1, const Thread &t2)
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
+const QString AbstractBoard::defaultFileTypes = "image/png,image/jpeg,image/gif,video/webm";
 
 AbstractBoard::AbstractBoard() :
     captchaQuotaMutex(QMutex::Recursive)
@@ -230,10 +231,12 @@ void AbstractBoard::createPost(cppcms::application &app)
     p.postLimit = postLimit();
     p.error = &err;
     p.description = &desc;
-    if (!Database::createPost(p))
+    quint64 postNumber = 0L;
+    if (!Database::createPost(p, &postNumber))
         return Controller::renderError(app, err, desc);
     quint64 threadNumber = Tools::postParameters(req).value("thread").toULongLong();
-    Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html");
+    Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html#"
+                         + QString::number(postNumber));
     Tools::log(app, "Handled post creation");
 }
 
@@ -281,7 +284,8 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
         QFile::remove(path + "/" + fn);
         QFileInfo fii(fn);
         QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
-        QFile::remove(path + "/" + fii.baseName() + "s." + suff);
+        if (suff.compare("webm", Qt::CaseInsensitive))
+            QFile::remove(path + "/" + fii.baseName() + "s." + suff);
     }
 }
 
@@ -327,12 +331,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.postCount = posts.size();
             thread.postingEnabled = postingEn && tt.postingEnabled();
             thread.opPost = Controller::toController(*posts.first().load(), this, tt.number(), ts.locale(),
-                                                     app.request(), processCode());
+                                                     app.request());
             foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
                 if (i <= 0)
                     break;
                 thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), this, tt.number(),
-                                                                     ts.locale(), app.request(), processCode()));
+                                                                     ts.locale(), app.request()));
             }
             thread.hidden = (Tools::cookieValue(app.request(), "postHidden" + name()
                                                 + QString::number(tt.number())) == "true");
@@ -421,11 +425,10 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         c.fixed = thread->fixed();
         pageTitle = posts.first().load()->subject();
         postingEn = postingEn && thread->postingEnabled();
-        c.opPost = Controller::toController(*posts.first().load(), this, thread->number(), ts.locale(),
-                                            app.request(), processCode());
+        c.opPost = Controller::toController(*posts.first().load(), this, thread->number(), ts.locale(), app.request());
         foreach (int j, bRangeD(1, posts.size() - 1)) {
             c.posts.push_back(Controller::toController(*posts.at(j).load(), this, thread->number(), ts.locale(),
-                                                       app.request(), processCode()));
+                                                       app.request()));
         }
         c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
         if (c.moder) {
@@ -534,6 +537,12 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         return bRet(ok, false, QString());
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
+    QString sfn = path + "/" + dt + "." + suffix;
+    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+        if (!BDirTools::writeFile(sfn, f.data))
+            return bRet(ok, false, QString());
+        return bRet(ok, true, QFileInfo(sfn).fileName());
+    }
     QImage img;
     QByteArray data = f.data;
     QBuffer buff(&data);
@@ -542,7 +551,6 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         return bRet(ok, false, QString());
     if (img.height() > 200 || img.width() > 200)
         img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    QString sfn = path + "/" + dt + "." + suffix;
     if (!BDirTools::writeFile(sfn, f.data))
         return bRet(ok, false, QString());
     if (!suffix.compare("gif", Qt::CaseInsensitive))
@@ -559,7 +567,6 @@ bool AbstractBoard::showWhois() const
 
 QString AbstractBoard::supportedFileTypes() const
 {
-    static const QString defaultFileTypes = "image/png,image/jpeg,image/gif";
     SettingsLocker s;
     return s->value("Board/" + name() + "/supported_file_types",
                     s->value("Board/supported_file_types", defaultFileTypes)).toString();
@@ -575,6 +582,46 @@ unsigned int AbstractBoard::threadsPerPage() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/threads_per_page", s->value("Board/threads_per_page", 20)).toUInt();
+}
+
+QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const
+{
+    if (fn.isEmpty())
+        return "";
+    QString storagePath = Tools::storagePath();
+    if (storagePath.isEmpty())
+        return "";
+    QFileInfo fi(storagePath + "/img/" + name() + "/" + QFileInfo(fn).fileName());
+    QString suffix = fi.suffix();
+    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+        size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
+        sizeX = 200;
+        sizeY = 200;
+        return "webm";
+    }
+    if (!suffix.compare("gif", Qt::CaseInsensitive))
+        suffix = "png";
+    size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
+    QImage img(fi.filePath());
+    if (!img.isNull()) {
+        size += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
+        sizeX = img.width();
+        sizeY = img.height();
+        if (sizeX > 200) {
+            double k = double(sizeX) / 200.0;
+            sizeX = 200;
+            sizeY = int(double(sizeY) / k);
+        }
+        if (sizeY > 200) {
+            double k = double(sizeY) / 200.0;
+            sizeY = 200;
+            sizeX = int(double(sizeX) / k);
+        }
+    } else {
+        sizeX = -1;
+        sizeY = -1;
+    }
+    return fi.baseName() + "s." + suffix;
 }
 
 void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Content::Board */*c*/)
@@ -735,10 +782,12 @@ void AbstractBoard::initBoards(bool reinit)
                                                     "before solving captcha again on this board.\n"
                                                     "The default is 0 (solve captcha every time)."));
         nnn = new BSettingsNode(QVariant::String, "supported_file_types", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on "
-                                                    "this board.\n"
-                                                    "Must be separated by commas. Wildcard matching is used.\n"
-                                                    "The default is image/png,image/jpeg,image/gif."));
+        BTranslation t = BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on "
+                                                 "this board.\n"
+                                                 "Must be separated by commas. Wildcard matching is used.\n"
+                                                 "The default is %1.");
+        t.setArgument(defaultFileTypes);
+        nnn->setDescription(t);
     }
     if (!reinit)
         qAddPostRoutine(&cleanupBoards);

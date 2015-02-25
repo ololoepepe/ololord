@@ -59,6 +59,10 @@
                 #<a href="#<%= post.number %>"><%= post.number %></a>
             <% end %>
         <% end %>
+        <% if ( content.moder ) %>
+            <a href="javascript:editPost('<%= currentBoard.name %>', '<%= post.number %>');">
+                <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+        <% end %>
         <% if ( content.moder && op ) %>
             <% if ( content.fixed ) %>
                 <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
@@ -115,8 +119,9 @@
                         <% include postFile(file) %>
                     <% end %>
                 <% end %>
+                <input id="post<%= post.number %>RawText" type="hidden" value="<%= post.rawPostText %>" />
                 <td class="postText">
-                    <blockquote><%= post.text | raw %></blockquote>
+                    <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
                 </td>
             </tr>
             <tr>
@@ -150,6 +155,9 @@
         <% include baseTexts() %>
         <% include settingsTexts() %>
         <% include boardTexts() %>
+        <% include navigationButton("bottom") %>
+        <% include navigationButton("top") %>
+        <a id="top"></a>
         <% include settings() %>
         <br />
         <% include navbar() %>
@@ -191,7 +199,6 @@
             <% item %>
                 <% include post(p, 0) %>
             <% end %>
-        <% empty %>
         <% end %>
         <% if ( content.postingEnabled && !content.postLimitReached() ) %>
             <hr />
@@ -203,6 +210,7 @@
             <br />
         <% end %>
         <% include searchAction("Bottom") %>
+        <a id="bottom"></a>
     </body>
 </html>
 <% end template %>

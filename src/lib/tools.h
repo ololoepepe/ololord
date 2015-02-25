@@ -68,6 +68,17 @@ struct Post
     QString text;
 };
 
+enum MaxInfo
+{
+    MaxEmailFieldLength = 1,
+    MaxNameFieldLength,
+    MaxSubjectFieldLength,
+    MaxTextFieldLength,
+    MaxPasswordFieldLength,
+    MaxFileCount,
+    MaxFileSize
+};
+
 typedef QMap<QString, QString> PostParameters;
 
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
@@ -91,6 +102,7 @@ OLOLORD_EXPORT QLocale locale(const cppcms::http::request &req,
                               const QLocale &defaultLocale = BCoreApplication::locale());
 OLOLORD_EXPORT void log(const cppcms::application &app, const QString &what);
 OLOLORD_EXPORT void log(const cppcms::http::request &req, const QString &what);
+OLOLORD_EXPORT unsigned int maxInfo(MaxInfo m, const QString &boardName = QString());
 OLOLORD_EXPORT QString mimeType(const QByteArray &data, bool *ok = 0);
 OLOLORD_EXPORT QStringList news(const QLocale &l);
 OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request);

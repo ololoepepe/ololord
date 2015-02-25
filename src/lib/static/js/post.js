@@ -1,3 +1,37 @@
+var postPreviews = {};
+var lastPostPreview = null;
+var lastPostPreviewTimer = null;
+
+function cumulativeOffset(element) {
+    var top = 0;
+    var left = 0;
+    do {
+        top += element.offsetTop || 0;
+        left += element.offsetLeft || 0;
+        element = element.offsetParent;
+    } while(element);
+    return {
+        "top": top,
+        "left": left
+    };
+};
+
+function traverseChildren(elem) {
+    var children = [];
+    var q = [];
+    q.push(elem);
+    function pushAll(elemArray) {
+        for (var i = 0; i < elemArray.length; ++i)
+            q.push(elemArray[i]);
+    }
+    while (q.length > 0) {
+        var elem = q.pop();
+        children.push(elem);
+        pushAll(elem.children);
+    }
+    return children;
+}
+
 function ajaxRequest(method, params, id, callback) {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
@@ -49,6 +83,40 @@ function showPasswordDialog(title, label, callback) {
     }, function() {
         input.focus();
     });
+}
+
+function editPost(boardName, postNumber) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var postText = document.getElementById("post" + postNumber + "RawText");
+    if (!postText)
+        return;
+    var title = document.getElementById("editPostText").value;
+    var div = document.createElement("div");
+    var textarea = document.createElement("textarea");
+    textarea.appendChild(document.createTextNode(postText.value));
+    div.appendChild(textarea);
+    showDialog(title, null, div, function() {
+        ajaxRequest("edit_post", [boardName, +postNumber, textarea.value], 5, function(res) {
+            reloadPage();
+        });
+    });
+}
+
+function setThreadFixed(boardName, postNumber, fixed) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    if (!getCookie("hashpass"))
+        return alert(document.getElementById("notLoggedInText").value);
+    ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, reloadPage);
+}
+
+function setThreadOpened(boardName, postNumber, opened) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    if (!getCookie("hashpass"))
+        return alert(document.getElementById("notLoggedInText").value);
+    ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, reloadPage);
 }
 
 function banUser(boardName, postNumber) {
@@ -132,22 +200,6 @@ function deletePost(boardName, postNumber, fromThread) {
     });
 }
 
-function setThreadFixed(boardName, postNumber, fixed) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    if (!getCookie("hashpass"))
-        return alert(document.getElementById("notLoggedInText").value);
-    ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, reloadPage);
-}
-
-function setThreadOpened(boardName, postNumber, opened) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    if (!getCookie("hashpass"))
-        return alert(document.getElementById("notLoggedInText").value);
-    ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, reloadPage);
-}
-
 function setPostHidden(boardName, postNumber, hidden) {
     if (!boardName || isNaN(+postNumber))
         return;
@@ -201,4 +253,185 @@ function setThreadHidden(boardName, postNumber, hidden) {
             "expires": -1, "path": "/"
         });
     }
+}
+
+function createPostFile(f) {
+    if (!f)
+        return null;
+    var sitePrefix = document.getElementById("sitePathPrefix").value;
+    var currentBoardName = document.getElementById("currentBoardName").value;
+    var file = document.createElement("td");
+    file.className = "postFile";
+    var divFileName = document.createElement("div");
+    divFileName.className = "postFileName";
+    var aFileName = document.createElement("a");
+    aFileName.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
+    aFileName.appendChild(document.createTextNode(f["sourceName"]));
+    divFileName.appendChild(aFileName);
+    file.appendChild(divFileName);
+    var divFileSize = document.createElement("div");
+    divFileSize.className = "postFileSize";
+    divFileSize.appendChild(document.createTextNode(f["size"]));
+    file.appendChild(divFileSize);
+    var divImage = document.createElement("div");
+    var aImage = document.createElement("a");
+    aImage.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
+    var image = document.createElement("img");
+    var sizeX = +f["sizeX"];
+    var sizeY = +f["sizeY"];
+    if (!isNaN(sizeX) && sizeX > 0)
+        image.width = sizeX;
+    if (!isNaN(sizeY) && sizeY > 0)
+        image.height = sizeY;
+    if ("webm" === f["thumbName"]) {
+        image.src = "/" + sitePrefix + "img/webm_logo.png";
+    } else {
+        image.src = "/" + sitePrefix + currentBoardName + "/" + f["thumbName"];
+    }
+    aImage.appendChild(image);
+    divImage.appendChild(aImage);
+    file.appendChild(divImage);
+    return file;
+}
+
+function viewPostStage2(link, postNumber, post) {
+    post.onmouseout = function(event) {
+        var next = post;
+        while (!!next) {
+            var list = traverseChildren(next);
+            var e = event.toElement || event.relatedTarget;
+            if (list.indexOf(e) >= 0)
+                return;
+            next = next.nextPostPreview;
+        }
+        post.parentNode.removeChild(post);
+        if (post.previousPostPreview)
+            post.previousPostPreview.onmouseout(event);
+    };
+    post.onmouseover = function(event) {
+        post.mustHide = false;
+    };
+    /*var offs = cumulativeOffset(link);
+    post.style.left = (offs.left + link.offsetWidth + 20) + "px";
+    post.style.top = (offs.top - 40) + "px";*/
+    if (!postPreviews[postNumber])
+        postPreviews[postNumber] = post;
+    else
+        post.style.display = "";
+    post.previousPostPreview = lastPostPreview;
+    if (!!lastPostPreview)
+        lastPostPreview.nextPostPreview = post;
+    lastPostPreview = post;
+    post.mustHide = true;
+    if (!!lastPostPreviewTimer)
+        clearTimeout(lastPostPreviewTimer);
+    document.body.appendChild(post);
+    post.style.position = "absolute";
+    var doc = document.documentElement;
+    var coords = link.getBoundingClientRect();
+    var linkCenter = coords.left + (coords.right - coords.left) / 2;
+    if (linkCenter < 0.6 * doc.clientWidth) {
+        post.style.maxWidth = doc.clientWidth - linkCenter + "px";
+        post.style.left = linkCenter + "px";
+    } else {
+        post.style.maxWidth = linkCenter + "px";
+        post.style.left = linkCenter - post.scrollWidth + "px";
+    }
+    post.style.top = (doc.clientHeight - coords.bottom >= post.scrollHeight)
+        ? (doc.scrollTop + coords.bottom - 4 + "px")
+        : (doc.scrollTop + coords.top - post.scrollHeight - 4 + "px");
+    post.style.zIndex = 9001;
+}
+
+function viewPost(link, boardName, postNumber, threadNumber) {
+    if (!link || !boardName || isNaN(+postNumber) || isNaN(+threadNumber))
+        return;
+    var post = postPreviews[postNumber];
+    if (!post)
+        post = document.getElementById("post" + postNumber);
+    if (!post) {
+        ajaxRequest("get_post", [boardName, +postNumber, +threadNumber], 6, function(res) {
+            post = document.getElementById("postTemplate");
+            if (!post)
+                return;
+            post = post.cloneNode(true);
+            post.id = "";
+            post.style.display = "";
+            var list = traverseChildren(post);
+            for (var i = 0; i < list.length; ++i) {
+                var c = list[i];
+                switch (c.id) {
+                case "postTemplateSubject":
+                    c.appendChild(document.createTextNode(res["subject"]));
+                    break;
+                case "postTemplateRegistered":
+                    if (!!res["showRegistered"] && !!res["showTripcode"])
+                        c.style.display = "";
+                    break;
+                case "postTemplateName":
+                    if (!!res["email"])
+                        c.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
+                    else
+                        c.innerHTML = res["name"];
+                    break;
+                case "postTemplateTripcode":
+                    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"])
+                        c.style.display = "";
+                    break;
+                case "postTemplateWhois":
+                    if (!!res["flagName"]) {
+                        c.style.display = "";
+                        c.href = "/" + document.getElementById("sitePathPrefix") + "img/flag/" + res["flagName"];
+                        c.title = res["countryName"];
+                        if (!!res["cityName"])
+                            c.title += ": " + res["cityName"];
+                    }
+                    break;
+                case "postTemplateDateTime":
+                    c.appendChild(document.createTextNode(res["dateTime"]));
+                    break;
+                case "postTemplateNumber":
+                    c.appendChild(document.createTextNode(res["number"]));
+                    break;
+                case "postTemplateFiles":
+                    var files = res["files"];
+                    if (!!files) {
+                        for (var i = 0; i < files.length; ++i) {
+                            var file = createPostFile(files[i]);
+                            if (!!file)
+                                c.insertBefore(file, c.children[c.children.length - 1]);
+                        }
+                    }
+                    break;
+                case "postTemplateText":
+                    c.innerHTML= res["text"];
+                    break;
+                case "postTemplateBannedFor":
+                    if (!!res["bannedFor"])
+                        c.style.display = "";
+                    break;
+                default:
+                    break;
+                }
+                c.id = "";
+            }
+            viewPostStage2(link, postNumber, post);
+        });
+    } else {
+        post = post.cloneNode(true);
+        post.className = post.className.replace("opPost", "post");
+        var list = traverseChildren(post);
+        for (var i = 0; i < list.length; ++i)
+            list[i].id = "";
+        viewPostStage2(link, postNumber, post);
+    }
+}
+
+function noViewPost() {
+    lastPostPreviewTimer = setTimeout(function() {
+        if (!lastPostPreview)
+            return;
+        if (!!lastPostPreview.mustHide)
+            lastPostPreview.parentNode.removeChild(lastPostPreview);
+    }, 500);
 }

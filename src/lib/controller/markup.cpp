@@ -1,6 +1,7 @@
 #include "controller.h"
 
 #include "baseboard.h"
+#include "cache.h"
 #include "database.h"
 #include "settingslocker.h"
 #include "stored/registereduser.h"
@@ -146,8 +147,10 @@ static void processWakabaMarkLink(QString &text, int start, int len, const QStri
     while (ind >= 0) {
         QString cap = rx.cap();
         QString postNumber = cap.mid(2);
-        QString a = "<a href=\"javascript:selectPost('" + postNumber + "', '" + QString::number(threadNumber)
-                + "');\">" + cap.replace(">", "&gt;") + "</a>";
+        QString param = "this, '" + boardName + "', " + postNumber + ", " + QString::number(threadNumber);
+        QString a = "<a href=\"javascript:selectPost(" + postNumber + ", " + QString::number(threadNumber)
+                + ");\" onmouseover=\"viewPost(" + param + ");\" onmouseout=\"noViewPost();\">"
+                + cap.replace(">", "&gt;") + "</a>";
         t.replace(ind, rx.matchedLength(), a);
         skip << qMakePair(ind, a.length());
         ind = rx.indexIn(t, ind + a.length());
@@ -243,6 +246,39 @@ static void processWakabaMarkBold(QString &text, int start, int len, const QStri
     text.replace(start, len, t);
 }
 
+static void processWakabaMarkUnderlined(QString &text, int start, int len, const QString &boardName,
+                                        quint64 threadNumber, bool processCode)
+{
+    if (start < 0 || len <= 0)
+        return;
+    SkipList skip;
+    QString t = text.mid(start, len);
+    int i = 0;
+    int s = -1;
+    QChar last = '\0';
+    SkipList links = externalLinks(t);
+    while (i < t.length()) {
+        if (i < t.length() - 2 && (t.mid(i, 3) == "***" || (t.mid(i, 3) == "___" && !in(links, i)))) {
+            if (s >= 0 && t.at(i) == last) {
+                t.replace(i, 3, "</u>");
+                t.replace(s, 3, "<u>");
+                skip << qMakePair(s, 3);
+                skip << qMakePair(i, 4);
+                s = -1;
+                last = '\0';
+            } else {
+                s = i;
+                last = t.at(i);
+            }
+            i += 3;
+        } else {
+            ++i;
+        }
+    }
+    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkBold);
+    text.replace(start, len, t);
+}
+
 static void processWakabaMarkSpoiler(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
                                      bool processCode)
 {
@@ -268,7 +304,7 @@ static void processWakabaMarkSpoiler(QString &text, int start, int len, const QS
             ++i;
         }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkBold);
+    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkUnderlined);
     text.replace(start, len, t);
 }
 
@@ -421,8 +457,7 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
                 qDebug() << e.what();
                 return;
             }
-            QString result = "<div style=\"overflow: auto; max-height: 280px; width: 800px;\">"
-                    + Tools::fromStd(out.str()) + "</div>";
+            QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
             t.replace(indStart, rx.matchedLength() + code.length() + 7, result);
             skip << qMakePair(indStart, result.length());
             indStart = rx.indexIn(t, indStart + result.length());
@@ -528,51 +563,87 @@ void toHtml(QString *s)
     processPostText(*s, skip, "", 0L, false, &toHtml);
 }
 
-Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board, quint64 threadNumber,
-                                      const QLocale &l, const cppcms::http::request &req, bool processCode)
+Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
+                                 quint64 threadNumber, bool *ok, QString *error)
 {
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (!board) {
+        return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"),
+                    Content::BaseBoard::Post());
+    }
+    bool b = false;
+    Post post = Database::getPost(req, boardName, postNumber, &b, error);
+    if (!b)
+        return bRet(ok, false, Content::BaseBoard::Post());
+
+    Content::BaseBoard::Post p = toController(post, board, threadNumber, tq.locale(), req);
+    if (!p.number) {
+        return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"),
+                    Content::BaseBoard::Post());
+    }
+    return bRet(ok, true, error, QString(), p);
+}
+
+Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board, quint64 threadNumber,
+                                      const QLocale &l, const cppcms::http::request &req)
+{
+    if (!board)
+        return Content::BaseBoard::Post();
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
         return Content::BaseBoard::Post();
-    Content::BaseBoard::Post p;
-    p.bannedFor = post.bannedFor();
-    p.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
-    p.email = Tools::toStd(post.email());
-    TranslatorQt tq(l);
-    TranslatorStd ts(l);
-    foreach (const QString &fn, post.files()) {
-        Content::BaseBoard::File f;
-        f.sourceName = Tools::toStd(QFileInfo(fn).fileName());
-        QFileInfo fi(storagePath + "/img/" + board->name() + "/" + QFileInfo(fn).fileName());
-        QString suffix = fi.suffix();
-        if (!suffix.compare("gif", Qt::CaseInsensitive))
-            suffix = "png";
-        f.thumbName = Tools::toStd(fi.baseName() + "s." + suffix);
-        QString s = QString::number(fi.size() / BeQt::Kilobyte) + tq.translate("toController", "KB", "fileSize");
-        QImage img(fi.filePath());
-        if (!img.isNull())
-            s += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
-        f.size = Tools::toStd(s);
-        p.files.push_back(f);
+    Content::BaseBoard::Post *p = Cache::post(board->name(), post.number());
+    bool inCache = p;
+    if (!p) {
+        p = new Content::BaseBoard::Post;
+        p->bannedFor = post.bannedFor();
+        p->email = Tools::toStd(post.email());
+        p->number = post.number();
+        p->subject = Tools::toStd(post.subject());
+        foreach (const QString &fn, post.files()) {
+            QFileInfo fi(fn);
+            Content::BaseBoard::File f;
+            f.sourceName = Tools::toStd(fi.fileName());
+            QString sz;
+            f.thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f.sizeX, f.sizeY));
+            f.size = Tools::toStd(sz);
+            p->files.push_back(f);
+        }
+        p->text = processPostText(post.text(), board->name(), threadNumber, board->processCode());
+        p->showRegistered = false;
+        p->showTripcode = post.showTripcode();
+        if (board->showWhois()) {
+            QString countryCode = Tools::countryCode(post.posterIp());
+            p->flagName = Tools::toStd(Tools::flagName(countryCode));
+            if (!p->flagName.empty()) {
+                p->countryName = Tools::toStd(Tools::countryName(countryCode));
+                if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
+                    p->cityName = Tools::toStd(Tools::cityName(post.posterIp()));
+            } else {
+                p->flagName = "default.png";
+                p->countryName = "Unknown country";
+            }
+        }
+        p->hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
+        p->ip = Tools::toStd(post.posterIp());
+        if (Database::registeredUserLevel(req) >= RegisteredUser::ModerLevel)
+            p->rawPostText = Tools::toStd(post.text());
     }
-    p.name = Tools::toStd(toHtml(post.name()));
-    if (p.name.empty())
-        p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+    p->dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
+    p->name = Tools::toStd(toHtml(post.name()));
+    if (p->name.empty())
+        p->name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
     else
-        p.name = "<span class=\"userName\">" + p.name + "</span>";
-    p.nameRaw = Tools::toStd(post.name());
-    if (p.nameRaw.empty())
-        p.nameRaw = Tools::toStd(board->defaultUserName(l));
-    p.number = post.number();
-    p.subject = Tools::toStd(post.subject());
-    p.text = processPostText(post.text(), board->name(), threadNumber, processCode);
+        p->name = "<span class=\"userName\">" + p->name + "</span>";
+    p->nameRaw = Tools::toStd(post.name());
+    if (p->nameRaw.empty())
+        p->nameRaw = Tools::toStd(board->defaultUserName(l));
     QByteArray hashpass = post.hashpass();
-    p.showRegistered = false;
-    p.showTripcode = post.showTripcode();
     if (!hashpass.isEmpty()) {
         int lvl = Database::registeredUserLevel(hashpass);
         QString name;
-        p.showRegistered = lvl >= RegisteredUser::UserLevel;
+        p->showRegistered = lvl >= RegisteredUser::UserLevel;
         if (!post.name().isEmpty()) {
             if (lvl >= RegisteredUser::AdminLevel)
                 name = post.name();
@@ -581,9 +652,9 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
             else if (lvl >= RegisteredUser::UserLevel)
                 name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
         }
-        p.name = Tools::toStd(name);
-        if (p.name.empty())
-            p.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+        p->name = Tools::toStd(name);
+        if (p->name.empty())
+            p->name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
         QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
@@ -594,23 +665,18 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
             else
                 s += QString::number(uchar(tripcode.at(i)), 16);
         }
-        p.tripcode = Tools::toStd(s);
+        p->tripcode = Tools::toStd(s);
     }
-    if (board->showWhois()) {
-        QString countryCode = Tools::countryCode(post.posterIp());
-        p.flagName = Tools::toStd(Tools::flagName(countryCode));
-        if (!p.flagName.empty()) {
-            p.countryName = Tools::toStd(Tools::countryName(countryCode));
-            if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
-                p.cityName = Tools::toStd(Tools::cityName(post.posterIp()));
-        } else {
-            p.flagName = "default.png";
-            p.countryName = ts.translate("toController", "Unknown country", "countryName");
-        }
-    }
-    p.hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
-    p.ip = Tools::toStd(post.posterIp());
-    return p;
+    Content::BaseBoard::Post pp = *p;
+    if (!inCache && !Cache::cachePost(board->name(), post.number(), p))
+        delete p;
+    TranslatorQt tq(l);
+    TranslatorStd ts(l);
+    for (std::list<Content::BaseBoard::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i)
+        i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("toController", "KB", "fileSize")));
+    if (board->showWhois() && "Unknown country" == pp.countryName)
+        pp.countryName = ts.translate("toController", "Unknown country", "countryName");
+    return pp;
 }
 
 }

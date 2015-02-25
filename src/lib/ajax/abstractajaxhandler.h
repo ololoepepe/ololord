@@ -40,6 +40,8 @@ public:
     virtual ~AbstractAjaxHandler();
 public:
     virtual QList<Handler> handlers() const = 0;
+protected:
+    bool testBan(const QString &boardName, bool readonly = false);
 };
 
 #endif // ABSTRACTAJAXHANDLER_H

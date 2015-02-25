@@ -120,7 +120,7 @@ When building ololord, you may pass some parameters to qmake:
 
  * "BOOST_PREFIX=<path>"
    Set path to boost libraries. Must be used if boost libraries were
-   installed to a custom location and must be used anyway on Windows
+   installed to a custom location
 
  * "SRCHILITE_PREFIX=<path>"
    Set path to GNU Source-Highlight library. Must be used if the library
@@ -130,6 +130,10 @@ When building ololord, you may pass some parameters to qmake:
    Set path to libmagic library. Must be used if the library was installed
    to a custom location and must be used anyway on Windows.
    Note: The recommended implementation is http://www.darwinsys.com/file/
+
+ * "SQLITE_PREFIX=<path>"
+   Set path to SQLite library. Must be used if the library was installed
+   to a custom location and must be used anyway on Windows
 
  * "LORD_PREFIX=<path>"
    Set install path. See the note below

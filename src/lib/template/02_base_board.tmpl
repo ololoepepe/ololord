@@ -16,6 +16,16 @@
 <% end %>
 <% end template %>
 
+<% template navigationButton(std::string target) %>
+<% if ( "top" == target ) %>
+    <a class="navigationButton navigationButtonBottom" title="<%= toTopText %>"
+       href="#top"><img src="/<%= sitePathPrefix %>img/up.png"></a>
+<% elif ( "bottom" == target ) %>
+    <a class="navigationButton navigationButtonTop" title="<%= toBottomText %>"
+       href="#bottom"><img src="/<%= sitePathPrefix %>img/down.png"></a>
+<% end %>
+<% end template %>
+
 <% template createAction(std::string position) %>
 <% if ( content.postingEnabled ) %>
     <div class="createAction">
@@ -41,8 +51,8 @@
                             <b><%= postFormLabelEmail %></b>
                         </td>
                         <td class="postformField">
-                            <input id="postFormInputEmail<%= position %>" type="text" maxlength="150" name="email"
-                                   size="30" />
+                            <input id="postFormInputEmail<%= position %>" type="text" maxlength="<%= maxEmailLength %>"
+                                   name="email" size="30" />
                             <input type="submit" value="<%= postFormButtonSubmit %>" />
                         </td>
                     </tr>
@@ -51,8 +61,8 @@
                             <b><%= postFormLabelName %></b>
                         </td>
                         <td class="postformField">
-                            <input type="text" maxlength="50" id="postFormInputName<%= position %>" name="name"
-                                   size="43" />
+                            <input type="text" maxlength="<%= maxNameLength %>" id="postFormInputName<%= position %>"
+                                   name="name" size="43" />
                         </td>
                     </tr>
                     <tr>
@@ -60,8 +70,8 @@
                             <b><%= postFormLabelSubject %></b>
                         </td>
                         <td class="postformField">
-                            <input type="text" maxlength="150" id="postFormInputSubject<%= position %>" name="subject"
-                                   size="43" />
+                            <input type="text" maxlength="<%= maxSubjectLength %>"
+                                   id="postFormInputSubject<%= position %>" name="subject" size="43" />
                         </td>
                     </tr>
                     <tr>
@@ -88,8 +98,8 @@
                             <b><%= postFormLabelPassword %></b>
                         </td>
                         <td class="postformField">
-                            <input type="password" maxlength="150" id="postFormInputPassword<%= position %>"
-                                   name="password" size="43" />
+                            <input type="password" maxlength="<%= maxPasswordLength %>"
+                                   id="postFormInputPassword<%= position %>" name="password" size="43" />
                         </td>
                     </tr>
                     <tr>
@@ -126,13 +136,30 @@
     </div>
     <div>
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-            <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+            <% if ( "webm" == file.thumbName ) %>
+                <% if ( file.sizeX > 0 && file.sizeY > 0 ) %>
+                    <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.sizeX %>"
+                         height="<%= file.sizeY %>">
+                <% else %>
+                    <img src="/<%= sitePathPrefix %>img/webm_logo.png">
+                <% end %>
+            <% else %>
+                <% if ( file.sizeX > 0 && file.sizeY > 0 ) %>
+                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
+                         width="<%= file.sizeX %>" height="<%= file.sizeY %>">
+                <% else %>
+                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+                <% end %>
+            <% end %>
         </a>
     </div>
 </td>
 <% end template %>
 
 <% template boardTexts() %>
+<input type="hidden" id="currentBoardName" value="<%= currentBoard.name %>" />
+<input type="hidden" id="currentBoardTitle" value="<%= currentBoard.title %>" />
+<input type="hidden" id="editPostText" value="<%= editPostText %>" />
 <input type="hidden" id="showHidePostText" value="<%= showHidePostText %>" />
 <input type="hidden" id="banUserText" value="<%= banUserText %>" />
 <input type="hidden" id="boardLabelText" value="<%= boardLabelText %>" />
@@ -165,6 +192,33 @@
         <% end %>
     <% end %>
 </select>
+<div id="postTemplate" class="post" style="display: none;">
+    <div class="postHeader">
+        <b id="postTemplateSubject"></b>
+        <img id="postTemplateRegistered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
+             style="display: none;">
+        <span id="postTemplateName"></span>
+        <span id="postTemplateTripcode" class="tripcode" style="display: none;"></span>
+        <img id="postTemplateWhois" style="display: none;">
+        <span id="postTemplateDateTime"></span>
+        #<span id="postTemplateNumber"></span>
+    </div>
+    <table class="threadPost">
+        <tbody>
+            <tr id="postTemplateFiles">
+                <td class="postText">
+                    <blockquote id="postTemplateText"></blockquote>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <span id="postTemplateBannedFor" class="bannedFor"
+                          style="display: none;"><%= bannedForText %></span>
+                <td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 <% end template %>
 
 <% template bannerHead() %>

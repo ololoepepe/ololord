@@ -42,18 +42,22 @@ include(route/route.pri)
 include(stored/stored.pri)
 
 #Processing CppCMS templates
+CPPCMS_PROCESSING_COMMAND=$${CPPCMS_PREFIX}/bin/cppcms_tmpl_cc
 mac|unix {
-    CPPCMS_PROCESSING_COMMAND=$${CPPCMS_PREFIX}/bin/cppcms_tmpl_cc
+    CPPCMS_TEMPLATES=$$files($${PWD}/template/*)
 } else:win32 {
-    CPPCMS_PROCESSING_COMMAND=$${CPPCMS_PREFIX}/bin/cppcms_tmpl_cc.exe
+    CPPCMS_TEMPLATES=$$files($${PWD}\\template\\*)
 }
 
-CPPCMS_TEMPLATES=$$files($${PWD}/template/*)
 for(CPPCMS_TEMPLATE, CPPCMS_TEMPLATES) {
     CPPCMS_TEMPLATES_STRING=$${CPPCMS_TEMPLATES_STRING} \"$${CPPCMS_TEMPLATE}\"
 }
 
-system($${CPPCMS_PROCESSING_COMMAND} $${CPPCMS_TEMPLATES_STRING} -o \"$${PWD}/compiled_templates.cpp\")
+CPPCMS_PROCESSING_COMMAND=$${CPPCMS_PROCESSING_COMMAND} $${CPPCMS_TEMPLATES_STRING} -o \"$${PWD}/compiled_templates.cpp\"
+
+win32:CPPCMS_PROCESSING_COMMAND=$$replace(CPPCMS_PROCESSING_COMMAND, "/", "\\")
+
+system(python $${CPPCMS_PROCESSING_COMMAND})
 
 SOURCES += compiled_templates.cpp
 #end processing

@@ -21,6 +21,8 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     struct OLOLORD_EXPORT File
     {
         std::string size;
+        int sizeX;
+        int sizeY;
         std::string sourceName;
         std::string thumbName;
     };
@@ -38,6 +40,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string name;
         std::string nameRaw;
         unsigned long long number;
+        std::string rawPostText;
         bool showRegistered;
         std::string subject;
         std::string text;
@@ -67,11 +70,16 @@ public:
     unsigned long long currentThread;
     std::string deletePostText;
     std::string deleteThreadText;
+    std::string editPostText;
     std::string enterPasswordText;
     std::string enterPasswordTitle;
     std::string fixedText;
     std::string fixThreadText;
     std::string hidePostFormText;
+    unsigned int maxEmailLength;
+    unsigned int maxNameLength;
+    unsigned int maxSubjectLength;
+    unsigned int maxPasswordLength;
     bool moder;
     std::string noCaptchaText;
     std::string notLoggedInText;
@@ -93,6 +101,8 @@ public:
     std::string showPostFormText;
     bool showWhois;
     std::string supportedFileTypes;
+    std::string toBottomText;
+    std::string toTopText;
     std::string unfixThreadText;
 };
 

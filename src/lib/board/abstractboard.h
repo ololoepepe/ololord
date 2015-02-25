@@ -47,6 +47,8 @@ public:
     };
 public:
     typedef std::list<BoardInfo> BoardInfoList;
+public:
+    static const QString defaultFileTypes;
 private:
     static QMap<QString, AbstractBoard *> boards;
     static bool boardsInitialized;
@@ -90,9 +92,10 @@ public:
     virtual QStringList rules(const QLocale &l) const;
     virtual QString saveFile(const Tools::File &f, bool *ok = 0);
     virtual bool showWhois() const;
-    QString supportedFileTypes() const;
+    virtual QString supportedFileTypes() const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
+    virtual QString thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const;
     virtual QString title(const QLocale &l) const = 0;
 protected:
     virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);

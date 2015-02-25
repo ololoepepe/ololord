@@ -1,5 +1,9 @@
 #include "abstractajaxhandler.h"
 
+#include "database.h"
+#include "tools.h"
+#include "translator.h"
+
 #include <cppcms/rpc_json.h>
 
 const AbstractAjaxHandler::role_type AbstractAjaxHandler::any_role = cppcms::rpc::json_rpc_server::any_role;
@@ -16,4 +20,22 @@ AbstractAjaxHandler::AbstractAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
 AbstractAjaxHandler::~AbstractAjaxHandler()
 {
     //
+}
+
+bool AbstractAjaxHandler::testBan(const QString &boardName, bool readonly)
+{
+    TranslatorStd ts(server.request());
+    QString ip = Tools::userIp(server.request());
+    bool ok = false;
+    QString err;
+    Database::BanInfo inf = Database::userBanInfo(ip, boardName, &ok, &err, ts.locale());
+    if (!ok) {
+        server.return_error(Tools::toStd(err));
+        return false;
+    }
+    if ((readonly && inf.level >= 10) || (!readonly && inf.level >= 1)) {
+        server.return_error(ts.translate("AbstractAjaxHandler", "You are banned", "error"));
+        return false;
+    }
+    return true;
 }

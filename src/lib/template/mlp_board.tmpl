@@ -1,0 +1,33 @@
+<% c++ #include "controller/mlpboard.h" %>
+<% skin my_skin %>
+<% view mlp_board uses Content::mlpBoard extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead() %>
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/board_video.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/board_mlp.css">
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/board_mlp.js"></script>
+    </head>
+    <body>
+        <div id="firstStageVideo" class="theVideo">
+            <video id="theVideo" autoplay="on" loop="on">
+                <source src="/<%= sitePathPrefix %>video/<%= videoFileName %>" type="<%= videoType %>" />
+                <%= altVideoText %>
+            </video> 
+        </div>
+        <button id="nextStageButton" class="button theButton"
+                onclick="javascript:nextStage();"><%= buttonText %></button>
+        <div id="nextStageVideo" class="theVideo hiddenVideo">
+            <video id="theVideo2">
+                <source src="/<%= sitePathPrefix %>video/<%= videoFileName2 %>" type="<%= videoType %>" />
+            </video> 
+        </div>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

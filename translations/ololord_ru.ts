@@ -2,6 +2,14 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="ru_RU">
 <context>
+    <name>AbstractAjaxHandler</name>
+    <message>
+        <source>You are banned</source>
+        <comment>error</comment>
+        <translation>Вы забанены</translation>
+    </message>
+</context>
+<context>
     <name>AbstractBoard</name>
     <message>
         <source>Next page</source>
@@ -191,10 +199,10 @@ The default is 0 (solve captcha every time).</source>
     <message>
         <source>MIME types of files allowed for attaching on this board.
 Must be separated by commas. Wildcard matching is used.
-The default is image/png,image/jpeg,image/gif.</source>
+The default is %1.</source>
         <translation>MIME-типы файлов, которые разрешено прикреплять на этой доске.
 Должны быть разделены запятыми. Используется шаблон wildcard.
-По умолчанию image/png,image/jpeg,image/gif.</translation>
+По умолчанию %1.</translation>
     </message>
 </context>
 <context>
@@ -508,6 +516,77 @@ The default is image/png,image/jpeg,image/gif.</source>
 </context>
 <context>
     <name>deletePostInternal</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+</context>
+<context>
+    <name>editPost</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>No text provided</source>
+        <comment>error</comment>
+        <translation>Отсутствует текст</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Text is too long</source>
+        <comment>error</comment>
+        <translation>Текст слишком длинный</translation>
+    </message>
+</context>
+<context>
+    <name>getPost</name>
     <message>
         <source>Invalid board name</source>
         <comment>error</comment>
@@ -1067,6 +1146,21 @@ Your choice:</source>
         <comment>captchaQuotaText</comment>
         <translation>Осталось постов без капчи:</translation>
     </message>
+    <message>
+        <source>Edit post</source>
+        <comment>editPostText</comment>
+        <translation>Редактировать пост</translation>
+    </message>
+    <message>
+        <source>Scroll to the bottom</source>
+        <comment>toBottomText</comment>
+        <translation>Отмотать вниз</translation>
+    </message>
+    <message>
+        <source>Scroll to the top</source>
+        <comment>toTopText</comment>
+        <translation>Отмотать наверх</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -1370,10 +1464,10 @@ The default is 0 (solve captcha every time).</source>
     <message>
         <source>MIME types of files allowed for attaching.
 Must be separated by commas. Wildcard matching is used.
-The default is image/png,image/jpeg,image/gif.</source>
+The default is %1.</source>
         <translation>MIME-типы файлов, которые разрешено прикреплять.
 Должны быть разделены запятыми. Используется шаблон wildcard.
-По умолчанию image/png,image/jpeg,image/gif.</translation>
+По умолчанию %1.</translation>
     </message>
 </context>
 <context>
@@ -1436,6 +1530,11 @@ The default is image/png,image/jpeg,image/gif.</source>
         <source>My Little Pony</source>
         <comment>board title</comment>
         <translation>Мой маленький пони</translation>
+    </message>
+    <message>
+        <source>Hands off my pony!!!!!11</source>
+        <comment>buttonText</comment>
+        <translation>Руки прочь от моих пони!!!!!11</translation>
     </message>
 </context>
 <context>
@@ -1769,11 +1868,6 @@ The default is image/png,image/jpeg,image/gif.</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
     </message>
-    <message>
-        <source>Internal database error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
-    </message>
 </context>
 <context>
     <name>testParams</name>
@@ -1865,6 +1959,19 @@ The default is image/png,image/jpeg,image/gif.</source>
         <source>Unknown country</source>
         <comment>countryName</comment>
         <translation>Неизвестная страна</translation>
+    </message>
+</context>
+<context>
+    <name>userBanInfo</name>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>
