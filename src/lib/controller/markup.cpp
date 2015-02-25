@@ -627,45 +627,6 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         }
         p->hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
         p->ip = Tools::toStd(post.posterIp());
-        if (Database::registeredUserLevel(req) >= RegisteredUser::ModerLevel)
-            p->rawPostText = Tools::toStd(post.text());
-    }
-    p->dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
-    p->name = Tools::toStd(toHtml(post.name()));
-    if (p->name.empty())
-        p->name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
-    else
-        p->name = "<span class=\"userName\">" + p->name + "</span>";
-    p->nameRaw = Tools::toStd(post.name());
-    if (p->nameRaw.empty())
-        p->nameRaw = Tools::toStd(board->defaultUserName(l));
-    QByteArray hashpass = post.hashpass();
-    if (!hashpass.isEmpty()) {
-        int lvl = Database::registeredUserLevel(hashpass);
-        QString name;
-        p->showRegistered = lvl >= RegisteredUser::UserLevel;
-        if (!post.name().isEmpty()) {
-            if (lvl >= RegisteredUser::AdminLevel)
-                name = post.name();
-            else if (lvl >= RegisteredUser::ModerLevel)
-                name = "<span class=\"moderName\">" + toHtml(post.name()) + "</span>";
-            else if (lvl >= RegisteredUser::UserLevel)
-                name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
-        }
-        p->name = Tools::toStd(name);
-        if (p->name.empty())
-            p->name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
-        QString s;
-        hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
-        QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
-        foreach (int i, bRangeD(0, tripcode.size() - 1)) {
-            QChar c(tripcode.at(i));
-            if (c.isLetterOrNumber() || c.isPunct())
-                s += c;
-            else
-                s += QString::number(uchar(tripcode.at(i)), 16);
-        }
-        p->tripcode = Tools::toStd(s);
     }
     Content::BaseBoard::Post pp = *p;
     if (!inCache && !Cache::cachePost(board->name(), post.number(), p))
@@ -676,6 +637,45 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("toController", "KB", "fileSize")));
     if (board->showWhois() && "Unknown country" == pp.countryName)
         pp.countryName = ts.translate("toController", "Unknown country", "countryName");
+    if (Database::registeredUserLevel(req) >= RegisteredUser::ModerLevel)
+        pp.rawPostText = Tools::toStd(post.text());
+    pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
+    pp.name = Tools::toStd(toHtml(post.name()));
+    if (pp.name.empty())
+        pp.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+    else
+        pp.name = "<span class=\"userName\">" + pp.name + "</span>";
+    pp.nameRaw = Tools::toStd(post.name());
+    if (pp.nameRaw.empty())
+        pp.nameRaw = Tools::toStd(board->defaultUserName(l));
+    QByteArray hashpass = post.hashpass();
+    if (!hashpass.isEmpty()) {
+        int lvl = Database::registeredUserLevel(hashpass);
+        QString name;
+        pp.showRegistered = lvl >= RegisteredUser::UserLevel;
+        if (!post.name().isEmpty()) {
+            if (lvl >= RegisteredUser::AdminLevel)
+                name = post.name();
+            else if (lvl >= RegisteredUser::ModerLevel)
+                name = "<span class=\"moderName\">" + toHtml(post.name()) + "</span>";
+            else if (lvl >= RegisteredUser::UserLevel)
+                name = "<span class=\"userName\">" + toHtml(post.name()) + "</span>";
+        }
+        pp.name = Tools::toStd(name);
+        if (pp.name.empty())
+            pp.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";
+        QString s;
+        hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
+        QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
+        foreach (int i, bRangeD(0, tripcode.size() - 1)) {
+            QChar c(tripcode.at(i));
+            if (c.isLetterOrNumber() || c.isPunct())
+                s += c;
+            else
+                s += QString::number(uchar(tripcode.at(i)), 16);
+        }
+        pp.tripcode = Tools::toStd(s);
+    }
     return pp;
 }
 
