@@ -1,11 +1,8 @@
 .settingsBar {
-    background-color: #DDDDDD;
-    border: 1px solid #CCCCCC;
-    border-radius: 5px 5px 5px 5px;
+    border-bottom: 1px solid #CCCCCC;
     display: block;
     font-size: 0.9em;
-    margin-left: 2px;
-    margin-right: 2px;
+    padding-bottom: 5px;
     text-align: left;
     white-spcace: nowrap;
 }
