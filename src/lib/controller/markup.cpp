@@ -570,19 +570,12 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         p->subject = Tools::toStd(post.subject());
         foreach (const QString &fn, post.files()) {
             QFileInfo fi(fn);
-            Content::BaseBoard::File *f = Cache::fileInfo(board->name(), fi.fileName());
-            bool cache = true;
-            if (!f) {
-                f = new Content::BaseBoard::File;
-                f->sourceName = Tools::toStd(fi.fileName());
-                QString sz;
-                f->thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f->sizeX, f->sizeY));
-                f->size = Tools::toStd(sz);
-                cache = Cache::cacheFileInfo(board->name(), fi.fileName(), f);
-            }
-            p->files.push_back(*f);
-            if (!cache)
-                delete f;
+            Content::BaseBoard::File f;
+            f.sourceName = Tools::toStd(fi.fileName());
+            QString sz;
+            f.thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f.sizeX, f.sizeY));
+            f.size = Tools::toStd(sz);
+            p->files.push_back(f);
         }
         p->text = processPostText(post.text(), board->name(), threadNumber, board->processCode());
         p->showRegistered = false;

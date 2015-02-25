@@ -272,7 +272,6 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             t->erase_query<Post>(odb::query<Post>::thread == thread->id());
             t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
             board->deleteFiles(files);
-            Cache::removeFileInfos(boardName, files);
         } else {
             Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
                                                      && odb::query<Post>::number == postNumber);
@@ -283,7 +282,6 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             QStringList files = post->files();
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
             board->deleteFiles(files);
-            Cache::removeFileInfos(boardName, files);
         }
         Cache::removePost(boardName, postNumber);
         t.commit();
