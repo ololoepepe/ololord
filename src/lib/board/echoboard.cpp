@@ -81,7 +81,7 @@ void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content
     if (!cc)
         return;
     QString subj;
-    cc->threadLink = Tools::toStd(processPost(cc->opPost), &subj);
+    cc->threadLink = Tools::toStd(processPost(cc->opPost, &subj));
     cc->pageTitle = Tools::toStd(subj);
 }
 
