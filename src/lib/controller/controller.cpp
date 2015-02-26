@@ -312,7 +312,7 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
 }
 
 bool testParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
-                const Tools::FileList &files)
+                const Tools::FileList &files, bool post)
 {
     TranslatorQt tq(app.request());
     if (!board) {
@@ -322,29 +322,25 @@ bool testParams(const AbstractBoard *board, cppcms::application &app, const Tool
     }
     QString boardName = board->name();
     int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, boardName);
-    if (params.value("email").length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "E-mail is too long", "description"));
+    QString err;
+    if (!board->testParam(AbstractBoard::EmailParam, params.value("email"), post, tq.locale(), &err)){
+        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
         Tools::log(app, "E-mail is too long");
         return false;
-    } else if (params.value("name").length() > int(Tools::maxInfo(Tools::MaxNameFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Name is too long", "description"));
+    } else if (!board->testParam(AbstractBoard::NameParam, params.value("name"), post, tq.locale(), &err)) {
+        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
         Tools::log(app, "Name is too long");
         return false;
-    } else if (params.value("subject").length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Subject is too long", "description"));
+    } else if (!board->testParam(AbstractBoard::SubjectParam, params.value("subject"), post, tq.locale(), &err)) {
+        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
         Tools::log(app, "Subject is too long");
         return false;
-    } else if (params.value("text").length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Comment is too long", "description"));
+    } else if (!board->testParam(AbstractBoard::TextParam, params.value("text"), post, tq.locale(), &err)) {
+        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
         Tools::log(app, "Comment is too long");
         return false;
-    } else if (params.value("password").length() > int(Tools::maxInfo(Tools::MaxPasswordFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Password is too long", "description"));
+    } else if (!board->testParam(AbstractBoard::PasswordParam, params.value("password"), post, tq.locale(), &err)) {
+        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
         Tools::log(app, "Password is too long");
         return false;
     } else if (files.size() > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {

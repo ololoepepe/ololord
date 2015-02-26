@@ -627,6 +627,8 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         p->email = Tools::toStd(post.email());
         p->number = post.number();
         p->subject = Tools::toStd(post.subject());
+        p->subjectRaw = Tools::toStd(post.subject());
+        p->subjectAlwaysRaw = false;
         foreach (const QString &fn, post.files()) {
             QFileInfo fi(fn);
             Content::BaseBoard::File f;

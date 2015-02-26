@@ -40,6 +40,15 @@ class request;
 class OLOLORD_EXPORT AbstractBoard
 {
 public:
+    enum ParamType
+    {
+        EmailParam = 1,
+        NameParam,
+        SubjectParam,
+        TextParam,
+        PasswordParam
+    };
+public:
     struct BoardInfo
     {
         std::string name;
@@ -93,6 +102,7 @@ public:
     virtual QString saveFile(const Tools::File &f, bool *ok = 0);
     virtual bool showWhois() const;
     virtual QString supportedFileTypes() const;
+    virtual bool testParam(ParamType t, const QString &param, bool post, const QLocale &l, QString *error = 0) const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
     virtual QString thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const;

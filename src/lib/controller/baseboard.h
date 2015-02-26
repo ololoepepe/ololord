@@ -43,6 +43,8 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string rawPostText;
         bool showRegistered;
         std::string subject;
+        bool subjectAlwaysRaw;
+        std::string subjectRaw;
         std::string text;
         std::string tripcode;
         bool showTripcode;

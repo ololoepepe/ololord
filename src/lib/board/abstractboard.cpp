@@ -3,6 +3,7 @@
 #include "board/aboard.h"
 #include "board/bboard.h"
 #include "board/cgboard.h"
+#include "board/echoboard.h"
 #include "board/hboard.h"
 #include "board/intboard.h"
 #include "board/mlpboard.h"
@@ -217,7 +218,7 @@ void AbstractBoard::createPost(cppcms::application &app)
         return;
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
-    if (!Controller::testParams(this, app, params, files))
+    if (!Controller::testParams(this, app, params, files, true))
         return;
     TranslatorQt tq(req);
     if (!postingEnabled()) {
@@ -248,7 +249,7 @@ void AbstractBoard::createThread(cppcms::application &app)
         return;
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
-    if (!Controller::testParams(this, app, params, files))
+    if (!Controller::testParams(this, app, params, files, false))
         return;
     TranslatorQt tq(req);
     if (!postingEnabled()) {
@@ -572,6 +573,37 @@ QString AbstractBoard::supportedFileTypes() const
                     s->value("Board/supported_file_types", defaultFileTypes)).toString();
 }
 
+bool AbstractBoard::testParam(ParamType t, const QString &param, bool /*post*/, const QLocale &l,
+                              QString *error) const
+{
+    TranslatorQt tq(l);
+    switch (t) {
+    case EmailParam:
+        if (param.length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, name())))
+            return bRet(error, tq.translate("AbstractBoard", "E-mail is too long", "description"), false);
+        break;
+    case NameParam:
+        if (param.length() > int(Tools::maxInfo(Tools::MaxNameFieldLength, name())))
+            return bRet(error, tq.translate("AbstractBoard", "Name is too long", "description"), false);
+        break;
+    case SubjectParam:
+        if (param.length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, name())))
+             return bRet(error, tq.translate("AbstractBoard", "Subject is too long", "description"), false);
+        break;
+    case TextParam:
+        if (param.length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, name())))
+             return bRet(error, tq.translate("AbstractBoard", "Comment is too long", "description"), false);
+        break;
+    case PasswordParam:
+        if (param.length() > int(Tools::maxInfo(Tools::MaxPasswordFieldLength, name())))
+             return bRet(error, tq.translate("AbstractBoard", "Password is too long", "description"), false);
+        break;
+    default:
+        return bRet(error, tq.translate("AbstractBoard", "Internal logic error", "description"), false);
+    }
+    return bRet(error, QString(), true);
+}
+
 unsigned int AbstractBoard::threadLimit() const
 {
     SettingsLocker s;
@@ -675,6 +707,8 @@ void AbstractBoard::initBoards(bool reinit)
     b = new bBoard;
     boards.insert(b->name(), b);
     b = new cgBoard;
+    boards.insert(b->name(), b);
+    b = new echoBoard;
     boards.insert(b->name(), b);
     b = new hBoard;
     boards.insert(b->name(), b);

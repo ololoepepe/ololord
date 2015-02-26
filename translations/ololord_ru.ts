@@ -204,6 +204,31 @@ The default is %1.</source>
 Должны быть разделены запятыми. Используется шаблон wildcard.
 По умолчанию %1.</translation>
     </message>
+    <message>
+        <source>E-mail is too long</source>
+        <comment>description</comment>
+        <translation>Эл. почта слишком длинная</translation>
+    </message>
+    <message>
+        <source>Name is too long</source>
+        <comment>description</comment>
+        <translation>Имя слишком длинное</translation>
+    </message>
+    <message>
+        <source>Subject is too long</source>
+        <comment>description</comment>
+        <translation>Тема слишком длинная</translation>
+    </message>
+    <message>
+        <source>Comment is too long</source>
+        <comment>description</comment>
+        <translation>Комментарий слишком длинный</translation>
+    </message>
+    <message>
+        <source>Password is too long</source>
+        <comment>description</comment>
+        <translation>Пароль слишком длинный</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -540,6 +565,29 @@ The default is %1.</source>
         <source>Internal logic error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+</context>
+<context>
+    <name>echoBoard</name>
+    <message>
+        <source>Boardsphere echo</source>
+        <comment>board title</comment>
+        <translation>Эхо бордосферы</translation>
+    </message>
+    <message>
+        <source>Thread link:</source>
+        <comment>postFormLabelSubject</comment>
+        <translation>Ссылка на тред:</translation>
+    </message>
+    <message>
+        <source>Link to external thread is empty</source>
+        <comment>description</comment>
+        <translation>Ссылка на внешний тред пуста</translation>
+    </message>
+    <message>
+        <source>This board/thread may not be accepted</source>
+        <comment>description</comment>
+        <translation>Эта доска/тред не может быть принята</translation>
     </message>
 </context>
 <context>
@@ -1875,31 +1923,6 @@ The default is %1.</source>
         <source>Invalid parameters</source>
         <comment>error</comment>
         <translation>Неправильные параметры</translation>
-    </message>
-    <message>
-        <source>E-mail is too long</source>
-        <comment>description</comment>
-        <translation>Эл. почта слишком длинная</translation>
-    </message>
-    <message>
-        <source>Name is too long</source>
-        <comment>description</comment>
-        <translation>Имя слишком длинное</translation>
-    </message>
-    <message>
-        <source>Subject is too long</source>
-        <comment>description</comment>
-        <translation>Тема слишком длинная</translation>
-    </message>
-    <message>
-        <source>Comment is too long</source>
-        <comment>description</comment>
-        <translation>Комментарий слишком длинный</translation>
-    </message>
-    <message>
-        <source>Password is too long</source>
-        <comment>description</comment>
-        <translation>Пароль слишком длинный</translation>
     </message>
     <message>
         <source>Too many files</source>
