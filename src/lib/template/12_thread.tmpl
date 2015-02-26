@@ -24,7 +24,7 @@
         <% if ( op && content.closed ) %>
             <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
         <% end %>
-        <% if ( post.subjectAlwaysRaw ) %>
+        <% if ( post.subjectIsRaw ) %>
             <%= post.subject | raw %>
         <% else %>
             <b><%= post.subject %></b>

@@ -1,6 +1,6 @@
-<% c++ #include "controller/thread.h" %>
+<% c++ #include "controller/echothread.h" %>
 <% skin my_skin %>
-<% view echo_thread uses Content::Thread extends thread %>
+<% view echo_thread uses Content::echoThread extends thread %>
 
 <% template render() %>
 <!DOCTYPE html>
@@ -43,7 +43,7 @@
                 <h1><%= currentBoard.title %> - <%= currentThread %></h1>
             <% end %>
         </div>
-        <iframe src="<%= opPost.subjectRaw | raw %>" name="externalThreadFrame" scrolling="auto"
+        <iframe src="<%= threadLink | raw %>" name="externalThreadFrame" scrolling="auto"
                     class="externalThreadFrame" frameborder="no"></iframe>
         <% if ( !content.postingEnabled ) %>
             <div class="theMessage">

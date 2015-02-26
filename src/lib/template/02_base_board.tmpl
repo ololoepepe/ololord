@@ -26,6 +26,9 @@
 <% end %>
 <% end template %>
 
+<% template customPostFormField(std::string position) %>
+<% end template %>
+
 <% template createAction(std::string position) %>
 <% if ( content.postingEnabled ) %>
     <div class="createAction">
@@ -74,6 +77,7 @@
                                    id="postFormInputSubject<%= position %>" name="subject" size="43" />
                         </td>
                     </tr>
+                    <% include customPostFormField(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormInputText %></b>

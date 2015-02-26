@@ -34,12 +34,14 @@ public:
     explicit echoBoard();
 public:
     QString name() const;
+    bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l, QString *error) const;
     QString title(const QLocale &l) const;
 protected:
     void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
+    void beforeStoring(Tools::PostParameters &params, bool post);
+    Content::Board *createBoardController(const cppcms::http::request &req, QString &viewName);
     Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
-    bool testParam(ParamType t, const QString &param, bool post, const QLocale &l, QString *error = 0) const;
 };
 
 #endif // ECHOBOARD_H

@@ -227,6 +227,7 @@ void AbstractBoard::createPost(cppcms::application &app)
     }
     QString err;
     QString desc;
+    beforeStoring(params, true);
     Database::CreatePostParameters p(req, params, files, tq.locale());
     p.bumpLimit = bumpLimit();
     p.postLimit = postLimit();
@@ -258,6 +259,7 @@ void AbstractBoard::createThread(cppcms::application &app)
     }
     QString err;
     QString desc;
+    beforeStoring(params, false);
     Database::CreateThreadParameters p(req, params, files, tq.locale());
     p.archiveLimit = archiveLimit();
     p.threadLimit = threadLimit();
@@ -573,34 +575,20 @@ QString AbstractBoard::supportedFileTypes() const
                     s->value("Board/supported_file_types", defaultFileTypes)).toString();
 }
 
-bool AbstractBoard::testParam(ParamType t, const QString &param, bool /*post*/, const QLocale &l,
-                              QString *error) const
+bool AbstractBoard::testParams(const Tools::PostParameters &params, bool /*post*/, const QLocale &l,
+                               QString *error) const
 {
     TranslatorQt tq(l);
-    switch (t) {
-    case EmailParam:
-        if (param.length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, name())))
-            return bRet(error, tq.translate("AbstractBoard", "E-mail is too long", "description"), false);
-        break;
-    case NameParam:
-        if (param.length() > int(Tools::maxInfo(Tools::MaxNameFieldLength, name())))
-            return bRet(error, tq.translate("AbstractBoard", "Name is too long", "description"), false);
-        break;
-    case SubjectParam:
-        if (param.length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, name())))
-             return bRet(error, tq.translate("AbstractBoard", "Subject is too long", "description"), false);
-        break;
-    case TextParam:
-        if (param.length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, name())))
-             return bRet(error, tq.translate("AbstractBoard", "Comment is too long", "description"), false);
-        break;
-    case PasswordParam:
-        if (param.length() > int(Tools::maxInfo(Tools::MaxPasswordFieldLength, name())))
-             return bRet(error, tq.translate("AbstractBoard", "Password is too long", "description"), false);
-        break;
-    default:
-        return bRet(error, tq.translate("AbstractBoard", "Internal logic error", "description"), false);
-    }
+    if (params.value("email").length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, name())))
+        return bRet(error, tq.translate("AbstractBoard", "E-mail is too long", "description"), false);
+    else if (params.value("name").length() > int(Tools::maxInfo(Tools::MaxNameFieldLength, name())))
+        return bRet(error, tq.translate("AbstractBoard", "Name is too long", "description"), false);
+    else if (params.value("subject").length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, name())))
+        return bRet(error, tq.translate("AbstractBoard", "Subject is too long", "description"), false);
+    else if (params.value("text").length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, name())))
+        return bRet(error, tq.translate("AbstractBoard", "Comment is too long", "description"), false);
+    else if (params.value("password").length() > int(Tools::maxInfo(Tools::MaxPasswordFieldLength, name())))
+        return bRet(error, tq.translate("AbstractBoard", "Password is too long", "description"), false);
     return bRet(error, QString(), true);
 }
 
@@ -662,6 +650,11 @@ void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Cont
 }
 
 void AbstractBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content::Thread */*c*/)
+{
+    //
+}
+
+void AbstractBoard::beforeStoring(Tools::PostParameters &/*params*/, bool /*post*/)
 {
     //
 }

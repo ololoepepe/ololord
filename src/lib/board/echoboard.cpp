@@ -1,11 +1,14 @@
 #include "echoboard.h"
 
-#include "controller/board.h"
 #include "controller/controller.h"
-#include "controller/thread.h"
+#include "controller/echoboard.h"
+#include "controller/echothread.h"
 #include "tools.h"
 #include "translator.h"
 
+#include <BTextTools>
+
+#include <QDebug>
 #include <QLocale>
 #include <QRegExp>
 #include <QString>
@@ -13,6 +16,18 @@
 
 #include <list>
 #include <string>
+
+static QString processPost(Content::BaseBoard::Post &p)
+{
+    QString s = Tools::fromStd(p.subject);
+    QString subject = BTextTools::removeTrailingSpaces(s.mid(0, 1000));
+    QString link = s.mid(1000);
+    if (subject.isEmpty())
+        subject = link;
+    p.subject = Tools::toStd("<a href=\"" + link + "\">" + BTextTools::toHtml(subject) + "</a>");
+    p.subjectIsRaw = true;
+    return link;
+}
 
 echoBoard::echoBoard()
 {
@@ -25,6 +40,25 @@ QString echoBoard::name() const
     return "echo";
 }
 
+bool echoBoard::testParams(const Tools::PostParameters &params, bool post, const QLocale &l, QString *error) const
+{
+    if (!AbstractBoard::testParams(params, post, l, error))
+        return false;
+    if (post)
+        return true;
+    TranslatorQt tq(l);
+    QString link = params.value("link");
+    if (link.isEmpty())
+        return bRet(error, tq.translate("echoBoard", "Thread link is empty", "description"), false);
+    else if (link.length() > 150)
+        return bRet(error, tq.translate("echoBoard", "Thread link is too long", "description"), false);
+    foreach (const QString &s, Tools::acceptedExternalBoards()) {
+        if (QRegExp(s).exactMatch(link))
+            return true;
+    }
+    return bRet(error, tq.translate("echoBoard", "This board/thread may not be accepted", "description"), false);
+}
+
 QString echoBoard::title(const QLocale &l) const
 {
     TranslatorQt tq(l);
@@ -33,42 +67,41 @@ QString echoBoard::title(const QLocale &l) const
 
 void echoBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Board *c)
 {
-    if (!c)
+    Content::echoBoard *cc = dynamic_cast<Content::echoBoard *>(c);
+    if (!cc)
         return;
     TranslatorStd ts(req);
-    c->postFormLabelSubject = ts.translate("echoBoard", "Thread link:", "postFormLabelSubject");
-    for (std::list<Content::Board::Thread>::iterator i = c->threads.begin(); i != c->threads.end(); ++i) {
-        i->opPost.subject = Tools::toStd(Controller::toHtml(Tools::fromStd(i->opPost.subject)));
-        i->opPost.subjectAlwaysRaw = true;
-    }
+    cc->maxLinkLength = 150;
+    cc->postFormLabelLink = ts.translate("echoBoard", "Thread link:", "postFormLabelLink");
+    for (std::list<Content::Board::Thread>::iterator i = c->threads.begin(); i != c->threads.end(); ++i)
+        processPost(i->opPost);
 }
 
 void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content::Thread *c)
 {
-    if (!c)
+    Content::echoThread *cc = dynamic_cast<Content::echoThread *>(c);
+    if (!cc)
         return;
-    c->opPost.subject = Tools::toStd(Controller::toHtml(Tools::fromStd(c->opPost.subject)));
-    c->opPost.subjectAlwaysRaw = true;
+    cc->threadLink = Tools::toStd(processPost(cc->opPost));
+}
+
+void echoBoard::beforeStoring(Tools::PostParameters &params, bool post)
+{
+    if (post)
+        return;
+    QString subject = params.value("subject");
+    QString link = params.value("link");
+    params["subject"] = BTextTools::appendTrailingSpaces(subject, 1000) + link;
+}
+
+Content::Board *echoBoard::createBoardController(const cppcms::http::request &/*req*/, QString &viewName)
+{
+    viewName = "echo_board";
+    return new Content::echoBoard;
 }
 
 Content::Thread *echoBoard::createThreadController(const cppcms::http::request &/*req*/, QString &viewName)
 {
     viewName = "echo_thread";
-    return new Content::Thread;
-}
-
-bool echoBoard::testParam(ParamType t, const QString &param, bool post, const QLocale &l, QString *error) const
-{
-    if (!AbstractBoard::testParam(t, param, post, l, error))
-        return false;
-    if (SubjectParam != t || post)
-        return true;
-    TranslatorQt tq(l);
-    if (param.isEmpty())
-        return bRet(error, tq.translate("echoBoard", "Link to external thread is empty", "description"), false);
-    foreach (const QString &s, Tools::acceptedExternalBoards()) {
-        if (QRegExp(s).exactMatch(param))
-            return true;
-    }
-    return bRet(error, tq.translate("echoBoard", "This board/thread may not be accepted", "description"), false);
+    return new Content::echoThread;
 }

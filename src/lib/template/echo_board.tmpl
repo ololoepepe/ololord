@@ -1,0 +1,18 @@
+<% c++ #include "controller/echoboard.h" %>
+<% skin my_skin %>
+<% view echo_board uses Content::echoBoard extends board %>
+
+<% template customPostFormField(std::string position) %>
+<tr>
+    <td class="postformLabel">
+        <b><%= postFormLabelLink %></b>
+    </td>
+    <td class="postformField">
+        <input type="text" maxlength="<%= maxLinkLength %>" id="postFormInputLink<%= position %>" name="link" 
+               size="43" />
+     </td>
+</tr>
+<% end template %>
+
+<% end view %>
+<% end skin %>

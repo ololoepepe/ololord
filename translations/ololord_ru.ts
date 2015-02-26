@@ -575,19 +575,24 @@ The default is %1.</source>
         <translation>Эхо бордосферы</translation>
     </message>
     <message>
-        <source>Thread link:</source>
-        <comment>postFormLabelSubject</comment>
-        <translation>Ссылка на тред:</translation>
-    </message>
-    <message>
-        <source>Link to external thread is empty</source>
-        <comment>description</comment>
-        <translation>Ссылка на внешний тред пуста</translation>
-    </message>
-    <message>
         <source>This board/thread may not be accepted</source>
         <comment>description</comment>
         <translation>Эта доска/тред не может быть принята</translation>
+    </message>
+    <message>
+        <source>Thread link is empty</source>
+        <comment>description</comment>
+        <translation>Ссылка на тред пуста</translation>
+    </message>
+    <message>
+        <source>Thread link is too long</source>
+        <comment>description</comment>
+        <translation>Ссылка на тред слишком длинная</translation>
+    </message>
+    <message>
+        <source>Thread link:</source>
+        <comment>postFormLabelLink</comment>
+        <translation>Ссылка на тред:</translation>
     </message>
 </context>
 <context>

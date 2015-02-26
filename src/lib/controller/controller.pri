@@ -6,6 +6,8 @@ HEADERS += \
     $${PWD}/board_image.h \
     $${PWD}/board_video.h \
     $${PWD}/controller.h \
+    $${PWD}/echoboard.h \
+    $${PWD}/echothread.h \
     $${PWD}/error.h \
     $${PWD}/home.h \
     $${PWD}/ipban.h \
