@@ -1522,6 +1522,12 @@ The default is %1.</source>
 Должны быть разделены запятыми. Используется шаблон wildcard.
 По умолчанию %1.</translation>
     </message>
+    <message>
+        <source>Query used to proxy non-SSL links inside iframes.
+Must contain &quot;%1&quot; (without quotes) - it is replaced by URL.</source>
+        <translation>Запрос, используемый для проксирования не-SSL ссылок внутри iframe&apos;ов.
+Должен содержать &quot;%1&quot; (без кавычек) - это заменяется на ссылку.</translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>

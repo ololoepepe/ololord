@@ -3,6 +3,7 @@
 #include "controller/controller.h"
 #include "controller/echoboard.h"
 #include "controller/echothread.h"
+#include "settingslocker.h"
 #include "tools.h"
 #include "translator.h"
 
@@ -11,8 +12,10 @@
 #include <QDebug>
 #include <QLocale>
 #include <QRegExp>
+#include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 
 #include <list>
 #include <string>
@@ -81,7 +84,11 @@ void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content
     if (!cc)
         return;
     QString subj;
-    cc->threadLink = Tools::toStd(processPost(cc->opPost, &subj));
+    QString link = processPost(cc->opPost, &subj);
+    QString q = SettingsLocker()->value("Site/ssl_proxy_query").toString();
+    if (!link.startsWith("https") && q.contains("%1"))
+        link = q.arg(link);
+    cc->threadLink = Tools::toStd(link);
     cc->pageTitle = Tools::toStd(subj);
 }
 
