@@ -107,6 +107,63 @@ static void processPostText(QString &text, const SkipList &skip, const QString &
         next(text, 0, text.length(), boardName, threadNumber, processCode);
 }
 
+static void processAsimmetric(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
+                              bool processCode, const QString &bbTag, const QString &htmlTag,
+                              ProcessPostTextFunction next, const QString &openTag = QString(), bool quote = false)
+{
+    if (start < 0 || len <= 0)
+        return;
+    SkipList skip;
+    QString t = text.mid(start, len);
+    QString bbop = "[" + bbTag + "]";
+    QString bbcl = "[/" + bbTag + "]";
+    QString op = !openTag.isEmpty() ? openTag : ("<" + htmlTag + ">");
+    int s = t.indexOf(bbop, 0, Qt::CaseInsensitive);
+    if (s < 0) {
+        processPostText(t, skip, boardName, threadNumber, processCode, next);
+        text.replace(start, len, t);
+        return;
+    }
+    QRegExp rx("(\\[" + bbTag + "\\])|(\\[/" + bbTag + "\\])", Qt::CaseInsensitive);
+    int ind = t.indexOf(rx, s + bbop.length());
+    int depth = 1;
+    while (ind >= 0) {
+        if (rx.cap() == bbop)
+            ++depth;
+        else
+            --depth;
+        if (!depth) {
+            if (quote) {
+                int len = ind - s - bbop.length();
+                QString tt = BTextTools::toHtml(t.mid(s + bbop.length(), len), true);
+                t.replace(ind, bbcl.length(), "</" + htmlTag + ">");
+                t.replace(s + bbop.length(), len, tt);
+                t.replace(s, bbop.length(), op);
+                skip << qMakePair(s, tt.length() + htmlTag.length() + 3 + op.length());
+                s = t.indexOf(bbop, s + tt.length() + htmlTag.length() + 3 + op.length(), Qt::CaseInsensitive);
+            } else {
+                t.replace(ind, bbcl.length(), "</" + htmlTag + ">");
+                t.replace(s, bbop.length(), op);
+                skip << qMakePair(s, op.length());
+                skip << qMakePair(ind + (op.length() - bbop.length()), htmlTag.length() + 3);
+                s = t.indexOf(bbop, ind + (op.length() - bbop.length()) + htmlTag.length() + 3, Qt::CaseInsensitive);
+            }
+            if (s < 0) {
+                processPostText(t, skip, boardName, threadNumber, processCode, next);
+                text.replace(start, len, t);
+                return;
+            } else {
+                depth = 1;
+                ind = t.indexOf(rx, s + bbop.length());
+            }
+        } else {
+            ind = t.indexOf(rx, ind + rx.matchedLength());
+        }
+    }
+    processPostText(t, skip, boardName, threadNumber, processCode, next);
+    text.replace(start, len, t);
+}
+
 static void processSimmetric(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
                              bool processCode, const QString &wmTag1, const QString &wmTag2, const QString &htmlTag,
                              ProcessPostTextFunction next, const QString &openTag = QString(), bool quote = false)
@@ -367,6 +424,69 @@ static void processWakabaMarkList(QString &text, int start, int len, const QStri
     text.replace(start, len, t);
 }
 
+static void processTags(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
+                        bool processCode)
+{
+    typedef QMap<QString, QString> StringMap;
+    init_once(StringMap, tags, StringMap()) {
+        tags.insert("[b]", "[/b]");
+        tags.insert("[i]", "[/i]");
+        tags.insert("[s]", "[/s]");
+        tags.insert("[u]", "[/u]");
+        tags.insert("[spoiler]", "[/spoiler]");
+    }
+    typedef QPair<QString, QString> StringPair;
+    typedef QMap<QString, StringPair> StringPairMap;
+    init_once(StringPairMap, htmls, StringPairMap()) {
+        htmls.insert("[b]", qMakePair(QString("<strong>"), QString("</strong>")));
+        htmls.insert("[i]", qMakePair(QString("<em>"), QString("</em>")));
+        htmls.insert("[s]", qMakePair(QString("<s>"), QString("</s>")));
+        htmls.insert("[u]", qMakePair(QString("<u>"), QString("</u>")));
+        htmls.insert("[spoiler]", qMakePair(QString("<span class=\"spoiler\">"), QString("</span>")));
+    }
+    ProcessPostTextFunction next = &processWakabaMarkList;
+    if (start < 0 || len <= 0)
+        return;
+    SkipList skip;
+    QString t = text.mid(start, len);
+    QRegExp rxop(QStringList(tags.keys()).join("|").replace("[", "\\[").replace("]", "\\]"), Qt::CaseInsensitive);
+    int s = t.indexOf(rxop);
+    if (s < 0) {
+        processPostText(t, skip, boardName, threadNumber, processCode, next);
+        text.replace(start, len, t);
+        return;
+    }
+    QString bbop = rxop.cap();
+    QString bbcl = tags.value(bbop);
+    StringPair html = htmls.value(bbop);
+    QRegExp rx(QString(bbop + "|" + bbcl).replace("[", "\\[").replace("]", "\\]"), Qt::CaseInsensitive);
+    int ind = t.indexOf(rx, s + bbop.length());
+    int depth = 1;
+    while (ind >= 0) {
+        if (rx.cap() == bbop)
+            ++depth;
+        else
+            --depth;
+        if (!depth) {
+            t.replace(ind, bbcl.length(), html.second);
+            t.replace(s, bbop.length(), html.first);
+            skip << qMakePair(s, html.first.length());
+            skip << qMakePair(ind + (html.first.length() - bbop.length()), html.second.length());
+            s = t.indexOf(bbop, ind + (html.first.length() - bbop.length()) +  html.second.length(),
+                          Qt::CaseInsensitive);
+            next = &processTags;
+            if (s < 0)
+                break;
+            depth = 1;
+            ind = t.indexOf(rx, s + bbop.length());
+        } else {
+            ind = t.indexOf(rx, ind + rx.matchedLength());
+        }
+    }
+    processPostText(t, skip, boardName, threadNumber, processCode, next);
+    text.replace(start, len, t);
+}
+
 static void processTagCode(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
                            bool processCode)
 {
@@ -411,15 +531,22 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
             indEnd = t.indexOf("[/code]", indStart + rx.matchedLength());
         }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkList);
+    processPostText(t, skip, boardName, threadNumber, processCode, &processTags);
     text.replace(start, len, t);
+}
+
+static void processTagQuote(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
+                            bool processCode)
+{
+    ProcessPostTextFunction f = processCode ? &processTagCode : &processTags;
+    processAsimmetric(text, start, len, boardName, threadNumber, processCode, "q", "font", f,
+                      "<font face=\"monospace\">", true);
 }
 
 static void processWakabaMarkMonospaceSingle(QString &text, int start, int len, const QString &boardName,
                                              quint64 threadNumber, bool processCode)
 {
-    ProcessPostTextFunction f = processCode ? &processTagCode : &processWakabaMarkList;
-    processSimmetric(text, start, len, boardName, threadNumber, processCode, "`", "", "font", f,
+    processSimmetric(text, start, len, boardName, threadNumber, processCode, "`", "", "font", &processTagQuote,
                      "<font face=\"monospace\">", true);
 }
 
