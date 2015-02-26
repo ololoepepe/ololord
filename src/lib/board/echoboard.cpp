@@ -17,16 +17,14 @@
 #include <list>
 #include <string>
 
-static QString processPost(Content::BaseBoard::Post &p)
+static QString processPost(Content::BaseBoard::Post &p, QString *subject = 0)
 {
     QString s = Tools::fromStd(p.subject);
-    QString subject = BTextTools::removeTrailingSpaces(s.mid(0, 1000));
+    QString subj = BTextTools::removeTrailingSpaces(s.mid(0, 1000));
     QString link = s.mid(1000);
-    if (subject.isEmpty())
-        subject = link;
-    p.subject = Tools::toStd("<a href=\"" + link + "\">" + BTextTools::toHtml(subject) + "</a>");
+    p.subject = Tools::toStd("<a href=\"" + link + "\">" + BTextTools::toHtml(!subj.isEmpty() ? subj : link) + "</a>");
     p.subjectIsRaw = true;
-    return link;
+    return bRet(subject, subj, link);
 }
 
 echoBoard::echoBoard()
@@ -82,7 +80,9 @@ void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content
     Content::echoThread *cc = dynamic_cast<Content::echoThread *>(c);
     if (!cc)
         return;
-    cc->threadLink = Tools::toStd(processPost(cc->opPost));
+    QString subj;
+    cc->threadLink = Tools::toStd(processPost(cc->opPost), &subj);
+    cc->pageTitle = Tools::toStd(subj);
 }
 
 void echoBoard::beforeStoring(Tools::PostParameters &params, bool post)

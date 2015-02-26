@@ -44,7 +44,7 @@
             <% end %>
         </div>
         <iframe src="<%= threadLink | raw %>" name="externalThreadFrame" scrolling="auto"
-                    class="externalThreadFrame" frameborder="no"></iframe>
+                    class="externalThreadFrame" frameborder="yes"></iframe>
         <% if ( !content.postingEnabled ) %>
             <div class="theMessage">
                 <h2><%= postingDisabledText %></h2>
