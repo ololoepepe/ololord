@@ -27,7 +27,8 @@ function selectPost(post) {
     if (!!lastSelectedElement)
         lastSelectedElement.style.backgroundColor = "#DDDDDD";
     lastSelectedElement = document.getElementById("post" + post);
-    lastSelectedElement.style.backgroundColor = "#EEDACB";
+    if (!!lastSelectedElement)
+        lastSelectedElement.style.backgroundColor = "#EEDACB";
     if (window.location.href.split("#").length < 2)
         window.location.href = window.location.href + "#" + post;
     else
@@ -37,8 +38,8 @@ function selectPost(post) {
 function updateThread(boardName, threadNumber) {
     if (!boardName || isNaN(+threadNumber))
         return;
-    var lastPostNumber = document.getElementById("lastPostNumber").value;
-    ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostNumber], 7, function(res) {
+    var lastPostN = document.getElementById("lastPostNumber").value;
+    ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], 7, function(res) {
         if (!res)
             return;
         var msg = document.createElement("div");
@@ -57,11 +58,11 @@ function updateThread(boardName, threadNumber) {
         if (!before)
             return;
         for (var i = 0; i < res.length; ++i) {
-            var post = createPostNode(res[i]);
+            var post = createPostNode(res[i], threadNumber, true);
             if (!post)
                 continue;
             document.body.insertBefore(post, before);
-            lastPostNumber.value = res["number"];
+            document.getElementById("lastPostNumber").value = res[i]["number"];
         }
     });
 }

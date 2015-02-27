@@ -195,6 +195,7 @@ function deletePost(boardName, postNumber, fromThread) {
                 window.location.href = window.location.href.replace(suffix, "");
             } else {
                 post.parentNode.removeChild(post);
+                window.location.href = window.location.href.replace(/#\d+/g, "");
             }
         });
     });
@@ -304,11 +305,12 @@ function createPostNode(res, threadNumber, permanent) {
     post.id = !!permanent ? ("post" + res["number"]) : "";
     post.style.display = "";
     var currentBoardName = document.getElementById("currentBoardName").value;
-    if (getCookie("postHidden" + currentBoardName + res["number"]) === "true")
+    var hidden = (getCookie("postHidden" + currentBoardName + res["number"]) === "true");
+    if (hidden)
         post.className += " hiddenPost";
     post.querySelector("[name='subject']").appendChild(document.createTextNode(res["subject"]));
     var registered = post.querySelector("[name='registered']");
-    if (!!res["registered"] && !!res["showTripcode"])
+    if (!!res["showRegistered"] && !!res["showTripcode"])
         registered.style.display = "";
     else
         registered.parentNode.removeChild(registered);
@@ -318,10 +320,12 @@ function createPostNode(res, threadNumber, permanent) {
     else
         name.innerHTML = res["name"];
     var tripcode = post.querySelector("[name='tripcode']");
-    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"])
+    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"]) {
         tripcode.style.display = "";
-    else
+        tripcode.appendChild(document.createTextNode(res["tripcode"]));
+    } else {
         tripcode.parentNode.removeChild(tripcode);
+    }
     var whois = post.querySelector("[name='whois']");
     var sitePathPrefix = document.getElementById("sitePathPrefix").value;
     if (!!res["flagName"]) {
@@ -335,7 +339,6 @@ function createPostNode(res, threadNumber, permanent) {
     }
     post.querySelector("[name='dateTime']").appendChild(document.createTextNode(res["dateTime"]));
     var moder = (document.getElementById("moder").value === "true");
-    var postingEnabled = (document.getElementById("postingEnabled").value === "true");
     var number = post.querySelector("[name='number']");
     number.appendChild(document.createTextNode(res["number"]));
     if (moder)
@@ -354,6 +357,44 @@ function createPostNode(res, threadNumber, permanent) {
         bannedFor.style.display = "";
     else
         bannedFor.parentNode.removeChild(bannedFor);
+    var perm = post.querySelector("[name='permanent']");
+    if (!permanent) {
+        perm.parentNode.removeChild(perm);
+        return post;
+    }
+    perm.style.display = "";
+    if (isNaN(+threadNumber))
+        return null;
+    var postingEnabled = (document.getElementById("postingEnabled").value === "true");
+    var anumber = document.createElement("a");
+    number.parentNode.insertBefore(anumber, number);
+    number.parentNode.removeChild(number);
+    anumber.title = number.title;
+    anumber.appendChild(number);
+    if (postingEnabled)
+        anumber.href = "javascript:insertPostNumber(" + res["number"] + ");";
+    else
+        anumber.href = "#" + res["number"];
+    var deleteButton = post.querySelector("[name='deleteButton']");
+    deleteButton.href = deleteButton.href.replace("%postNumber%", res["number"]);
+    var hideButton = post.querySelector("[name='hideButton']");
+    hideButton.id = hideButton.id.replace("%postNumber%", res["number"]);
+    hideButton.href = hideButton.href.replace("%postNumber%", res["number"]);
+    
+    hideButton.href = hideButton.href.replace("%hide%", !hidden);
+    var m = post.querySelector("[name='moder']");
+    if (!moder) {
+        m.parentNode.removeChild(m);
+        return post;
+    }
+    m.style.display = "";
+    var editButton = post.querySelector("[name='editButton']");
+    editButton.href = editButton.href.replace("%postNumber%", res["number"]);
+    var banButton = post.querySelector("[name='banButton']");
+    banButton.href = banButton.href.replace("%postNumber%", res["number"]);
+    var rawText = post.querySelector("[name='rawText']");
+    rawText.id = rawText.id.replace("%postNumber%", res["number"]);
+    rawText.value = res["rawPostText"];
     return post;
 }
 

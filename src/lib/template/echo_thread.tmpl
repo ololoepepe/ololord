@@ -24,6 +24,14 @@
         <% include boardTexts() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>
+        <input id="noNewPostsText" type="hidden" value="<%= noNewPostsText %>" />
+        <input id="newPostsText" type="hidden" value="<%= newPostsText %>" />
+        <input id="threadNumber" type="hidden" value="<%= opPost.number %>" />
+        <% if ( !content.posts.empty() ) %>
+            <input id="lastPostNumber" type="hidden" value="<%= posts.back().number %>" />
+        <% else %>
+            <input id="lastPostNumber" type="hidden" value="<%= opPost.number %>" />
+        <% end %>
         <a id="top"></a>
         <% include settings() %>
         <br />

@@ -48,6 +48,7 @@ static cppcms::json::object toJson(const Content::BaseBoard::Post &post)
     o["showTripcode"] = post.showTripcode;
     o["subject"] = post.subject;
     o["text"] = post.text;
+    o["rawPostText"] = post.rawPostText;
     o["tripcode"] = post.tripcode;
     return o;
 }
