@@ -1,3 +1,4 @@
 [done] Add BB-code support
 [done] Add /echo/ board
 [done] Add ability to load new posts without updating a page
+[done] Fix page title of threads without subject

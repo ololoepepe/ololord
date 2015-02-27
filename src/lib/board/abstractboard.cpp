@@ -426,7 +426,13 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         c.fixed = thread->fixed();
         c.id = thread->id();
         c.number = thread->number();
-        pageTitle = posts.first().load()->subject();
+        QSharedPointer<Post> opPost = posts.first().load();
+        pageTitle = opPost->subject();
+        if (pageTitle.isEmpty()) {
+            pageTitle = opPost->text().replace(QRegExp("\\r?\\n+"), " ");
+            if (pageTitle.length() > 50)
+                pageTitle = pageTitle.left(47) + "...";
+        }
         postingEn = postingEn && thread->postingEnabled();
         c.opPost = Controller::toController(*posts.first().load(), this, ts.locale(), app.request());
         foreach (int j, bRangeD(1, posts.size() - 1)) {
