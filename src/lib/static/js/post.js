@@ -294,6 +294,74 @@ function createPostFile(f) {
     return file;
 }
 
+function createPostNode(res, keepIds) {
+    post = document.getElementById("postTemplate");
+    if (!post)
+        return null;
+    post = post.cloneNode(true);
+    post.id = "";
+    post.style.display = "";
+    var list = traverseChildren(post);
+    for (var i = 0; i < list.length; ++i) {
+        var c = list[i];
+        switch (c.id) {
+        case "postTemplateSubject":
+            c.appendChild(document.createTextNode(res["subject"]));
+            break;
+        case "postTemplateRegistered":
+            if (!!res["showRegistered"] && !!res["showTripcode"])
+                c.style.display = "";
+            break;
+        case "postTemplateName":
+            if (!!res["email"])
+                c.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
+            else
+                c.innerHTML = res["name"];
+            break;
+        case "postTemplateTripcode":
+            if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"])
+                c.style.display = "";
+            break;
+        case "postTemplateWhois":
+            if (!!res["flagName"]) {
+                c.style.display = "";
+                c.href = "/" + document.getElementById("sitePathPrefix") + "img/flag/" + res["flagName"];
+                c.title = res["countryName"];
+                if (!!res["cityName"])
+                    c.title += ": " + res["cityName"];
+             }
+             break;
+        case "postTemplateDateTime":
+             c.appendChild(document.createTextNode(res["dateTime"]));
+             break;
+        case "postTemplateNumber":
+             c.appendChild(document.createTextNode(res["number"]));
+             break;
+        case "postTemplateFiles":
+             var files = res["files"];
+             if (!!files) {
+                for (var i = 0; i < files.length; ++i) {
+                    var file = createPostFile(files[i]);
+                    if (!!file)
+                        c.insertBefore(file, c.children[c.children.length - 1]);
+                 }
+             }
+             break;
+        case "postTemplateText":
+             c.innerHTML= res["text"];
+             break;
+        case "postTemplateBannedFor":
+             if (!!res["bannedFor"])
+                c.style.display = "";
+             break;
+        default:
+             break;
+        }
+        c.id = "";
+    }
+    return post;
+}
+
 function viewPostStage2(link, postNumber, post) {
     post.onmouseout = function(event) {
         var next = post;
@@ -311,9 +379,6 @@ function viewPostStage2(link, postNumber, post) {
     post.onmouseover = function(event) {
         post.mustHide = false;
     };
-    /*var offs = cumulativeOffset(link);
-    post.style.left = (offs.left + link.offsetWidth + 20) + "px";
-    post.style.top = (offs.top - 40) + "px";*/
     if (!postPreviews[postNumber])
         postPreviews[postNumber] = post;
     else
@@ -351,70 +416,9 @@ function viewPost(link, boardName, postNumber, threadNumber) {
         post = document.getElementById("post" + postNumber);
     if (!post) {
         ajaxRequest("get_post", [boardName, +postNumber, +threadNumber], 6, function(res) {
-            post = document.getElementById("postTemplate");
+            post = createPostNode(res);
             if (!post)
                 return;
-            post = post.cloneNode(true);
-            post.id = "";
-            post.style.display = "";
-            var list = traverseChildren(post);
-            for (var i = 0; i < list.length; ++i) {
-                var c = list[i];
-                switch (c.id) {
-                case "postTemplateSubject":
-                    c.appendChild(document.createTextNode(res["subject"]));
-                    break;
-                case "postTemplateRegistered":
-                    if (!!res["showRegistered"] && !!res["showTripcode"])
-                        c.style.display = "";
-                    break;
-                case "postTemplateName":
-                    if (!!res["email"])
-                        c.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
-                    else
-                        c.innerHTML = res["name"];
-                    break;
-                case "postTemplateTripcode":
-                    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"])
-                        c.style.display = "";
-                    break;
-                case "postTemplateWhois":
-                    if (!!res["flagName"]) {
-                        c.style.display = "";
-                        c.href = "/" + document.getElementById("sitePathPrefix") + "img/flag/" + res["flagName"];
-                        c.title = res["countryName"];
-                        if (!!res["cityName"])
-                            c.title += ": " + res["cityName"];
-                    }
-                    break;
-                case "postTemplateDateTime":
-                    c.appendChild(document.createTextNode(res["dateTime"]));
-                    break;
-                case "postTemplateNumber":
-                    c.appendChild(document.createTextNode(res["number"]));
-                    break;
-                case "postTemplateFiles":
-                    var files = res["files"];
-                    if (!!files) {
-                        for (var i = 0; i < files.length; ++i) {
-                            var file = createPostFile(files[i]);
-                            if (!!file)
-                                c.insertBefore(file, c.children[c.children.length - 1]);
-                        }
-                    }
-                    break;
-                case "postTemplateText":
-                    c.innerHTML= res["text"];
-                    break;
-                case "postTemplateBannedFor":
-                    if (!!res["bannedFor"])
-                        c.style.display = "";
-                    break;
-                default:
-                    break;
-                }
-                c.id = "";
-            }
             viewPostStage2(link, postNumber, post);
         });
     } else {

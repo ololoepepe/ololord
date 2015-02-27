@@ -622,6 +622,42 @@ bool editPost(const cppcms::http::request &req, const QString &boardName, quint6
     }
 }
 
+QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
+                        quint64 lastPostNumber, bool *ok, QString *error)
+{
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (!board)
+        return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"), QList<Post>());
+    if (!threadNumber)
+        return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid thread number", "error"), QList<Post>());
+    if (!lastPostNumber)
+        return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid post number", "error"), QList<Post>());
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(ok, false, error, tq.translate("getNewPosts", "Internal database error", "error"),
+                        QList<Post>());
+        }
+        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::board == boardName
+                                                         && odb::query<Thread>::number == threadNumber);
+        if (thread.error) {
+            return bRet(ok, false, error, tq.translate("getNewPosts", "Internal database error", "error"),
+                        QList<Post>());
+        }
+        if (!thread)
+            return bRet(ok, false, error, tq.translate("getNewPosts", "No such thread", "error"), QList<Post>());
+        quint64 threadId = thread->id();
+        QList<Post> posts = query<Post, Post>(odb::query<Post>::board == boardName
+                                              && odb::query<Post>::thread == threadId
+                                              && odb::query<Post>::number > lastPostNumber);
+        t.commit();
+        return bRet(ok, true, error, QString(), posts);
+    }  catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QList<Post>());
+    }
+}
+
 Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok, QString *error)
 {
     AbstractBoard *board = AbstractBoard::board(boardName);
@@ -634,8 +670,8 @@ Post getPost(const cppcms::http::request &req, const QString &boardName, quint64
         Transaction t;
         if (!t)
             return bRet(ok, false, error, tq.translate("getPost", "Internal database error", "error"), Post());
-        Database::Result<Post> post = Database::queryOne<Post, Post>(odb::query<Post>::board == boardName
-                                                                     && odb::query<Post>::number == postNumber);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == postNumber);
         if (post.error)
             return bRet(ok, false, error, tq.translate("getPost", "Internal database error", "error"), Post());
         if (!post)
@@ -888,8 +924,8 @@ BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QStri
         if (!t) {
             return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "description"), inf);
         }
-        QList<BannedUser> list = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
-                                                                         && odb::query<BannedUser>::ip == ip);
+        QList<BannedUser> list = query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
+                                                               && odb::query<BannedUser>::ip == ip);
         foreach (const BannedUser &u, list) {
             QDateTime expires = u.expirationDateTime().toUTC();
             if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
@@ -902,8 +938,8 @@ BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QStri
             }
         }
         if (inf.level <= 0 && !boardName.isEmpty()) {
-            list = Database::query<BannedUser, BannedUser>(odb::query<BannedUser>::board == boardName
-                                                           && odb::query<BannedUser>::ip == ip);
+            list = query<BannedUser, BannedUser>(odb::query<BannedUser>::board == boardName
+                                                 && odb::query<BannedUser>::ip == ip);
             foreach (const BannedUser &u, list) {
                 QDateTime expires = u.expirationDateTime().toUTC();
                 if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {

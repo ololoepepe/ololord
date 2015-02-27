@@ -34,6 +34,38 @@ function selectPost(post) {
         window.location.href = window.location.href.split("#")[0] + "#" + post;
 }
 
+function updateThread(boardName, threadNumber) {
+    if (!boardName || isNaN(+threadNumber))
+        return;
+    var lastPostNumber = document.getElementById("lastPostNumber").value;
+    ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostNumber], 7, function(res) {
+        if (!res)
+            return;
+        var msg = document.createElement("div");
+        msg.className = "popup noNewPostsPopup";
+        var txt = document.getElementById((res.length >= 1) ? "newPostsText" : "noNewPostsText").value;
+        if (res.length >= 1)
+            txt += " " + res.length;
+        msg.appendChild(document.createTextNode(txt));
+        document.body.appendChild(msg);
+        setTimeout(function() {
+            document.body.removeChild(msg);
+        }, 5000);
+        if (res.length < 1)
+            return;
+        var before = document.getElementById("afterAllPosts");
+        if (!before)
+            return;
+        for (var i = 0; i < res.length; ++i) {
+            var post = createPostNode(res[i]);
+            if (!post)
+                continue;
+            document.body.insertBefore(post, before);
+            lastPostNumber.value = res["number"];
+        }
+    });
+}
+
 function initializeOnLoadThread() {
     var sl = window.location.href.split("#");
     if (sl.length != 2)

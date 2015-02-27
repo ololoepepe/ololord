@@ -229,6 +229,26 @@ The default is %1.</source>
         <comment>description</comment>
         <translation>Пароль слишком длинный</translation>
     </message>
+    <message>
+        <source>Back</source>
+        <comment>backText</comment>
+        <translation>Назад</translation>
+    </message>
+    <message>
+        <source>Update thread</source>
+        <comment>updateThreadText</comment>
+        <translation>Обновить тред</translation>
+    </message>
+    <message>
+        <source>No new posts</source>
+        <comment>noNewPostsText</comment>
+        <translation>Нет новых постов</translation>
+    </message>
+    <message>
+        <source>New posts:</source>
+        <comment>newPostsText</comment>
+        <translation>Новых постов:</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -636,6 +656,39 @@ The default is %1.</source>
         <source>Text is too long</source>
         <comment>error</comment>
         <translation>Текст слишком длинный</translation>
+    </message>
+</context>
+<context>
+    <name>getNewPosts</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such thread</source>
+        <comment>error</comment>
+        <translation>Нет такого треда</translation>
     </message>
 </context>
 <context>

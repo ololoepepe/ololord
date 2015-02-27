@@ -13,13 +13,19 @@ namespace Content
 
 struct OLOLORD_EXPORT Thread : public BaseBoard
 {
+    std::string backText;
     unsigned int bumpLimit;
     bool closed;
     bool fixed;
     bool hidden;
+    unsigned long long id;
+    std::string newPostsText;
+    std::string noNewPostsText;
+    unsigned long long number;
     Post opPost;
     unsigned int postLimit;
     std::list<Post> posts;
+    std::string updateThreadText;
 public:
     bool bumpLimitReached()
     {

@@ -141,7 +141,7 @@ template <typename ResultType, typename QueryType> Result<ResultType> queryOne(c
     Result<ResultType> v(i);
     ++i;
     if (r.end() != i)
-        return Result<ResultType>(false);
+        return Result<ResultType>(true);
     return v;
 }
 
@@ -243,6 +243,8 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  co
                                const QByteArray &password, QString *error = 0);
 OLOLORD_EXPORT bool editPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
                              const QString &text, QString *error = 0);
+OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
+                                       quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
                             bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *error = 0,

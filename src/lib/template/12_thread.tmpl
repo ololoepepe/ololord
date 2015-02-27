@@ -2,6 +2,18 @@
 <% skin my_skin %>
 <% view thread uses Content::Thread extends base_board %>
 
+<% template threadActions(std::string position) %>
+<div class="threadActions">
+    [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= backText %></a>]
+    [<a href="javascript:updateThread('<%= currentBoard.name %>', <%= number %>);"><%= updateThreadText %></a>]
+    <% if ( "top" == position ) %>
+        [<a href="#bottom"><%= toBottomText %></a>]
+    <% else %>
+        [<a href="#top"><%= toTopText %></a>]
+    <% end %>
+</div>
+<% end template %>
+
 <% template post(Content::BaseBoard::Post post, bool op) %>
 <% if ( op ) %>
     <% if ( post.hidden ) %>
@@ -161,6 +173,13 @@
         <% include boardTexts() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>
+        <input id="noNewPostsText" type="hidden" value="<%= noNewPostsText %>" />
+        <input id="newPostsText" type="hidden" value="<%= newPostsText %>" />
+        <% if ( !content.posts.empty() ) %>
+            <input id="lastPostNumber" type="hidden" value="<%= posts.back().number %>" />
+        <% else %>
+            <input id="lastPostNumber" type="hidden" value="<%= opPost.number %>" />
+        <% end %>
         <a id="top"></a>
         <% include settings() %>
         <br />
@@ -198,12 +217,17 @@
         <% end %>
         <% include createAction("Top") %>
         <hr />
+        <% include threadActions("top") %>
+        <hr />
         <% include post(opPost, 1) %>
         <% foreach p in posts %>
             <% item %>
                 <% include post(p, 0) %>
             <% end %>
         <% end %>
+        <input id="afterAllPosts" type="hidden" />
+        <hr />
+        <% include threadActions("bottom") %>
         <% if ( content.postingEnabled && !content.postLimitReached() ) %>
             <hr />
         <% end %>

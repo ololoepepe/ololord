@@ -1,2 +1,3 @@
 [done] Add BB-code support
 [done] Add /echo/ board
+[done] Add ability to load new posts without updating a page

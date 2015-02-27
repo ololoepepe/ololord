@@ -589,6 +589,30 @@ void toHtml(QString *s)
     processPostText(*s, skip, "", 0L, false, &toHtml);
 }
 
+QList<Content::BaseBoard::Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
+                                            quint64 threadNumber, quint64 lastPostNumber, bool *ok, QString *error)
+{
+    AbstractBoard *board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (!board) {
+        return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"),
+                    QList<Content::BaseBoard::Post>());
+    }
+    bool b = false;
+    QList<Post> posts = Database::getNewPosts(req, boardName, threadNumber, lastPostNumber, &b, error);
+    if (!b)
+        return bRet(ok, false, QList<Content::BaseBoard::Post>());
+    QList<Content::BaseBoard::Post> list;
+    foreach (const Post &p, posts) {
+        list << toController(p, board, threadNumber, tq.locale(), req);
+        if (!list.last().number) {
+            return bRet(ok, false, error, tq.translate("getNewPosts", "Internal logic error", "error"),
+                        QList<Content::BaseBoard::Post>());
+        }
+    }
+    return bRet(ok, true, error, QString(), list);
+}
+
 Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
                                  quint64 threadNumber, bool *ok, QString *error)
 {
@@ -602,7 +626,6 @@ Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString
     Post post = Database::getPost(req, boardName, postNumber, &b, error);
     if (!b)
         return bRet(ok, false, Content::BaseBoard::Post());
-
     Content::BaseBoard::Post p = toController(post, board, threadNumber, tq.locale(), req);
     if (!p.number) {
         return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"),

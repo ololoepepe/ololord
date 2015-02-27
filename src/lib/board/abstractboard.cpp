@@ -426,6 +426,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         }
         c.closed = !thread->postingEnabled();
         c.fixed = thread->fixed();
+        c.id = thread->id();
+        c.number = thread->number();
         pageTitle = posts.first().load()->subject();
         postingEn = postingEn && thread->postingEnabled();
         c.opPost = Controller::toController(*posts.first().load(), this, thread->number(), ts.locale(), app.request());
@@ -444,9 +446,13 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                                        Tools::fromStd(e.what()));
     }
     Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber);
+    c.backText = ts.translate("AbstractBoard", "Back", "backText");
     c.bumpLimit = bumpLimit();
+    c.newPostsText = ts.translate("AbstractBoard", "New posts:", "newPostsText");
+    c.noNewPostsText = ts.translate("AbstractBoard", "No new posts", "noNewPostsText");
     c.postLimit = postLimit();
     c.hidden = (Tools::cookieValue(app.request(), "postHidden" + name() + QString::number(threadNumber)) == "true");
+    c.updateThreadText = ts.translate("AbstractBoard", "Update thread", "updateThreadText");
     beforeRenderThread(app.request(), cc.data());
     app.render(Tools::toStd(viewName), c);
     Tools::log(app, "Handled thread");
