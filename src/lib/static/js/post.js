@@ -308,6 +308,16 @@ function createPostNode(res, permanent) {
     var hidden = (getCookie("postHidden" + currentBoardName + res["number"]) === "true");
     if (hidden)
         post.className += " hiddenPost";
+    var fixed = post.querySelector("[name='fixed']");
+    if (!!res["fixed"])
+        fixed.style.display = "";
+    else
+        fixed.parentNode.removeChild(fixed);
+    var closed = post.querySelector("[name='closed']");
+    if (!!res["closed"])
+        closed.style.display = "";
+    else
+        closed.parentNode.removeChild(closed);
     post.querySelector("[name='subject']").appendChild(document.createTextNode(res["subject"]));
     var registered = post.querySelector("[name='registered']");
     if (!!res["showRegistered"] && !!res["showTripcode"])
@@ -457,9 +467,9 @@ function viewPostStage2(link, postNumber, post) {
 function viewPost(link, boardName, postNumber) {
     if (!link || !boardName || isNaN(+postNumber))
         return;
-    var post = postPreviews[postNumber];
+    var post = document.getElementById("post" + postNumber);
     if (!post)
-        post = document.getElementById("post" + postNumber);
+        post = postPreviews[postNumber];
     if (!post) {
         ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
             post = createPostNode(res);
@@ -471,8 +481,21 @@ function viewPost(link, boardName, postNumber) {
         post = post.cloneNode(true);
         post.className = post.className.replace("opPost", "post");
         var list = traverseChildren(post);
-        for (var i = 0; i < list.length; ++i)
+        for (var i = 0; i < list.length; ++i) {
+            switch (list[i].name) {
+            case "editButton":
+            case "fixButton":
+            case "closeButton":
+            case "banButton":
+            case "deleteButton":
+            case "hideButton":
+                list[i].parentNode.removeChild(list[i]);
+                break;
+            default:
+                break;
+            }
             list[i].id = "";
+        }
         viewPostStage2(link, postNumber, post);
     }
 }
