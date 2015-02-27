@@ -48,7 +48,10 @@ static cppcms::json::object toJson(const Content::BaseBoard::Post &post, bool ec
     o["number"] = post.number;
     o["showRegistered"] = post.showRegistered;
     o["showTripcode"] = post.showTripcode;
-    if (echo) {
+    o["threadNumber"] = post.threadNumber;
+    bool op = (post.number == post.threadNumber);
+    o["op"] = op;
+    if (echo && op) {
         QString s = Tools::fromStd(post.subject);
         QString subj = BTextTools::removeTrailingSpaces(s.mid(0, 1000));
         QString link = s.mid(1000);
@@ -124,15 +127,12 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
     if (!ok)
         return server.return_error(Tools::toStd(err));
     cppcms::json::array a;
-    foreach (const Content::BaseBoard::Post &p, posts) {
-        cppcms::json::object o = toJson(p);
-        o["op"] = (qint64(p.number) == threadNumber);
-        a.push_back(o);
-    }
+    foreach (const Content::BaseBoard::Post &p, posts)
+        a.push_back(toJson(p));
     server.return_result(a);
 }
 
-void ActionAjaxHandler::getPost(std::string boardName, long long postNumber, long long threadNumber)
+void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
 {
     if (!testBan(Tools::fromStd(boardName), true))
         return;
@@ -140,14 +140,10 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber, lon
     QString err;
     const cppcms::http::request &req = server.request();
     Content::BaseBoard::Post post = Controller::getPost(req, Tools::fromStd(boardName),
-                                                        postNumber > 0 ? quint64(postNumber) : 0,
-                                                        threadNumber > 0 ? quint64(threadNumber) : 0, &ok, &err);
+                                                        postNumber > 0 ? quint64(postNumber) : 0, &ok, &err);
     if (!ok)
         return server.return_error(Tools::toStd(err));
-    bool op = (postNumber == threadNumber);
-    cppcms::json::object o = toJson(post, ("echo" == boardName && op));
-    o["op"] = op;
-    server.return_result(o);
+    server.return_result(toJson(post, ("echo" == boardName)));
 }
 
 QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const

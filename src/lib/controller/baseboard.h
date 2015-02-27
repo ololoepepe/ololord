@@ -45,6 +45,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
         std::string subject;
         bool subjectIsRaw;
         std::string text;
+        unsigned long long threadNumber;
         std::string tripcode;
         bool showTripcode;
     };

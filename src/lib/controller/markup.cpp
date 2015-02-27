@@ -6,6 +6,7 @@
 #include "settingslocker.h"
 #include "stored/registereduser.h"
 #include "stored/thread.h"
+#include "stored/thread-odb.hxx"
 #include "tools.h"
 #include "translator.h"
 
@@ -250,10 +251,9 @@ static void processWakabaMarkLink(QString &text, int start, int len, const QStri
     while (ind >= 0) {
         QString cap = rx.cap();
         QString postNumber = cap.mid(2);
-        QString param = "this, '" + boardName + "', " + postNumber + ", " + QString::number(threadNumber);
         QString a = "<a href=\"javascript:selectPost(" + postNumber + ", " + QString::number(threadNumber)
-                + ");\" onmouseover=\"viewPost(" + param + ");\" onmouseout=\"noViewPost();\">"
-                + cap.replace(">", "&gt;") + "</a>";
+                + ");\" onmouseover=\"viewPost(this, '" + boardName + "', " + postNumber
+                + ");\" onmouseout=\"noViewPost();\">" + cap.replace(">", "&gt;") + "</a>";
         t.replace(ind, rx.matchedLength(), a);
         skip << qMakePair(ind, a.length());
         ind = rx.indexIn(t, ind + a.length());
@@ -605,7 +605,7 @@ QList<Content::BaseBoard::Post> getNewPosts(const cppcms::http::request &req, co
         return bRet(ok, false, QList<Content::BaseBoard::Post>());
     QList<Content::BaseBoard::Post> list;
     foreach (const Post &p, posts) {
-        list << toController(p, board, threadNumber, tq.locale(), req);
+        list << toController(p, board, tq.locale(), req);
         if (!list.last().number) {
             return bRet(ok, false, error, tq.translate("getNewPosts", "Internal logic error", "error"),
                         QList<Content::BaseBoard::Post>());
@@ -615,7 +615,7 @@ QList<Content::BaseBoard::Post> getNewPosts(const cppcms::http::request &req, co
 }
 
 Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
-                                 quint64 threadNumber, bool *ok, QString *error)
+                                 bool *ok, QString *error)
 {
     AbstractBoard *board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
@@ -627,7 +627,7 @@ Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString
     Post post = Database::getPost(req, boardName, postNumber, &b, error);
     if (!b)
         return bRet(ok, false, Content::BaseBoard::Post());
-    Content::BaseBoard::Post p = toController(post, board, threadNumber, tq.locale(), req);
+    Content::BaseBoard::Post p = toController(post, board, tq.locale(), req);
     if (!p.number) {
         return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"),
                     Content::BaseBoard::Post());
@@ -635,8 +635,8 @@ Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString
     return bRet(ok, true, error, QString(), p);
 }
 
-Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board, quint64 threadNumber,
-                                      const QLocale &l, const cppcms::http::request &req)
+Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board, const QLocale &l,
+                                      const cppcms::http::request &req)
 {
     if (!board)
         return Content::BaseBoard::Post();
@@ -661,7 +661,18 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
             f.size = Tools::toStd(sz);
             p->files.push_back(f);
         }
+        quint64 threadNumber = 0;
+        try {
+            Transaction t;
+            if (!t)
+                return Content::BaseBoard::Post();
+            threadNumber = post.thread().load()->number();
+        } catch (const odb::exception &e) {
+            qDebug() << Tools::fromStd(e.what());
+            return Content::BaseBoard::Post();
+        }
         p->text = processPostText(post.text(), board->name(), threadNumber, board->processCode());
+        p->threadNumber = threadNumber;
         p->showRegistered = false;
         p->showTripcode = post.showTripcode();
         if (board->showWhois()) {

@@ -295,7 +295,7 @@ function createPostFile(f) {
     return file;
 }
 
-function createPostNode(res, threadNumber, permanent) {
+function createPostNode(res, permanent) {
     if (!res)
         return null;
     post = document.getElementById("postTemplate");
@@ -343,6 +343,19 @@ function createPostNode(res, threadNumber, permanent) {
     number.appendChild(document.createTextNode(res["number"]));
     if (moder)
         number.title = res["ip"];
+    var postingEnabled = (document.getElementById("postingEnabled").value === "true");
+    var inp = document.getElementById("currentThreadNumber");
+    if (!!inp && +inp.value === res["threadNumber"]) {
+        if (postingEnabled)
+            number.href = "javascript:insertPostNumber(" + res["number"] + ");";
+        else
+            number.href = "#" + res["number"];
+    } else {
+        number.href = "/" + sitePathPrefix + currentBoardName + "/thread/" + res["threadNumber"] + ".html#"
+        if (postingEnabled)
+            number.href += "i";
+        number.href += res["number"];
+    }
     var files = post.querySelector("[name='files']");
     if (!!res["files"]) {
         for (var i = 0; i < res["files"].length; ++i) {
@@ -363,9 +376,6 @@ function createPostNode(res, threadNumber, permanent) {
         return post;
     }
     perm.style.display = "";
-    if (isNaN(+threadNumber))
-        return null;
-    var postingEnabled = (document.getElementById("postingEnabled").value === "true");
     var anumber = document.createElement("a");
     number.parentNode.insertBefore(anumber, number);
     number.parentNode.removeChild(number);
@@ -444,15 +454,15 @@ function viewPostStage2(link, postNumber, post) {
     post.style.zIndex = 9001;
 }
 
-function viewPost(link, boardName, postNumber, threadNumber) {
-    if (!link || !boardName || isNaN(+postNumber) || isNaN(+threadNumber))
+function viewPost(link, boardName, postNumber) {
+    if (!link || !boardName || isNaN(+postNumber))
         return;
     var post = postPreviews[postNumber];
     if (!post)
         post = document.getElementById("post" + postNumber);
     if (!post) {
-        ajaxRequest("get_post", [boardName, +postNumber, +threadNumber], 6, function(res) {
-            post = createPostNode(res, threadNumber);
+        ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
+            post = createPostNode(res);
             if (!post)
                 return;
             viewPostStage2(link, postNumber, post);

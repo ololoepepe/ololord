@@ -333,13 +333,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.postLimit = postLimit();
             thread.postCount = posts.size();
             thread.postingEnabled = postingEn && tt.postingEnabled();
-            thread.opPost = Controller::toController(*posts.first().load(), this, tt.number(), ts.locale(),
-                                                     app.request());
+            thread.opPost = Controller::toController(*posts.first().load(), this, ts.locale(), app.request());
             foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
                 if (i <= 0)
                     break;
-                thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), this, tt.number(),
-                                                                     ts.locale(), app.request()));
+                thread.lastPosts.push_front(Controller::toController(*posts.at(i).load(), this, ts.locale(),
+                                                                     app.request()));
             }
             thread.hidden = (Tools::cookieValue(app.request(), "postHidden" + name()
                                                 + QString::number(tt.number())) == "true");
@@ -430,10 +429,9 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         c.number = thread->number();
         pageTitle = posts.first().load()->subject();
         postingEn = postingEn && thread->postingEnabled();
-        c.opPost = Controller::toController(*posts.first().load(), this, thread->number(), ts.locale(), app.request());
+        c.opPost = Controller::toController(*posts.first().load(), this, ts.locale(), app.request());
         foreach (int j, bRangeD(1, posts.size() - 1)) {
-            c.posts.push_back(Controller::toController(*posts.at(j).load(), this, thread->number(), ts.locale(),
-                                                       app.request()));
+            c.posts.push_back(Controller::toController(*posts.at(j).load(), this, ts.locale(), app.request()));
         }
         c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
         if (c.moder) {
