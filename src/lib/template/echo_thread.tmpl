@@ -2,94 +2,15 @@
 <% skin my_skin %>
 <% view echo_thread uses Content::echoThread extends thread %>
 
-<% template render() %>
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
-    <head>
-        <% include baseHead() %>
-        <% include settingsHead() %>
-        <% include navbarHead() %>
-        <% include bannerHead() %>
-        <% include createActionHead() %>
-        <% include boardHead() %>
-        <% include searchActionHead() %>
-        <% include titleHead() %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/thread.css">
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/thread_echo.css">
-        <script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
-    </head>
-    <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadThread();">
-        <% include baseTexts() %>
-        <% include settingsTexts() %>
-        <% include boardTexts() %>
-        <% include navigationButton("bottom") %>
-        <% include navigationButton("top") %>
-        <input id="noNewPostsText" type="hidden" value="<%= noNewPostsText %>" />
-        <input id="newPostsText" type="hidden" value="<%= newPostsText %>" />
-        <input id="threadNumber" type="hidden" value="<%= opPost.number %>" />
-        <% if ( !content.posts.empty() ) %>
-            <input id="lastPostNumber" type="hidden" value="<%= posts.back().number %>" />
-        <% else %>
-            <input id="lastPostNumber" type="hidden" value="<%= opPost.number %>" />
-        <% end %>
-        <a id="top"></a>
-        <% include settings() %>
-        <br />
-        <% include navbar() %>
-        <% if ( !content.searchApiKey.empty() ) %>
-            <br />
-        <% end %>
-        <% include searchAction("Top") %>
-        <% if ( !content.bannerFileName.empty() ) %>
-            <br />
-        <% end %>
-        <% include banner() %>
-        <div class="theTitle">
-            <% if ( !content.pageTitle.empty() ) %>
-                <h1><%= pageTitle %></h1>
-            <% else %>
-                <h1><%= currentBoard.title %> - <%= currentThread %></h1>
-            <% end %>
-        </div>
-        <iframe src="<%= threadLink | raw %>" name="externalThreadFrame" scrolling="auto"
-                    class="externalThreadFrame" frameborder="yes"></iframe>
-        <% if ( !content.postingEnabled ) %>
-            <div class="theMessage">
-                <h2><%= postingDisabledText %></h2>
-            </div>
-        <% elif ( content.postLimitReached() ) %>
-            <div class="theMessage">
-                <h2><%= postLimitReachedText %></h2>
-            </div>
-        <% else %>
-            <hr />
-        <% end %>
-        <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
-            <div class="theMessage">
-                <h3><%= bumpLimitReachedText %></h3>
-            </div>
-        <% end %>
-        <% include createAction("Top") %>
-        <hr />
-        <% include post(opPost, 1) %>
-        <% foreach p in posts %>
-            <% item %>
-                <% include post(p, 0) %>
-            <% end %>
-        <% end %>
-        <% if ( content.postingEnabled && !content.postLimitReached() ) %>
-            <hr />
-        <% end %>
-        <% include createAction("Bottom") %>
-        <hr />
-        <% include navbar() %>
-        <% if ( !content.searchApiKey.empty() ) %>
-            <br />
-        <% end %>
-        <% include searchAction("Bottom") %>
-        <a id="bottom"></a>
-    </body>
-</html>
+<% template head() %>
+<%include thread::head() %>
+<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/thread_echo.css">
+<% end template %>
+
+<% template body() %>
+<%include thread::body() %>
+<iframe src="<%= threadLink | raw %>" name="externalThreadFrame" scrolling="auto" class="externalThreadFrame"
+        frameborder="yes"></iframe>
 <% end template %>
 
 <% end view %>

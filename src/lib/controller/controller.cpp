@@ -199,6 +199,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.showWhois = board->showWhois();
     c.supportedFileTypes = Tools::toStd(board->supportedFileTypes());
     c.toBottomText = ts.translate("initBaseBoard", "Scroll to the bottom", "toBottomText");
+    c.toThread = ts.translate("initBaseBoard", "Answer", "toThread");
     c.toTopText = ts.translate("initBaseBoard", "Scroll to the top", "toTopText");
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
 }

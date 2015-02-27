@@ -362,7 +362,6 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         c.pages.push_back(i);
     c.toNextPageText = ts.translate("AbstractBoard", "Next page", "toNextPageText");
     c.toPreviousPageText = ts.translate("AbstractBoard", "Previous page", "toPreviousPageText");
-    c.toThread = ts.translate("AbstractBoard", "Answer", "toThread");
     beforeRenderBoard(app.request(), cc.data());
     app.render(Tools::toStd(viewName), c);
     Tools::log(app, "Handled board");

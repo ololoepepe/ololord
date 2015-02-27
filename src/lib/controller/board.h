@@ -37,7 +37,13 @@ struct OLOLORD_EXPORT Board : public BaseBoard
         {
             return postLimit && (postCount >= postLimit);
         }
+        Thread *self()
+        {
+            return this;
+        }
     };
+public:
+    typedef Thread * ThreadPointer;
 public:
     std::string boardRulesLinkText;
     unsigned int currentPage;
@@ -46,7 +52,6 @@ public:
     std::list<Thread> threads;
     std::string toNextPageText;
     std::string toPreviousPageText;
-    std::string toThread;
 public:
     unsigned int nextPage() const
     {

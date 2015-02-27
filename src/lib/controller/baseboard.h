@@ -104,6 +104,7 @@ public:
     bool showWhois;
     std::string supportedFileTypes;
     std::string toBottomText;
+    std::string toThread;
     std::string toTopText;
     std::string unfixThreadText;
 };

@@ -687,7 +687,6 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
                 p->countryName = "Unknown country";
             }
         }
-        p->hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
     }
     Content::BaseBoard::Post pp = *p;
     if (!inCache && !Cache::cachePost(board->name(), post.number(), p))
@@ -704,6 +703,7 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         pp.ip = Tools::toStd(post.posterIp());
     }
     pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
+    pp.hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
     pp.name = Tools::toStd(toHtml(post.name()));
     if (pp.name.empty())
         pp.name = "<span class=\"userName\">" + Tools::toStd(toHtml(board->defaultUserName(l))) + "</span>";

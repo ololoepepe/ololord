@@ -22,11 +22,6 @@
         <translation>Предыдущая страница</translation>
     </message>
     <message>
-        <source>Answer</source>
-        <comment>toThread</comment>
-        <translation>Ответ</translation>
-    </message>
-    <message>
         <source>Posts omitted:</source>
         <comment>omittedPostsText</comment>
         <translation>Пропущено постов:</translation>
@@ -1266,6 +1261,11 @@ Your choice:</source>
         <source>Scroll to the top</source>
         <comment>toTopText</comment>
         <translation>Отмотать наверх</translation>
+    </message>
+    <message>
+        <source>Answer</source>
+        <comment>toThread</comment>
+        <translation>Ответ</translation>
     </message>
 </context>
 <context>
