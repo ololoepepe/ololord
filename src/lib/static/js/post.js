@@ -294,71 +294,66 @@ function createPostFile(f) {
     return file;
 }
 
-function createPostNode(res, keepIds) {
+function createPostNode(res, threadNumber, permanent) {
+    if (!res)
+        return null;
     post = document.getElementById("postTemplate");
     if (!post)
         return null;
     post = post.cloneNode(true);
-    post.id = "";
+    post.id = !!permanent ? ("post" + res["number"]) : "";
     post.style.display = "";
-    var list = traverseChildren(post);
-    for (var i = 0; i < list.length; ++i) {
-        var c = list[i];
-        switch (c.id) {
-        case "postTemplateSubject":
-            c.appendChild(document.createTextNode(res["subject"]));
-            break;
-        case "postTemplateRegistered":
-            if (!!res["showRegistered"] && !!res["showTripcode"])
-                c.style.display = "";
-            break;
-        case "postTemplateName":
-            if (!!res["email"])
-                c.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
-            else
-                c.innerHTML = res["name"];
-            break;
-        case "postTemplateTripcode":
-            if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"])
-                c.style.display = "";
-            break;
-        case "postTemplateWhois":
-            if (!!res["flagName"]) {
-                c.style.display = "";
-                c.href = "/" + document.getElementById("sitePathPrefix") + "img/flag/" + res["flagName"];
-                c.title = res["countryName"];
-                if (!!res["cityName"])
-                    c.title += ": " + res["cityName"];
-             }
-             break;
-        case "postTemplateDateTime":
-             c.appendChild(document.createTextNode(res["dateTime"]));
-             break;
-        case "postTemplateNumber":
-             c.appendChild(document.createTextNode(res["number"]));
-             break;
-        case "postTemplateFiles":
-             var files = res["files"];
-             if (!!files) {
-                for (var i = 0; i < files.length; ++i) {
-                    var file = createPostFile(files[i]);
-                    if (!!file)
-                        c.insertBefore(file, c.children[c.children.length - 1]);
-                 }
-             }
-             break;
-        case "postTemplateText":
-             c.innerHTML= res["text"];
-             break;
-        case "postTemplateBannedFor":
-             if (!!res["bannedFor"])
-                c.style.display = "";
-             break;
-        default:
-             break;
-        }
-        c.id = "";
+    var currentBoardName = document.getElementById("currentBoardName").value;
+    if (getCookie("postHidden" + currentBoardName + res["number"]) === "true")
+        post.className += " hiddenPost";
+    post.querySelector("[name='subject']").appendChild(document.createTextNode(res["subject"]));
+    var registered = post.querySelector("[name='registered']");
+    if (!!res["registered"] && !!res["showTripcode"])
+        registered.style.display = "";
+    else
+        registered.parentNode.removeChild(registered);
+    var name = post.querySelector("[name='name']");
+    if (!!res["email"])
+        name.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
+    else
+        name.innerHTML = res["name"];
+    var tripcode = post.querySelector("[name='tripcode']");
+    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"])
+        tripcode.style.display = "";
+    else
+        tripcode.parentNode.removeChild(tripcode);
+    var whois = post.querySelector("[name='whois']");
+    var sitePathPrefix = document.getElementById("sitePathPrefix").value;
+    if (!!res["flagName"]) {
+        whois.style.display = "";
+        whois.href = "/" + sitePathPrefix + "img/flag/" + res["flagName"];
+        whois.title = res["countryName"];
+        if (!!res["cityName"])
+            whois.title += ": " + res["cityName"];
+    } else {
+        whois.parentNode.removeChild(whois);
     }
+    post.querySelector("[name='dateTime']").appendChild(document.createTextNode(res["dateTime"]));
+    var moder = (document.getElementById("moder").value === "true");
+    var postingEnabled = (document.getElementById("postingEnabled").value === "true");
+    var number = post.querySelector("[name='number']");
+    number.appendChild(document.createTextNode(res["number"]));
+    if (moder)
+        number.title = res["ip"];
+    var files = post.querySelector("[name='files']");
+    if (!!res["files"]) {
+        for (var i = 0; i < res["files"].length; ++i) {
+            var file = createPostFile(res["files"][i]);
+            if (!!file)
+                files.insertBefore(file, files.children[files.children.length - 1]);
+        }
+    }
+    post.querySelector("[name='text']").innerHTML = res["text"];
+    var bannedFor = post.querySelector("[name='bannedFor']");
+    if (!!res["bannedFor"])
+        bannedFor.style.display = "";
+    else
+        bannedFor.parentNode.removeChild(bannedFor);
     return post;
 }
 
@@ -416,7 +411,7 @@ function viewPost(link, boardName, postNumber, threadNumber) {
         post = document.getElementById("post" + postNumber);
     if (!post) {
         ajaxRequest("get_post", [boardName, +postNumber, +threadNumber], 6, function(res) {
-            post = createPostNode(res);
+            post = createPostNode(res, threadNumber);
             if (!post)
                 return;
             viewPostStage2(link, postNumber, post);

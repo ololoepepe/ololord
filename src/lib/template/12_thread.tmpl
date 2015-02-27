@@ -16,7 +16,7 @@
 
 <% template post(Content::BaseBoard::Post post, bool op) %>
 <% if ( op ) %>
-    <% if ( post.hidden ) %>
+    <% if ( content.hidden ) %>
         <div id="post<%= post.number %>" class="opPost hiddenPost">
     <% else %>
         <div id="post<%= post.number %>" class="opPost">
@@ -63,10 +63,10 @@
         <%= post.dateTime %>
         <% if ( content.postingEnabled ) %>
             <% if ( content.moder ) %>
-                #<a href="javascript:insertPostNumber('<%= post.number %>');"
+                #<a href="javascript:insertPostNumber(<%= post.number %>);"
                     title="<%= post.ip %>"><%= post.number %></a>
             <% else %>
-                #<a href="javascript:insertPostNumber('<%= post.number %>');"><%= post.number %></a>
+                #<a href="javascript:insertPostNumber(<%= post.number %>);"><%= post.number %></a>
             <% end %>
         <% else %>
             <% if ( content.moder ) %>
@@ -106,7 +106,7 @@
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
         <% end %>
         <% if ( op ) %>
-            <% if ( post.hidden ) %>
+            <% if ( content.hidden ) %>
                 <a id="hidePost<%= post.number %>"
                    href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>

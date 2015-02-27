@@ -4,7 +4,7 @@
 
 <% template post(Content::BaseBoard::Post post, Content::Board::Thread thread) %>
 <% if ( post.number == thread.opPost.number ) %>
-    <% if ( post.hidden ) %>
+    <% if ( thread.hidden ) %>
         <div id="post<%= post.number %>" class="opPost hiddenPost">
     <% else %>
         <div id="post<%= post.number %>" class="opPost">
@@ -94,7 +94,7 @@
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
         <% end %>
         <% if ( post.number == thread.opPost.number ) %>
-            <% if ( post.hidden ) %>
+            <% if ( thread.hidden ) %>
                 <a id="hidePost<%= post.number %>"
                    href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>

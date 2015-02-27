@@ -26,6 +26,7 @@
 #include <QPair>
 #include <QRegExp>
 #include <QSettings>
+#include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
@@ -676,7 +677,6 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
             }
         }
         p->hidden = (Tools::cookieValue(req, "postHidden" + board->name() + QString::number(post.number())) == "true");
-        p->ip = Tools::toStd(post.posterIp());
     }
     Content::BaseBoard::Post pp = *p;
     if (!inCache && !Cache::cachePost(board->name(), post.number(), p))
@@ -687,8 +687,11 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("toController", "KB", "fileSize")));
     if (board->showWhois() && "Unknown country" == pp.countryName)
         pp.countryName = ts.translate("toController", "Unknown country", "countryName");
-    if (Database::registeredUserLevel(req) >= RegisteredUser::ModerLevel)
+    int regLvl = Database::registeredUserLevel(req);
+    if (regLvl >= RegisteredUser::ModerLevel) {
         pp.rawPostText = Tools::toStd(post.text());
+        pp.ip = Tools::toStd(post.posterIp());
+    }
     pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
     pp.name = Tools::toStd(toHtml(post.name()));
     if (pp.name.empty())

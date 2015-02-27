@@ -161,6 +161,12 @@
 <% end template %>
 
 <% template boardTexts() %>
+<% if ( content.moder ) %>
+    <input type="hidden" id="moder" value="true" />
+<% else %>
+    <input type="hidden" id="moder" value="false" />
+<% end %>
+<input type="hidden" id="postingEnabled" value="<%= postingEnabled %>" />
 <input type="hidden" id="currentBoardName" value="<%= currentBoard.name %>" />
 <input type="hidden" id="currentBoardTitle" value="<%= currentBoard.title %>" />
 <input type="hidden" id="editPostText" value="<%= editPostText %>" />
@@ -198,26 +204,25 @@
 </select>
 <div id="postTemplate" class="post" style="display: none;">
     <div class="postHeader">
-        <b id="postTemplateSubject"></b>
-        <img id="postTemplateRegistered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
+        <b name="subject"></b>
+        <img name="registered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
              style="display: none;">
-        <span id="postTemplateName"></span>
-        <span id="postTemplateTripcode" class="tripcode" style="display: none;"></span>
-        <img id="postTemplateWhois" style="display: none;">
-        <span id="postTemplateDateTime"></span>
-        #<span id="postTemplateNumber"></span>
+        <span name="name"></span>
+        <span name="tripcode" class="tripcode" style="display: none;"></span>
+        <img name="whois" style="display: none;">
+        <span name="dateTime"></span>
+        #<span name="number"></span>
     </div>
     <table class="threadPost">
         <tbody>
-            <tr id="postTemplateFiles">
+            <tr name="files">
                 <td class="postText">
-                    <blockquote id="postTemplateText"></blockquote>
+                    <blockquote name="text"></blockquote>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-                    <span id="postTemplateBannedFor" class="bannedFor"
-                          style="display: none;"><%= bannedForText %></span>
+                    <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
                 <td>
             </tr>
         </tbody>
