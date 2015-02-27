@@ -340,7 +340,7 @@ function createPostNode(res, permanent) {
     var sitePathPrefix = document.getElementById("sitePathPrefix").value;
     if (!!res["flagName"]) {
         whois.style.display = "";
-        whois.href = "/" + sitePathPrefix + "img/flag/" + res["flagName"];
+        whois.src = whois.src.replace("%flagName%", res["flagName"]);
         whois.title = res["countryName"];
         if (!!res["cityName"])
             whois.title += ": " + res["cityName"];
