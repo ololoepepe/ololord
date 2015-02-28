@@ -20,5 +20,6 @@
         <file>static/css/ip_ban.css</file>
         <file>static/css/create_action_pr.css</file>
         <file>static/css/board_mlp.css</file>
+        <file>static/css/thread_echo.css</file>
     </qresource>
 </RCC>

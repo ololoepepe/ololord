@@ -2,148 +2,6 @@
 <% skin my_skin %>
 <% view board uses Content::Board extends base_board %>
 
-<% template post(Content::BaseBoard::Post post, Content::Board::Thread thread) %>
-<% if ( post.number == thread.opPost.number ) %>
-    <% if ( post.hidden ) %>
-        <div id="post<%= post.number %>" class="opPost hiddenPost">
-    <% else %>
-        <div id="post<%= post.number %>" class="opPost">
-    <% end %>
-<% else %>
-    <% if ( post.hidden ) %>
-        <div id="post<%= post.number %>" class="post hiddenPost">
-    <% else %>
-        <div id="post<%= post.number %>" class="post">
-    <% end %>
-<% end %>
-    <div class="postHeader">
-        <% if ( post.number == thread.opPost.number && thread.fixed ) %>
-            <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>">
-        <% end %>
-        <% if ( post.number == thread.opPost.number && thread.closed ) %>
-            <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
-        <% end %>
-        <b><%= post.subject %></b>
-        <% if ( post.showRegistered && post.showTripcode ) %>
-            <img src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>">
-        <% end %>
-        <% if ( !post.email.empty() ) %>
-            <a href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
-        <% else %>
-            <%= post.name | raw %>
-        <% end %>
-        <% if ( post.showRegistered && !post.tripcode.empty() && post.showTripcode ) %>
-            <span class="tripcode"><%= post.tripcode %></span>
-        <% end %>
-        <% if ( content.showWhois && !post.flagName.empty() ) %>
-            <% if ( !post.cityName.empty() ) %>
-                <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>"
-                     title="<%= post.countryName %>: <%= post.cityName %>">
-            <% else %>
-                <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>" title="<%= post.countryName %>">
-            <% end %>
-        <% end %>
-        <%= post.dateTime %>
-        <% if ( content.postingEnabled ) %>
-            <% if ( content.moder ) %>
-                #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>"
-                    title="<%= post.ip %>"><%= post.number %></a>
-            <% else %>
-                #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
-            <% end %>
-        <% else %>
-            <% if ( content.moder ) %>
-                #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"
-                    title="<%= post.ip %>"><%= post.number %></a>
-            <% else %>
-                #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
-            <% end %>
-        <% end %>
-        <% if ( content.moder ) %>
-            <a href="javascript:editPost('<%= currentBoard.name %>', '<%= post.number %>');">
-                <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
-        <% end %>
-        <% if ( content.moder && post.number == thread.opPost.number ) %>
-            <% if ( thread.fixed ) %>
-                <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
-            <% else %>
-                <a href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
-            <% end %>
-            <% if ( thread.closed ) %>
-                <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
-            <% else %>
-                <a href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
-            <% end %>
-        <% end %>
-        <% if ( content.moder ) %>
-            <a href="javascript:banUser('<%= currentBoard.name %>', '<%= post.number %>');">
-                <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
-        <% end %>
-        <a href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>');">
-        <% if ( post.number == thread.opPost.number ) %>
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
-        <% else %>
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
-        <% end %>
-        <% if ( post.number == thread.opPost.number ) %>
-            <% if ( post.hidden ) %>
-                <a id="hidePost<%= post.number %>"
-                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
-            <% else %>
-                <a id="hidePost<%= post.number %>"
-                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
-            <% end %>
-        <% else %>
-            <% if ( post.hidden ) %>
-                <a id="hidePost<%= post.number %>"
-                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
-            <% else %>
-                <a id="hidePost<%= post.number %>"
-                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
-            <% end %>
-        <% end %>
-        <% if ( post.number == thread.opPost.number ) %>
-            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
-        <% end %>
-        <% if ( post.number == thread.opPost.number && thread.postLimitReached() ) %>
-            <span class="postLimitReached"><%= postLimitReachedText %></span>
-        <% elif ( post.number == thread.opPost.number && thread.bumpLimitReached() ) %>
-            <span class="bumpLimitReached"><%= bumpLimitReachedText %></span>
-        <% end %>
-    </div>
-    <table class="threadPost">
-        <tbody>
-            <tr>
-                <%foreach file in post.files %>
-                    <% item %>
-                        <% include postFile(file) %>
-                    <% end %>
-                <% end %>
-                <input id="post<%= post.number %>RawText" type="hidden" value="<%= post.rawPostText %>" />
-                <td class="postText">
-                    <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <% if ( post.bannedFor ) %>
-                        <span class="bannedFor"><%= bannedForText %></span>
-                    <% end %>
-                <td>
-            </tr>
-        </tbody>
-    </table>
-</div>
-<% end template %>
-
 <% template threads() %>
 <% foreach thread in threads %>
     <% item %>
@@ -153,7 +11,7 @@
         <% else %>
             <div id="thread<%= thread.opPost.number %>">
         <% end %>
-            <% include post(thread.opPost, thread) %>
+            <% include post(thread.opPost, thread.self()) %>
         </div>
         <% if ( thread.omittedPosts() > 0 ) %>
             <% if ( thread.hidden ) %>
@@ -172,7 +30,7 @@
         <% foreach p in thread.lastPosts %>
             <% item %>
                 <div>
-                    <% include post(p, thread) %>
+                    <% include post(p, thread.self()) %>
                 </div>
             <% end %>
         <% end %>

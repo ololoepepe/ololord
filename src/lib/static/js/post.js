@@ -88,6 +88,9 @@ function showPasswordDialog(title, label, callback) {
 function editPost(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
+    var post = document.getElementById("post" + postNumber);
+    if (!post)
+        return;
     var postText = document.getElementById("post" + postNumber + "RawText");
     if (!postText)
         return;
@@ -98,7 +101,21 @@ function editPost(boardName, postNumber) {
     div.appendChild(textarea);
     showDialog(title, null, div, function() {
         ajaxRequest("edit_post", [boardName, +postNumber, textarea.value], 5, function(res) {
-            reloadPage();
+            ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
+                var newPost = createPostNode(res, true);
+                if (!newPost)
+                    return;
+                var postLimit = post.querySelector("[name='postLimit']");
+                var bumpLimit = post.querySelector("[name='bumpLimit']");
+                if (!!postLimit || !!bumpLimit) {
+                    var postHeader = newPost.querySelector(".postHeader");
+                    if (!!postLimit)
+                        postHeader.appendChild(postLimit.cloneNode(true));
+                    if (!!bumpLimit)
+                        postHeader.appendChild(bumpLimit.cloneNode(true));
+                }
+                post.parentNode.replaceChild(newPost, post);
+            });
         });
     });
 }
@@ -271,7 +288,7 @@ function createPostFile(f) {
     file.appendChild(divFileName);
     var divFileSize = document.createElement("div");
     divFileSize.className = "postFileSize";
-    divFileSize.appendChild(document.createTextNode(f["size"]));
+    divFileSize.appendChild(document.createTextNode("(" + f["size"] + ")"));
     file.appendChild(divFileSize);
     var divImage = document.createElement("div");
     var aImage = document.createElement("a");
@@ -294,6 +311,167 @@ function createPostFile(f) {
     return file;
 }
 
+function createPostNode(res, permanent) {
+    if (!res)
+        return null;
+    post = document.getElementById("postTemplate");
+    if (!post)
+        return null;
+    post = post.cloneNode(true);
+    post.id = !!permanent ? ("post" + res["number"]) : "";
+    post.style.display = "";
+    var currentBoardName = document.getElementById("currentBoardName").value;
+    var hidden = (getCookie("postHidden" + currentBoardName + res["number"]) === "true");
+    if (hidden)
+        post.className += " hiddenPost";
+    var fixed = post.querySelector("[name='fixed']");
+    if (!!res["fixed"])
+        fixed.style.display = "";
+    else
+        fixed.parentNode.removeChild(fixed);
+    var closed = post.querySelector("[name='closed']");
+    if (!!res["closed"])
+        closed.style.display = "";
+    else
+        closed.parentNode.removeChild(closed);
+    post.querySelector("[name='subject']").appendChild(document.createTextNode(res["subject"]));
+    var registered = post.querySelector("[name='registered']");
+    if (!!res["showRegistered"] && !!res["showTripcode"])
+        registered.style.display = "";
+    else
+        registered.parentNode.removeChild(registered);
+    var name = post.querySelector("[name='name']");
+    if (!!res["email"])
+        name.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
+    else
+        name.innerHTML = res["name"];
+    var tripcode = post.querySelector("[name='tripcode']");
+    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"]) {
+        tripcode.style.display = "";
+        tripcode.appendChild(document.createTextNode(res["tripcode"]));
+    } else {
+        tripcode.parentNode.removeChild(tripcode);
+    }
+    var whois = post.querySelector("[name='whois']");
+    var sitePathPrefix = document.getElementById("sitePathPrefix").value;
+    if (!!res["flagName"]) {
+        whois.style.display = "";
+        whois.src = whois.src.replace("%flagName%", res["flagName"]);
+        whois.title = res["countryName"];
+        if (!!res["cityName"])
+            whois.title += ": " + res["cityName"];
+    } else {
+        whois.parentNode.removeChild(whois);
+    }
+    post.querySelector("[name='dateTime']").appendChild(document.createTextNode(res["dateTime"]));
+    var moder = (document.getElementById("moder").value === "true");
+    var number = post.querySelector("[name='number']");
+    number.appendChild(document.createTextNode(res["number"]));
+    if (moder)
+        number.title = res["ip"];
+    var postingEnabled = (document.getElementById("postingEnabled").value === "true");
+    var inp = document.getElementById("currentThreadNumber");
+    if (!!inp && +inp.value === res["threadNumber"]) {
+        if (postingEnabled)
+            number.href = "javascript:insertPostNumber(" + res["number"] + ");";
+        else
+            number.href = "#" + res["number"];
+    } else {
+        number.href = "/" + sitePathPrefix + currentBoardName + "/thread/" + res["threadNumber"] + ".html#"
+        if (postingEnabled)
+            number.href += "i";
+        number.href += res["number"];
+    }
+    var files = post.querySelector("[name='files']");
+    if (!!res["files"]) {
+        for (var i = 0; i < res["files"].length; ++i) {
+            var file = createPostFile(res["files"][i]);
+            if (!!file)
+                files.insertBefore(file, files.children[files.children.length - 1]);
+        }
+    }
+    post.querySelector("[name='text']").innerHTML = res["text"];
+    var bannedFor = post.querySelector("[name='bannedFor']");
+    if (!!res["bannedFor"])
+        bannedFor.style.display = "";
+    else
+        bannedFor.parentNode.removeChild(bannedFor);
+    var perm = post.querySelector("[name='permanent']");
+    if (!permanent) {
+        perm.parentNode.removeChild(perm);
+        return post;
+    }
+    if (res["number"] === res["threadNumber"])
+        post.className = post.className.replace("post", "opPost");
+    if (hidden)
+        post.className += " hiddenPost";
+    perm.style.display = "";
+    var anumber = document.createElement("a");
+    number.parentNode.insertBefore(anumber, number);
+    number.parentNode.removeChild(number);
+    anumber.title = number.title;
+    anumber.appendChild(number);
+    if (postingEnabled)
+        anumber.href = "javascript:insertPostNumber(" + res["number"] + ");";
+    else
+        anumber.href = "#" + res["number"];
+    var deleteButton = post.querySelector("[name='deleteButton']");
+    deleteButton.href = deleteButton.href.replace("%postNumber%", res["number"]);
+    var hideButton = post.querySelector("[name='hideButton']");
+    hideButton.id = hideButton.id.replace("%postNumber%", res["number"]);
+    hideButton.href = hideButton.href.replace("%postNumber%", res["number"]);
+    
+    hideButton.href = hideButton.href.replace("%hide%", !hidden);
+    var m = post.querySelector("[name='moder']");
+    if (!moder) {
+        m.parentNode.removeChild(m);
+        return post;
+    }
+    m.style.display = "";
+    var editButton = post.querySelector("[name='editButton']");
+    editButton.href = editButton.href.replace("%postNumber%", res["number"]);
+    var fixButton = post.querySelector("[name='fixButton']");
+    var unfixButton = post.querySelector("[name='unfixButton']");
+    var openButton = post.querySelector("[name='openButton']");
+    var closeButton = post.querySelector("[name='closeButton']");
+    var toThread = post.querySelector("[name='toThread']");
+    if (res["number"] === res["threadNumber"]) {
+        if (!!res["fixed"]) {
+            unfixButton.style.display = "";
+            unfixButton.href = unfixButton.href.replace("%postNumber%", res["number"]);
+            fixButton.parentNode.removeChild(fixButton);
+        } else {
+            fixButton.style.display = "";
+            fixButton.href = fixButton.href.replace("%postNumber%", res["number"]);
+            unfixButton.parentNode.removeChild(unfixButton);
+        }
+        if (!!res["closed"]) {
+            openButton.style.display = "";
+            openButton.href = openButton.href.replace("%postNumber%", res["number"]);
+            closeButton.parentNode.removeChild(closeButton);
+        } else {
+            closeButton.style.display = "";
+            closeButton.href = closeButton.href.replace("%postNumber%", res["number"]);
+            openButton.parentNode.removeChild(openButton);
+        }
+        toThread.style.display = "";
+        var toThreadLink = post.querySelector("[name='toThreadLink']");
+        toThreadLink.href = toThreadLink.href.replace("%postNumber%", res["number"]);
+    } else {
+        fixButton.parentNode.removeChild(fixButton);
+        unfixButton.parentNode.removeChild(unfixButton);
+        openButton.parentNode.removeChild(openButton);
+        closeButton.parentNode.removeChild(closeButton);
+        toThread.parentNode.removeChild(toThread);
+    }
+    var banButton = post.querySelector("[name='banButton']");
+    banButton.href = banButton.href.replace("%postNumber%", res["number"]);
+    var rawText = post.querySelector("[name='rawText']");
+    rawText.id = rawText.id.replace("%postNumber%", res["number"]);
+    rawText.value = res["rawPostText"];
+    return post;
+}
+
 function viewPostStage2(link, postNumber, post) {
     post.onmouseout = function(event) {
         var next = post;
@@ -311,9 +489,6 @@ function viewPostStage2(link, postNumber, post) {
     post.onmouseover = function(event) {
         post.mustHide = false;
     };
-    /*var offs = cumulativeOffset(link);
-    post.style.left = (offs.left + link.offsetWidth + 20) + "px";
-    post.style.top = (offs.top - 40) + "px";*/
     if (!postPreviews[postNumber])
         postPreviews[postNumber] = post;
     else
@@ -343,86 +518,38 @@ function viewPostStage2(link, postNumber, post) {
     post.style.zIndex = 9001;
 }
 
-function viewPost(link, boardName, postNumber, threadNumber) {
-    if (!link || !boardName || isNaN(+postNumber) || isNaN(+threadNumber))
+function viewPost(link, boardName, postNumber) {
+    if (!link || !boardName || isNaN(+postNumber))
         return;
-    var post = postPreviews[postNumber];
+    var post = document.getElementById("post" + postNumber);
     if (!post)
-        post = document.getElementById("post" + postNumber);
+        post = postPreviews[postNumber];
     if (!post) {
-        ajaxRequest("get_post", [boardName, +postNumber, +threadNumber], 6, function(res) {
-            post = document.getElementById("postTemplate");
+        ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
+            post = createPostNode(res);
             if (!post)
                 return;
-            post = post.cloneNode(true);
-            post.id = "";
-            post.style.display = "";
-            var list = traverseChildren(post);
-            for (var i = 0; i < list.length; ++i) {
-                var c = list[i];
-                switch (c.id) {
-                case "postTemplateSubject":
-                    c.appendChild(document.createTextNode(res["subject"]));
-                    break;
-                case "postTemplateRegistered":
-                    if (!!res["showRegistered"] && !!res["showTripcode"])
-                        c.style.display = "";
-                    break;
-                case "postTemplateName":
-                    if (!!res["email"])
-                        c.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
-                    else
-                        c.innerHTML = res["name"];
-                    break;
-                case "postTemplateTripcode":
-                    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"])
-                        c.style.display = "";
-                    break;
-                case "postTemplateWhois":
-                    if (!!res["flagName"]) {
-                        c.style.display = "";
-                        c.href = "/" + document.getElementById("sitePathPrefix") + "img/flag/" + res["flagName"];
-                        c.title = res["countryName"];
-                        if (!!res["cityName"])
-                            c.title += ": " + res["cityName"];
-                    }
-                    break;
-                case "postTemplateDateTime":
-                    c.appendChild(document.createTextNode(res["dateTime"]));
-                    break;
-                case "postTemplateNumber":
-                    c.appendChild(document.createTextNode(res["number"]));
-                    break;
-                case "postTemplateFiles":
-                    var files = res["files"];
-                    if (!!files) {
-                        for (var i = 0; i < files.length; ++i) {
-                            var file = createPostFile(files[i]);
-                            if (!!file)
-                                c.insertBefore(file, c.children[c.children.length - 1]);
-                        }
-                    }
-                    break;
-                case "postTemplateText":
-                    c.innerHTML= res["text"];
-                    break;
-                case "postTemplateBannedFor":
-                    if (!!res["bannedFor"])
-                        c.style.display = "";
-                    break;
-                default:
-                    break;
-                }
-                c.id = "";
-            }
             viewPostStage2(link, postNumber, post);
         });
     } else {
         post = post.cloneNode(true);
         post.className = post.className.replace("opPost", "post");
         var list = traverseChildren(post);
-        for (var i = 0; i < list.length; ++i)
+        for (var i = 0; i < list.length; ++i) {
+            switch (list[i].name) {
+            case "editButton":
+            case "fixButton":
+            case "closeButton":
+            case "banButton":
+            case "deleteButton":
+            case "hideButton":
+                list[i].parentNode.removeChild(list[i]);
+                break;
+            default:
+                break;
+            }
             list[i].id = "";
+        }
         viewPostStage2(link, postNumber, post);
     }
 }

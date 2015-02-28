@@ -3,6 +3,7 @@ HEADERS += \
     $${PWD}/abstractboard.h \
     $${PWD}/bboard.h \
     $${PWD}/cgboard.h \
+    $${PWD}/echoboard.h \
     $${PWD}/hboard.h \
     $${PWD}/intboard.h \
     $${PWD}/mlpboard.h \
@@ -17,6 +18,7 @@ SOURCES += \
     $${PWD}/abstractboard.cpp \
     $${PWD}/bboard.cpp \
     $${PWD}/cgboard.cpp \
+    $${PWD}/echoboard.cpp \
     $${PWD}/hboard.cpp \
     $${PWD}/intboard.cpp \
     $${PWD}/mlpboard.cpp \

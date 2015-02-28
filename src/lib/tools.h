@@ -81,6 +81,7 @@ enum MaxInfo
 
 typedef QMap<QString, QString> PostParameters;
 
+OLOLORD_EXPORT QStringList acceptedExternalBoards();
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
 OLOLORD_EXPORT QString cityName(const QString &ip);
 OLOLORD_EXPORT QString cityName(const cppcms::http::request &req);

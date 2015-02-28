@@ -22,11 +22,6 @@
         <translation>Предыдущая страница</translation>
     </message>
     <message>
-        <source>Answer</source>
-        <comment>toThread</comment>
-        <translation>Ответ</translation>
-    </message>
-    <message>
         <source>Posts omitted:</source>
         <comment>omittedPostsText</comment>
         <translation>Пропущено постов:</translation>
@@ -203,6 +198,71 @@ The default is %1.</source>
         <translation>MIME-типы файлов, которые разрешено прикреплять на этой доске.
 Должны быть разделены запятыми. Используется шаблон wildcard.
 По умолчанию %1.</translation>
+    </message>
+    <message>
+        <source>E-mail is too long</source>
+        <comment>description</comment>
+        <translation>Эл. почта слишком длинная</translation>
+    </message>
+    <message>
+        <source>Name is too long</source>
+        <comment>description</comment>
+        <translation>Имя слишком длинное</translation>
+    </message>
+    <message>
+        <source>Subject is too long</source>
+        <comment>description</comment>
+        <translation>Тема слишком длинная</translation>
+    </message>
+    <message>
+        <source>Comment is too long</source>
+        <comment>description</comment>
+        <translation>Комментарий слишком длинный</translation>
+    </message>
+    <message>
+        <source>Password is too long</source>
+        <comment>description</comment>
+        <translation>Пароль слишком длинный</translation>
+    </message>
+    <message>
+        <source>Back</source>
+        <comment>backText</comment>
+        <translation>Назад</translation>
+    </message>
+    <message>
+        <source>Update thread</source>
+        <comment>updateThreadText</comment>
+        <translation>Обновить тред</translation>
+    </message>
+    <message>
+        <source>No new posts</source>
+        <comment>noNewPostsText</comment>
+        <translation>Нет новых постов</translation>
+    </message>
+    <message>
+        <source>New posts:</source>
+        <comment>newPostsText</comment>
+        <translation>Новых постов:</translation>
+    </message>
+    <message>
+        <source>Internal file system error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка файловой системы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>KB</source>
+        <comment>fileSize</comment>
+        <translation>Кб</translation>
+    </message>
+    <message>
+        <source>Unknown country</source>
+        <comment>countryName</comment>
+        <translation>Неизвестная страна</translation>
     </message>
 </context>
 <context>
@@ -543,6 +603,34 @@ The default is %1.</source>
     </message>
 </context>
 <context>
+    <name>echoBoard</name>
+    <message>
+        <source>Boardsphere echo</source>
+        <comment>board title</comment>
+        <translation>Эхо бордосферы</translation>
+    </message>
+    <message>
+        <source>This board/thread may not be accepted</source>
+        <comment>description</comment>
+        <translation>Эта доска/тред не может быть принята</translation>
+    </message>
+    <message>
+        <source>Thread link is empty</source>
+        <comment>description</comment>
+        <translation>Ссылка на тред пуста</translation>
+    </message>
+    <message>
+        <source>Thread link is too long</source>
+        <comment>description</comment>
+        <translation>Ссылка на тред слишком длинная</translation>
+    </message>
+    <message>
+        <source>Thread link:</source>
+        <comment>postFormLabelLink</comment>
+        <translation>Ссылка на тред:</translation>
+    </message>
+</context>
+<context>
     <name>editPost</name>
     <message>
         <source>Invalid board name</source>
@@ -583,6 +671,39 @@ The default is %1.</source>
         <source>Text is too long</source>
         <comment>error</comment>
         <translation>Текст слишком длинный</translation>
+    </message>
+</context>
+<context>
+    <name>getNewPosts</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such thread</source>
+        <comment>error</comment>
+        <translation>Нет такого треда</translation>
     </message>
 </context>
 <context>
@@ -1161,6 +1282,11 @@ Your choice:</source>
         <comment>toTopText</comment>
         <translation>Отмотать наверх</translation>
     </message>
+    <message>
+        <source>Answer</source>
+        <comment>toThread</comment>
+        <translation>Ответ</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -1468,6 +1594,12 @@ The default is %1.</source>
         <translation>MIME-типы файлов, которые разрешено прикреплять.
 Должны быть разделены запятыми. Используется шаблон wildcard.
 По умолчанию %1.</translation>
+    </message>
+    <message>
+        <source>Query used to proxy non-SSL links inside iframes.
+Must contain &quot;%1&quot; (without quotes) - it is replaced by URL.</source>
+        <translation>Запрос, используемый для проксирования не-SSL ссылок внутри iframe&apos;ов.
+Должен содержать &quot;%1&quot; (без кавычек) - это заменяется на ссылку.</translation>
     </message>
 </context>
 <context>
@@ -1877,31 +2009,6 @@ The default is %1.</source>
         <translation>Неправильные параметры</translation>
     </message>
     <message>
-        <source>E-mail is too long</source>
-        <comment>description</comment>
-        <translation>Эл. почта слишком длинная</translation>
-    </message>
-    <message>
-        <source>Name is too long</source>
-        <comment>description</comment>
-        <translation>Имя слишком длинное</translation>
-    </message>
-    <message>
-        <source>Subject is too long</source>
-        <comment>description</comment>
-        <translation>Тема слишком длинная</translation>
-    </message>
-    <message>
-        <source>Comment is too long</source>
-        <comment>description</comment>
-        <translation>Комментарий слишком длинный</translation>
-    </message>
-    <message>
-        <source>Password is too long</source>
-        <comment>description</comment>
-        <translation>Пароль слишком длинный</translation>
-    </message>
-    <message>
         <source>Too many files</source>
         <comment>description</comment>
         <translation>Слишком много файлов</translation>
@@ -1946,19 +2053,6 @@ The default is %1.</source>
         <source>3D pron</source>
         <comment>board title</comment>
         <translation>3D прон</translation>
-    </message>
-</context>
-<context>
-    <name>toController</name>
-    <message>
-        <source>KB</source>
-        <comment>fileSize</comment>
-        <translation>Кб</translation>
-    </message>
-    <message>
-        <source>Unknown country</source>
-        <comment>countryName</comment>
-        <translation>Неизвестная страна</translation>
     </message>
 </context>
 <context>

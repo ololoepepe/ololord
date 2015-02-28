@@ -72,9 +72,9 @@
 }
 
 .navigationButtonTop {
-    top: 20px;
+    bottom: 30px;
 }
 
 .navigationButtonBottom {
-    bottom: 20px;
+    top: 30px;
 }

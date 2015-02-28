@@ -105,6 +105,12 @@ static QTime time(int msecs)
     return QTime(h, m, s, msecs % BeQt::Second);
 }
 
+QStringList acceptedExternalBoards()
+{
+    QString fn = BDirTools::findResource("res/echo.txt", BDirTools::UserOnly);
+    return BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+}
+
 bool captchaEnabled(const QString &boardName)
 {
     SettingsLocker s;

@@ -27,11 +27,46 @@ function selectPost(post) {
     if (!!lastSelectedElement)
         lastSelectedElement.style.backgroundColor = "#DDDDDD";
     lastSelectedElement = document.getElementById("post" + post);
-    lastSelectedElement.style.backgroundColor = "#EEDACB";
+    if (!!lastSelectedElement)
+        lastSelectedElement.style.backgroundColor = "#EEDACB";
     if (window.location.href.split("#").length < 2)
         window.location.href = window.location.href + "#" + post;
     else
         window.location.href = window.location.href.split("#")[0] + "#" + post;
+}
+
+function updateThread(boardName, threadNumber) {
+    if (!boardName || isNaN(+threadNumber))
+        return;
+    var posts = document.querySelectorAll(".opPost, .post");
+    if (!posts)
+        return;
+    var lastPostN = posts[posts.length - 1].id.replace("post", "");
+    ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], 7, function(res) {
+        if (!res)
+            return;
+        var msg = document.createElement("div");
+        msg.className = "popup noNewPostsPopup";
+        var txt = document.getElementById((res.length >= 1) ? "newPostsText" : "noNewPostsText").value;
+        if (res.length >= 1)
+            txt += " " + res.length;
+        msg.appendChild(document.createTextNode(txt));
+        document.body.appendChild(msg);
+        setTimeout(function() {
+            document.body.removeChild(msg);
+        }, 5000);
+        if (res.length < 1)
+            return;
+        var before = document.getElementById("afterAllPosts");
+        if (!before)
+            return;
+        for (var i = 0; i < res.length; ++i) {
+            var post = createPostNode(res[i], true);
+            if (!post)
+                continue;
+            document.body.insertBefore(post, before);
+        }
+    });
 }
 
 function initializeOnLoadThread() {

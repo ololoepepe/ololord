@@ -6,6 +6,14 @@ a {
     color: #FF6600;
 }
 
+hr {
+    color: #CCCCCC; /*IE*/
+    background-color: #CCCCCC; /*Firefox, Opera, Safari*/
+    border: 0px none;
+    height: 1px;
+    clear: both;
+}
+
 .select {
     background: #EAEAEA;
     border: 1px solid #CCCCCC;
@@ -26,4 +34,15 @@ a {
     background: #EAEAEA;
     border: 1px solid #CCCCCC;
     cursor: pointer;
+}
+
+.popup {
+    background-color: #DDDDDD;
+    border: 1px solid #BBBBBB;
+    position: fixed;
+    top: 5px;
+    right: 5px;
+    z-index: 9950;
+    vertical-align: middle;
+    text-align: center;
 }

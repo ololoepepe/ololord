@@ -1,3 +1,13 @@
+=== ololord 0.1.0-beta7 (28 February 2015) ===
+    * Add BB-code support
+    * Add /echo/ board
+    * Add ability to load new posts without updating a page
+    * Fix page title of threads without subject
+    * Reload only edited post when editing
+    * Move Controller::toController function to BAbstractBoard
+    * Make tags like [c++]..code...[/c++] work
+    * Don't reload page when deleting a post
+
 === ololord 0.1.0-beta6 (25 February 2015) ===
     * Add WebM support
     * Cache post file infos

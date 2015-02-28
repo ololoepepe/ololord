@@ -132,7 +132,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");
-    Content::BaseBoard::BanLevel bl;
+    Content::BanLevel bl;
     bl.level = 0;
     bl.description = ts.translate("initBaseBoard", "Not banned", "banLevelDesctiption");
     c.banLevels.push_back(bl);
@@ -199,6 +199,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.showWhois = board->showWhois();
     c.supportedFileTypes = Tools::toStd(board->supportedFileTypes());
     c.toBottomText = ts.translate("initBaseBoard", "Scroll to the bottom", "toBottomText");
+    c.toThread = ts.translate("initBaseBoard", "Answer", "toThread");
     c.toTopText = ts.translate("initBaseBoard", "Scroll to the top", "toTopText");
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
 }
@@ -312,7 +313,7 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
 }
 
 bool testParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
-                const Tools::FileList &files)
+                const Tools::FileList &files, bool post)
 {
     TranslatorQt tq(app.request());
     if (!board) {
@@ -322,30 +323,10 @@ bool testParams(const AbstractBoard *board, cppcms::application &app, const Tool
     }
     QString boardName = board->name();
     int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, boardName);
-    if (params.value("email").length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "E-mail is too long", "description"));
-        Tools::log(app, "E-mail is too long");
-        return false;
-    } else if (params.value("name").length() > int(Tools::maxInfo(Tools::MaxNameFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Name is too long", "description"));
-        Tools::log(app, "Name is too long");
-        return false;
-    } else if (params.value("subject").length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Subject is too long", "description"));
-        Tools::log(app, "Subject is too long");
-        return false;
-    } else if (params.value("text").length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Comment is too long", "description"));
-        Tools::log(app, "Comment is too long");
-        return false;
-    } else if (params.value("password").length() > int(Tools::maxInfo(Tools::MaxPasswordFieldLength, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Password is too long", "description"));
-        Tools::log(app, "Password is too long");
+    QString err;
+    if (!board->testParams(params, post, tq.locale(), &err)){
+        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
+        Tools::log(app, "Invalid field");
         return false;
     } else if (files.size() > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),

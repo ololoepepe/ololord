@@ -5,9 +5,12 @@ namespace Content
 {
 
 class Board;
+class Post;
 class Thread;
 
 }
+
+class Post;
 
 class QLocale;
 class QString;
@@ -93,13 +96,18 @@ public:
     virtual QString saveFile(const Tools::File &f, bool *ok = 0);
     virtual bool showWhois() const;
     virtual QString supportedFileTypes() const;
+    virtual bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l,
+                            QString *error = 0) const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
     virtual QString thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const;
     virtual QString title(const QLocale &l) const = 0;
+    virtual Content::Post toController(const Post &post, const cppcms::http::request &req, bool *ok = 0,
+                                       QString *error = 0) const;
 protected:
     virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     virtual void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
+    virtual void beforeStoring(Tools::PostParameters &params, bool post);
     virtual Content::Board *createBoardController(const cppcms::http::request &req, QString &viewName);
     virtual Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 private:

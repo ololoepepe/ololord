@@ -30,7 +30,8 @@ public:
     void banUser(const cppcms::json::object &params);
     void deletePost(std::string boardName, long long postNumber, std::string password);
     void editPost(std::string boardName, long long postNumber, std::string text);
-    void getPost(std::string boardName, long long postNumber, long long threadNumber);
+    void getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber);
+    void getPost(std::string boardName, long long postNumber);
     QList<Handler> handlers() const;
     void setThreadFixed(std::string boardName, long long postNumber, bool fixed);
     void setThreadOpened(std::string boardName, long long postNumber, bool opened);

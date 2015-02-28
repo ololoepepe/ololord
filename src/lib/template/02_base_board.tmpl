@@ -1,4 +1,6 @@
 <% c++ #include "controller/baseboard.h" %>
+<% c++ #include "controller/board.h" %>
+<% c++ #include "controller/thread.h" %>
 <% skin my_skin %>
 <% view base_board uses Content::BaseBoard extends base %>
 
@@ -24,6 +26,9 @@
     <a class="navigationButton navigationButtonTop" title="<%= toBottomText %>"
        href="#bottom"><img src="/<%= sitePathPrefix %>img/down.png"></a>
 <% end %>
+<% end template %>
+
+<% template customPostFormField(std::string) %>
 <% end template %>
 
 <% template createAction(std::string position) %>
@@ -74,6 +79,7 @@
                                    id="postFormInputSubject<%= position %>" name="subject" size="43" />
                         </td>
                     </tr>
+                    <% include customPostFormField(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormInputText %></b>
@@ -126,7 +132,7 @@
 <% end %>
 <% end template %>
 
-<% template postFile(Content::BaseBoard::File file) %>
+<% template postFile(Content::File file) %>
 <td class="postFile">
     <div class="postFileName">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"><%= file.sourceName %></a>
@@ -156,7 +162,189 @@
 </td>
 <% end template %>
 
+<% template post(Content::Post post, Content::Board::ThreadPointer thread) %>
+<% if ( post.number == post.threadNumber ) %>
+    <% if ( post.hidden ) %>
+        <div id="post<%= post.number %>" class="opPost hiddenPost">
+    <% else %>
+        <div id="post<%= post.number %>" class="opPost">
+    <% end %>
+<% else %>
+    <% if ( post.hidden ) %>
+        <div id="post<%= post.number %>" class="post hiddenPost">
+    <% else %>
+        <div id="post<%= post.number %>" class="post">
+    <% end %>
+<% end %>
+    <div class="postHeader">
+        <% if ( !thread ) %>
+            <a id="<%= post.number %>"></a>
+        <% end %>
+        <% if ( post.number == post.threadNumber ) %>
+            <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
+                <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>">
+            <% end %>
+            <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
+                <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
+            <% end %>
+        <% end %>
+        <% if ( post.subjectIsRaw ) %>
+            <%= post.subject | raw %>
+        <% else %>
+            <b><%= post.subject %></b>
+        <% end %>
+        <% if ( post.showRegistered && post.showTripcode ) %>
+            <img src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>">
+        <% end %>
+        <% if ( !post.email.empty() ) %>
+            <a href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
+        <% else %>
+            <%= post.name | raw %>
+        <% end %>
+        <% if ( post.showRegistered && !post.tripcode.empty() && post.showTripcode ) %>
+            <span class="tripcode"><%= post.tripcode %></span>
+        <% end %>
+        <% if ( content.showWhois && !post.flagName.empty() ) %>
+            <% if ( !post.cityName.empty() ) %>
+                <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>"
+                     title="<%= post.countryName %>: <%= post.cityName %>">
+            <% else %>
+                <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>" title="<%= post.countryName %>">
+            <% end %>
+        <% end %>
+        <%= post.dateTime %>
+        <% if ( content.postingEnabled ) %>
+            <% if ( thread ) %>
+                <% if ( content.moder ) %>
+                    #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#i<%= post.number %>"
+                        title="<%= post.ip %>"><%= post.number %></a>
+                <% else %>
+                    #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
+                <% end %>
+            <% else %>
+                <% if ( content.moder ) %>
+                    #<a href="javascript:insertPostNumber(<%= post.number %>);"
+                        title="<%= post.ip %>"><%= post.number %></a>
+                <% else %>
+                    #<a href="javascript:insertPostNumber(<%= post.number %>);"><%= post.number %></a>
+                <% end %>
+            <% end %>
+        <% else %>
+            <% if ( thread ) %>
+                <% if ( content.moder ) %>
+                    #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#<%= post.number %>"
+                        title="<%= post.ip %>"><%= post.number %></a>
+                <% else %>
+                    #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
+                <% end %>
+            <% else %>
+                <% if ( content.moder ) %>
+                    #<a href="#<%= post.number %>" title="<%= post.ip %>"><%= post.number %></a>
+                <% else %>
+                    #<a href="#<%= post.number %>"><%= post.number %></a>
+                <% end %>
+            <% end %>
+        <% end %>
+        <% if ( content.moder ) %>
+            <a name="editButton" href="javascript:editPost('<%= currentBoard.name %>', '<%= post.number %>');">
+                <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+        <% end %>
+        <% if ( content.moder && post.number == post.threadNumber ) %>
+            <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
+                <a name="fixButton"
+                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+            <% else %>
+                <a name="fixButton"
+                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+            <% end %>
+            <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
+                <a name="closeButton"
+                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+            <% else %>
+                <a name="closeButton"
+                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+            <% end %>
+        <% end %>
+        <% if ( content.moder ) %>
+            <a name="banButton" href="javascript:banUser('<%= currentBoard.name %>', '<%= post.number %>');">
+                <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+        <% end %>
+        <a name="deleteButton" href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+        <% if ( post.number == post.threadNumber ) %>
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
+        <% else %>
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+        <% end %>
+        <% if ( post.number == post.threadNumber ) %>
+            <% if ( (thread && thread->hidden) || (!thread && dynamic_cast<Content::Thread *>(&content)->hidden) ) %>
+                <a name="hideButton" id="hidePost<%= post.number %>"
+                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% else %>
+                <a name="hideButton" id="hidePost<%= post.number %>"
+                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
+        <% else %>
+            <% if ( post.hidden ) %>
+                <a name="hideButton" id="hidePost<%= post.number %>"
+                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% else %>
+                <a name="hideButton" id="hidePost<%= post.number %>"
+                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
+        <% end %>
+        <% if ( thread && post.number == post.threadNumber ) %>
+            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
+            <% if ( thread->postLimitReached() ) %>
+                <span name="postLimit" class="postLimitReached"><%= postLimitReachedText %></span>
+            <% elif ( thread->bumpLimitReached() ) %>
+                <span name="bumpLimit" class="bumpLimitReached"><%= bumpLimitReachedText %></span>
+            <% end %>
+        <% end %>
+    </div>
+    <table class="threadPost">
+        <tbody>
+            <tr>
+                <%foreach file in post.files %>
+                    <% item %>
+                        <% include postFile(file) %>
+                    <% end %>
+                <% end %>
+                <input id="post<%= post.number %>RawText" type="hidden" value="<%= post.rawPostText %>" />
+                <td class="postText">
+                    <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <% if ( post.bannedFor ) %>
+                        <span class="bannedFor"><%= bannedForText %></span>
+                    <% end %>
+                <td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<% end template %>
+
 <% template boardTexts() %>
+<% if ( content.moder ) %>
+    <input type="hidden" id="moder" value="true" />
+<% else %>
+    <input type="hidden" id="moder" value="false" />
+<% end %>
+<% if ( content.postingEnabled ) %>
+    <input type="hidden" id="postingEnabled" value="true" />
+<% else %>
+    <input type="hidden" id="postingEnabled" value="false" />
+<% end %>
 <input type="hidden" id="currentBoardName" value="<%= currentBoard.name %>" />
 <input type="hidden" id="currentBoardTitle" value="<%= currentBoard.title %>" />
 <input type="hidden" id="editPostText" value="<%= editPostText %>" />
@@ -194,26 +382,57 @@
 </select>
 <div id="postTemplate" class="post" style="display: none;">
     <div class="postHeader">
-        <b id="postTemplateSubject"></b>
-        <img id="postTemplateRegistered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
+        <img name="fixed" src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>" style="display: none;">
+        <img name="closed" src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>" style="display: none;">
+        <b name="subject"></b>
+        <img name="registered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
              style="display: none;">
-        <span id="postTemplateName"></span>
-        <span id="postTemplateTripcode" class="tripcode" style="display: none;"></span>
-        <img id="postTemplateWhois" style="display: none;">
-        <span id="postTemplateDateTime"></span>
-        #<span id="postTemplateNumber"></span>
+        <span name="name"></span>
+        <span name="tripcode" class="tripcode" style="display: none;"></span>
+        <img name="whois" src="/<%= sitePathPrefix %>img/flag/%flagName%" style="display: none;">
+        <span name="dateTime"></span>
+        #<a name="number"></a>
+        <span name="permanent" style="display: none;">
+            <span name="moder" style="display: none;">
+                <a name="editButton" href="javascript:editPost('<%= currentBoard.name %>', '%postNumber%');">
+                    <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <a name="fixButton"
+                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                <a name="unfixButton"
+                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                <a name="closeButton"
+                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
+                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                <a name="openButton"
+                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
+                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                <a name="banButton" href="javascript:banUser('<%= currentBoard.name %>', '%postNumber%');">
+                    <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                <input id="post%postNumber%RawText" name="rawText" type="hidden" value="" />
+            </span>
+            <a name="deleteButton" href="javascript:deletePost('<%= currentBoard.name %>', '%postNumber%', true);">
+                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+            <a id="hidePost%postNumber%" name="hideButton"
+               href="javascript:setPostHidden('<%= currentBoard.name %>', '%postNumber%', %hide%);">
+                <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <span name="toThread" style="display: none;">
+                [<a name="toThreadLink"
+                    href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/%postNumber%.html"><%= toThread %></a>]
+            </span>
+        </span>
     </div>
     <table class="threadPost">
         <tbody>
-            <tr id="postTemplateFiles">
+            <tr name="files">
                 <td class="postText">
-                    <blockquote id="postTemplateText"></blockquote>
+                    <blockquote name="text"></blockquote>
                 </td>
             </tr>
             <tr>
                 <td colspan="2">
-                    <span id="postTemplateBannedFor" class="bannedFor"
-                          style="display: none;"><%= bannedForText %></span>
+                    <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
                 <td>
             </tr>
         </tbody>

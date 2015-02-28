@@ -31,3 +31,17 @@ span.spoiler:hover a {
     text-align: center;
     white-space: nowrap;
 }
+
+.threadActions {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.noNewPostsPopup {
+    height: 40px;
+    line-height: 40px;
+    width: 200px;
+}
