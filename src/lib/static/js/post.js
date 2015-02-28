@@ -390,8 +390,19 @@ function createPostNode(res, permanent) {
                 files.insertBefore(file, files.children[files.children.length - 1]);
         }
     }
-    post.querySelector("[name='text']").innerHTML = res["text"];
     var bannedFor = post.querySelector("[name='bannedFor']");
+    var manyFilesTr = post.querySelector("[name='manyFilesTr']");
+    var textOneFile = post.querySelector("[name='textOneFile']");
+    if (res["files"].length <= 1) {
+        manyFilesTr.parentNode.removeChild(manyFilesTr);
+        textOneFile.innerHTML = res["text"];
+    } else {
+        post.querySelector("[name='oneFileTd']").className = "";
+        textOneFile.parentNode.removeChild(textOneFile);
+        post.querySelector("[name='manyFilesTd']").colSpan = res["files"].length + 2;
+        post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
+        bannedFor.colSpan = res["files"].length + 2;
+    }
     if (!!res["bannedFor"])
         bannedFor.style.display = "";
     else
@@ -482,7 +493,8 @@ function viewPostStage2(link, postNumber, post) {
                 return;
             next = next.nextPostPreview;
         }
-        post.parentNode.removeChild(post);
+        if (!!post.parentNode)
+            post.parentNode.removeChild(post);
         if (post.previousPostPreview)
             post.previousPostPreview.onmouseout(event);
     };

@@ -1,2 +1,1 @@
 [done] Add ability to post several files
-* Fix loaded multi-file posts
