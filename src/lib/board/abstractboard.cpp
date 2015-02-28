@@ -699,7 +699,12 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 return bRet(ok, false, error, tq.translate("AbstractBoard", "Internal database error", "error"),
                             Content::Post());
             }
-            threadNumber = post.thread().load()->number();
+            QSharedPointer<Thread> thread = post.thread().load();
+            threadNumber = thread->number();
+            bool op = (post.number() == threadNumber);
+            p->fixed = op && thread->fixed();
+            p->closed = op && !thread->postingEnabled();
+            t.commit();
         } catch (const odb::exception &e) {
             return bRet(ok, false, error, Tools::fromStd(e.what()), Content::Post());
         }

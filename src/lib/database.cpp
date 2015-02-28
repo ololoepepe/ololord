@@ -312,6 +312,7 @@ static bool setThreadFixedInternal(const QString &board, quint64 threadNumber, b
         thread->setFixed(fixed);
         update(thread);
         t.commit();
+        Cache::removePost(board, threadNumber);
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -337,6 +338,7 @@ static bool setThreadOpenedInternal(const QString &board, quint64 threadNumber, 
         thread->setPostingEnabled(opened);
         update(thread);
         t.commit();
+        Cache::removePost(board, threadNumber);
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);

@@ -184,7 +184,7 @@
             <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
                 <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>">
             <% end %>
-            <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
+            <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
                 <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
             <% end %>
         <% end %>
@@ -303,9 +303,9 @@
         <% if ( thread && post.number == post.threadNumber ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
             <% if ( thread->postLimitReached() ) %>
-                <span class="postLimitReached"><%= postLimitReachedText %></span>
+                <span name="postLimit" class="postLimitReached"><%= postLimitReachedText %></span>
             <% elif ( thread->bumpLimitReached() ) %>
-                <span class="bumpLimitReached"><%= bumpLimitReachedText %></span>
+                <span name="bumpLimit" class="bumpLimitReached"><%= bumpLimitReachedText %></span>
             <% end %>
         <% end %>
     </div>
@@ -393,9 +393,21 @@
         <span name="dateTime"></span>
         #<a name="number"></a>
         <span name="permanent" style="display: none;">
-            <span name="moder">
+            <span name="moder" style="display: none;">
                 <a name="editButton" href="javascript:editPost('<%= currentBoard.name %>', '%postNumber%');">
                     <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <a name="fixButton"
+                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                <a name="unfixButton"
+                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                <a name="closeButton"
+                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
+                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                <a name="openButton"
+                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
+                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
                 <a name="banButton" href="javascript:banUser('<%= currentBoard.name %>', '%postNumber%');">
                     <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
                 <input id="post%postNumber%RawText" name="rawText" type="hidden" value="" />
@@ -405,6 +417,10 @@
             <a id="hidePost%postNumber%" name="hideButton"
                href="javascript:setPostHidden('<%= currentBoard.name %>', '%postNumber%', %hide%);">
                 <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <span name="toThread" style="display: none;">
+                [<a name="toThreadLink"
+                    href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/%postNumber%.html"><%= toThread %></a>]
+            </span>
         </span>
     </div>
     <table class="threadPost">

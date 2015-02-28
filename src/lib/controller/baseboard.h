@@ -32,10 +32,12 @@ struct OLOLORD_EXPORT Post
 {
     bool bannedFor;
     std::string cityName;
+    bool closed;
     std::string countryName;
     std::string dateTime;
     std::string email;
     std::list<File> files;
+    bool fixed;
     std::string flagName;
     bool hidden;
     std::string ip;

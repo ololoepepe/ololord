@@ -6,4 +6,4 @@
 [done] Move Controller::toController function to BAbstractBoard
 [done] Make tags like [c++]..code...[/c++] work
 [done] Don't reload page when deleting a post
-* Create valid op-posts when loading with AJAX
+[done] Create valid OP-posts when loading with AJAX

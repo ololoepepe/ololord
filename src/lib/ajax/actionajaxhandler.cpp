@@ -25,6 +25,7 @@ static cppcms::json::object toJson(const Content::Post &post)
     cppcms::json::object o;
     o["bannedFor"] = post.bannedFor;
     o["cityName"] = post.cityName;
+    o["closed"] = post.closed;
     o["countryName"] = post.countryName;
     o["dateTime"] = post.dateTime;
     o["email"] = post.email;
@@ -40,6 +41,7 @@ static cppcms::json::object toJson(const Content::Post &post)
         files.push_back(f);
     }
     o["files"] = files;
+    o["fixed"] = post.fixed;
     o["flagName"] = post.flagName;
     o["hidden"] = post.hidden;
     o["ip"] = post.ip;

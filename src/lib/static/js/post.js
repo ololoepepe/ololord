@@ -105,10 +105,16 @@ function editPost(boardName, postNumber) {
                 var newPost = createPostNode(res, true);
                 if (!newPost)
                     return;
-                if (post.className.indexOf("opPost") >= 0)
-                    reloadPage();
-                else
-                    post.parentNode.replaceChild(newPost, post);
+                var postLimit = post.querySelector("[name='postLimit']");
+                var bumpLimit = post.querySelector("[name='bumpLimit']");
+                if (!!postLimit || !!bumpLimit) {
+                    var postHeader = newPost.querySelector(".postHeader");
+                    if (!!postLimit)
+                        postHeader.appendChild(postLimit.cloneNode(true));
+                    if (!!bumpLimit)
+                        postHeader.appendChild(bumpLimit.cloneNode(true));
+                }
+                post.parentNode.replaceChild(newPost, post);
             });
         });
     });
@@ -282,7 +288,7 @@ function createPostFile(f) {
     file.appendChild(divFileName);
     var divFileSize = document.createElement("div");
     divFileSize.className = "postFileSize";
-    divFileSize.appendChild(document.createTextNode(f["size"]));
+    divFileSize.appendChild(document.createTextNode("(" + f["size"] + ")"));
     file.appendChild(divFileSize);
     var divImage = document.createElement("div");
     var aImage = document.createElement("a");
@@ -395,6 +401,10 @@ function createPostNode(res, permanent) {
         perm.parentNode.removeChild(perm);
         return post;
     }
+    if (res["number"] === res["threadNumber"])
+        post.className = post.className.replace("post", "opPost");
+    if (hidden)
+        post.className += " hiddenPost";
     perm.style.display = "";
     var anumber = document.createElement("a");
     number.parentNode.insertBefore(anumber, number);
@@ -420,6 +430,40 @@ function createPostNode(res, permanent) {
     m.style.display = "";
     var editButton = post.querySelector("[name='editButton']");
     editButton.href = editButton.href.replace("%postNumber%", res["number"]);
+    var fixButton = post.querySelector("[name='fixButton']");
+    var unfixButton = post.querySelector("[name='unfixButton']");
+    var openButton = post.querySelector("[name='openButton']");
+    var closeButton = post.querySelector("[name='closeButton']");
+    var toThread = post.querySelector("[name='toThread']");
+    if (res["number"] === res["threadNumber"]) {
+        if (!!res["fixed"]) {
+            unfixButton.style.display = "";
+            unfixButton.href = unfixButton.href.replace("%postNumber%", res["number"]);
+            fixButton.parentNode.removeChild(fixButton);
+        } else {
+            fixButton.style.display = "";
+            fixButton.href = fixButton.href.replace("%postNumber%", res["number"]);
+            unfixButton.parentNode.removeChild(unfixButton);
+        }
+        if (!!res["closed"]) {
+            openButton.style.display = "";
+            openButton.href = openButton.href.replace("%postNumber%", res["number"]);
+            closeButton.parentNode.removeChild(closeButton);
+        } else {
+            closeButton.style.display = "";
+            closeButton.href = closeButton.href.replace("%postNumber%", res["number"]);
+            openButton.parentNode.removeChild(openButton);
+        }
+        toThread.style.display = "";
+        var toThreadLink = post.querySelector("[name='toThreadLink']");
+        toThreadLink.href = toThreadLink.href.replace("%postNumber%", res["number"]);
+    } else {
+        fixButton.parentNode.removeChild(fixButton);
+        unfixButton.parentNode.removeChild(unfixButton);
+        openButton.parentNode.removeChild(openButton);
+        closeButton.parentNode.removeChild(closeButton);
+        toThread.parentNode.removeChild(toThread);
+    }
     var banButton = post.querySelector("[name='banButton']");
     banButton.href = banButton.href.replace("%postNumber%", res["number"]);
     var rawText = post.querySelector("[name='rawText']");
