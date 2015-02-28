@@ -322,17 +322,28 @@
                     <% end %>
                 <% end %>
                 <input id="post<%= post.number %>RawText" type="hidden" value="<%= post.rawPostText %>" />
-                <td class="postText">
-                    <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
-                </td>
+                <% if ( post.files.size() < 2 ) %>
+                    <td class="postText">
+                        <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                    </td>
+                <% else %>
+                    <td></td>
+                <% end %>
             </tr>
-            <tr>
-                <td colspan="2">
-                    <% if ( post.bannedFor ) %>
+            <% if ( post.files.size() >= 2 ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"postText\">"; %>
+                        <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                    </td>
+                </tr>
+            <% end %>
+            <% if ( post.bannedFor ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
                         <span class="bannedFor"><%= bannedForText %></span>
-                    <% end %>
-                <td>
-            </tr>
+                    <td>
+                </tr>
+            <% end %>
         </tbody>
     </table>
 </div>
