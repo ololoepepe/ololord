@@ -20,7 +20,7 @@
 #include <list>
 #include <string>
 
-static QString processPost(Content::BaseBoard::Post &p, QString *subject = 0)
+static QString processPost(Content::Post &p, QString *subject = 0)
 {
     QString s = Tools::fromStd(p.subject);
     QString subj = BTextTools::removeTrailingSpaces(s.mid(0, 1000));

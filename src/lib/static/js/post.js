@@ -88,6 +88,9 @@ function showPasswordDialog(title, label, callback) {
 function editPost(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
+    var post = document.getElementById("post" + postNumber);
+    if (!post)
+        return;
     var postText = document.getElementById("post" + postNumber + "RawText");
     if (!postText)
         return;
@@ -98,7 +101,12 @@ function editPost(boardName, postNumber) {
     div.appendChild(textarea);
     showDialog(title, null, div, function() {
         ajaxRequest("edit_post", [boardName, +postNumber, textarea.value], 5, function(res) {
-            reloadPage();
+            ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
+                var newPost = createPostNode(res, true);
+                if (!newPost)
+                    return;
+                post.parentNode.replaceChild(newPost, post);
+            });
         });
     });
 }

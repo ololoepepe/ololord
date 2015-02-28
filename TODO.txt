@@ -2,3 +2,6 @@
 [done] Add /echo/ board
 [done] Add ability to load new posts without updating a page
 [done] Fix page title of threads without subject
+[done] Reload only edited post when editing
+[done] Move Controller::toController function to BAbstractBoard
+* Make tags like [c++]..code...[/c++] work

@@ -20,7 +20,7 @@
 
 #include <string>
 
-static cppcms::json::object toJson(const Content::BaseBoard::Post &post, bool echo = false)
+static cppcms::json::object toJson(const Content::Post &post, bool echo = false)
 {
     cppcms::json::object o;
     o["bannedFor"] = post.bannedFor;
@@ -29,8 +29,8 @@ static cppcms::json::object toJson(const Content::BaseBoard::Post &post, bool ec
     o["dateTime"] = post.dateTime;
     o["email"] = post.email;
     cppcms::json::array files;
-    for (std::list<Content::BaseBoard::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {
-        const Content::BaseBoard::File &file = *i;
+    for (std::list<Content::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {
+        const Content::File &file = *i;
         cppcms::json::object f;
         f["size"] = file.size;
         f["sizeX"] = file.sizeX;
@@ -122,12 +122,12 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
     bool ok = false;
     QString err;
     const cppcms::http::request &req = server.request();
-    QList<Content::BaseBoard::Post> posts = Controller::getNewPosts(req, Tools::fromStd(boardName),
+    QList<Content::Post> posts = Controller::getNewPosts(req, Tools::fromStd(boardName),
         threadNumber > 0 ? quint64(threadNumber) : 0, lastPostNumber > 0 ? quint64(lastPostNumber) : 0, &ok, &err);
     if (!ok)
         return server.return_error(Tools::toStd(err));
     cppcms::json::array a;
-    foreach (const Content::BaseBoard::Post &p, posts)
+    foreach (const Content::Post &p, posts)
         a.push_back(toJson(p));
     server.return_result(a);
 }
@@ -139,8 +139,8 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
     bool ok = false;
     QString err;
     const cppcms::http::request &req = server.request();
-    Content::BaseBoard::Post post = Controller::getPost(req, Tools::fromStd(boardName),
-                                                        postNumber > 0 ? quint64(postNumber) : 0, &ok, &err);
+    Content::Post post = Controller::getPost(req, Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0,
+                                             &ok, &err);
     if (!ok)
         return server.return_error(Tools::toStd(err));
     server.return_result(toJson(post, ("echo" == boardName)));

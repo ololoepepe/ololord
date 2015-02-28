@@ -27,7 +27,7 @@ static QCache<QString, IpBanInfoList> theIpBanInfoList;
 static QMutex ipBanInfoListMutex(QMutex::Recursive);
 static QCache<QString, QStringList> theNews;
 static QMutex newsMutex(QMutex::Recursive);
-static QCache<QString, Content::BaseBoard::Post> thePosts;
+static QCache<QString, Content::Post> thePosts;
 static QMutex postsMutex(QMutex::Recursive);
 static QCache<QString, QStringList> theRules;
 static QMutex rulesMutex(QMutex::Recursive);
@@ -132,7 +132,7 @@ bool cacheNews(const QLocale &locale, QStringList *news)
     return true;
 }
 
-bool cachePost(const QString &boardName, quint64 postNumber, Content::BaseBoard::Post *post)
+bool cachePost(const QString &boardName, quint64 postNumber, Content::Post *post)
 {
     if (boardName.isEmpty() || !postNumber || !post)
         return false;
@@ -273,7 +273,7 @@ QStringList *news(const QLocale &locale)
     return theNews.object(locale.name());
 }
 
-Content::BaseBoard::Post *post(const QString &boardName, quint64 postNumber)
+Content::Post *post(const QString &boardName, quint64 postNumber)
 {
     if (boardName.isEmpty() || !postNumber)
         return 0;

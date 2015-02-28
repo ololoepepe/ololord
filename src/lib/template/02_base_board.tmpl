@@ -132,7 +132,7 @@
 <% end %>
 <% end template %>
 
-<% template postFile(Content::BaseBoard::File file) %>
+<% template postFile(Content::File file) %>
 <td class="postFile">
     <div class="postFileName">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"><%= file.sourceName %></a>
@@ -162,7 +162,7 @@
 </td>
 <% end template %>
 
-<% template post(Content::BaseBoard::Post post, Content::Board::ThreadPointer thread) %>
+<% template post(Content::Post post, Content::Board::ThreadPointer thread) %>
 <% if ( post.number == post.threadNumber ) %>
     <% if ( post.hidden ) %>
         <div id="post<%= post.number %>" class="opPost hiddenPost">

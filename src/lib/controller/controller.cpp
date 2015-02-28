@@ -132,7 +132,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");
-    Content::BaseBoard::BanLevel bl;
+    Content::BanLevel bl;
     bl.level = 0;
     bl.description = ts.translate("initBaseBoard", "Not banned", "banLevelDesctiption");
     c.banLevels.push_back(bl);

@@ -558,7 +558,7 @@ static void processWakabaMarkMonospaceDouble(QString &text, int start, int len, 
                      &processWakabaMarkMonospaceSingle, "<font face=\"monospace\">", true);
 }
 
-static std::string processPostText(QString text, const QString &boardName, quint64 threadNumber, bool processCode)
+std::string processPostText(QString text, const QString &boardName, quint64 threadNumber, bool processCode)
 {
     processWakabaMarkMonospaceDouble(text, 0, text.length(), boardName, threadNumber, processCode);
     return Tools::toStd(text);
@@ -590,63 +590,63 @@ void toHtml(QString *s)
     processPostText(*s, skip, "", 0L, false, &toHtml);
 }
 
-QList<Content::BaseBoard::Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
-                                            quint64 threadNumber, quint64 lastPostNumber, bool *ok, QString *error)
+QList<Content::Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
+                                 quint64 lastPostNumber, bool *ok, QString *error)
 {
     AbstractBoard *board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
     if (!board) {
         return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"),
-                    QList<Content::BaseBoard::Post>());
+                    QList<Content::Post>());
     }
     bool b = false;
     QList<Post> posts = Database::getNewPosts(req, boardName, threadNumber, lastPostNumber, &b, error);
     if (!b)
-        return bRet(ok, false, QList<Content::BaseBoard::Post>());
-    QList<Content::BaseBoard::Post> list;
+        return bRet(ok, false, QList<Content::Post>());
+    QList<Content::Post> list;
     foreach (const Post &p, posts) {
-        list << toController(p, board, tq.locale(), req);
+        list << board->toController(p, req, &b, error);
+        if (!b)
+            return bRet(ok, false, QList<Content::Post>());
         if (!list.last().number) {
             return bRet(ok, false, error, tq.translate("getNewPosts", "Internal logic error", "error"),
-                        QList<Content::BaseBoard::Post>());
+                        QList<Content::Post>());
         }
     }
     return bRet(ok, true, error, QString(), list);
 }
 
-Content::BaseBoard::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
-                                 bool *ok, QString *error)
+Content::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok,
+                      QString *error)
 {
     AbstractBoard *board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (!board) {
-        return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"),
-                    Content::BaseBoard::Post());
-    }
+    if (!board)
+        return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"), Content::Post());
     bool b = false;
     Post post = Database::getPost(req, boardName, postNumber, &b, error);
     if (!b)
-        return bRet(ok, false, Content::BaseBoard::Post());
-    Content::BaseBoard::Post p = toController(post, board, tq.locale(), req);
-    if (!p.number) {
-        return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"),
-                    Content::BaseBoard::Post());
-    }
+        return bRet(ok, false, Content::Post());
+    Content::Post p = board->toController(post, req, &b, error);
+    if (!b)
+        return bRet(ok, false, Content::Post());
+    if (!p.number)
+        return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"), Content::Post());
     return bRet(ok, true, error, QString(), p);
 }
 
-Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *board, const QLocale &l,
-                                      const cppcms::http::request &req)
+/*Content::Post toController(const Post &post, const AbstractBoard *board, const QLocale &l,
+                           const cppcms::http::request &req)
 {
     if (!board)
-        return Content::BaseBoard::Post();
+        return Content::Post();
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
-        return Content::BaseBoard::Post();
-    Content::BaseBoard::Post *p = Cache::post(board->name(), post.number());
+        return Content::Post();
+    Content::Post *p = Cache::post(board->name(), post.number());
     bool inCache = p;
     if (!p) {
-        p = new Content::BaseBoard::Post;
+        p = new Content::Post;
         p->bannedFor = post.bannedFor();
         p->email = Tools::toStd(post.email());
         p->number = post.number();
@@ -654,7 +654,7 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         p->subjectIsRaw = false;
         foreach (const QString &fn, post.files()) {
             QFileInfo fi(fn);
-            Content::BaseBoard::File f;
+            Content::File f;
             f.sourceName = Tools::toStd(fi.fileName());
             QString sz;
             f.thumbName = Tools::toStd(board->thumbFileName(fi.fileName(), sz, f.sizeX, f.sizeY));
@@ -665,11 +665,11 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         try {
             Transaction t;
             if (!t)
-                return Content::BaseBoard::Post();
+                return Content::Post();
             threadNumber = post.thread().load()->number();
         } catch (const odb::exception &e) {
             qDebug() << Tools::fromStd(e.what());
-            return Content::BaseBoard::Post();
+            return Content::Post();
         }
         p->text = processPostText(post.text(), board->name(), threadNumber, board->processCode());
         p->threadNumber = threadNumber;
@@ -688,12 +688,12 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
             }
         }
     }
-    Content::BaseBoard::Post pp = *p;
+    Content::Post pp = *p;
     if (!inCache && !Cache::cachePost(board->name(), post.number(), p))
         delete p;
     TranslatorQt tq(l);
     TranslatorStd ts(l);
-    for (std::list<Content::BaseBoard::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i)
+    for (std::list<Content::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i)
         i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("toController", "KB", "fileSize")));
     if (board->showWhois() && "Unknown country" == pp.countryName)
         pp.countryName = ts.translate("toController", "Unknown country", "countryName");
@@ -741,6 +741,6 @@ Content::BaseBoard::Post toController(const Post &post, const AbstractBoard *boa
         pp.tripcode = Tools::toStd(s);
     }
     return pp;
-}
+}*/
 
 }

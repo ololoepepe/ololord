@@ -244,6 +244,26 @@ The default is %1.</source>
         <comment>newPostsText</comment>
         <translation>Новых постов:</translation>
     </message>
+    <message>
+        <source>Internal file system error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка файловой системы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>KB</source>
+        <comment>fileSize</comment>
+        <translation>Кб</translation>
+    </message>
+    <message>
+        <source>Unknown country</source>
+        <comment>countryName</comment>
+        <translation>Неизвестная страна</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -2033,19 +2053,6 @@ Must contain &quot;%1&quot; (without quotes) - it is replaced by URL.</source>
         <source>3D pron</source>
         <comment>board title</comment>
         <translation>3D прон</translation>
-    </message>
-</context>
-<context>
-    <name>toController</name>
-    <message>
-        <source>KB</source>
-        <comment>fileSize</comment>
-        <translation>Кб</translation>
-    </message>
-    <message>
-        <source>Unknown country</source>
-        <comment>countryName</comment>
-        <translation>Неизвестная страна</translation>
     </message>
 </context>
 <context>
