@@ -429,6 +429,7 @@ void checkOutdatedEntries()
                         continue;
                     post->setBannedFor(false);
                     persist(post);
+                    Cache::removePost(post->board(), post->number());
                 }
             }
         }
