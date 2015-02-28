@@ -1,9 +1,0 @@
-[done] Add BB-code support
-[done] Add /echo/ board
-[done] Add ability to load new posts without updating a page
-[done] Fix page title of threads without subject
-[done] Reload only edited post when editing
-[done] Move Controller::toController function to BAbstractBoard
-[done] Make tags like [c++]..code...[/c++] work
-[done] Don't reload page when deleting a post
-[done] Create valid OP-posts when loading with AJAX
