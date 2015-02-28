@@ -203,7 +203,6 @@ function deletePost(boardName, postNumber, fromThread) {
                 window.location.href = window.location.href.replace(suffix, "");
             } else {
                 post.parentNode.removeChild(post);
-                window.location.href = window.location.href.replace(/#\d+/g, "");
             }
         });
     });

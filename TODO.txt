@@ -5,3 +5,4 @@
 [done] Reload only edited post when editing
 [done] Move Controller::toController function to BAbstractBoard
 * Make tags like [c++]..code...[/c++] work
+[done] Don't reload page when deleting a post

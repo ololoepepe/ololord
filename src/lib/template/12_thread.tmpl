@@ -35,11 +35,6 @@
 <% include navigationButton("top") %>
 <input id="noNewPostsText" type="hidden" value="<%= noNewPostsText %>" />
 <input id="newPostsText" type="hidden" value="<%= newPostsText %>" />
-<% if ( !content.posts.empty() ) %>
-    <input id="lastPostNumber" type="hidden" value="<%= posts.back().number %>" />
-<% else %>
-    <input id="lastPostNumber" type="hidden" value="<%= opPost.number %>" />
-<% end %>
 <input id="currentThreadNumber" type="hidden" value="<%= opPost.number %>" />
 <a id="top"></a>
 <% include settings() %>

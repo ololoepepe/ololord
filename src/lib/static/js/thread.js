@@ -38,7 +38,10 @@ function selectPost(post) {
 function updateThread(boardName, threadNumber) {
     if (!boardName || isNaN(+threadNumber))
         return;
-    var lastPostN = document.getElementById("lastPostNumber").value;
+    var posts = document.querySelectorAll(".opPost, .post");
+    if (!posts)
+        return;
+    var lastPostN = posts[posts.length - 1].id.replace("post", "");
     ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], 7, function(res) {
         if (!res)
             return;
@@ -62,7 +65,6 @@ function updateThread(boardName, threadNumber) {
             if (!post)
                 continue;
             document.body.insertBefore(post, before);
-            document.getElementById("lastPostNumber").value = res[i]["number"];
         }
     });
 }
