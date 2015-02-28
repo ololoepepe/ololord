@@ -4,6 +4,7 @@
 #include "controller/echoboard.h"
 #include "controller/echothread.h"
 #include "settingslocker.h"
+#include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
 
@@ -16,19 +17,10 @@
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <QVariantMap>
 
 #include <list>
 #include <string>
-
-static QString processPost(Content::Post &p, QString *subject = 0)
-{
-    QString s = Tools::fromStd(p.subject);
-    QString subj = BTextTools::removeTrailingSpaces(s.mid(0, 1000));
-    QString link = s.mid(1000);
-    p.subject = Tools::toStd("<a href=\"" + link + "\">" + BTextTools::toHtml(!subj.isEmpty() ? subj : link) + "</a>");
-    p.subjectIsRaw = true;
-    return bRet(subject, subj, link);
-}
 
 echoBoard::echoBoard()
 {
@@ -66,6 +58,25 @@ QString echoBoard::title(const QLocale &l) const
     return tq.translate("echoBoard", "Boardsphere echo", "board title");
 }
 
+Content::Post echoBoard::toController(const Post &post, const cppcms::http::request &req, bool *ok,
+                                      QString *error) const
+{
+    bool b = false;
+    Content::Post p = AbstractBoard::toController(post, req, &b, error);
+    if (!b)
+        return bRet(ok, false, p);
+    if (p.number == p.threadNumber) {
+        QString subj = BTextTools::removeTrailingSpaces(post.subject().mid(0, 1000));
+        QString link = post.subject().mid(1000);
+        p.subject = Tools::toStd("<a href=\"" + link + "\">" + BTextTools::toHtml(!subj.isEmpty() ? subj : link)
+                                 + "</a>");
+        p.subjectIsRaw = true;
+        p.userData.insert("subject", subj);
+        p.userData.insert("link", link);
+    }
+    return bRet(ok, true, error, QString(), p);
+}
+
 void echoBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Board *c)
 {
     Content::echoBoard *cc = dynamic_cast<Content::echoBoard *>(c);
@@ -74,8 +85,6 @@ void echoBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Boa
     TranslatorStd ts(req);
     cc->maxLinkLength = 150;
     cc->postFormLabelLink = ts.translate("echoBoard", "Thread link:", "postFormLabelLink");
-    for (std::list<Content::Board::Thread>::iterator i = c->threads.begin(); i != c->threads.end(); ++i)
-        processPost(i->opPost);
 }
 
 void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content::Thread *c)
@@ -83,8 +92,8 @@ void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content
     Content::echoThread *cc = dynamic_cast<Content::echoThread *>(c);
     if (!cc)
         return;
-    QString subj;
-    QString link = processPost(cc->opPost, &subj);
+    QString subj = cc->opPost.userData.value("subject").toString();
+    QString link = cc->opPost.userData.value("link").toString();
     QString q = SettingsLocker()->value("Site/ssl_proxy_query").toString();
     if (!link.startsWith("https") && q.contains("%1"))
         link = q.arg(link);

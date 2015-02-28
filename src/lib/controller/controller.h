@@ -2,7 +2,6 @@
 #define CONTROLLER_H
 
 class AbstractBoard;
-//class Post;
 
 namespace Content
 {
@@ -37,7 +36,6 @@ class request;
 }
 
 #include "../global.h"
-//#include "baseboard.h"
 #include "tools.h"
 
 #include <QDateTime>
@@ -82,8 +80,6 @@ OLOLORD_EXPORT bool testParams(const AbstractBoard *board, cppcms::application &
 OLOLORD_EXPORT bool testRequest(cppcms::application &app, int acceptedTypes);
 OLOLORD_EXPORT QString toHtml(const QString &s);
 OLOLORD_EXPORT void toHtml(QString *s);
-/*OLOLORD_EXPORT Content::Post toController(const Post &post, const AbstractBoard *board, const QLocale &l,
-                                          const cppcms::http::request &req);*/
 
 }
 

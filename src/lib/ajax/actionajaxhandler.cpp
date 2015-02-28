@@ -20,7 +20,7 @@
 
 #include <string>
 
-static cppcms::json::object toJson(const Content::Post &post, bool echo = false)
+static cppcms::json::object toJson(const Content::Post &post)
 {
     cppcms::json::object o;
     o["bannedFor"] = post.bannedFor;
@@ -49,19 +49,8 @@ static cppcms::json::object toJson(const Content::Post &post, bool echo = false)
     o["showRegistered"] = post.showRegistered;
     o["showTripcode"] = post.showTripcode;
     o["threadNumber"] = post.threadNumber;
-    bool op = (post.number == post.threadNumber);
-    o["op"] = op;
-    if (echo && op) {
-        QString s = Tools::fromStd(post.subject);
-        QString subj = BTextTools::removeTrailingSpaces(s.mid(0, 1000));
-        QString link = s.mid(1000);
-        o["subject"] = Tools::toStd("<a href=\"" + link + "\">" + BTextTools::toHtml(!subj.isEmpty() ? subj : link)
-                                    + "</a>");
-        o["subjectIsRaw"] = true;
-    } else {
-        o["subject"] = post.subject;
-        o["subjectIsRaw"] = false;
-    }
+    o["subject"] = post.subject;
+    o["subjectIsRaw"] = post.subjectIsRaw;
     o["text"] = post.text;
     o["rawPostText"] = post.rawPostText;
     o["tripcode"] = post.tripcode;
@@ -143,7 +132,7 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
                                              &ok, &err);
     if (!ok)
         return server.return_error(Tools::toStd(err));
-    server.return_result(toJson(post, ("echo" == boardName)));
+    server.return_result(toJson(post));
 }
 
 QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const

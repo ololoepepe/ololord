@@ -6,6 +6,7 @@ namespace Content
 
 class Board;
 class Thread;
+class Post;
 
 }
 
@@ -36,6 +37,8 @@ public:
     QString name() const;
     bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l, QString *error) const;
     QString title(const QLocale &l) const;
+    Content::Post toController(const Post &post, const cppcms::http::request &req, bool *ok = 0,
+                               QString *error = 0) const;
 protected:
     void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);

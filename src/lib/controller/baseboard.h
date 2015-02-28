@@ -5,6 +5,8 @@
 
 #include "../global.h"
 
+#include <QVariantMap>
+
 #include <list>
 #include <string>
 
@@ -48,6 +50,7 @@ struct OLOLORD_EXPORT Post
     unsigned long long threadNumber;
     std::string tripcode;
     bool showTripcode;
+    QVariantMap userData;
 };
 
 struct OLOLORD_EXPORT BaseBoard : public Base
