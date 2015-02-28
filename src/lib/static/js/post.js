@@ -105,7 +105,10 @@ function editPost(boardName, postNumber) {
                 var newPost = createPostNode(res, true);
                 if (!newPost)
                     return;
-                post.parentNode.replaceChild(newPost, post);
+                if (post.className.indexOf("opPost") >= 0)
+                    reloadPage();
+                else
+                    post.parentNode.replaceChild(newPost, post);
             });
         });
     });

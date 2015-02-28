@@ -488,6 +488,16 @@ static void processTags(QString &text, int start, int len, const QString &boardN
     text.replace(start, len, t);
 }
 
+static QString tagName(const QRegExp &rx)
+{
+    QString cl = rx.cap();
+    cl = cl.mid(1, cl.length() - 2);
+    int ind = cl.indexOf(' ');
+    if (ind >= 0)
+        cl = cl.left(ind);
+    return cl;
+}
+
 static void processTagCode(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
                            bool processCode)
 {
@@ -497,15 +507,26 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
     QString t = text.mid(start, len);
     QString srchighlightPath = BDirTools::findResource("srchilite", BDirTools::AllResources);
     if (!srchighlightPath.isEmpty()) {
-        QRegExp rx("\\[code\\s+lang\\=\"(" + Tools::supportedCodeLanguages().join("|").replace("+", "\\+")
-                   + ")\"\\s*\\]");
+        QStringList langs = Tools::supportedCodeLanguages();
+        foreach (int i, bRangeD(0, langs.size() - 1))
+            langs[i].replace("+", "\\+");
+        QString tags;
+        foreach (const QString &s, langs)
+            tags += "|\\[" + s + "\\]";
+        QRegExp rx("\\[code\\s+lang\\=\"(" + langs.join("|") + ")\"\\s*\\]" + tags);
         int indStart = rx.indexIn(t);
-        int indEnd = t.indexOf("[/code]", indStart + rx.matchedLength());
+        QString tag = tagName(rx);
+        int indEnd = t.indexOf("[/" + tag + "]", indStart + rx.matchedLength());
         while (indStart >= 0 && indEnd > 0) {
-            QString lang = rx.cap();
-            lang.remove(QRegExp("\\[code\\s+lang\\=\""));
-            lang.remove(QRegExp("\"\\s*\\]"));
-            lang.replace("++", "pp");
+            QString lang;
+            if (langs.contains(tag)) {
+                lang = tag;
+            } else {
+                lang = rx.cap();
+                lang.remove(QRegExp("\\[code\\s+lang\\=\""));
+                lang.remove(QRegExp("\"\\s*\\]"));
+                lang.replace("++", "pp");
+            }
             int codeStart = indStart + rx.matchedLength();
             int codeLength = indEnd - codeStart;
             QString code = t.mid(codeStart, codeLength);
@@ -529,7 +550,7 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
             t.replace(indStart, rx.matchedLength() + code.length() + 7, result);
             skip << qMakePair(indStart, result.length());
             indStart = rx.indexIn(t, indStart + result.length());
-            indEnd = t.indexOf("[/code]", indStart + rx.matchedLength());
+            indEnd = t.indexOf("[/" + tag + "]", indStart + rx.matchedLength());
         }
     }
     processPostText(t, skip, boardName, threadNumber, processCode, &processTags);
