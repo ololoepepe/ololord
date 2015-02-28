@@ -95,8 +95,12 @@
                             <b><%= postFormInputFile %></b>
                         </td>
                         <td class="postformField">
-                            <input type="file" name="image" id="postFormInputFile<%= position %>"
-                                   accept="<%= supportedFileTypes %>" />
+                            <div>
+                                <input type="file" name="file" onchange="fileSelected(this);"
+                                       accept="<%= supportedFileTypes %>" />
+                                <a href="javascript:void(0);" style="display: none;" onclick="removeFile(this);">
+                                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"></a>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -345,6 +349,7 @@
 <% else %>
     <input type="hidden" id="postingEnabled" value="false" />
 <% end %>
+<input type="hidden" id="maxFileCount" value="<%= maxFileCount %>" />
 <input type="hidden" id="currentBoardName" value="<%= currentBoard.name %>" />
 <input type="hidden" id="currentBoardTitle" value="<%= currentBoard.title %>" />
 <input type="hidden" id="editPostText" value="<%= editPostText %>" />

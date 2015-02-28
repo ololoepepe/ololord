@@ -562,3 +562,61 @@ function noViewPost() {
             lastPostPreview.parentNode.removeChild(lastPostPreview);
     }, 500);
 }
+
+function fileSelected(current) {
+    if (!current)
+        return;
+    var inp = document.getElementById("maxFileCount");
+    if (!inp)
+        return;
+    var maxCount = +inp.value;
+    if (isNaN(maxCount))
+        return;
+    var div = current.parentNode;
+    div.querySelector("a").style.display = "";
+    var parent = div.parentNode;
+    if (parent.children.length >= maxCount)
+        return;
+    for (var i = 0; i < parent.children.length; ++i) {
+        if (parent.children[i].querySelector("input").value === "")
+            return;
+        parent.children[i].querySelector("a").style.display = "";
+    }
+    div = div.cloneNode(true);
+    div.querySelector("a").style.display = "none";
+    div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
+    parent.appendChild(div);
+}
+
+function removeFile(current) {
+    if (!current)
+        return;
+    var div = current.parentNode;
+    var parent = div.parentNode;
+    parent.removeChild(div);
+    if (parent.children.length > 1) {
+        for (var i = 0; i < parent.children.length; ++i) {
+            if (parent.children[i].querySelector("input").value === "")
+                return;
+        }
+        var inp = document.getElementById("maxFileCount");
+        if (!inp)
+            return;
+        var maxCount = +inp.value;
+        if (isNaN(maxCount))
+            return;
+        if (parent.children.length >= maxCount)
+            return;
+        div = div.cloneNode(true);
+        div.querySelector("a").style.display = "none";
+        div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
+        parent.appendChild(div);
+    }
+    if (parent.children.length > 0 && parent.children[0].querySelector("input").value === "")
+        parent.children[0].querySelector("a").style.display = "none";
+    if (parent.children.length < 1) {
+        div.querySelector("a").style.display = "none";
+        div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
+        parent.appendChild(div);
+    }
+}

@@ -1133,11 +1133,6 @@ Your choice:</source>
         <translation>Отправить</translation>
     </message>
     <message>
-        <source>File:</source>
-        <comment>postFormInputFile</comment>
-        <translation>Файл:</translation>
-    </message>
-    <message>
         <source>Post:</source>
         <comment>postFormInputText</comment>
         <translation>Пост:</translation>
@@ -1286,6 +1281,16 @@ Your choice:</source>
         <source>Answer</source>
         <comment>toThread</comment>
         <translation>Ответ</translation>
+    </message>
+    <message>
+        <source>File(s):</source>
+        <comment>postFormInputFile</comment>
+        <translation>Файл(ы):</translation>
+    </message>
+    <message>
+        <source>Remove this file</source>
+        <comment>removeFileText</comment>
+        <translation>Убрать этот файл</translation>
     </message>
 </context>
 <context>

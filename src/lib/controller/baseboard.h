@@ -86,6 +86,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string fixThreadText;
     std::string hidePostFormText;
     unsigned int maxEmailLength;
+    unsigned int maxFileCount;
     unsigned int maxNameLength;
     unsigned int maxSubjectLength;
     unsigned int maxPasswordLength;
@@ -106,6 +107,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     bool postingEnabled;
     std::string postLimitReachedText;
     std::string registeredText;
+    std::string removeFileText;
     std::string showHidePostText;
     std::string showPostFormText;
     bool showWhois;
