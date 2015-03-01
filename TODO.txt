@@ -1,1 +1,2 @@
 [done] Add ability to post several files
+[done] Fix post preview in Google Chrome

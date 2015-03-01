@@ -36,6 +36,10 @@
     width: 0px;
 }
 
+.shrink {
+    width: 100%;
+}
+
 .postFile ~ .postFile {
     padding-left: 20px;
 }

@@ -397,7 +397,7 @@ function createPostNode(res, permanent) {
         manyFilesTr.parentNode.removeChild(manyFilesTr);
         textOneFile.innerHTML = res["text"];
     } else {
-        post.querySelector("[name='oneFileTd']").className = "";
+        post.querySelector("[name='oneFileTd']").className = "shrink";
         textOneFile.parentNode.removeChild(textOneFile);
         post.querySelector("[name='manyFilesTd']").colSpan = res["files"].length + 2;
         post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
@@ -524,9 +524,12 @@ function viewPostStage2(link, postNumber, post) {
         post.style.maxWidth = linkCenter + "px";
         post.style.left = linkCenter - post.scrollWidth + "px";
     }
+    var scrollTop = doc.scrollTop;
+    if (!scrollTop) //NOTE: Workaround for Chrome/Safari. I really HATE you, HTML/CSS/JS!
+        scrollTop = document.body.scrollTop;
     post.style.top = (doc.clientHeight - coords.bottom >= post.scrollHeight)
-        ? (doc.scrollTop + coords.bottom - 4 + "px")
-        : (doc.scrollTop + coords.top - post.scrollHeight - 4 + "px");
+        ? (scrollTop + coords.bottom - 4 + "px")
+        : (scrollTop + coords.top - post.scrollHeight - 4 + "px");
     post.style.zIndex = 9001;
 }
 
