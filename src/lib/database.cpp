@@ -428,7 +428,7 @@ void checkOutdatedEntries()
                     if (post.error || !post)
                         continue;
                     post->setBannedFor(false);
-                    persist(post);
+                    update(post);
                     Cache::removePost(post->board(), post->number());
                 }
             }

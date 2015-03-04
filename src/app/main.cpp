@@ -102,8 +102,8 @@ int main(int argc, char **argv)
         OlolordWebAppThread owt(conf);
         owt.start();
         ret = app.exec();
-        owt.terminate();
-        owt.wait(5 * BeQt::Second);
+        owt.shutdown();
+        owt.wait(10 * BeQt::Second);
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));

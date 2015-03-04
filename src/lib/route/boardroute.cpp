@@ -95,7 +95,7 @@ int BoardRoute::priority() const
 
 std::string BoardRoute::regex() const
 {
-    static const QString boardRx = "(" + AbstractBoard::boardNames().join("|") + ")";
+    QString boardRx = "(" + AbstractBoard::boardNames().join("|") + ")";
     switch (mode) {
     case BoardPageMode:
         return Tools::toStd("/" + boardRx + "/([1-9][0-9]*)\\.html");

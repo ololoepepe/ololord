@@ -46,7 +46,7 @@ int ThreadRoute::priority() const
 
 std::string ThreadRoute::regex() const
 {
-    static const QString boardRx = "(" + AbstractBoard::boardNames().join("|") + ")";
+    QString boardRx = "(" + AbstractBoard::boardNames().join("|") + ")";
     return Tools::toStd("/" + boardRx + "/thread/([1-9][0-9]*)\\.html");
 }
 

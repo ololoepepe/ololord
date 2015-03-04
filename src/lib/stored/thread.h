@@ -99,10 +99,9 @@ private:
     PRAGMA_DB(not_null)
     QLazySharedPointer<Thread> thread_;
 public:
+    explicit Post();
     explicit Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
                   const QString &posterIp, const QByteArray &password, const QByteArray &hashpass = QByteArray());
-public:
-    explicit Post();
 public:
     quint64 id() const;
     QString board() const;
