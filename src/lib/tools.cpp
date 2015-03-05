@@ -59,15 +59,6 @@ public:
     }
 };
 
-struct membuf : std::streambuf
-{
-public:
-    explicit membuf(char *begin, char *end)
-    {
-        this->setg(begin, begin, end);
-    }
-};
-
 static QMutex cityNameMutex(QMutex::Recursive);
 static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
@@ -478,14 +469,12 @@ PostParameters postParameters(const cppcms::http::request &request)
 cppcms::json::value readJsonValue(const QString &fileName, bool *ok)
 {
     bool b = false;
-    QByteArray jsonBa = BDirTools::readFile(fileName, -1, &b);
+    QString s = BDirTools::readTextFile(fileName, "UTF-8", &b);
     if (!b)
         return cppcms::json::value();
-    char *jsonData = jsonBa.data();
-    membuf jsonBuff(jsonData, jsonData + jsonBa.size());
-    std::istream jsonIn(&jsonBuff);
     cppcms::json::value json;
-    if (json.load(jsonIn, true))
+    std::stringstream in(toStd(s));
+    if (json.load(in, true))
         return bRet(ok, true, json);
     else
         return bRet(ok, false, cppcms::json::value());
