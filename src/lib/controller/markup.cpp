@@ -435,6 +435,8 @@ static void processTags(QString &text, int start, int len, const QString &boardN
         tags.insert("[s]", "[/s]");
         tags.insert("[u]", "[/u]");
         tags.insert("[spoiler]", "[/spoiler]");
+        tags.insert("[sub]", "[/sub]");
+        tags.insert("[sup]", "[/sup]");
     }
     typedef QPair<QString, QString> StringPair;
     typedef QMap<QString, StringPair> StringPairMap;
@@ -444,6 +446,8 @@ static void processTags(QString &text, int start, int len, const QString &boardN
         htmls.insert("[s]", qMakePair(QString("<s>"), QString("</s>")));
         htmls.insert("[u]", qMakePair(QString("<u>"), QString("</u>")));
         htmls.insert("[spoiler]", qMakePair(QString("<span class=\"spoiler\">"), QString("</span>")));
+        htmls.insert("[sub]", qMakePair(QString("<sub>"), QString("</sub>")));
+        htmls.insert("[sup]", qMakePair(QString("<sup>"), QString("</sup>")));
     }
     ProcessPostTextFunction next = &processWakabaMarkList;
     if (start < 0 || len <= 0)

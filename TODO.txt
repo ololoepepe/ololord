@@ -1,2 +1,7 @@
 [done] Add ability to post several files
 [done] Fix post preview in Google Chrome
+[done] Fix post updating on user unban
+[done] Fix board route regex
+[done] Fix OlolordWebAppThread class
+[done] Fix Tools::readJsonValue function
+[done] Add [sub] and [sup] tags support (subscript and superscript)
