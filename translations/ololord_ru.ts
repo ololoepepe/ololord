@@ -264,6 +264,12 @@ The default is %1.</source>
         <comment>countryName</comment>
         <translation>Неизвестная страна</translation>
     </message>
+    <message>
+        <source>Maximum last posts displayed for each thread at this board.
+The default is 3.</source>
+        <translation>Максимальное количество отображаемых последних постов для каждого треда на этой доске.
+По умолчанию 3.</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -1605,6 +1611,12 @@ The default is %1.</source>
 Must contain &quot;%1&quot; (without quotes) - it is replaced by URL.</source>
         <translation>Запрос, используемый для проксирования не-SSL ссылок внутри iframe&apos;ов.
 Должен содержать &quot;%1&quot; (без кавычек) - это заменяется на ссылку.</translation>
+    </message>
+    <message>
+        <source>Maximum last posts displayed for each thread.
+The default is 3.</source>
+        <translation>Максимальное количество отображаемых последних постов для каждого треда.
+По умолчанию 3.</translation>
     </message>
 </context>
 <context>

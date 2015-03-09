@@ -339,9 +339,10 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
             if (!ok)
                 return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
-            foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
-                if (i <= 0)
-                    break;
+            int lb = posts.size() - Tools::maxInfo(Tools::MaxLastPosts, name());
+            if (lb <= 0)
+                lb = 1;
+            foreach (int i, bRangeR(posts.size() - 1, lb)) {
                 thread.lastPosts.push_front(toController(*posts.at(i).load(), app.request(), &ok, &err));
                 if (!ok)
                     return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
@@ -901,6 +902,9 @@ void AbstractBoard::initBoards(bool reinit)
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum thread count for this board.\n"
                                                     "When the limit is reached, the most old threads get deleted.\n"
                                                     "The default is 200."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_last_posts", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum last posts displayed for each thread at "
+                                                    "this board.\nThe default is 3."));
         nnn = new BSettingsNode(QVariant::Bool, "hidden", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if this board is hidden.\n"
                                                     "A hidden board will not appear in navigation bars.\n"

@@ -603,6 +603,9 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Maximum thread count per board.\n"
                                                "When the limit is reached, the most old threads get deleted.\n"
                                                "The default is 200."));
+    nn = new BSettingsNode(QVariant::UInt, "max_last_posts", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum last posts displayed for each thread.\n"
+                                               "The default is 3."));
     nn = new BSettingsNode(QVariant::UInt, "max_email_length", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the e-mail field.\n"
                                                "The default is 150."));

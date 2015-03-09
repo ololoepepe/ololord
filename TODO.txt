@@ -5,3 +5,4 @@
 [done] Fix OlolordWebAppThread class
 [done] Fix Tools::readJsonValue function
 [done] Add [sub] and [sup] tags support (subscript and superscript)
+[done] Add ability to set maximum last posts displayed per thread

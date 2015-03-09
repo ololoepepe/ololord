@@ -23,6 +23,7 @@
 #include <QLocale>
 #include <QMap>
 #include <QMutex>
+#include <QPair>
 #include <QRegExp>
 #include <QSettings>
 #include <QString>
@@ -353,51 +354,25 @@ void log(const cppcms::http::request &req, const QString &what)
 
 unsigned int maxInfo(MaxInfo m, const QString &boardName)
 {
-    SettingsLocker s;
-    if (boardName.isEmpty()) {
-        switch (m) {
-        case MaxEmailFieldLength:
-            return s->value("Board/max_email_length", 150).toUInt();
-        case MaxNameFieldLength:
-            return s->value("Board/max_name_length", 50).toUInt();
-        case MaxSubjectFieldLength:
-            return s->value("Board/max_subject_length", 150).toUInt();
-        case MaxTextFieldLength:
-            return s->value("Board/max_text_length", 15000).toUInt();
-        case MaxPasswordFieldLength:
-            return s->value("Board/max_password_length", 150).toUInt();
-        case MaxFileCount:
-            return s->value("Board/max_file_count", 1).toUInt();
-        case MaxFileSize:
-            return s->value("Board/max_file_size", 10 * BeQt::Megabyte).toUInt();
-        default:
-            return 0;
-        }
-    } else {
-        switch (m) {
-        case MaxEmailFieldLength:
-            return s->value("Board/" + boardName + "/max_email_length",
-                            s->value("Board/max_email_length", 150)).toUInt();
-        case MaxNameFieldLength:
-            return s->value("Board/" + boardName + "/max_name_length", s->value("Board/max_name_length", 50)).toUInt();
-        case MaxSubjectFieldLength:
-            return s->value("Board/" + boardName + "/max_subject_length",
-                            s->value("Board/max_subject_length", 150)).toUInt();
-        case MaxTextFieldLength:
-            return s->value("Board/" + boardName + "/max_text_length",
-                            s->value("Board/max_text_length", 15000)).toUInt();
-        case MaxPasswordFieldLength:
-            return s->value("Board/" + boardName + "/max_password_length",
-                            s->value("Board/max_password_length", 150)).toUInt();
-        case MaxFileCount:
-            return s->value("Board/" + boardName + "/max_file_count", s->value("Board/max_file_count", 1)).toUInt();
-        case MaxFileSize:
-            return s->value("Board/" + boardName + "/max_file_size",
-                            s->value("Board/max_file_size", 10 * BeQt::Megabyte)).toUInt();
-        default:
-            return 0;
-        }
+    typedef QMap< MaxInfo, QPair<QString, uint> > MaxMap;
+    init_once(MaxMap, map, MaxMap()) {
+        map.insert(MaxEmailFieldLength, qMakePair(QString("max_email_length"), uint(150)));
+        map.insert(MaxNameFieldLength, qMakePair(QString("max_name_length"), uint(50)));
+        map.insert(MaxSubjectFieldLength, qMakePair(QString("max_subject_length"), uint(150)));
+        map.insert(MaxTextFieldLength, qMakePair(QString("max_text_length"), uint(15000)));
+        map.insert(MaxPasswordFieldLength, qMakePair(QString("max_password_length"), uint(150)));
+        map.insert(MaxFileCount, qMakePair(QString("max_file_count"), uint(1)));
+        map.insert(MaxFileSize, qMakePair(QString("max_file_size"), uint(10)));
+        map.insert(MaxLastPosts, qMakePair(QString("max_last_posts"), uint(3)));
     }
+    if (!map.contains(m))
+        return 0;
+    QPair<QString, uint> p = map.value(m);
+    SettingsLocker s;
+    if (boardName.isEmpty())
+        return s->value("Board/" + p.first, p.second).toUInt();
+    else
+        return s->value("Board/" + boardName + "/" + p.first, s->value("Board/" + p.first, p.second)).toUInt();
 }
 
 QString mimeType(const QByteArray &data, bool *ok)
