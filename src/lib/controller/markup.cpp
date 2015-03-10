@@ -523,8 +523,10 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
         int indEnd = t.indexOf("[/" + tag + "]", indStart + rx.matchedLength());
         while (indStart >= 0 && indEnd > 0) {
             QString lang;
-            if (langs.contains(tag)) {
-                lang = tag;
+            QString ttag = tag;
+            ttag.replace("++", "pp");
+            if (langs.contains(ttag)) {
+                lang = ttag;
             } else {
                 lang = rx.cap();
                 lang.remove(QRegExp("\\[code\\s+lang\\=\""));
