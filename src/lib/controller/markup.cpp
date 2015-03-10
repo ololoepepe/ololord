@@ -512,27 +512,24 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
     QString srchighlightPath = BDirTools::findResource("srchilite", BDirTools::AllResources);
     if (!srchighlightPath.isEmpty()) {
         QStringList langs = Tools::supportedCodeLanguages();
-        foreach (int i, bRangeD(0, langs.size() - 1))
-            langs[i].replace("+", "\\+");
         QString tags;
         foreach (const QString &s, langs)
             tags += "|\\[" + s + "\\]";
-        QRegExp rx("\\[code\\s+lang\\=\"(" + langs.join("|") + ")\"\\s*\\]" + tags);
+        QRegExp rx("\\[code\\s+lang\\=\"(" + langs.join("|").replace("+", "\\+") + ")\"\\s*\\]"
+                   + tags.replace("+", "\\+"));
         int indStart = rx.indexIn(t);
         QString tag = tagName(rx);
         int indEnd = t.indexOf("[/" + tag + "]", indStart + rx.matchedLength());
         while (indStart >= 0 && indEnd > 0) {
             QString lang;
-            QString ttag = tag;
-            ttag.replace("++", "pp");
-            if (langs.contains(ttag)) {
-                lang = ttag;
+            if (langs.contains(tag)) {
+                lang = tag;
             } else {
                 lang = rx.cap();
                 lang.remove(QRegExp("\\[code\\s+lang\\=\""));
                 lang.remove(QRegExp("\"\\s*\\]"));
-                lang.replace("++", "pp");
             }
+            lang.replace("++", "pp");
             int codeStart = indStart + rx.matchedLength();
             int codeLength = indEnd - codeStart;
             QString code = t.mid(codeStart, codeLength);
