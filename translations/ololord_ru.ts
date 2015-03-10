@@ -270,6 +270,11 @@ The default is 3.</source>
         <translation>Максимальное количество отображаемых последних постов для каждого треда на этой доске.
 По умолчанию 3.</translation>
     </message>
+    <message>
+        <source>Auto update</source>
+        <comment>autoUpdateText</comment>
+        <translation>Автообновление</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>

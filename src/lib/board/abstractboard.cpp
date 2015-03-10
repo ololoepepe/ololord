@@ -462,6 +462,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                                        Tools::fromStd(e.what()));
     }
     Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber);
+    c.autoUpdateEnabled = !Tools::cookieValue(app.request(), "auto_update").compare("true", Qt::CaseInsensitive);
+    c.autoUpdateText = ts.translate("AbstractBoard", "Auto update", "autoUpdateText");
     c.backText = ts.translate("AbstractBoard", "Back", "backText");
     c.bumpLimit = bumpLimit();
     c.newPostsText = ts.translate("AbstractBoard", "New posts:", "newPostsText");

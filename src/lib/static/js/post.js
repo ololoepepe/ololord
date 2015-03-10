@@ -311,7 +311,7 @@ function createPostFile(f) {
     return file;
 }
 
-function createPostNode(res, permanent) {
+function createPostNode(res, permanent, autoUpdate) {
     if (!res)
         return null;
     post = document.getElementById("postTemplate");
@@ -416,6 +416,13 @@ function createPostNode(res, permanent) {
         post.className = post.className.replace("post", "opPost");
     if (hidden)
         post.className += " hiddenPost";
+    if (!!autoUpdate) {
+        post.className += " newPost";
+        post.onmouseover = function() {
+            post.className = post.className.replace(" newPost", "");
+            post.onmouseover = null;
+        }
+    }
     perm.style.display = "";
     var anumber = document.createElement("a");
     number.parentNode.insertBefore(anumber, number);
@@ -510,8 +517,10 @@ function viewPostStage2(link, postNumber, post) {
         lastPostPreview.nextPostPreview = post;
     lastPostPreview = post;
     post.mustHide = true;
-    if (!!lastPostPreviewTimer)
+    if (!!lastPostPreviewTimer) {
         clearTimeout(lastPostPreviewTimer);
+        lastPostPreviewTimer = null;
+    }
     document.body.appendChild(post);
     post.style.position = "absolute";
     var doc = document.documentElement;
