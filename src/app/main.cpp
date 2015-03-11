@@ -688,6 +688,9 @@ void initSettings()
                                                "  2 - log to file only\n"
                                                "  3 and more - log to console and file\n"
                                                "  The default is 2."));
+    nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
+    nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
+                                               "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {
         nn = new BSettingsNode(s, n);

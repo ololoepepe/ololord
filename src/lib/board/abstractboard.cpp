@@ -290,6 +290,8 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
         QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
         if (suff.compare("webm", Qt::CaseInsensitive))
             QFile::remove(path + "/" + fii.baseName() + "s." + suff);
+        else
+            QFile::remove(path + "/" + fii.baseName() + "s.png");
     }
 }
 
@@ -556,6 +558,11 @@ QStringList AbstractBoard::rules(const QLocale &l) const
 
 QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
 {
+#if defined(Q_OS_WIN)
+    static const QString FfmpegDefault = "ffmpeg.exe";
+#elif defined(Q_OS_UNIX)
+    static const QString FfmpegDefault = "ffmpeg";
+#endif
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
         return bRet(ok, false, QString());
@@ -568,22 +575,33 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
         if (!BDirTools::writeFile(sfn, f.data))
             return bRet(ok, false, QString());
-        return bRet(ok, true, QFileInfo(sfn).fileName());
+        QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
+        QStringList args = QStringList() << "-i" << sfn << "-vframes" << "1" << (dt + "s.png");
+        if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
+            QImage img;
+            if (!img.load(path + "/" + dt + "s.png"))
+                return bRet(ok, false, QString());
+            if (img.height() > 200 || img.width() > 200)
+                img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            if (!img.save(path + "/" + dt + "s.png", "png"))
+                return bRet(ok, false, QString());
+        }
+    } else {
+        QImage img;
+        QByteArray data = f.data;
+        QBuffer buff(&data);
+        buff.open(QIODevice::ReadOnly);
+        if (!img.load(&buff, suffix.toLower().toLatin1().data()))
+            return bRet(ok, false, QString());
+        if (img.height() > 200 || img.width() > 200)
+            img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        if (!BDirTools::writeFile(sfn, f.data))
+            return bRet(ok, false, QString());
+        if (!suffix.compare("gif", Qt::CaseInsensitive))
+            suffix = "png";
+        if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
+            return bRet(ok, false, QString());
     }
-    QImage img;
-    QByteArray data = f.data;
-    QBuffer buff(&data);
-    buff.open(QIODevice::ReadOnly);
-    if (!img.load(&buff, suffix.toLower().toLatin1().data()))
-        return bRet(ok, false, QString());
-    if (img.height() > 200 || img.width() > 200)
-        img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    if (!BDirTools::writeFile(sfn, f.data))
-        return bRet(ok, false, QString());
-    if (!suffix.compare("gif", Qt::CaseInsensitive))
-        suffix = "png";
-    if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
-        return bRet(ok, false, QString());
     return bRet(ok, true, QFileInfo(sfn).fileName());
 }
 
@@ -637,15 +655,22 @@ QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &size
         return "";
     QFileInfo fi(storagePath + "/img/" + name() + "/" + QFileInfo(fn).fileName());
     QString suffix = fi.suffix();
-    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
-        size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
-        sizeX = 200;
-        sizeY = 200;
-        return "webm";
-    }
     if (!suffix.compare("gif", Qt::CaseInsensitive))
         suffix = "png";
     size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
+    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+        QString tfn = fi.baseName() + "s.png";
+        if (QFileInfo(fi.path() + "/" + tfn).exists()) {
+            QImage img(fi.path() + "/" + tfn);
+            sizeX = img.width();
+            sizeY = img.height();
+            return tfn;
+        } else {
+            sizeX = 200;
+            sizeY = 200;
+            return "webm";
+        }
+    }
     QImage img(fi.filePath());
     if (!img.isNull()) {
         size += ", " + QString::number(img.width()) + "x" + QString::number(img.height());

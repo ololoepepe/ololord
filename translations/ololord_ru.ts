@@ -1623,6 +1623,12 @@ The default is 3.</source>
         <translation>Максимальное количество отображаемых последних постов для каждого треда.
 По умолчанию 3.</translation>
     </message>
+    <message>
+        <source>ffmpeg utility command (possibly full path).
+The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
+        <translation>Команда вызова утилиты ffmpeg (возможно, полный путь).
+По умолчанию ffmpeg (UNIX) или ffmpeg.exe (Windows).</translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>
