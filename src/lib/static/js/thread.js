@@ -89,7 +89,7 @@ function updateThread(boardName, threadNumber, autoUpdate) {
         if (!before)
             return;
         for (var i = 0; i < res.length; ++i) {
-            var post = createPostNode(res[i], true, autoUpdate);
+            var post = createPostNode(res[i], true);
             if (!post)
                 continue;
             document.body.insertBefore(post, before);

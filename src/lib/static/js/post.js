@@ -311,7 +311,7 @@ function createPostFile(f) {
     return file;
 }
 
-function createPostNode(res, permanent, autoUpdate) {
+function createPostNode(res, permanent) {
     if (!res)
         return null;
     post = document.getElementById("postTemplate");
@@ -412,17 +412,15 @@ function createPostNode(res, permanent, autoUpdate) {
         perm.parentNode.removeChild(perm);
         return post;
     }
+    post.className += " newPost";
+    post.onmouseover = function() {
+        post.className = post.className.replace(" newPost", "");
+        post.onmouseover = null;
+    }
     if (res["number"] === res["threadNumber"])
         post.className = post.className.replace("post", "opPost");
     if (hidden)
         post.className += " hiddenPost";
-    if (!!autoUpdate) {
-        post.className += " newPost";
-        post.onmouseover = function() {
-            post.className = post.className.replace(" newPost", "");
-            post.onmouseover = null;
-        }
-    }
     perm.style.display = "";
     var anumber = document.createElement("a");
     number.parentNode.insertBefore(anumber, number);
