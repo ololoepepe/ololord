@@ -576,7 +576,8 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         if (!BDirTools::writeFile(sfn, f.data))
             return bRet(ok, false, QString());
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
-        QStringList args = QStringList() << "-i" << sfn << "-vframes" << "1" << (dt + "s.png");
+        QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
+                                         << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
             QImage img;
             if (!img.load(path + "/" + dt + "s.png"))
