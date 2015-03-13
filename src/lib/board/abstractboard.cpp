@@ -720,6 +720,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         foreach (const QString &fn, post.files()) {
             QFileInfo fi(fn);
             Content::File f;
+            f.isWebm = fn.endsWith("webm", Qt::CaseInsensitive);
             f.sourceName = Tools::toStd(fi.fileName());
             QString sz;
             f.thumbName = Tools::toStd(thumbFileName(fi.fileName(), sz, f.thumbSizeX, f.thumbSizeY, f.sizeX, f.sizeY));

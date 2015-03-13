@@ -21,6 +21,7 @@ struct OLOLORD_EXPORT BanLevel
 
 struct OLOLORD_EXPORT File
 {
+    bool isWebm;
     std::string size;
     int sizeX;
     int sizeY;

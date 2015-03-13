@@ -33,6 +33,7 @@ static cppcms::json::object toJson(const Content::Post &post)
     for (std::list<Content::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {
         const Content::File &file = *i;
         cppcms::json::object f;
+        f["isWebm"] = file.isWebm;
         f["size"] = file.size;
         f["thumbSizeX"] = file.thumbSizeX;
         f["thumbSizeY"] = file.thumbSizeY;

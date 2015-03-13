@@ -358,6 +358,10 @@ function createPostFile(f) {
     var divImage = document.createElement("div");
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
+    if (!f["isWebm"]) {
+        aImage.onclick = "return showImage('/" + sitePrefix + currentBoardName + "/" + f["sourceName"] "', "
+            + f["sizeX"] + ", " + f["sizeY"] + ");"
+    }
     var image = document.createElement("img");
     var thumbSizeX = +f["thumbSizeX"];
     var thumbSizeY = +f["thumbSizeY"];
