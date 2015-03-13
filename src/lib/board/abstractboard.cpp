@@ -237,9 +237,7 @@ void AbstractBoard::createPost(cppcms::application &app)
     quint64 postNumber = 0L;
     if (!Database::createPost(p, &postNumber))
         return Controller::renderError(app, err, desc);
-    quint64 threadNumber = Tools::postParameters(req).value("thread").toULongLong();
-    Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html#"
-                         + QString::number(postNumber));
+    Controller::renderSuccessfulPost(app, postNumber);
     Tools::log(app, "Handled post creation");
 }
 
@@ -269,7 +267,7 @@ void AbstractBoard::createThread(cppcms::application &app)
     quint64 threadNumber = Database::createThread(p);
     if (!threadNumber)
         return Controller::renderError(app, err, desc);
-    Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html");
+    Controller::renderSuccessfulThread(app, threadNumber);
     Tools::log(app, "Handled thread creation");
 }
 

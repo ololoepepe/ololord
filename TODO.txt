@@ -8,3 +8,4 @@
 [done] Add ability to set maximum last posts displayed per thread
 [done] Implement auto thread update
 [done] Implement WebM thumbnailing
+[done] Make posting pseudo-asynchronous (use iframe)

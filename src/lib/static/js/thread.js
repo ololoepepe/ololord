@@ -1,37 +1,5 @@
 var lastSelectedElement = null;
-var popups = [];
 var autoUpdateTimer = null;
-
-function showPopup(text, timeout, additionalClassNames) {
-    if (!text)
-        return;
-    if (isNaN(+timeout))
-        timeout = 5000;
-    var msg = document.createElement("div");
-    msg.className = "popup";
-    if (!!additionalClassNames)
-        msg.className += " " + additionalClassNames;
-    if (popups.length > 0) {
-        var prev = popups[popups.length - 1];
-        msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
-    }
-    msg.appendChild(document.createTextNode(text));
-    document.body.appendChild(msg);
-    popups.push(msg);
-    setTimeout(function() {
-        var offsH = msg.offsetHeight + 5;
-        document.body.removeChild(msg);
-        var ind = popups.indexOf(msg);
-        if (ind < 0)
-            return;
-        popups.splice(ind, 1);
-        for (var i = 0; i < popups.length; ++i) {
-            var top = +popups[i].style.top.replace("px", "");
-            top -= offsH;
-            popups[i].style.top = top + "px";
-        }
-    }, 5000);
-}
 
 function insertPostNumberInternal(postNumber, position) {
     var field = document.getElementById("postFormInputText" + position);
@@ -68,7 +36,7 @@ function selectPost(post) {
         window.location.href = window.location.href.split("#")[0] + "#" + post;
 }
 
-function updateThread(boardName, threadNumber, autoUpdate) {
+function updateThread(boardName, threadNumber, autoUpdate, extraCallback) {
     if (!boardName || isNaN(+threadNumber))
         return;
     var posts = document.querySelectorAll(".opPost, .post");
@@ -94,6 +62,8 @@ function updateThread(boardName, threadNumber, autoUpdate) {
                 continue;
             document.body.insertBefore(post, before);
         }
+        if (!!extraCallback)
+            extraCallback();
     });
 }
 
@@ -116,6 +86,30 @@ function setAutoUpdateEnabled(cbox) {
     setCookie("auto_update", enabled, {
         "expires": Billion
     });
+}
+
+function posted() {
+    if (!formSubmitted)
+        return;
+    var iframe = document.getElementById("kostyleeque");
+    var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+    var postNumber = iframeDocument.querySelector("#postNumber");
+    if (!!postNumber) {
+        formSubmitted.reset();
+        formSubmitted = null;
+        var boardName = document.getElementById("currentBoardName").value;
+        var threadNumber = document.getElementById("currentThreadNumber").value;
+        updateThread(boardName, threadNumber, true, function() {
+            selectPost(postNumber.value);
+        });
+        grecaptcha.reset();
+    } else {
+        formSubmitted = null;
+        var errmsg = iframeDocument.querySelector("#errorMessage");
+        var errdesc = iframeDocument.querySelector("#errorDescription");
+        showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML);
+        grecaptcha.reset();
+    }
 }
 
 function initializeOnLoadThread() {

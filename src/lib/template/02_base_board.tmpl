@@ -42,7 +42,8 @@
             </a>]
         </div>
         <form id="postForm<%= position %>" class="postFormInvisible" method="post" accept-charset="utf-8"
-              action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data">
+              action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data"
+              target="kostyleeque" onsubmit="submitted(this);">
             <input type="hidden" id="postFormInputBoard<%= position %>" value="<%= currentBoard.name %>"
                    name="board" />
             <% if ( content.currentThread > 0 ) %>

@@ -23,9 +23,9 @@
         <% end %>
         <% include searchAction("Top") %>
         <div class="theTitle">
-            <h1><%= errorMessage %></h1>
+            <h1 id="errorMessage"><%= errorMessage %></h1>
         </div>
-        <div class="error">
+        <div class="error" id="errorDescription">
             <%= errorDescription %>
         </div>
     </body>

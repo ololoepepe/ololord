@@ -74,6 +74,8 @@ OLOLORD_EXPORT void renderError(cppcms::application &app, const QString &error,
                                 const QString &description = QString());
 OLOLORD_EXPORT void renderIpBan(cppcms::application &app, int level);
 OLOLORD_EXPORT void renderNotFound(cppcms::application &app);
+OLOLORD_EXPORT void renderSuccessfulPost(cppcms::application &app, quint64 postNumber);
+OLOLORD_EXPORT void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber);
 OLOLORD_EXPORT bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board);
 OLOLORD_EXPORT bool testParams(const AbstractBoard *board, cppcms::application &app,
                                const Tools::PostParameters &params, const Tools::FileList &files, bool post);

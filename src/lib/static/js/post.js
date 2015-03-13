@@ -1,6 +1,39 @@
 var postPreviews = {};
 var lastPostPreview = null;
 var lastPostPreviewTimer = null;
+var formSubmitted = null;
+var popups = [];
+
+function showPopup(text, timeout, additionalClassNames) {
+    if (!text)
+        return;
+    if (isNaN(+timeout))
+        timeout = 5000;
+    var msg = document.createElement("div");
+    msg.className = "popup";
+    if (!!additionalClassNames)
+        msg.className += " " + additionalClassNames;
+    if (popups.length > 0) {
+        var prev = popups[popups.length - 1];
+        msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
+    }
+    msg.appendChild(document.createTextNode(text));
+    document.body.appendChild(msg);
+    popups.push(msg);
+    setTimeout(function() {
+        var offsH = msg.offsetHeight + 5;
+        document.body.removeChild(msg);
+        var ind = popups.indexOf(msg);
+        if (ind < 0)
+            return;
+        popups.splice(ind, 1);
+        for (var i = 0; i < popups.length; ++i) {
+            var top = +popups[i].style.top.replace("px", "");
+            top -= offsH;
+            popups[i].style.top = top + "px";
+        }
+    }, 5000);
+}
 
 function cumulativeOffset(element) {
     var top = 0;
@@ -641,4 +674,8 @@ function removeFile(current) {
         div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
         parent.appendChild(div);
     }
+}
+
+function submitted(form) {
+    formSubmitted = form;
 }

@@ -291,6 +291,20 @@ void renderNotFound(cppcms::application &app)
     Tools::log(app, "Page or file not found");
 }
 
+void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber)
+{
+    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
+                         << "<title></title></head><body><input id=\"threadNumber\" type=\"hidden\" "
+                         << "value=\"" << threadNumber << "\" /></body></html>";
+}
+
+void renderSuccessfulPost(cppcms::application &app, quint64 postNumber)
+{
+    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
+                         << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
+                         << "value=\"" << postNumber << "\" /></body></html>";
+}
+
 bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board)
 {
     QString ip = Tools::userIp(app.request());
