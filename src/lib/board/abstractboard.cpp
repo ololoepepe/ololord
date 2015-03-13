@@ -237,9 +237,7 @@ void AbstractBoard::createPost(cppcms::application &app)
     quint64 postNumber = 0L;
     if (!Database::createPost(p, &postNumber))
         return Controller::renderError(app, err, desc);
-    quint64 threadNumber = Tools::postParameters(req).value("thread").toULongLong();
-    Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html#"
-                         + QString::number(postNumber));
+    Controller::renderSuccessfulPost(app, postNumber);
     Tools::log(app, "Handled post creation");
 }
 
@@ -269,7 +267,7 @@ void AbstractBoard::createThread(cppcms::application &app)
     quint64 threadNumber = Database::createThread(p);
     if (!threadNumber)
         return Controller::renderError(app, err, desc);
-    Controller::redirect(app, "/board/" + name() + "/thread/" + QString::number(threadNumber) + ".html");
+    Controller::renderSuccessfulThread(app, threadNumber);
     Tools::log(app, "Handled thread creation");
 }
 
@@ -290,6 +288,8 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
         QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
         if (suff.compare("webm", Qt::CaseInsensitive))
             QFile::remove(path + "/" + fii.baseName() + "s." + suff);
+        else
+            QFile::remove(path + "/" + fii.baseName() + "s.png");
     }
 }
 
@@ -339,9 +339,10 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
             if (!ok)
                 return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
-            foreach (int i, bRangeR(posts.size() - 1, posts.size() - 3)) {
-                if (i <= 0)
-                    break;
+            int lb = posts.size() - Tools::maxInfo(Tools::MaxLastPosts, name());
+            if (lb <= 0)
+                lb = 1;
+            foreach (int i, bRangeR(posts.size() - 1, lb)) {
                 thread.lastPosts.push_front(toController(*posts.at(i).load(), app.request(), &ok, &err));
                 if (!ok)
                     return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
@@ -461,6 +462,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                                        Tools::fromStd(e.what()));
     }
     Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber);
+    c.autoUpdateEnabled = !Tools::cookieValue(app.request(), "auto_update").compare("true", Qt::CaseInsensitive);
+    c.autoUpdateText = ts.translate("AbstractBoard", "Auto update", "autoUpdateText");
     c.backText = ts.translate("AbstractBoard", "Back", "backText");
     c.bumpLimit = bumpLimit();
     c.newPostsText = ts.translate("AbstractBoard", "New posts:", "newPostsText");
@@ -553,6 +556,11 @@ QStringList AbstractBoard::rules(const QLocale &l) const
 
 QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
 {
+#if defined(Q_OS_WIN)
+    static const QString FfmpegDefault = "ffmpeg.exe";
+#elif defined(Q_OS_UNIX)
+    static const QString FfmpegDefault = "ffmpeg";
+#endif
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
         return bRet(ok, false, QString());
@@ -565,22 +573,34 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
         if (!BDirTools::writeFile(sfn, f.data))
             return bRet(ok, false, QString());
-        return bRet(ok, true, QFileInfo(sfn).fileName());
+        QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
+        QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
+                                         << (dt + "s.png");
+        if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
+            QImage img;
+            if (!img.load(path + "/" + dt + "s.png"))
+                return bRet(ok, false, QString());
+            if (img.height() > 200 || img.width() > 200)
+                img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            if (!img.save(path + "/" + dt + "s.png", "png"))
+                return bRet(ok, false, QString());
+        }
+    } else {
+        QImage img;
+        QByteArray data = f.data;
+        QBuffer buff(&data);
+        buff.open(QIODevice::ReadOnly);
+        if (!img.load(&buff, suffix.toLower().toLatin1().data()))
+            return bRet(ok, false, QString());
+        if (img.height() > 200 || img.width() > 200)
+            img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+        if (!BDirTools::writeFile(sfn, f.data))
+            return bRet(ok, false, QString());
+        if (!suffix.compare("gif", Qt::CaseInsensitive))
+            suffix = "png";
+        if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
+            return bRet(ok, false, QString());
     }
-    QImage img;
-    QByteArray data = f.data;
-    QBuffer buff(&data);
-    buff.open(QIODevice::ReadOnly);
-    if (!img.load(&buff, suffix.toLower().toLatin1().data()))
-        return bRet(ok, false, QString());
-    if (img.height() > 200 || img.width() > 200)
-        img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    if (!BDirTools::writeFile(sfn, f.data))
-        return bRet(ok, false, QString());
-    if (!suffix.compare("gif", Qt::CaseInsensitive))
-        suffix = "png";
-    if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
-        return bRet(ok, false, QString());
     return bRet(ok, true, QFileInfo(sfn).fileName());
 }
 
@@ -634,15 +654,22 @@ QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &size
         return "";
     QFileInfo fi(storagePath + "/img/" + name() + "/" + QFileInfo(fn).fileName());
     QString suffix = fi.suffix();
-    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
-        size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
-        sizeX = 200;
-        sizeY = 200;
-        return "webm";
-    }
     if (!suffix.compare("gif", Qt::CaseInsensitive))
         suffix = "png";
     size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
+    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+        QString tfn = fi.baseName() + "s.png";
+        if (QFileInfo(fi.path() + "/" + tfn).exists()) {
+            QImage img(fi.path() + "/" + tfn);
+            sizeX = img.width();
+            sizeY = img.height();
+            return tfn;
+        } else {
+            sizeX = 200;
+            sizeY = 200;
+            return "webm";
+        }
+    }
     QImage img(fi.filePath());
     if (!img.isNull()) {
         size += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
@@ -901,6 +928,9 @@ void AbstractBoard::initBoards(bool reinit)
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum thread count for this board.\n"
                                                     "When the limit is reached, the most old threads get deleted.\n"
                                                     "The default is 200."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_last_posts", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum last posts displayed for each thread at "
+                                                    "this board.\nThe default is 3."));
         nnn = new BSettingsNode(QVariant::Bool, "hidden", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if this board is hidden.\n"
                                                     "A hidden board will not appear in navigation bars.\n"

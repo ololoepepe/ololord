@@ -168,6 +168,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
     c.maxEmailLength = Tools::maxInfo(Tools::MaxEmailFieldLength, board->name());
+    c.maxFileCount = Tools::maxInfo(Tools::MaxFileCount, board->name());
     c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, board->name());
     c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, board->name());
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
@@ -175,7 +176,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
-    c.postFormInputFile = ts.translate("initBaseBoard", "File:", "postFormInputFile");
+    c.postFormInputFile = ts.translate("initBaseBoard", "File(s):", "postFormInputFile");
     c.postFormInputText = ts.translate("initBaseBoard", "Post:", "postFormInputText");
     SettingsLocker s;
     int maxText = s->value("Board/" + board->name() + "/max_text_length",
@@ -193,6 +194,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
+    c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
     c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
     c.showHidePostText = ts.translate("initBaseBoard", "Hide/show", "showHidePostText");
@@ -287,6 +289,20 @@ void renderNotFound(cppcms::application &app)
     c.notFoundMessage = ts.translate("renderNotFound", "Page or file not found", "notFoundMessage");
     app.render("not_found", c);
     Tools::log(app, "Page or file not found");
+}
+
+void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber)
+{
+    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
+                         << "<title></title></head><body><input id=\"threadNumber\" type=\"hidden\" "
+                         << "value=\"" << threadNumber << "\" /></body></html>";
+}
+
+void renderSuccessfulPost(cppcms::application &app, quint64 postNumber)
+{
+    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
+                         << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
+                         << "value=\"" << postNumber << "\" /></body></html>";
 }
 
 bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board)

@@ -264,6 +264,17 @@ The default is %1.</source>
         <comment>countryName</comment>
         <translation>Неизвестная страна</translation>
     </message>
+    <message>
+        <source>Maximum last posts displayed for each thread at this board.
+The default is 3.</source>
+        <translation>Максимальное количество отображаемых последних постов для каждого треда на этой доске.
+По умолчанию 3.</translation>
+    </message>
+    <message>
+        <source>Auto update</source>
+        <comment>autoUpdateText</comment>
+        <translation>Автообновление</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -1133,11 +1144,6 @@ Your choice:</source>
         <translation>Отправить</translation>
     </message>
     <message>
-        <source>File:</source>
-        <comment>postFormInputFile</comment>
-        <translation>Файл:</translation>
-    </message>
-    <message>
         <source>Post:</source>
         <comment>postFormInputText</comment>
         <translation>Пост:</translation>
@@ -1286,6 +1292,16 @@ Your choice:</source>
         <source>Answer</source>
         <comment>toThread</comment>
         <translation>Ответ</translation>
+    </message>
+    <message>
+        <source>File(s):</source>
+        <comment>postFormInputFile</comment>
+        <translation>Файл(ы):</translation>
+    </message>
+    <message>
+        <source>Remove this file</source>
+        <comment>removeFileText</comment>
+        <translation>Убрать этот файл</translation>
     </message>
 </context>
 <context>
@@ -1600,6 +1616,18 @@ The default is %1.</source>
 Must contain &quot;%1&quot; (without quotes) - it is replaced by URL.</source>
         <translation>Запрос, используемый для проксирования не-SSL ссылок внутри iframe&apos;ов.
 Должен содержать &quot;%1&quot; (без кавычек) - это заменяется на ссылку.</translation>
+    </message>
+    <message>
+        <source>Maximum last posts displayed for each thread.
+The default is 3.</source>
+        <translation>Максимальное количество отображаемых последних постов для каждого треда.
+По умолчанию 3.</translation>
+    </message>
+    <message>
+        <source>ffmpeg utility command (possibly full path).
+The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
+        <translation>Команда вызова утилиты ffmpeg (возможно, полный путь).
+По умолчанию ffmpeg (UNIX) или ffmpeg.exe (Windows).</translation>
     </message>
 </context>
 <context>

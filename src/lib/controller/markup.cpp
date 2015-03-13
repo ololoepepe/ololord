@@ -435,6 +435,8 @@ static void processTags(QString &text, int start, int len, const QString &boardN
         tags.insert("[s]", "[/s]");
         tags.insert("[u]", "[/u]");
         tags.insert("[spoiler]", "[/spoiler]");
+        tags.insert("[sub]", "[/sub]");
+        tags.insert("[sup]", "[/sup]");
     }
     typedef QPair<QString, QString> StringPair;
     typedef QMap<QString, StringPair> StringPairMap;
@@ -444,6 +446,8 @@ static void processTags(QString &text, int start, int len, const QString &boardN
         htmls.insert("[s]", qMakePair(QString("<s>"), QString("</s>")));
         htmls.insert("[u]", qMakePair(QString("<u>"), QString("</u>")));
         htmls.insert("[spoiler]", qMakePair(QString("<span class=\"spoiler\">"), QString("</span>")));
+        htmls.insert("[sub]", qMakePair(QString("<sub>"), QString("</sub>")));
+        htmls.insert("[sup]", qMakePair(QString("<sup>"), QString("</sup>")));
     }
     ProcessPostTextFunction next = &processWakabaMarkList;
     if (start < 0 || len <= 0)
@@ -508,12 +512,11 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
     QString srchighlightPath = BDirTools::findResource("srchilite", BDirTools::AllResources);
     if (!srchighlightPath.isEmpty()) {
         QStringList langs = Tools::supportedCodeLanguages();
-        foreach (int i, bRangeD(0, langs.size() - 1))
-            langs[i].replace("+", "\\+");
         QString tags;
         foreach (const QString &s, langs)
             tags += "|\\[" + s + "\\]";
-        QRegExp rx("\\[code\\s+lang\\=\"(" + langs.join("|") + ")\"\\s*\\]" + tags);
+        QRegExp rx("\\[code\\s+lang\\=\"(" + langs.join("|").replace("+", "\\+") + ")\"\\s*\\]"
+                   + tags.replace("+", "\\+"));
         int indStart = rx.indexIn(t);
         QString tag = tagName(rx);
         int indEnd = t.indexOf("[/" + tag + "]", indStart + rx.matchedLength());
@@ -525,8 +528,8 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
                 lang = rx.cap();
                 lang.remove(QRegExp("\\[code\\s+lang\\=\""));
                 lang.remove(QRegExp("\"\\s*\\]"));
-                lang.replace("++", "pp");
             }
+            lang.replace("++", "pp");
             int codeStart = indStart + rx.matchedLength();
             int codeLength = indEnd - codeStart;
             QString code = t.mid(codeStart, codeLength);

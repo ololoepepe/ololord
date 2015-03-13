@@ -70,7 +70,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-beta7");
+        app.setApplicationVersion("0.1.0-beta8");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -102,8 +102,8 @@ int main(int argc, char **argv)
         OlolordWebAppThread owt(conf);
         owt.start();
         ret = app.exec();
-        owt.terminate();
-        owt.wait(5 * BeQt::Second);
+        owt.shutdown();
+        owt.wait(10 * BeQt::Second);
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
@@ -603,6 +603,9 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Maximum thread count per board.\n"
                                                "When the limit is reached, the most old threads get deleted.\n"
                                                "The default is 200."));
+    nn = new BSettingsNode(QVariant::UInt, "max_last_posts", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Maximum last posts displayed for each thread.\n"
+                                               "The default is 3."));
     nn = new BSettingsNode(QVariant::UInt, "max_email_length", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum length of the e-mail field.\n"
                                                "The default is 150."));
@@ -685,6 +688,9 @@ void initSettings()
                                                "  2 - log to file only\n"
                                                "  3 and more - log to console and file\n"
                                                "  The default is 2."));
+    nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
+    nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
+                                               "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {
         nn = new BSettingsNode(s, n);

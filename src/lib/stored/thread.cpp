@@ -98,6 +98,11 @@ void Thread::setPostingEnabled(bool enabled)
     postingEnabled_ = enabled;
 }
 
+Post::Post()
+{
+    //
+}
+
 Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
            const QString &posterIp, const QByteArray &password, const QByteArray &hashpass)
 {
@@ -111,11 +116,6 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     thread_ = thread;
     posterIp_ = posterIp;
     password_ = password;
-}
-
-Post::Post()
-{
-    //
 }
 
 quint64 Post::id() const

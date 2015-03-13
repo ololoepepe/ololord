@@ -1,3 +1,16 @@
+=== ololord 0.1.0-beta8 (13 March 2015) ===
+    * Add ability to post several files
+    * Fix post preview in Google Chrome
+    * Fix post updating on user unban
+    * Fix board route regex
+    * Fix OlolordWebAppThread class
+    * Fix Tools::readJsonValue function
+    * Add [sub] and [sup] tags support (subscript and superscript)
+    * Add ability to set maximum last posts displayed per thread
+    * Implement auto thread update
+    * Implement WebM thumbnailing
+    * Make posting pseudo-asynchronous (use iframe)
+
 === ololord 0.1.0-beta7 (28 February 2015) ===
     * Add BB-code support
     * Add /echo/ board

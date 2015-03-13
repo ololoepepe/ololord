@@ -124,6 +124,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
                 t->erase(*user);
                 t.commit();
+                Cache::removePost(board, postNumber);
                 return bRet(error, QString(), true);
             }
             user->setDateTime(dt);
@@ -133,6 +134,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             update(user);
         }
         t.commit();
+        Cache::removePost(board, postNumber);
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -426,7 +428,8 @@ void checkOutdatedEntries()
                     if (post.error || !post)
                         continue;
                     post->setBannedFor(false);
-                    persist(post);
+                    update(post);
+                    Cache::removePost(post->board(), post->number());
                 }
             }
         }

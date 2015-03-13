@@ -76,7 +76,8 @@ enum MaxInfo
     MaxTextFieldLength,
     MaxPasswordFieldLength,
     MaxFileCount,
-    MaxFileSize
+    MaxFileSize,
+    MaxLastPosts
 };
 
 typedef QMap<QString, QString> PostParameters;

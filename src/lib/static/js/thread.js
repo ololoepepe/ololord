@@ -1,4 +1,5 @@
 var lastSelectedElement = null;
+var autoUpdateTimer = null;
 
 function insertPostNumberInternal(postNumber, position) {
     var field = document.getElementById("postFormInputText" + position);
@@ -35,7 +36,7 @@ function selectPost(post) {
         window.location.href = window.location.href.split("#")[0] + "#" + post;
 }
 
-function updateThread(boardName, threadNumber) {
+function updateThread(boardName, threadNumber, autoUpdate, extraCallback) {
     if (!boardName || isNaN(+threadNumber))
         return;
     var posts = document.querySelectorAll(".opPost, .post");
@@ -45,16 +46,11 @@ function updateThread(boardName, threadNumber) {
     ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], 7, function(res) {
         if (!res)
             return;
-        var msg = document.createElement("div");
-        msg.className = "popup noNewPostsPopup";
         var txt = document.getElementById((res.length >= 1) ? "newPostsText" : "noNewPostsText").value;
         if (res.length >= 1)
             txt += " " + res.length;
-        msg.appendChild(document.createTextNode(txt));
-        document.body.appendChild(msg);
-        setTimeout(function() {
-            document.body.removeChild(msg);
-        }, 5000);
+        if (!autoUpdate)
+            showPopup(txt, 5000, "noNewPostsPopup");
         if (res.length < 1)
             return;
         var before = document.getElementById("afterAllPosts");
@@ -66,10 +62,62 @@ function updateThread(boardName, threadNumber) {
                 continue;
             document.body.insertBefore(post, before);
         }
+        if (!!extraCallback)
+            extraCallback();
     });
 }
 
+function setAutoUpdateEnabled(cbox) {
+    var enabled = !!cbox.checked;
+    document.getElementById("autoUpdate_top").checked = enabled;
+    document.getElementById("autoUpdate_bottom").checked = enabled;
+    if (enabled) {
+        autoUpdateTimer = setInterval(function() {
+            var boardName = document.getElementById("currentBoardName").value;
+            var threadNumber = document.getElementById("currentThreadNumber").value;
+            updateThread(boardName, threadNumber, true);
+        }, 15000);
+    } else {
+        if (!!autoUpdateTimer) {
+            clearInterval(autoUpdateTimer);
+            autoUpdateTimer = null;
+        }
+    }
+    setCookie("auto_update", enabled, {
+        "expires": Billion
+    });
+}
+
+function posted() {
+    if (!formSubmitted)
+        return;
+    var iframe = document.getElementById("kostyleeque");
+    var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+    var postNumber = iframeDocument.querySelector("#postNumber");
+    if (!!postNumber) {
+        formSubmitted.reset();
+        formSubmitted = null;
+        var boardName = document.getElementById("currentBoardName").value;
+        var threadNumber = document.getElementById("currentThreadNumber").value;
+        updateThread(boardName, threadNumber, true, function() {
+            selectPost(postNumber.value);
+        });
+        grecaptcha.reset();
+    } else {
+        formSubmitted = null;
+        var errmsg = iframeDocument.querySelector("#errorMessage");
+        var errdesc = iframeDocument.querySelector("#errorDescription");
+        showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML);
+        grecaptcha.reset();
+    }
+}
+
 function initializeOnLoadThread() {
+    if (getCookie("auto_update") === "true") {
+        var cbox = document.getElementById("autoUpdate_top");
+        cbox.checked = true;
+        setAutoUpdateEnabled(cbox);
+    }
     var sl = window.location.href.split("#");
     if (sl.length != 2)
         return;

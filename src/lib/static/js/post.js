@@ -1,6 +1,39 @@
 var postPreviews = {};
 var lastPostPreview = null;
 var lastPostPreviewTimer = null;
+var formSubmitted = null;
+var popups = [];
+
+function showPopup(text, timeout, additionalClassNames) {
+    if (!text)
+        return;
+    if (isNaN(+timeout))
+        timeout = 5000;
+    var msg = document.createElement("div");
+    msg.className = "popup";
+    if (!!additionalClassNames)
+        msg.className += " " + additionalClassNames;
+    if (popups.length > 0) {
+        var prev = popups[popups.length - 1];
+        msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
+    }
+    msg.appendChild(document.createTextNode(text));
+    document.body.appendChild(msg);
+    popups.push(msg);
+    setTimeout(function() {
+        var offsH = msg.offsetHeight + 5;
+        document.body.removeChild(msg);
+        var ind = popups.indexOf(msg);
+        if (ind < 0)
+            return;
+        popups.splice(ind, 1);
+        for (var i = 0; i < popups.length; ++i) {
+            var top = +popups[i].style.top.replace("px", "");
+            top -= offsH;
+            popups[i].style.top = top + "px";
+        }
+    }, 5000);
+}
 
 function cumulativeOffset(element) {
     var top = 0;
@@ -390,8 +423,19 @@ function createPostNode(res, permanent) {
                 files.insertBefore(file, files.children[files.children.length - 1]);
         }
     }
-    post.querySelector("[name='text']").innerHTML = res["text"];
     var bannedFor = post.querySelector("[name='bannedFor']");
+    var manyFilesTr = post.querySelector("[name='manyFilesTr']");
+    var textOneFile = post.querySelector("[name='textOneFile']");
+    if (res["files"].length <= 1) {
+        manyFilesTr.parentNode.removeChild(manyFilesTr);
+        textOneFile.innerHTML = res["text"];
+    } else {
+        post.querySelector("[name='oneFileTd']").className = "shrink";
+        textOneFile.parentNode.removeChild(textOneFile);
+        post.querySelector("[name='manyFilesTd']").colSpan = res["files"].length + 2;
+        post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
+        bannedFor.colSpan = res["files"].length + 2;
+    }
     if (!!res["bannedFor"])
         bannedFor.style.display = "";
     else
@@ -400,6 +444,11 @@ function createPostNode(res, permanent) {
     if (!permanent) {
         perm.parentNode.removeChild(perm);
         return post;
+    }
+    post.className += " newPost";
+    post.onmouseover = function() {
+        post.className = post.className.replace(" newPost", "");
+        post.onmouseover = null;
     }
     if (res["number"] === res["threadNumber"])
         post.className = post.className.replace("post", "opPost");
@@ -482,7 +531,8 @@ function viewPostStage2(link, postNumber, post) {
                 return;
             next = next.nextPostPreview;
         }
-        post.parentNode.removeChild(post);
+        if (!!post.parentNode)
+            post.parentNode.removeChild(post);
         if (post.previousPostPreview)
             post.previousPostPreview.onmouseout(event);
     };
@@ -498,8 +548,10 @@ function viewPostStage2(link, postNumber, post) {
         lastPostPreview.nextPostPreview = post;
     lastPostPreview = post;
     post.mustHide = true;
-    if (!!lastPostPreviewTimer)
+    if (!!lastPostPreviewTimer) {
         clearTimeout(lastPostPreviewTimer);
+        lastPostPreviewTimer = null;
+    }
     document.body.appendChild(post);
     post.style.position = "absolute";
     var doc = document.documentElement;
@@ -512,9 +564,12 @@ function viewPostStage2(link, postNumber, post) {
         post.style.maxWidth = linkCenter + "px";
         post.style.left = linkCenter - post.scrollWidth + "px";
     }
+    var scrollTop = doc.scrollTop;
+    if (!scrollTop) //NOTE: Workaround for Chrome/Safari. I really HATE you, HTML/CSS/JS!
+        scrollTop = document.body.scrollTop;
     post.style.top = (doc.clientHeight - coords.bottom >= post.scrollHeight)
-        ? (doc.scrollTop + coords.bottom - 4 + "px")
-        : (doc.scrollTop + coords.top - post.scrollHeight - 4 + "px");
+        ? (scrollTop + coords.bottom - 4 + "px")
+        : (scrollTop + coords.top - post.scrollHeight - 4 + "px");
     post.style.zIndex = 9001;
 }
 
@@ -561,4 +616,66 @@ function noViewPost() {
         if (!!lastPostPreview.mustHide)
             lastPostPreview.parentNode.removeChild(lastPostPreview);
     }, 500);
+}
+
+function fileSelected(current) {
+    if (!current)
+        return;
+    var inp = document.getElementById("maxFileCount");
+    if (!inp)
+        return;
+    var maxCount = +inp.value;
+    if (isNaN(maxCount))
+        return;
+    var div = current.parentNode;
+    div.querySelector("a").style.display = "";
+    var parent = div.parentNode;
+    if (parent.children.length >= maxCount)
+        return;
+    for (var i = 0; i < parent.children.length; ++i) {
+        if (parent.children[i].querySelector("input").value === "")
+            return;
+        parent.children[i].querySelector("a").style.display = "";
+    }
+    div = div.cloneNode(true);
+    div.querySelector("a").style.display = "none";
+    div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
+    parent.appendChild(div);
+}
+
+function removeFile(current) {
+    if (!current)
+        return;
+    var div = current.parentNode;
+    var parent = div.parentNode;
+    parent.removeChild(div);
+    if (parent.children.length > 1) {
+        for (var i = 0; i < parent.children.length; ++i) {
+            if (parent.children[i].querySelector("input").value === "")
+                return;
+        }
+        var inp = document.getElementById("maxFileCount");
+        if (!inp)
+            return;
+        var maxCount = +inp.value;
+        if (isNaN(maxCount))
+            return;
+        if (parent.children.length >= maxCount)
+            return;
+        div = div.cloneNode(true);
+        div.querySelector("a").style.display = "none";
+        div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
+        parent.appendChild(div);
+    }
+    if (parent.children.length > 0 && parent.children[0].querySelector("input").value === "")
+        parent.children[0].querySelector("a").style.display = "none";
+    if (parent.children.length < 1) {
+        div.querySelector("a").style.display = "none";
+        div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
+        parent.appendChild(div);
+    }
+}
+
+function submitted(form) {
+    formSubmitted = form;
 }

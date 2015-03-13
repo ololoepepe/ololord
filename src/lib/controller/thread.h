@@ -13,6 +13,8 @@ namespace Content
 
 struct OLOLORD_EXPORT Thread : public BaseBoard
 {
+    bool autoUpdateEnabled;
+    std::string autoUpdateText;
     std::string backText;
     unsigned int bumpLimit;
     bool closed;

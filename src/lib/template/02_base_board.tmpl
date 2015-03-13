@@ -42,7 +42,8 @@
             </a>]
         </div>
         <form id="postForm<%= position %>" class="postFormInvisible" method="post" accept-charset="utf-8"
-              action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data">
+              action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data"
+              target="kostyleeque" onsubmit="submitted(this);">
             <input type="hidden" id="postFormInputBoard<%= position %>" value="<%= currentBoard.name %>"
                    name="board" />
             <% if ( content.currentThread > 0 ) %>
@@ -95,8 +96,12 @@
                             <b><%= postFormInputFile %></b>
                         </td>
                         <td class="postformField">
-                            <input type="file" name="image" id="postFormInputFile<%= position %>"
-                                   accept="<%= supportedFileTypes %>" />
+                            <div>
+                                <input type="file" name="file" onchange="fileSelected(this);"
+                                       accept="<%= supportedFileTypes %>" />
+                                <a href="javascript:void(0);" style="display: none;" onclick="removeFile(this);">
+                                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"></a>
+                            </div>
                         </td>
                     </tr>
                     <tr>
@@ -318,17 +323,28 @@
                     <% end %>
                 <% end %>
                 <input id="post<%= post.number %>RawText" type="hidden" value="<%= post.rawPostText %>" />
-                <td class="postText">
-                    <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
-                </td>
+                <% if ( post.files.size() < 2 ) %>
+                    <td class="postText">
+                        <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                    </td>
+                <% else %>
+                    <td class="shrink"></td>
+                <% end %>
             </tr>
-            <tr>
-                <td colspan="2">
-                    <% if ( post.bannedFor ) %>
+            <% if ( post.files.size() >= 2 ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"postText\">"; %>
+                        <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                    </td>
+                </tr>
+            <% end %>
+            <% if ( post.bannedFor ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
                         <span class="bannedFor"><%= bannedForText %></span>
-                    <% end %>
-                <td>
-            </tr>
+                    <td>
+                </tr>
+            <% end %>
         </tbody>
     </table>
 </div>
@@ -345,6 +361,7 @@
 <% else %>
     <input type="hidden" id="postingEnabled" value="false" />
 <% end %>
+<input type="hidden" id="maxFileCount" value="<%= maxFileCount %>" />
 <input type="hidden" id="currentBoardName" value="<%= currentBoard.name %>" />
 <input type="hidden" id="currentBoardTitle" value="<%= currentBoard.title %>" />
 <input type="hidden" id="editPostText" value="<%= editPostText %>" />
@@ -426,12 +443,17 @@
     <table class="threadPost">
         <tbody>
             <tr name="files">
-                <td class="postText">
-                    <blockquote name="text"></blockquote>
+                <td name="oneFileTd" class="postText">
+                    <blockquote name="textOneFile"></blockquote>
                 </td>
             </tr>
+            <tr name="manyFilesTr">
+                <td name="manyFilesTd" class="postText">
+                    <blockquote name="textManyFiles"></blockquote>
+                </td>
             <tr>
-                <td colspan="2">
+            <tr>
+                <td name="bannedForTd" colspan="2">
                     <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
                 <td>
             </tr>

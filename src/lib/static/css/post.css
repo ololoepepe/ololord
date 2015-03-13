@@ -7,6 +7,10 @@
     padding-left: 10px;
 }
 
+.newPost {
+    background-color: #CDCDCD;
+}
+
 .hiddenPost > .threadPost {
     display: none;
 }
@@ -34,6 +38,14 @@
 .postFile {
     vertical-align: top;
     width: 0px;
+}
+
+.shrink {
+    width: 100%;
+}
+
+.postFile ~ .postFile {
+    padding-left: 20px;
 }
 
 .postText {
