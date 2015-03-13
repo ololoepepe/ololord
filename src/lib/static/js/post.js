@@ -359,8 +359,9 @@ function createPostFile(f) {
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
     if (!f["isWebm"]) {
-        aImage.onclick = "return showImage('/" + sitePrefix + currentBoardName + "/" + f["sourceName"] "', "
-            + f["sizeX"] + ", " + f["sizeY"] + ");"
+        aImage.onclick = function() {
+            return showImage("/" + sitePrefix + currentBoardName + "/" + f["sourceName"], f["sizeX"], f["sizeY"]);
+        };
     }
     var image = document.createElement("img");
     var thumbSizeX = +f["thumbSizeX"];
