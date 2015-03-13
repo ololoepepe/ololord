@@ -34,6 +34,8 @@ static cppcms::json::object toJson(const Content::Post &post)
         const Content::File &file = *i;
         cppcms::json::object f;
         f["size"] = file.size;
+        f["thumbSizeX"] = file.thumbSizeX;
+        f["thumbSizeY"] = file.thumbSizeY;
         f["sizeX"] = file.sizeX;
         f["sizeY"] = file.sizeY;
         f["sourceName"] = file.sourceName;

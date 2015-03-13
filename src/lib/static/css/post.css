@@ -90,3 +90,9 @@
 .navigationButtonBottom {
     top: 30px;
 }
+
+.movableImage {
+    position: fixed;
+    z-index: 9905;
+    border: 5px solid #777777;
+}

@@ -645,7 +645,8 @@ unsigned int AbstractBoard::threadsPerPage() const
     return s->value("Board/" + name() + "/threads_per_page", s->value("Board/threads_per_page", 20)).toUInt();
 }
 
-QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const
+QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &thumbSizeX, int &thumbSizeY, int &sizeX,
+                                     int &sizeY) const
 {
     if (fn.isEmpty())
         return "";
@@ -658,15 +659,17 @@ QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &size
         suffix = "png";
     size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+        sizeX = -1;
+        sizeY = -1;
         QString tfn = fi.baseName() + "s.png";
         if (QFileInfo(fi.path() + "/" + tfn).exists()) {
             QImage img(fi.path() + "/" + tfn);
-            sizeX = img.width();
-            sizeY = img.height();
+            thumbSizeX = img.width();
+            thumbSizeY = img.height();
             return tfn;
         } else {
-            sizeX = 200;
-            sizeY = 200;
+            thumbSizeX = 200;
+            thumbSizeY = 200;
             return "webm";
         }
     }
@@ -675,19 +678,23 @@ QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &size
         size += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
         sizeX = img.width();
         sizeY = img.height();
-        if (sizeX > 200) {
-            double k = double(sizeX) / 200.0;
-            sizeX = 200;
-            sizeY = int(double(sizeY) / k);
+        thumbSizeX = sizeX;
+        thumbSizeY = sizeY;
+        if (thumbSizeX > 200) {
+            double k = double(thumbSizeX) / 200.0;
+            thumbSizeX = 200;
+            thumbSizeY = int(double(thumbSizeY) / k);
         }
-        if (sizeY > 200) {
-            double k = double(sizeY) / 200.0;
-            sizeY = 200;
-            sizeX = int(double(sizeX) / k);
+        if (thumbSizeY > 200) {
+            double k = double(thumbSizeY) / 200.0;
+            thumbSizeY = 200;
+            thumbSizeX = int(double(thumbSizeX) / k);
         }
     } else {
         sizeX = -1;
         sizeY = -1;
+        thumbSizeX = -1;
+        thumbSizeY = -1;
     }
     return fi.baseName() + "s." + suffix;
 }
@@ -715,7 +722,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             Content::File f;
             f.sourceName = Tools::toStd(fi.fileName());
             QString sz;
-            f.thumbName = Tools::toStd(thumbFileName(fi.fileName(), sz, f.sizeX, f.sizeY));
+            f.thumbName = Tools::toStd(thumbFileName(fi.fileName(), sz, f.thumbSizeX, f.thumbSizeY, f.sizeX, f.sizeY));
             f.size = Tools::toStd(sz);
             p->files.push_back(f);
         }

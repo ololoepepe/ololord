@@ -3,6 +3,38 @@ var lastPostPreview = null;
 var lastPostPreviewTimer = null;
 var formSubmitted = null;
 var popups = [];
+var images = {};
+var img = null;
+
+function toCenter(element, sizeHintX, sizeHintY) {
+    var doc = document.documentElement;
+    element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
+    element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
+}
+
+function resetScale(image) {
+    var k = (image.scale / 100);
+    var tr = "scale(" + k + ", " + k + ")";
+    //Fuck you all who create those stupid browser-specific features
+    image.style.webkitTransform = tr;
+    image.style.MozTransform = tr;
+    image.style.msTransform = tr;
+    image.style.OTransform = tr;
+    image.style.transform = tr;
+}
+
+function setInitialScale(image, sizeHintX, sizeHintY) {
+    var doc = document.documentElement;
+    var maxWidth = doc.clientWidth - 10;
+    var maxHeight = doc.clientHeight - 10;
+    var kw = 1;
+    var kh = 1;
+    if (sizeHintX > maxWidth)
+        kw = maxWidth / sizeHintX;
+    if (sizeHintY > maxHeight)
+        kh = maxHeight / sizeHintY;
+    image.scale = ((kw < kh) ? kw : kh) * 100;
+}
 
 function showPopup(text, timeout, additionalClassNames) {
     if (!text)
@@ -327,12 +359,12 @@ function createPostFile(f) {
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
     var image = document.createElement("img");
-    var sizeX = +f["sizeX"];
-    var sizeY = +f["sizeY"];
-    if (!isNaN(sizeX) && sizeX > 0)
-        image.width = sizeX;
-    if (!isNaN(sizeY) && sizeY > 0)
-        image.height = sizeY;
+    var thumbSizeX = +f["thumbSizeX"];
+    var thumbSizeY = +f["thumbSizeY"];
+    if (!isNaN(thumbSizeX) && thumbSizeX > 0)
+        image.width = thumbSizeX;
+    if (!isNaN(thumbSizeY) && thumbSizeY > 0)
+        image.height = thumbSizeY;
     if ("webm" === f["thumbName"]) {
         image.src = "/" + sitePrefix + "img/webm_logo.png";
     } else {
@@ -678,4 +710,66 @@ function removeFile(current) {
 
 function submitted(form) {
     formSubmitted = form;
+}
+
+function showImage(href, sizeHintX, sizeHintY) {
+    if (!!img)
+        img.style.display = "none";
+    img = images[href];
+    if (!!img) {
+        setInitialScale(img, sizeHintX, sizeHintY);
+        resetScale(img);
+        img.style.display = "";
+        toCenter(img, sizeHintX, sizeHintY);
+        return false;
+    }
+    img = document.createElement("img");
+    setInitialScale(img, sizeHintX, sizeHintY);
+    resetScale(img);
+    img.moving = false;
+    img.coord = {
+        "x": 0,
+        "y": 0
+    };
+    img.initialCoord = {
+        "x": 0,
+        "y": 0
+    };
+    img.src = href;
+    img.className = "movableImage";
+    img.onwheel = function(e) {
+        e.preventDefault();
+        img.scale -= e.deltaY; //Yep, minus
+        resetScale(img);
+    };
+    img.onmousedown = function(e) {
+        e.preventDefault();
+        img.moving = true;
+        img.coord.x = e.clientX;
+        img.coord.y = e.clientY;
+        img.initialCoord.x = e.clientX;
+        img.initialCoord.y = e.clientY;
+    };
+    img.onmouseup = function(e) {
+        e.preventDefault();
+        img.moving = false;
+        if (img.initialCoord.x === e.clientX && img.initialCoord.y === e.clientY) {
+            img.style.display = "none";
+        }
+    };
+    img.onmousemove = function(e) {
+        e.preventDefault();
+        if (!img.moving)
+            return false;
+        var dx = e.clientX - img.coord.x;
+        var dy = e.clientY - img.coord.y;
+        img.style.left = (img.offsetLeft + dx) + "px";
+        img.style.top = (img.offsetTop + dy) + "px";
+        img.coord.x = e.clientX;
+        img.coord.y = e.clientY;
+    };
+    document.body.appendChild(img);
+    toCenter(img, sizeHintX, sizeHintY);
+    images[href] = img;
+    return false;
 }

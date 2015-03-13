@@ -26,6 +26,8 @@ struct OLOLORD_EXPORT File
     int sizeY;
     std::string sourceName;
     std::string thumbName;
+    int thumbSizeX;
+    int thumbSizeY;
 };
 
 struct OLOLORD_EXPORT Post

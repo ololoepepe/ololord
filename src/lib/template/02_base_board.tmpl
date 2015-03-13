@@ -146,18 +146,19 @@
         (<%= file.size %>)
     </div>
     <div>
-        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
+        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
+           onclick="return showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', <%= file.sizeX %>, <%= file.sizeY %>);">
             <% if ( "webm" == file.thumbName ) %>
-                <% if ( file.sizeX > 0 && file.sizeY > 0 ) %>
-                    <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.sizeX %>"
-                         height="<%= file.sizeY %>">
+                <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
+                    <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.thumbSizeX %>"
+                         height="<%= file.thumbSizeY %>">
                 <% else %>
                     <img src="/<%= sitePathPrefix %>img/webm_logo.png">
                 <% end %>
             <% else %>
-                <% if ( file.sizeX > 0 && file.sizeY > 0 ) %>
+                <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
-                         width="<%= file.sizeX %>" height="<%= file.sizeY %>">
+                         width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
                 <% else %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
                 <% end %>
