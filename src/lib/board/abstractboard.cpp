@@ -112,6 +112,16 @@ public:
     }
 };
 
+static void scaleThumbnail(QImage &img, QVariantMap &m)
+{
+    m.insert("height", img.height());
+    m.insert("width", img.width());
+    if (img.height() > 200 || img.width() > 200)
+        img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    m.insert("thumbHeight", img.height());
+    m.insert("thumbWidth", img.width());
+}
+
 static bool threadLessThan(const Thread &t1, const Thread &t2)
 {
     if (t1.fixed() == t2.fixed())
@@ -609,21 +619,16 @@ QStringList AbstractBoard::saveFile(const Tools::File &f, bool *ok)
     if (!BDirTools::writeFile(sfn, f.data))
         return bRet(ok, false, QStringList());
     QVariantMap m;
+    QImage img;
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
-            QImage img;
             t.addFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
                 return bRet(ok, false, QStringList());
-            m.insert("height", img.height());
-            m.insert("width", img.width());
-            if (img.height() > 200 || img.width() > 200)
-                img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-            m.insert("thumbHeight", img.height());
-            m.insert("thumbWidth", img.width());
+            scaleThumbnail(img, m);
             if (!img.save(path + "/" + dt + "s.png", "png"))
                 return bRet(ok, false, QStringList());
             m.insert("thumbFileName", dt + "s.png");
@@ -631,18 +636,12 @@ QStringList AbstractBoard::saveFile(const Tools::File &f, bool *ok)
             m.insert("thumbFileName", "webm");
         }
     } else {
-        QImage img;
         QByteArray data = f.data;
         QBuffer buff(&data);
         buff.open(QIODevice::ReadOnly);
         if (!img.load(&buff, suffix.toLower().toLatin1().data()))
             return bRet(ok, false, QStringList());
-        m.insert("height", img.height());
-        m.insert("width", img.width());
-        if (img.height() > 200 || img.width() > 200)
-            img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        m.insert("thumbHeight", img.height());
-        m.insert("thumbWidth", img.width());
+        scaleThumbnail(img, m);
         if (!suffix.compare("gif", Qt::CaseInsensitive))
             suffix = "png";
         t.addFile(path + "/" + dt + "s." + suffix);
@@ -712,58 +711,15 @@ QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &thum
     bool ok = false;
     QByteArray ba = BDirTools::readFile(storagePath + "/img/" + name() + "/" + QFileInfo(fn).baseName()
                                         + ".ololord-file-info", -1, &ok);
+    if (!ok)
+        return "";
     QVariantMap m = BeQt::deserialize(ba).toMap();
-    if (ok) {
-        sizeX = m.value("width").toInt();
-        sizeY = m.value("height").toInt();
-        thumbSizeX = m.value("thumbWidth").toInt();
-        thumbSizeY = m.value("thumbHeight").toInt();
-        size += ", " + QString::number(sizeX) + "x" + QString::number(sizeY);
-        return m.value("thumbFileName").toString();
-    }
-    //Compatibility
-    QString suffix = fi.suffix();
-    if (!suffix.compare("gif", Qt::CaseInsensitive))
-        suffix = "png";
-    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
-        sizeX = -1;
-        sizeY = -1;
-        QString tfn = fi.baseName() + "s.png";
-        if (QFileInfo(fi.path() + "/" + tfn).exists()) {
-            QImage img(fi.path() + "/" + tfn);
-            thumbSizeX = img.width();
-            thumbSizeY = img.height();
-            return tfn;
-        } else {
-            thumbSizeX = 200;
-            thumbSizeY = 200;
-            return "webm";
-        }
-    }
-    QImage img(fi.filePath());
-    if (!img.isNull()) {
-        size += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
-        sizeX = img.width();
-        sizeY = img.height();
-        thumbSizeX = sizeX;
-        thumbSizeY = sizeY;
-        if (thumbSizeX > 200) {
-            double k = double(thumbSizeX) / 200.0;
-            thumbSizeX = 200;
-            thumbSizeY = int(double(thumbSizeY) / k);
-        }
-        if (thumbSizeY > 200) {
-            double k = double(thumbSizeY) / 200.0;
-            thumbSizeY = 200;
-            thumbSizeX = int(double(thumbSizeX) / k);
-        }
-    } else {
-        sizeX = -1;
-        sizeY = -1;
-        thumbSizeX = -1;
-        thumbSizeY = -1;
-    }
-    return fi.baseName() + "s." + suffix;
+    sizeX = m.value("width").toInt();
+    sizeY = m.value("height").toInt();
+    thumbSizeX = m.value("thumbWidth").toInt();
+    thumbSizeY = m.value("thumbHeight").toInt();
+    size += ", " + QString::number(sizeX) + "x" + QString::number(sizeY);
+    return m.value("thumbFileName").toString();
 }
 
 Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::request &req, bool *ok,
