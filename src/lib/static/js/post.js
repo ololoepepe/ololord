@@ -863,3 +863,7 @@ function showImage(href, type, sizeHintX, sizeHintY) {
     images[href] = img;
     return false;
 }
+
+function complain() {
+    alert(document.getElementById("complainMessage").value);
+}
