@@ -359,8 +359,9 @@ function createPostFile(f) {
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
     if ("image" === f["type"]) {
-        aImage.onclick = function() {
-            return showImage("/" + sitePrefix + currentBoardName + "/" + f["sourceName"], f["type"], f["sizeX"], f["sizeY"]);
+        aImage.onclick = function(e) {
+            return showImage("/" + sitePrefix + currentBoardName + "/" + f["sourceName"], f["type"], f["sizeX"],
+                             f["sizeY"]);
         };
     }
     var image = document.createElement("img");
