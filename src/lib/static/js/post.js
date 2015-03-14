@@ -735,7 +735,7 @@ function globalOnclick(e) {
     if (!!t && !!img && t == img)
         return;
     while (!!t) {
-        if (t.tagName === "A" && !!t.onclick)
+        if (t.tagName === "A" && (!!t.onclick || !!t.onmousedown || !!t.href))
             return;
         t = t.parentNode;
     }
