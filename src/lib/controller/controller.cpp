@@ -155,6 +155,8 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
     c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
+    c.complainText = ts.translate("initBaseBoard", "Complain", "complainText");
+    c.complainMessage = ts.translate("initBaseBoard", "Go complain to your mum, you whiner!", "complainMessage");
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;

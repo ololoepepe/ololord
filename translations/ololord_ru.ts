@@ -1318,6 +1318,16 @@ Your choice:</source>
         <comment>removeFileText</comment>
         <translation>Убрать этот файл</translation>
     </message>
+    <message>
+        <source>Complain</source>
+        <comment>complainText</comment>
+        <translation>Пожаловаться</translation>
+    </message>
+    <message>
+        <source>Go complain to your mum, you whiner!</source>
+        <comment>complainMessage</comment>
+        <translation>Мамке своей пожалуйся, нытик!</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

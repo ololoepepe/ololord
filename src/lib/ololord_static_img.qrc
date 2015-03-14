@@ -247,5 +247,6 @@
         <file>static/img/edit.png</file>
         <file>static/img/down.png</file>
         <file>static/img/up.png</file>
+        <file>static/img/complain.png</file>
     </qresource>
 </RCC>

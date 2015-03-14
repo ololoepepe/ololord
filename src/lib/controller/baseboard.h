@@ -80,6 +80,8 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string captchaQuotaText;
     std::string closedText;
     std::string closeThreadText;
+    std::string complainMessage;
+    std::string complainText;
     AbstractBoard::BoardInfo currentBoard;
     unsigned long long currentThread;
     std::string deletePostText;
