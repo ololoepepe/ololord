@@ -3,3 +3,4 @@
 [done] Fix image scaling
 [done] Improve post editing
 [done] Implement complain button
+[done] Add ability to skipp logging for specified IPs
