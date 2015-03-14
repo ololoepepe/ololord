@@ -10,6 +10,7 @@ function posted() {
     var iframe = document.getElementById("kostyleeque");
     var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
     var threadNumber = iframeDocument.querySelector("#threadNumber");
+    formSubmitted.querySelector("[name='submit']").disabled = false;
     if (!!threadNumber) {
         window.location.href = window.location.href + "/thread/" + threadNumber.value + ".html";
     } else {

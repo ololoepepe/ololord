@@ -94,6 +94,7 @@ function posted() {
     var iframe = document.getElementById("kostyleeque");
     var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
     var postNumber = iframeDocument.querySelector("#postNumber");
+    formSubmitted.querySelector("[name='submit']").disabled = false;
     if (!!postNumber) {
         formSubmitted.reset();
         formSubmitted = null;

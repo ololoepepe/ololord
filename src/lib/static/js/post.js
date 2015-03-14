@@ -754,6 +754,7 @@ function removeFile(current) {
 
 function submitted(form) {
     formSubmitted = form;
+    form.querySelector("[name='submit']").disabled = true;
 }
 
 function hideImage() {
