@@ -113,6 +113,7 @@ function posted() {
 }
 
 function initializeOnLoadThread() {
+    document.body.onclick = globalOnclick;
     if (getCookie("auto_update") === "true") {
         var cbox = document.getElementById("autoUpdate_top");
         cbox.checked = true;

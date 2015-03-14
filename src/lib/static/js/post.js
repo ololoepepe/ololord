@@ -360,7 +360,7 @@ function createPostFile(f) {
     aImage.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
     if ("image" === f["type"]) {
         aImage.onclick = function() {
-            return showImage("/" + sitePrefix + currentBoardName + "/" + f["sourceName"], f["sizeX"], f["sizeY"]);
+            return showImage("/" + sitePrefix + currentBoardName + "/" + f["sourceName"], f["type"], f["sizeX"], f["sizeY"]);
         };
     }
     var image = document.createElement("img");
@@ -717,9 +717,36 @@ function submitted(form) {
     formSubmitted = form;
 }
 
-function showImage(href, sizeHintX, sizeHintY) {
-    if (!!img)
+function hideImage() {
+    if (!!img) {
+        if ("webm" === img.fileType) {
+            img.pause();
+            img.load();
+        }
         img.style.display = "none";
+        img = null;
+    }
+}
+
+function globalOnclick(e) {
+    if (!!e.button)
+        return;
+    var t = e.target;
+    if (!!t && !!img && t == img)
+        return;
+    while (!!t) {
+        if (t.tagName === "A" && !!t.onclick)
+            return;
+        t = t.parentNode;
+    }
+    e.preventDefault();
+    hideImage();
+}
+
+function showImage(href, type, sizeHintX, sizeHintY) {
+    hideImage();
+    if (!href || !type)
+        return true;
     img = images[href];
     if (!!img) {
         setInitialScale(img, sizeHintX, sizeHintY);
@@ -728,7 +755,20 @@ function showImage(href, sizeHintX, sizeHintY) {
         toCenter(img, sizeHintX, sizeHintY);
         return false;
     }
-    img = document.createElement("img");
+    if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
+        return true;
+    if ("image" === type) {
+        img = document.createElement("img");
+        img.src = href;
+    } else if ("webm" === type) {
+        img = document.createElement("video");
+        img.controls = "controls";
+        var src = document.createElement("source");
+        src.src = href;
+        src.type = "video/webm";
+        img.appendChild(src);
+    }
+    img.fileType = type;
     setInitialScale(img, sizeHintX, sizeHintY);
     resetScale(img);
     img.moving = false;
@@ -740,7 +780,6 @@ function showImage(href, sizeHintX, sizeHintY) {
         "x": 0,
         "y": 0
     };
-    img.src = href;
     img.className = "movableImage";
     var wheelHandler = function(e) {
         var e = window.event || e; //Old IE support
@@ -755,32 +794,42 @@ function showImage(href, sizeHintX, sizeHintY) {
     } else {
         img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
     }
-    img.onmousedown = function(e) {
-        e.preventDefault();
-        img.moving = true;
-        img.coord.x = e.clientX;
-        img.coord.y = e.clientY;
-        img.initialCoord.x = e.clientX;
-        img.initialCoord.y = e.clientY;
-    };
-    img.onmouseup = function(e) {
-        e.preventDefault();
-        img.moving = false;
-        if (img.initialCoord.x === e.clientX && img.initialCoord.y === e.clientY) {
-            img.style.display = "none";
-        }
-    };
-    img.onmousemove = function(e) {
-        e.preventDefault();
-        if (!img.moving)
-            return false;
-        var dx = e.clientX - img.coord.x;
-        var dy = e.clientY - img.coord.y;
-        img.style.left = (img.offsetLeft + dx) + "px";
-        img.style.top = (img.offsetTop + dy) + "px";
-        img.coord.x = e.clientX;
-        img.coord.y = e.clientY;
-    };
+    if ("image" === type) {
+        img.onmousedown = function(e) {
+            if (!!e.button)
+                return;
+            e.preventDefault();
+            img.moving = true;
+            img.coord.x = e.clientX;
+            img.coord.y = e.clientY;
+            img.initialCoord.x = e.clientX;
+            img.initialCoord.y = e.clientY;
+        };
+        img.onmouseup = function(e) {
+            if (!!e.button)
+                return;
+            e.preventDefault();
+            img.moving = false;
+            if (img.initialCoord.x === e.clientX && img.initialCoord.y === e.clientY) {
+                if ("webm" === type) {
+                    img.pause();
+                    img.currentTime = 0;
+                }
+                img.style.display = "none";
+            }
+        };
+        img.onmousemove = function(e) {
+            if (!img.moving)
+                return;
+            e.preventDefault();
+            var dx = e.clientX - img.coord.x;
+            var dy = e.clientY - img.coord.y;
+            img.style.left = (img.offsetLeft + dx) + "px";
+            img.style.top = (img.offsetTop + dy) + "px";
+            img.coord.x = e.clientX;
+            img.coord.y = e.clientY;
+        };
+    }
     document.body.appendChild(img);
     toCenter(img, sizeHintX, sizeHintY);
     images[href] = img;

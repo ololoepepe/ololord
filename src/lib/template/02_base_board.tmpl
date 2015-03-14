@@ -146,12 +146,8 @@
         (<%= file.size %>)
     </div>
     <div>
-        <% if ( "webm" == file.type ) %>
-            <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
-        <% else %>
-            <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
-               onclick="return showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', <%= file.sizeX %>, <%= file.sizeY %>);">
-        <% end %>
+        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
+           onclick="return showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
             <% if ( "webm" == file.thumbName ) %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.thumbSizeX %>"

@@ -22,5 +22,5 @@ function posted() {
 }
 
 function initializeOnLoadBoard() {
-    //
+    document.body.onclick = globalOnclick;
 }
