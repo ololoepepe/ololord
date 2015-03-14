@@ -106,3 +106,29 @@
     z-index: 9905;
     border: 5px solid #777777;
 }
+
+.postformFile {
+    border: 1px dashed #777777;
+}
+
+.postformFile ~ .postformFile {
+    margin-top: 5px;
+}
+
+.postformFilePreview {
+    max-width: 100px;
+    max-height: 100px;
+    display: inline;
+    vertical-align: middle;
+}
+
+.postformFileInput {
+    display: inline;
+    vertical-align: middle;
+}
+
+.postformFileRemoveButton {
+    display: inline;
+    vertical-align: top;
+    margin-right: 0px;
+}

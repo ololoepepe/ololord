@@ -96,10 +96,11 @@
                             <b><%= postFormInputFile %></b>
                         </td>
                         <td class="postformField">
-                            <div>
-                                <input type="file" name="file" onchange="fileSelected(this);"
+                            <div class="postformFile">
+                                <input type="file" name="file" onchange="fileSelected(this);" class="postformFileInput"
                                        accept="<%= supportedFileTypes %>" />
-                                <a href="javascript:void(0);" style="display: none;" onclick="removeFile(this);">
+                                <a href="javascript:void(0);" style="display: none;" onclick="removeFile(this);"
+                                   class="postformFileRemoveButton">
                                     <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"></a>
                             </div>
                         </td>
@@ -472,8 +473,6 @@
         </tbody>
     </table>
 </div>
-
-
 <table id="editPostTemplate" class="postFormTable" style="display: none;">
     <tbody>
         <tr>
@@ -481,7 +480,7 @@
                 <b><%= postFormLabelEmail %></b>
             </td>
             <td class="postformField">
-                <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
+                <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="43" />
             </td>
         </tr>
         <tr>

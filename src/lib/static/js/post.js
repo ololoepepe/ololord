@@ -684,16 +684,33 @@ function fileSelected(current) {
     if (isNaN(maxCount))
         return;
     var div = current.parentNode;
-    div.querySelector("a").style.display = "";
+    var oldPreview = div.querySelector("img");
+    if (!!oldPreview && div == oldPreview.parentNode)
+        div.removeChild(oldPreview);
+    if (!!current.value.match(/\.(jpe?g|png|gif)$/i)) {
+        var reader = new FileReader();
+        reader.readAsDataURL(current.files[0]);
+        var oldDiv = div;
+        reader.onload = function(e) {
+            var preview = document.createElement("img");
+            preview.className = "postformFilePreview";
+            preview.src = e.target.result;
+            oldDiv.insertBefore(preview, current);
+        };
+    }
+    div.querySelector("a").style.display = "inline";
     var parent = div.parentNode;
     if (parent.children.length >= maxCount)
         return;
     for (var i = 0; i < parent.children.length; ++i) {
         if (parent.children[i].querySelector("input").value === "")
             return;
-        parent.children[i].querySelector("a").style.display = "";
+        parent.children[i].querySelector("a").style.display = "inline";
     }
     div = div.cloneNode(true);
+    var newPreview = div.querySelector("img");
+    if (!!newPreview && div == newPreview.parentNode)
+        div.removeChild(newPreview);
     div.querySelector("a").style.display = "none";
     div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
     parent.appendChild(div);
@@ -705,6 +722,9 @@ function removeFile(current) {
     var div = current.parentNode;
     var parent = div.parentNode;
     parent.removeChild(div);
+    var preview = div.querySelector("img");
+    if (!!preview && div == preview.parentNode)
+        div.removeChild(preview);
     if (parent.children.length > 1) {
         for (var i = 0; i < parent.children.length; ++i) {
             if (parent.children[i].querySelector("input").value === "")
