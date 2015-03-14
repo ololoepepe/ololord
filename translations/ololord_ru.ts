@@ -1654,6 +1654,12 @@ The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
         <translation>Команда вызова утилиты ffmpeg (возможно, полный путь).
 По умолчанию ffmpeg (UNIX) или ffmpeg.exe (Windows).</translation>
     </message>
+    <message>
+        <source>List of IP addresses which are not logged.
+Example: 127.0.0.1,192.168.0.2</source>
+        <translation>Список IP-адресов, которые не логгируются.
+Пример: 127.0.0.1,192.168.0.2</translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>

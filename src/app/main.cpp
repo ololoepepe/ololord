@@ -691,6 +691,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::String, "logging_skip_ip", n);
+    nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
+                                               "Example: 127.0.0.1,192.168.0.2"));
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {
         nn = new BSettingsNode(s, n);

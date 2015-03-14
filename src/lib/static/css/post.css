@@ -32,8 +32,8 @@
 }
 
 .postHeader > a > img {
-    opacity: 0.75;
-    filter: alpha(opacity=75);
+    opacity: 0.65;
+    filter: alpha(opacity=65);
 }
 
 .postHeader > a > img:hover {

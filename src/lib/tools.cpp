@@ -349,7 +349,13 @@ void log(const cppcms::application &app, const QString &what)
 
 void log(const cppcms::http::request &req, const QString &what)
 {
-    bLog("[" + userIp(req) + "] " + what);
+    QStringList list = SettingsLocker()->value("System/logging_skip_ip").toString().split(QRegExp("\\,\\s*"),
+                                                                                          QString::SkipEmptyParts);
+    QSet<QString> skip = QSet<QString>::fromList(list);
+    QString ip = userIp(req);
+    if (skip.contains(ip))
+        return;
+    bLog("[" + ip + "] " + what);
 }
 
 unsigned int maxInfo(MaxInfo m, const QString &boardName)
