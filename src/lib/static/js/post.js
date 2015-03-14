@@ -740,7 +740,6 @@ function globalOnclick(e) {
             return;
         t = t.parentNode;
     }
-    e.preventDefault();
     hideImage();
 }
 
@@ -754,6 +753,11 @@ function showImage(href, type, sizeHintX, sizeHintY) {
         resetScale(img);
         img.style.display = "";
         toCenter(img, sizeHintX, sizeHintY);
+        if ("webm" === img.fileType) {
+            setTimeout(function() {
+                img.play();
+            }, 500);
+        }
         return false;
     }
     if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
@@ -833,6 +837,11 @@ function showImage(href, type, sizeHintX, sizeHintY) {
     }
     document.body.appendChild(img);
     toCenter(img, sizeHintX, sizeHintY);
+    if ("webm" === img.fileType) {
+        setTimeout(function() {
+            img.play();
+        }, 500);
+    }
     images[href] = img;
     return false;
 }
