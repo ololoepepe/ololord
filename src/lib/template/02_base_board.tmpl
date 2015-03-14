@@ -146,7 +146,7 @@
         (<%= file.size %>)
     </div>
     <div>
-        <% if ( file.isWebm ) %>
+        <% if ( "webm" == file.type ) %>
             <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>">
         <% else %>
             <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"

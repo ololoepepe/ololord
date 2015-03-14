@@ -358,7 +358,7 @@ function createPostFile(f) {
     var divImage = document.createElement("div");
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
-    if (!f["isWebm"]) {
+    if ("image" === f["type"]) {
         aImage.onclick = function() {
             return showImage("/" + sitePrefix + currentBoardName + "/" + f["sourceName"], f["sizeX"], f["sizeY"]);
         };
@@ -742,11 +742,19 @@ function showImage(href, sizeHintX, sizeHintY) {
     };
     img.src = href;
     img.className = "movableImage";
-    img.onwheel = function(e) {
+    var wheelHandler = function(e) {
+        var e = window.event || e; //Old IE support
         e.preventDefault();
-        img.scale -= e.deltaY; //Yep, minus
+        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+        img.scale += delta;
         resetScale(img);
     };
+    if (img.addEventListener) {
+    	img.addEventListener("mousewheel", wheelHandler, false); //IE9, Chrome, Safari, Opera
+	    img.addEventListener("DOMMouseScroll", wheelHandler, false); //Firefox
+    } else {
+        img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
+    }
     img.onmousedown = function(e) {
         e.preventDefault();
         img.moving = true;

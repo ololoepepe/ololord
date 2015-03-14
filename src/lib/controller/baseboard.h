@@ -21,7 +21,6 @@ struct OLOLORD_EXPORT BanLevel
 
 struct OLOLORD_EXPORT File
 {
-    bool isWebm;
     std::string size;
     int sizeX;
     int sizeY;
@@ -29,6 +28,7 @@ struct OLOLORD_EXPORT File
     std::string thumbName;
     int thumbSizeX;
     int thumbSizeY;
+    std::string type;
 };
 
 struct OLOLORD_EXPORT Post

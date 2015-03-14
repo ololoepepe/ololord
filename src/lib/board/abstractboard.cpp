@@ -58,6 +58,7 @@
 #include <QStringList>
 #include <QtAlgorithms>
 #include <QVariant>
+#include <QVariantMap>
 
 #include <cppcms/application.h>
 #include <cppcms/http_request.h>
@@ -78,6 +79,38 @@
 #include <vector>
 
 #include <fstream>
+
+class FileTransaction
+{
+private:
+    bool commited;
+    QStringList mfileNames;
+public:
+    explicit FileTransaction()
+    {
+        commited = false;
+    }
+    ~FileTransaction()
+    {
+        if (commited)
+            return;
+        foreach (const QString &fn, mfileNames)
+            QFile::remove(fn);
+    }
+public:
+    void commit()
+    {
+        commited = true;
+    }
+    QStringList fileNames() const
+    {
+        return mfileNames;
+    }
+    void addFile(const QString &fn)
+    {
+        mfileNames << fn;
+    }
+};
 
 static bool threadLessThan(const Thread &t1, const Thread &t2)
 {
@@ -286,6 +319,7 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
         QFile::remove(path + "/" + fn);
         QFileInfo fii(fn);
         QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
+        QFile::remove(path + "/" + fii.baseName() + ".ololord-file-info");
         if (suff.compare("webm", Qt::CaseInsensitive))
             QFile::remove(path + "/" + fii.baseName() + "s." + suff);
         else
@@ -554,7 +588,7 @@ QStringList AbstractBoard::rules(const QLocale &l) const
     return Tools::rules("rules", l) + Tools::rules("rules/" + name(), l);
 }
 
-QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
+QStringList AbstractBoard::saveFile(const Tools::File &f, bool *ok)
 {
 #if defined(Q_OS_WIN)
     static const QString FfmpegDefault = "ffmpeg.exe";
@@ -563,27 +597,38 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
 #endif
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
-        return bRet(ok, false, QString());
+        return bRet(ok, false, QStringList());
     QString path = storagePath + "/img/" + name();
     if (!BDirTools::mkpath(path))
-        return bRet(ok, false, QString());
+        return bRet(ok, false, QStringList());
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
     QString sfn = path + "/" + dt + "." + suffix;
+    FileTransaction t;
+    t.addFile(sfn);
+    if (!BDirTools::writeFile(sfn, f.data))
+        return bRet(ok, false, QStringList());
+    QVariantMap m;
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
-        if (!BDirTools::writeFile(sfn, f.data))
-            return bRet(ok, false, QString());
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
             QImage img;
+            t.addFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
-                return bRet(ok, false, QString());
+                return bRet(ok, false, QStringList());
+            m.insert("height", img.height());
+            m.insert("width", img.width());
             if (img.height() > 200 || img.width() > 200)
                 img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            m.insert("thumbHeight", img.height());
+            m.insert("thumbWidth", img.width());
             if (!img.save(path + "/" + dt + "s.png", "png"))
-                return bRet(ok, false, QString());
+                return bRet(ok, false, QStringList());
+            m.insert("thumbFileName", dt + "s.png");
+        } else {
+            m.insert("thumbFileName", "webm");
         }
     } else {
         QImage img;
@@ -591,17 +636,26 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         QBuffer buff(&data);
         buff.open(QIODevice::ReadOnly);
         if (!img.load(&buff, suffix.toLower().toLatin1().data()))
-            return bRet(ok, false, QString());
+            return bRet(ok, false, QStringList());
+        m.insert("height", img.height());
+        m.insert("width", img.width());
         if (img.height() > 200 || img.width() > 200)
             img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        if (!BDirTools::writeFile(sfn, f.data))
-            return bRet(ok, false, QString());
+        m.insert("thumbHeight", img.height());
+        m.insert("thumbWidth", img.width());
         if (!suffix.compare("gif", Qt::CaseInsensitive))
             suffix = "png";
+        t.addFile(path + "/" + dt + "s." + suffix);
         if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
-            return bRet(ok, false, QString());
+            return bRet(ok, false, QStringList());
+        m.insert("thumbFileName", dt + "s." + suffix);
     }
-    return bRet(ok, true, QFileInfo(sfn).fileName());
+    QString ifn = path + "/" + dt + ".ololord-file-info";
+    t.addFile(ifn);
+    if (!BDirTools::writeFile(ifn, BeQt::serialize(m)))
+        return bRet(ok, false, QStringList());
+    t.commit();
+    return bRet(ok, true, QStringList() << QFileInfo(sfn).fileName());
 }
 
 bool AbstractBoard::showWhois() const
@@ -654,10 +708,23 @@ QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &thum
     if (storagePath.isEmpty())
         return "";
     QFileInfo fi(storagePath + "/img/" + name() + "/" + QFileInfo(fn).fileName());
+    size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
+    bool ok = false;
+    QByteArray ba = BDirTools::readFile(storagePath + "/img/" + name() + "/" + QFileInfo(fn).baseName()
+                                        + ".ololord-file-info", -1, &ok);
+    QVariantMap m = BeQt::deserialize(ba).toMap();
+    if (ok) {
+        sizeX = m.value("width").toInt();
+        sizeY = m.value("height").toInt();
+        thumbSizeX = m.value("thumbWidth").toInt();
+        thumbSizeY = m.value("thumbHeight").toInt();
+        size += ", " + QString::number(sizeX) + "x" + QString::number(sizeY);
+        return m.value("thumbFileName").toString();
+    }
+    //Compatibility
     QString suffix = fi.suffix();
     if (!suffix.compare("gif", Qt::CaseInsensitive))
         suffix = "png";
-    size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
         sizeX = -1;
         sizeY = -1;
@@ -720,7 +787,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         foreach (const QString &fn, post.files()) {
             QFileInfo fi(fn);
             Content::File f;
-            f.isWebm = fn.endsWith("webm", Qt::CaseInsensitive);
+            f.type = fn.endsWith("webm", Qt::CaseInsensitive) ? "webm" : "image";
             f.sourceName = Tools::toStd(fi.fileName());
             QString sz;
             f.thumbName = Tools::toStd(thumbFileName(fi.fileName(), sz, f.thumbSizeX, f.thumbSizeY, f.sizeX, f.sizeY));

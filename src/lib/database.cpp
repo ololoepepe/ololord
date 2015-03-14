@@ -65,16 +65,16 @@ public:
     {
         return mfileNames;
     }
-    QString saveFile(const Tools::File &f, bool *ok = 0)
+    bool saveFile(const Tools::File &f)
     {
         if (!board)
-            return bRet(ok, false, QString());
+            return false;
         bool b = false;
-        QString fn = board->saveFile(f, &b);
+        QStringList fns = board->saveFile(f, &b);
         if (!b)
-            return bRet(ok, false, QString());
-        mfileNames << fn;
-        return bRet(ok, b, fn);
+            return false;
+        mfileNames << fns;
+        return true;
     }
 };
 
@@ -224,9 +224,7 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         p->setEmail(post.email);
         FileTransaction ft(board);
         foreach (const Tools::File &f, post.files) {
-            bool ok = false;
-            ft.saveFile(f, &ok);
-            if (!ok) {
+            if (!ft.saveFile(f)) {
                 return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
                             tq.translate("createPostInternalt", "Internal file system error", "description"), false);
             }
