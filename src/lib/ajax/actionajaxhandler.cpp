@@ -56,6 +56,8 @@ static cppcms::json::object toJson(const Content::Post &post)
     o["threadNumber"] = post.threadNumber;
     o["subject"] = post.subject;
     o["subjectIsRaw"] = post.subjectIsRaw;
+    o["rawName"] = post.rawName;
+    o["rawSubject"] = post.rawSubject;
     o["text"] = post.text;
     o["rawPostText"] = post.rawPostText;
     o["tripcode"] = post.tripcode;
@@ -97,15 +99,20 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
     server.return_result(true);
 }
 
-void ActionAjaxHandler::editPost(std::string boardName, long long postNumber, std::string text)
+void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 {
-    if (!testBan(Tools::fromStd(boardName)))
+    QString boardName = Tools::fromStd(params.at("boardName").str());
+    if (!testBan(boardName))
         return;
+    long long pn = (long long) params.at("postNumber").number();
+    Database::EditPostParameters p(server.request(), boardName, pn > 0 ? quint64(pn) : 0);
+    p.email = Tools::fromStd(params.at("email").str());
+    p.name = Tools::fromStd(params.at("name").str());
+    p.subject = Tools::fromStd(params.at("subject").str());
+    p.text = Tools::fromStd(params.at("text").str());
     QString err;
-    if (!Database::editPost(server.request(), Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0,
-                            Tools::fromStd(text), &err)) {
+    if (!Database::editPost(p))
         return server.return_error(Tools::toStd(err));
-    }
     server.return_result(true);
 }
 

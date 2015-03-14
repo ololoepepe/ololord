@@ -1,3 +1,4 @@
 [done] Implement movable images
 [done] Improve file info storage
 [done] Fix image scaling
+[done] Improve post editing

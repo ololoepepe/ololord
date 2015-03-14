@@ -160,12 +160,27 @@ function editPost(boardName, postNumber) {
     if (!postText)
         return;
     var title = document.getElementById("editPostText").value;
-    var div = document.createElement("div");
-    var textarea = document.createElement("textarea");
-    textarea.appendChild(document.createTextNode(postText.value));
-    div.appendChild(textarea);
-    showDialog(title, null, div, function() {
-        ajaxRequest("edit_post", [boardName, +postNumber, textarea.value], 5, function(res) {
+    var form = document.getElementById("editPostTemplate").cloneNode(true);
+    form.id = "";
+    form.style.display = "";
+    var email = form.querySelector("[name='email']");
+    var name = form.querySelector("[name='name']");
+    var subject = form.querySelector("[name='subject']");
+    var text = form.querySelector("[name='text']");
+    email.value = post.querySelector("[name='email']").value;
+    name.value = post.querySelector("[name='name']").value;
+    subject.value = post.querySelector("[name='subject']").value;
+    text.appendChild(document.createTextNode(postText.value));
+    showDialog(title, null, form, function() {
+        var params = {
+            "boardName": boardName,
+            "postNumber": +postNumber,
+            "text": text.value,
+            "email": email.value,
+            "name": name.value,
+            "subject": subject.value
+        };
+        ajaxRequest("edit_post", [params], 5, function(res) {
             ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
                 var newPost = createPostNode(res, true);
                 if (!newPost)
@@ -556,6 +571,9 @@ function createPostNode(res, permanent) {
     var rawText = post.querySelector("[name='rawText']");
     rawText.id = rawText.id.replace("%postNumber%", res["number"]);
     rawText.value = res["rawPostText"];
+    post.querySelector("[name='email']").value = res["email"];
+    post.querySelector("[name='name']").value = res["rawName"];
+    post.querySelector("[name='subject']").value = res["rawSubject"];
     return post;
 }
 

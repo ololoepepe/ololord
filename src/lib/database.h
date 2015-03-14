@@ -170,6 +170,15 @@ template <typename T> bool erase(const Result<T> &t)
 }
 #endif
 
+struct OLOLORD_EXPORT BanInfo
+{
+    QString boardName;
+    QDateTime dateTime;
+    QString reason;
+    QDateTime expires;
+    int level;
+};
+
 struct OLOLORD_EXPORT CreatePostParameters
 {
     const QList<Tools::File> &files;
@@ -215,13 +224,23 @@ public:
     }
 };
 
-struct OLOLORD_EXPORT BanInfo
+struct OLOLORD_EXPORT EditPostParameters
 {
-    QString boardName;
-    QDateTime dateTime;
-    QString reason;
-    QDateTime expires;
-    int level;
+    const QString &boardName;
+    const quint64 postNumber;
+    const cppcms::http::request &request;
+public:
+    QString email;
+    QString *error;
+    QString name;
+    QString subject;
+    QString text;
+public:
+    explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post) :
+        boardName(board), postNumber(post), request(req)
+    {
+        error = 0;
+    }
 };
 
 OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int level = 1,
@@ -241,8 +260,7 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QSt
                                const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
-OLOLORD_EXPORT bool editPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
-                             const QString &text, QString *error = 0);
+OLOLORD_EXPORT bool editPost(EditPostParameters &p);
 OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
                                        quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,

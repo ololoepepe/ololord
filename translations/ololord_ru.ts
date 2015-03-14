@@ -683,6 +683,21 @@ The default is 3.</source>
         <comment>error</comment>
         <translation>Текст слишком длинный</translation>
     </message>
+    <message>
+        <source>E-mail is too long</source>
+        <comment>error</comment>
+        <translation>Эл. почта слишком длинная</translation>
+    </message>
+    <message>
+        <source>Name is too long</source>
+        <comment>error</comment>
+        <translation>Имя слишком длинное</translation>
+    </message>
+    <message>
+        <source>Subject is too long</source>
+        <comment>error</comment>
+        <translation>Тема слишком длинная</translation>
+    </message>
 </context>
 <context>
     <name>getNewPosts</name>

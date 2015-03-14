@@ -738,8 +738,10 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->bannedFor = post.bannedFor();
         p->email = Tools::toStd(post.email());
         p->number = post.number();
-        p->subject = Tools::toStd(post.subject());
+        p->rawSubject = Tools::toStd(post.subject());
+        p->subject = p->subject;
         p->subjectIsRaw = false;
+        p->rawName = Tools::toStd(post.name());
         foreach (const QString &fn, post.files()) {
             QFileInfo fi(fn);
             Content::File f;

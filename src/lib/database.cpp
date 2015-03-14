@@ -584,44 +584,52 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
     }
 }
 
-bool editPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, const QString &text,
-              QString *error)
+bool editPost(EditPostParameters &p)
 {
-    AbstractBoard *board = AbstractBoard::board(boardName);
-    TranslatorQt tq(req);
+    AbstractBoard *board = AbstractBoard::board(p.boardName);
+    TranslatorQt tq(p.request);
     if (!board)
-        return bRet(error, tq.translate("editPost", "Invalid board name", "error"), false);
-    if (!postNumber)
-        return bRet(error, tq.translate("editPost", "Invalid post number", "error"), false);
+        return bRet(p.error, tq.translate("editPost", "Invalid board name", "error"), false);
+    if (!p.postNumber)
+        return bRet(p.error, tq.translate("editPost", "Invalid post number", "error"), false);
     try {
         Transaction t;
         if (!t)
-            return bRet(error, tq.translate("editPost", "Internal database error", "error"), false);
-        QByteArray hashpass = Tools::hashpass(req);
+            return bRet(p.error, tq.translate("editPost", "Internal database error", "error"), false);
+        QByteArray hashpass = Tools::hashpass(p.request);
         if (hashpass.isEmpty())
-            return bRet(error, tq.translate("editPost", "Not logged in", "error"), false);
+            return bRet(p.error, tq.translate("editPost", "Not logged in", "error"), false);
         int lvl = registeredUserLevel(hashpass);
         if (lvl < RegisteredUser::ModerLevel)
-            return bRet(error, tq.translate("editPost", "Not enough rights", "error"), false);
-        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
-                                                 && odb::query<Post>::board == boardName);
+            return bRet(p.error, tq.translate("editPost", "Not enough rights", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == p.postNumber
+                                                 && odb::query<Post>::board == p.boardName);
         if (post.error)
-            return bRet(error, tq.translate("editPost", "Internal database error", "error"), false);
+            return bRet(p.error, tq.translate("editPost", "Internal database error", "error"), false);
         if (!post)
-            return bRet(error, tq.translate("editPost", "No such post", "error"), false);
+            return bRet(p.error, tq.translate("editPost", "No such post", "error"), false);
         if (post->hashpass() != hashpass && lvl <= registeredUserLevel(post->hashpass()))
-            return bRet(error, tq.translate("editPost", "Not enough rights", "error"), false);
-        if (text.isEmpty() && post->files().isEmpty())
-            return bRet(error, tq.translate("editPost", "No text provided", "error"), false);
-        if (text.length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, boardName)))
-            return bRet(error, tq.translate("editPost", "Text is too long", "error"), false);
-        post->setText(text);
+            return bRet(p.error, tq.translate("editPost", "Not enough rights", "error"), false);
+        if (p.text.isEmpty() && post->files().isEmpty())
+            return bRet(p.error, tq.translate("editPost", "No text provided", "error"), false);
+        if (p.text.length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, p.boardName)))
+            return bRet(p.error, tq.translate("editPost", "Text is too long", "error"), false);
+        if (p.email.length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, p.boardName)))
+            return bRet(p.error, tq.translate("editPost", "E-mail is too long", "error"), false);
+        if (p.name.length() > int(Tools::maxInfo(Tools::MaxNameFieldLength, p.boardName)))
+            return bRet(p.error, tq.translate("editPost", "Name is too long", "error"), false);
+        if (p.subject.length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, p.boardName)))
+            return bRet(p.error, tq.translate("editPost", "Subject is too long", "error"), false);
+        post->setText(p.text);
+        post->setEmail(p.email);
+        post->setName(p.name);
+        post->setSubject(p.subject);
         update(post);
-        Cache::removePost(boardName, postNumber);
+        Cache::removePost(p.boardName, p.postNumber);
         t.commit();
-        return bRet(error, QString(), true);
+        return bRet(p.error, QString(), true);
     } catch (const odb::exception &e) {
-        return bRet(error, Tools::fromStd(e.what()), false);
+        return bRet(p.error, Tools::fromStd(e.what()), false);
     }
 }
 

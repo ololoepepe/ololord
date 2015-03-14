@@ -47,7 +47,9 @@ struct OLOLORD_EXPORT Post
     std::string name;
     std::string nameRaw;
     unsigned long long number;
+    std::string rawName;
     std::string rawPostText;
+    std::string rawSubject;
     bool showRegistered;
     std::string subject;
     bool subjectIsRaw;
