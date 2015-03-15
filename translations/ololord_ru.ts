@@ -1656,9 +1656,11 @@ The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
     </message>
     <message>
         <source>List of IP addresses which are not logged.
-Example: 127.0.0.1,192.168.0.2</source>
+IP&apos;s are separated by commas. Wildcard matching is used.
+Example: 127.0.0.1,192.168.0.*</source>
         <translation>Список IP-адресов, которые не логгируются.
-Пример: 127.0.0.1,192.168.0.2</translation>
+IP-адреса отделяются запятыми. Используется шаблон wildcard
+Пример: 127.0.0.1,192.168.0.*</translation>
     </message>
 </context>
 <context>
@@ -1896,6 +1898,13 @@ Example: 127.0.0.1,192.168.0.2</source>
     <message>
         <source>Enter logging mode:</source>
         <translation>Введите режим ведения логов:</translation>
+    </message>
+</context>
+<context>
+    <name>setLoggingSkipIp</name>
+    <message>
+        <source>Enter skipped IP&apos;s:</source>
+        <translation>Введите пропускаемые IP-адреса:</translation>
     </message>
 </context>
 <context>

@@ -130,5 +130,5 @@
 .postformFileRemoveButton {
     display: inline;
     vertical-align: top;
-    margin-right: 0px;
+    margin-right: 0px; /*TODO: Does not work*/
 }

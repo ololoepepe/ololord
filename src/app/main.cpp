@@ -57,6 +57,7 @@ static void initSettings();
 static void initTerminal();
 static bool setDefaultThreadPassword(const BSettingsNode *node, const QVariant &value);
 static bool setLoggingMode(const BSettingsNode *, const QVariant &v);
+static bool setLoggingSkipIp(const BSettingsNode *node, const QVariant &value);
 static bool setMaxCacheSize(const BSettingsNode *node, const QVariant &value);
 static bool showDefaultThreadPassword(const BSettingsNode *node, const QVariant &value);
 static void updateLoggingMode();
@@ -692,8 +693,10 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
     nn = new BSettingsNode(QVariant::String, "logging_skip_ip", n);
+    nn->setUserSetFunction(&setLoggingSkipIp);
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
-                                               "Example: 127.0.0.1,192.168.0.2"));
+                                               "IP's are separated by commas. Wildcard matching is used.\n"
+                                               "Example: 127.0.0.1,192.168.0.*"));
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {
         nn = new BSettingsNode(s, n);
@@ -737,6 +740,16 @@ bool setLoggingMode(const BSettingsNode *, const QVariant &v)
         return false;
     SettingsLocker()->setValue("System/logging_mode", m);
     updateLoggingMode();
+    return true;
+}
+
+bool setLoggingSkipIp(const BSettingsNode *, const QVariant &v)
+{
+    QString s = !v.isNull() ? v.toString() : bReadLine(translate("setLoggingSkipIp", "Enter skipped IP's:") + " ");
+    if (s.isEmpty())
+        return false;
+    SettingsLocker()->setValue("System/logging_skip_ip", s);
+    Tools::resetLoggingSkipIps();
     return true;
 }
 

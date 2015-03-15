@@ -339,7 +339,7 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
 
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
-    Tools::log(app, "Handling board");
+    Tools::log(app, "Handling board: " + name());
     if (!Controller::testBan(app, Controller::ReadAction, name()))
         return;
     TranslatorQt tq(app.request());
@@ -420,7 +420,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
 
 void AbstractBoard::handleRules(cppcms::application &app)
 {
-    Tools::log(app, "Handling rules");
+    Tools::log(app, "Handling rules: " + name());
     Content::Rules c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
@@ -437,7 +437,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
 
 void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
 {
-    Tools::log(app, "Handling thread");
+    Tools::log(app, "Handling thread: " + name() + "/" + QString::number(threadNumber));
     if (!Controller::testBan(app, Controller::ReadAction, name()))
         return;
     TranslatorQt tq(app.request());

@@ -20,6 +20,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QImage>
+#include <QList>
 #include <QLocale>
 #include <QMap>
 #include <QMutex>
@@ -63,6 +64,8 @@ public:
 static QMutex cityNameMutex(QMutex::Recursive);
 static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
+static QList<QRegExp> loggingSkipIps;
+static QMutex loggingSkipIpsMutex(QMutex::Recursive);
 static QMutex storagePathMutex(QMutex::Recursive);
 static QMutex timezoneMutex(QMutex::Recursive);
 
@@ -349,12 +352,15 @@ void log(const cppcms::application &app, const QString &what)
 
 void log(const cppcms::http::request &req, const QString &what)
 {
-    QStringList list = SettingsLocker()->value("System/logging_skip_ip").toString().split(QRegExp("\\,\\s*"),
-                                                                                          QString::SkipEmptyParts);
-    QSet<QString> skip = QSet<QString>::fromList(list);
+    do_once(init)
+        resetLoggingSkipIps();
     QString ip = userIp(req);
-    if (skip.contains(ip))
-        return;
+    QMutexLocker locker(&loggingSkipIpsMutex);
+    foreach (const QRegExp &rx, loggingSkipIps) {
+        if (rx.exactMatch(ip))
+            return;
+    }
+    locker.unlock();
     bLog("[" + ip + "] " + what);
 }
 
@@ -459,6 +465,16 @@ cppcms::json::value readJsonValue(const QString &fileName, bool *ok)
         return bRet(ok, true, json);
     else
         return bRet(ok, false, cppcms::json::value());
+}
+
+void resetLoggingSkipIps()
+{
+    QStringList list = SettingsLocker()->value("System/logging_skip_ip").toString().split(QRegExp("\\,\\s*"),
+                                                                                          QString::SkipEmptyParts);
+    QMutexLocker locker(&loggingSkipIpsMutex);
+    loggingSkipIps.clear();
+    foreach (const QString &s, list)
+        loggingSkipIps << QRegExp(s, Qt::CaseSensitive, QRegExp::Wildcard);
 }
 
 QStringList rules(const QString &prefix, const QLocale &l)
