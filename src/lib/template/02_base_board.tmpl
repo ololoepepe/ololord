@@ -96,7 +96,7 @@
                             <b><%= postFormInputFile %></b>
                         </td>
                         <td class="postformField">
-                            <div class="postformFile">
+                            <div class="postformFile" onclick="browseFile(event, this);">
                                 <input type="file" name="file" onchange="fileSelected(this);" class="postformFileInput"
                                        accept="<%= supportedFileTypes %>" />
                                 <a href="javascript:void(0);" style="display: none;" onclick="removeFile(this);"

@@ -752,6 +752,20 @@ function removeFile(current) {
     }
 }
 
+function browseFile(e, div) {
+    var inp = div.querySelector("input");
+    if (!inp)
+        return;
+    var e = window.event || e;
+    var a = e.target;
+    while (!!a) {
+        if (a.tagName === "A")
+            return;
+        a = a.parentNode;
+    }
+    inp.click();
+}
+
 function submitted(form) {
     formSubmitted = form;
     form.querySelector("[name='submit']").disabled = true;
