@@ -674,6 +674,35 @@ function noViewPost() {
     }, 500);
 }
 
+function clearFileInput(div) {
+    var preview = div.querySelector("img");
+    if (!!preview && div == preview.parentNode)
+        preview.src = "/" + document.getElementById("sitePathPrefix").value + "img/addfile.png";
+    var span = div.querySelector("span");
+    if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
+        span.removeChild(span.childNodes[0]);
+}
+
+function readableSize(sz) {
+    sz = +sz;
+    if (isNaN(sz))
+        return "";
+    if (sz / 1024 >= 1) {
+        sz /= 1024;
+        if (sz / 1024 >= 1) {
+            sz = (sz / 1024).toFixed(1);
+            sz += " " + document.getElementById("megabytesText").value;
+        } else {
+            sz = sz.toFixed(1);
+            sz += " " + document.getElementById("kilobytesText").value;
+        }
+    } else {
+        sz = sz.toString();
+        sz += " " + document.getElementById("bytesText").value;
+    }
+    return sz;
+}
+
 function fileSelected(current) {
     if (!current)
         return;
@@ -684,19 +713,20 @@ function fileSelected(current) {
     if (isNaN(maxCount))
         return;
     var div = current.parentNode;
-    var oldPreview = div.querySelector("img");
-    if (!!oldPreview && div == oldPreview.parentNode)
-        div.removeChild(oldPreview);
+    clearFileInput(div);
+    var file = current.files[0];
+    div.querySelector("span").appendChild(document.createTextNode(file.name + " (" + readableSize(file.size) + ")"));
     if (!!current.value.match(/\.(jpe?g|png|gif)$/i)) {
         var reader = new FileReader();
-        reader.readAsDataURL(current.files[0]);
+        reader.readAsDataURL(file);
         var oldDiv = div;
         reader.onload = function(e) {
-            var preview = document.createElement("img");
-            preview.className = "postformFilePreview";
-            preview.src = e.target.result;
-            oldDiv.insertBefore(preview, current);
+            oldDiv.querySelector("img").src = e.target.result;
         };
+    } else if (!!current.value.match(/\.(webm)$/i)) {
+        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/webm_file.png";
+    } else {
+        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/file.png";
     }
     div.querySelector("a").style.display = "inline";
     var parent = div.parentNode;
@@ -708,9 +738,7 @@ function fileSelected(current) {
         parent.children[i].querySelector("a").style.display = "inline";
     }
     div = div.cloneNode(true);
-    var newPreview = div.querySelector("img");
-    if (!!newPreview && div == newPreview.parentNode)
-        div.removeChild(newPreview);
+    clearFileInput(div);
     div.querySelector("a").style.display = "none";
     div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
     parent.appendChild(div);
@@ -722,9 +750,7 @@ function removeFile(current) {
     var div = current.parentNode;
     var parent = div.parentNode;
     parent.removeChild(div);
-    var preview = div.querySelector("img");
-    if (!!preview && div == preview.parentNode)
-        div.removeChild(preview);
+    clearFileInput(div);
     if (parent.children.length > 1) {
         for (var i = 0; i < parent.children.length; ++i) {
             if (parent.children[i].querySelector("input").value === "")

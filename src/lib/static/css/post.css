@@ -109,6 +109,7 @@
 
 .postformFile {
     border: 1px dashed #777777;
+    text-align: justify;
 }
 
 .postformFile ~ .postformFile {
@@ -118,17 +119,32 @@
 .postformFilePreview {
     max-width: 100px;
     max-height: 100px;
-    display: inline;
+    display: inline-block;
     vertical-align: middle;
 }
 
 .postformFileInput {
-    display: inline;
-    vertical-align: middle;
+    display: inline-block;
+    position: absolute;
+    left: -10px;
+    top: -10px;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    filter: alpha(opacity=0);
+}
+
+.postformFileText {
+    display: inline-block;
+    vertical-align: top;
 }
 
 .postformFileRemoveButton {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.postformFileRemoveImage {
     display: inline;
     vertical-align: top;
-    /*TODO: Align right somehow*/
 }

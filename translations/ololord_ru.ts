@@ -1328,6 +1328,26 @@ Your choice:</source>
         <comment>complainMessage</comment>
         <translation>Мамке своей пожалуйся, нытик!</translation>
     </message>
+    <message>
+        <source>KB</source>
+        <comment>kilobytesText</comment>
+        <translation>КБ</translation>
+    </message>
+    <message>
+        <source>MB</source>
+        <comment>megabytesText</comment>
+        <translation>МБ</translation>
+    </message>
+    <message>
+        <source>Select file</source>
+        <comment>selectFileText</comment>
+        <translation>Выбрать файл</translation>
+    </message>
+    <message>
+        <source>Byte(s)</source>
+        <comment>bytesText</comment>
+        <translation>Байт(а)</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

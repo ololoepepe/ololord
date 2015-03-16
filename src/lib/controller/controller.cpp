@@ -147,6 +147,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.banReasonLabelText = ts.translate("initBaseBoard", "Reason:", "banReasonLabelText");
     c.banUserText = ts.translate("initBaseBoard", "Ban user", "banUserText");
     c.boardLabelText = ts.translate("initBaseBoard", "Board:", "boardLabelText");
+    c.bytesText = ts.translate("initBaseBoard", "Byte(s)", "bytesText");
     c.bumpLimitReachedText = ts.translate("initBaseBoard", "Bump limit reached", "bumpLimitReachedText");
     QString ip = Tools::userIp(req);
     c.captchaEnabled = Tools::captchaEnabled(board->name()) && !board->captchaQuota(ip);
@@ -169,11 +170,13 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
+    c.kilobytesText = ts.translate("initBaseBoard", "KB", "kilobytesText");
     c.maxEmailLength = Tools::maxInfo(Tools::MaxEmailFieldLength, board->name());
     c.maxFileCount = Tools::maxInfo(Tools::MaxFileCount, board->name());
     c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, board->name());
     c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, board->name());
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
+    c.megabytesText = ts.translate("initBaseBoard", "MB", "megabytesText");
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
@@ -197,6 +200,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
+    c.selectFileText = ts.translate("initBaseBoard", "Select file", "selectFileText");
     c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
     c.showHidePostText = ts.translate("initBaseBoard", "Hide/show", "showHidePostText");

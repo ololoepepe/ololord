@@ -74,6 +74,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string banUserText;
     std::string boardLabelText;
     std::string bumpLimitReachedText;
+    std::string bytesText;
     bool captchaEnabled;
     std::string captchaKey;
     unsigned long long captchaQuota;
@@ -92,11 +93,13 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string fixedText;
     std::string fixThreadText;
     std::string hidePostFormText;
+    std::string kilobytesText;
     unsigned int maxEmailLength;
     unsigned int maxFileCount;
     unsigned int maxNameLength;
     unsigned int maxSubjectLength;
     unsigned int maxPasswordLength;
+    std::string megabytesText;
     bool moder;
     std::string noCaptchaText;
     std::string notLoggedInText;
@@ -115,6 +118,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postLimitReachedText;
     std::string registeredText;
     std::string removeFileText;
+    std::string selectFileText;
     std::string showHidePostText;
     std::string showPostFormText;
     bool showWhois;

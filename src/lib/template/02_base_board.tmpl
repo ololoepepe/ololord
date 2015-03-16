@@ -96,12 +96,15 @@
                             <b><%= postFormInputFile %></b>
                         </td>
                         <td class="postformField">
-                            <div class="postformFile" onclick="browseFile(event, this);">
+                            <div class="postformFile" onclick="browseFile(event, this);" title="<%= selectFileText %>">
+                                <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
                                 <input type="file" name="file" onchange="fileSelected(this);" class="postformFileInput"
                                        accept="<%= supportedFileTypes %>" />
+                                <span class="postformFileText"></span>
                                 <a href="javascript:void(0);" style="display: none;" onclick="removeFile(this);"
                                    class="postformFileRemoveButton">
-                                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"></a>
+                                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
+                                         class="postformFileRemoveImage"></a>
                             </div>
                         </td>
                     </tr>
@@ -383,6 +386,9 @@
 <input type="hidden" id="ajaxErrorText" value="<%= ajaxErrorText %>" />
 <input type="hidden" id="notLoggedInText" value="<%= notLoggedInText %>" />
 <input type="hidden" id="complainMessage" value="<%= complainMessage %>" />
+<input type="hidden" id="bytesText" value="<%= bytesText %>" />
+<input type="hidden" id="kilobytesText" value="<%= kilobytesText %>" />
+<input type="hidden" id="megabytesText" value="<%= megabytesText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
         <% item %>
