@@ -23,6 +23,61 @@ function resetScale(image) {
     image.style.transform = tr;
 }
 
+function removeReferences(postNumber) {
+    postNumber = +postNumber;
+    if (isNaN(postNumber))
+        return;
+    var referencedByTrs = document.querySelectorAll("[name='referencedByTr']");
+    if (!referencedByTrs)
+        return;
+    for (var i = 0; i < referencedByTrs.length; ++i) {
+        var referencedByTr = referencedByTrs[i];
+        var as = referencedByTr.querySelectorAll("a");
+        if (!as)
+            continue;
+        for (var j = 0; j < as.length; ++j) {
+            var a = as[j];
+            if (a.innerHTML == ("&gt;&gt;" + postNumber)) {
+                a.parentNode.removeChild(a);
+                if (as.length < 2)
+                    referencedByTr.style.display = "none";
+                break;
+            }
+        }
+    }
+}
+
+function addReferences(postNumber, referencedPosts) {
+    postNumber = +postNumber;
+    if (isNaN(postNumber))
+        return;
+    if (!referencedPosts)
+        return;
+    var currentBoardName = document.getElementById("currentBoardName").value;
+    for (var i = 0; i < referencedPosts.length; ++i) {
+        var pn = +referencedPosts[i];
+        if (isNaN(pn))
+            continue;
+        var post = document.getElementById("post" + pn);
+        if (!post)
+            continue;
+        var referencedByTr = post.querySelector("[name='referencedByTr']");
+        referencedByTr.style.display = "";
+        var referencedBy = post.querySelector("[name='referencedBy']");
+        var a = document.createElement("a");
+        a.href = "javascript:void(0);";
+        a.onmouseover = function() {
+            viewPost(this, currentBoardName, +postNumber);
+        };
+        a.onmouseout = function() {
+            noViewPost();
+        };
+        referencedBy.appendChild(document.createTextNode(" "));
+        a.appendChild(document.createTextNode(">>" + postNumber));
+        referencedBy.appendChild(a);
+    }
+}
+
 function setInitialScale(image, sizeHintX, sizeHintY) {
     var doc = document.documentElement;
     var maxWidth = doc.clientWidth - 10;
@@ -171,6 +226,7 @@ function editPost(boardName, postNumber) {
     name.value = post.querySelector("[name='name']").value;
     subject.value = post.querySelector("[name='subject']").value;
     text.appendChild(document.createTextNode(postText.value));
+    var moder = (document.getElementById("moder").value === "true");
     showDialog(title, null, form, function() {
         var params = {
             "boardName": boardName,
@@ -179,13 +235,15 @@ function editPost(boardName, postNumber) {
             "email": email.value,
             "name": name.value,
             "subject": subject.value,
-            "raw": form.querySelector("[name='raw']").checked
+            "raw": !!moder ? form.querySelector("[name='raw']").checked : false
         };
-        ajaxRequest("edit_post", [params], 5, function(res) {
+        ajaxRequest("edit_post", [params], 5, function(rese) {
             ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
                 var newPost = createPostNode(res, true);
                 if (!newPost)
                     return;
+                removeReferences(postNumber);
+                addReferences(postNumber, rese);
                 var postLimit = post.querySelector("[name='postLimit']");
                 var bumpLimit = post.querySelector("[name='bumpLimit']");
                 if (!!postLimit || !!bumpLimit) {
@@ -293,6 +351,7 @@ function deletePost(boardName, postNumber, fromThread) {
                 window.location.href = window.location.href.replace(suffix, "");
             } else {
                 post.parentNode.removeChild(post);
+                removeReferences(postNumber);
             }
         });
     });
@@ -505,13 +564,13 @@ function createPostNode(res, permanent) {
             var a = document.createElement("a");
             a.href = "javascript:void(0);";
             a.onmouseover = function() {
-                viewPost(a, currentBoardName, pn);
+                viewPost(a, currentBoardName, res["number"]);
             };
             a.onmouseout = function() {
                 noViewPost();
             };
             referencedBy.appendChild(document.createTextNode(" "));
-            a.appendChild(document.createTextNode(">>" + pn));
+            a.appendChild(document.createTextNode(">>" + res["number"]));
             referencedBy.appendChild(a);
         }
     } else {

@@ -125,7 +125,12 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     QString err;
     if (!Database::editPost(p))
         return server.return_error(Tools::toStd(err));
-    server.return_result(true);
+    cppcms::json::array refs;
+    QList<quint64> list = p.referencedPosts.toList();
+    qSort(list);
+    foreach (quint64 pn, list)
+        refs.push_back(pn);
+    server.return_result(refs);
     Tools::log(server, "Handled AJAX edit post");
 }
 

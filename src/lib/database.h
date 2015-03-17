@@ -238,6 +238,7 @@ public:
     bool raw;
     QString subject;
     QString text;
+    QSet<quint64> referencedPosts;
 public:
     explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post) :
         boardName(board), postNumber(post), request(req)

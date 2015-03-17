@@ -94,7 +94,7 @@ function posted() {
     var iframe = document.getElementById("kostyleeque");
     var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
     var postNumber = iframeDocument.querySelector("#postNumber");
-    var referencedPosts = iframeDocument.querySelector("[name='referencedPost']");
+    var referencedPosts = iframeDocument.querySelectorAll("[name='referencedPost']");
     formSubmitted.querySelector("[name='submit']").disabled = false;
     if (!!postNumber) {
         formSubmitted.reset();
@@ -105,12 +105,10 @@ function posted() {
             selectPost(postNumber.value);
         });
         if (!!referencedPosts) {
-            for (var i = 0; i < referencedPosts.length; ++i) {
-                var post = document.getElementById(referencedPosts[i].value);
-                if (!post)
-                    continue;
-                //TODO
-            }
+            var refs = [];
+            for (var i = 0; i < referencedPosts.length; ++i)
+                refs.push(+referencedPosts[i].value);
+            addReferences(postNumber.value, refs);
         }
         grecaptcha.reset();
     } else {

@@ -711,9 +711,9 @@ bool editPost(EditPostParameters &p)
         if (p.raw && lvl >= RegisteredUser::AdminLevel) {
             post->setText(p.text);
         } else {
-            QSet<quint64> refs;
-            post->setText(Controller::processPostText(p.text, p.boardName, post->thread().load()->number(), &refs));
-            if (!addToReferencedPosts(p.postNumber, p.boardName, refs, p.error))
+            post->setText(Controller::processPostText(p.text, p.boardName, post->thread().load()->number(),
+                                                      &p.referencedPosts));
+            if (!addToReferencedPosts(p.postNumber, p.boardName, p.referencedPosts, p.error))
                 return false;
         }
         post->setEmail(p.email);

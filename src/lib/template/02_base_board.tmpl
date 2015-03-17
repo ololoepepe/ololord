@@ -358,21 +358,23 @@
                 </tr>
             <% end %>
             <% if ( !post.referencedBy.empty() ) %>
-                <tr>
-                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
-                        <span class="referencedBy">
-                            <%= referencedByText %>
-                            <%foreach pn in post.referencedBy %>
-                                <% item %>
-                                    <a href="javascript:void(0);"
-                                       onmouseover="viewPost(this, '<%= currentBoard.name %>', <%= pn %>);"
-                                       onmouseout="noViewPost();">&gt;&gt;<%= pn %></a>
-                                <% end %>
-                            <% end %>
-                        </span>
-                    <td>
-                </tr>
+                <tr name="referencedByTr">
+            <% else %>
+                <tr name="referencedByTr" style="display: none;">
             <% end %>
+                <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
+                    <span name="referencedBy" class="referencedBy">
+                        <%= referencedByText %>
+                        <%foreach pn in post.referencedBy %>
+                            <% item %>
+                                <a href="javascript:void(0);"
+                                   onmouseover="viewPost(this, '<%= currentBoard.name %>', <%= pn %>);"
+                                   onmouseout="noViewPost();">&gt;&gt;<%= pn %></a>
+                            <% end %>
+                        <% end %>
+                    </span>
+                <td>
+            </tr>
             <% if ( post.bannedFor ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
@@ -501,7 +503,7 @@
                     <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
                 <td>
             </tr>
-            <tr>
+            <tr name="referencedByTr">
                 <td name="referencedByTd" colspan="2">
                     <span name="referencedBy" class="referencedBy"
                           style="display: none;"><%= referencedByText %></span>

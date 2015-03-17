@@ -310,7 +310,9 @@ void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const QS
     app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
                          << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
                          << "value=\"" << postNumber << "\" /> ";
-    foreach (quint64 pn, referencedPosts)
+    QList<quint64> list = referencedPosts.toList();
+    qSort(list);
+    foreach (quint64 pn, list)
         app.response().out() << "<input name=\"referencedPost\" type=\"hidden\" value=\"" << pn << "\" />";
     app.response().out() << " </body></html>";
 }
