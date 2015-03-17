@@ -510,9 +510,9 @@ function createPostNode(res, permanent) {
             a.onmouseout = function() {
                 noViewPost();
             };
+            referencedBy.appendChild(document.createTextNode(" "));
             a.appendChild(document.createTextNode(">>" + pn));
             referencedBy.appendChild(a);
-            referencedBy.appendChild(document.createTextNode(" "));
         }
     } else {
         referencedBy.parentNode.removeChild(referencedBy);

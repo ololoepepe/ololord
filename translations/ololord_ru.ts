@@ -1836,11 +1836,6 @@ IP-адреса отделяются запятыми. Используется 
         <comment>description</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
-    <message>
-        <source>There is no such post</source>
-        <comment>description</comment>
-        <translation type="obsolete">Нет такого поста</translation>
-    </message>
 </context>
 <context>
     <name>renderBan</name>
