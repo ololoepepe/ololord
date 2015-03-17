@@ -66,9 +66,9 @@ function addReferences(postNumber, referencedPosts) {
         var referencedBy = post.querySelector("[name='referencedBy']");
         var a = document.createElement("a");
         a.href = "javascript:void(0);";
-        a.onmouseover = function() {
-            viewPost(this, currentBoardName, +postNumber);
-        };
+        a.addEventListener("mouseover", function(e) {
+            viewPost(this, currentBoardName, postNumber);
+        });
         a.onmouseout = function() {
             noViewPost();
         };
@@ -563,14 +563,14 @@ function createPostNode(res, permanent) {
             var pn = res["referencedBy"][i];
             var a = document.createElement("a");
             a.href = "javascript:void(0);";
-            a.onmouseover = function() {
-                viewPost(a, currentBoardName, res["number"]);
-            };
+            a.addEventListener("mouseover", function(e) {
+                viewPost(this, currentBoardName, pn);
+            });
             a.onmouseout = function() {
                 noViewPost();
             };
             referencedBy.appendChild(document.createTextNode(" "));
-            a.appendChild(document.createTextNode(">>" + res["number"]));
+            a.appendChild(document.createTextNode(">>" + pn));
             referencedBy.appendChild(a);
         }
     } else {
@@ -723,10 +723,32 @@ function viewPost(link, boardName, postNumber) {
             post = createPostNode(res);
             if (!post)
                 return;
+            post["fromAjax"] = true;
             viewPostStage2(link, postNumber, post);
         });
     } else {
+        var fromAjax = !!post.fromAjax;
         post = post.cloneNode(true);
+        if (fromAjax) {
+            post.addEventListener("mouseover", function(e) {
+                var a = e.target;
+                if (a.tagName != "A")
+                    return;
+                var pn = +a.innerHTML.replace("&gt;&gt;", "");
+                if (isNaN(pn))
+                    return;
+                viewPost(a, boardName, pn);
+            });
+            post.addEventListener("mouseout", function(e) {
+                var a = e.target;
+                if (a.tagName != "A")
+                    return;
+                var pn = +a.innerHTML.replace("&gt;&gt;", "");
+                if (isNaN(pn))
+                    return;
+                noViewPost();
+            });
+        }
         post.className = post.className.replace("opPost", "post");
         var list = traverseChildren(post);
         for (var i = 0; i < list.length; ++i) {
@@ -752,7 +774,7 @@ function noViewPost() {
     lastPostPreviewTimer = setTimeout(function() {
         if (!lastPostPreview)
             return;
-        if (!!lastPostPreview.mustHide)
+        if (!!lastPostPreview.mustHide && !!lastPostPreview.parentNode)
             lastPostPreview.parentNode.removeChild(lastPostPreview);
     }, 500);
 }
