@@ -61,6 +61,12 @@ static cppcms::json::object toJson(const Content::Post &post)
     o["text"] = post.text;
     o["rawPostText"] = post.rawPostText;
     o["tripcode"] = post.tripcode;
+    cppcms::json::array refs;
+    for (std::list<unsigned long long>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end();
+         ++i) {
+        refs.push_back(*i);
+    }
+    o["referencedBy"] = refs;
     return o;
 }
 
@@ -113,6 +119,7 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     Database::EditPostParameters p(server.request(), boardName, pn > 0 ? quint64(pn) : 0);
     p.email = Tools::fromStd(params.at("email").str());
     p.name = Tools::fromStd(params.at("name").str());
+    p.raw = params.at("raw").boolean();
     p.subject = Tools::fromStd(params.at("subject").str());
     p.text = Tools::fromStd(params.at("text").str());
     QString err;

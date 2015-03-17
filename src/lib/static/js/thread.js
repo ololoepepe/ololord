@@ -94,6 +94,7 @@ function posted() {
     var iframe = document.getElementById("kostyleeque");
     var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
     var postNumber = iframeDocument.querySelector("#postNumber");
+    var referencedPosts = iframeDocument.querySelector("[name='referencedPost']");
     formSubmitted.querySelector("[name='submit']").disabled = false;
     if (!!postNumber) {
         formSubmitted.reset();
@@ -103,6 +104,14 @@ function posted() {
         updateThread(boardName, threadNumber, true, function() {
             selectPost(postNumber.value);
         });
+        if (!!referencedPosts) {
+            for (var i = 0; i < referencedPosts.length; ++i) {
+                var post = document.getElementById(referencedPosts[i].value);
+                if (!post)
+                    continue;
+                //TODO
+            }
+        }
         grecaptcha.reset();
     } else {
         formSubmitted = null;

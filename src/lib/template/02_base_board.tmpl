@@ -83,14 +83,23 @@
                     <% include customPostFormField(position) %>
                     <tr>
                         <td class="postformLabel">
-                            <b><%= postFormInputText %></b>
+                            <b><%= postFormLabelText %></b>
                         </td>
                         <td class="postformField">
                             <textarea name="text" id="postFormInputText<%= position %>" rows="10" cols="43"
-                                      placeholder="<%= postFormInputTextPlaceholder %>"
-                                      class="postFormTextarea"></textarea>
+                                      placeholder="<%= postFormTextPlaceholder %>" class="postFormTextarea"></textarea>
                         </td>
                     </tr>
+                    <% if ( content.moder >= 10 ) %>
+                        <tr>
+                            <td class="postformLabel">
+                                <b><%= postFormLabelRaw %></b>
+                            </td>
+                            <td class="postformField">
+                                <input type="checkbox" id="postFormInputRaw<%= position %>" name="raw" value="true" />
+                            </td>
+                        </tr>
+                    <% end %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormInputFile %></b>
@@ -348,6 +357,22 @@
                     </td>
                 </tr>
             <% end %>
+            <% if ( !post.referencedBy.empty() ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
+                        <span class="referencedBy">
+                            <%= referencedByText %>
+                            <%foreach pn in post.referencedBy %>
+                                <% item %>
+                                    <a href="javascript:void(0);"
+                                       onmouseover="viewPost(this, '<%= currentBoard.name %>', <%= pn %>);"
+                                       onmouseout="noViewPost();">&gt;&gt;<%= pn %></a>
+                                <% end %>
+                            <% end %>
+                        </span>
+                    <td>
+                </tr>
+            <% end %>
             <% if ( post.bannedFor ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
@@ -476,6 +501,12 @@
                     <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
                 <td>
             </tr>
+            <tr>
+                <td name="referencedByTd" colspan="2">
+                    <span name="referencedBy" class="referencedBy"
+                          style="display: none;"><%= referencedByText %></span>
+                <td>
+            </tr>
         </tbody>
     </table>
 </div>
@@ -507,13 +538,23 @@
         </tr>
         <tr>
             <td class="postformLabel">
-                <b><%= postFormInputText %></b>
+                <b><%= postFormLabelText %></b>
             </td>
             <td class="postformField">
-                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormInputTextPlaceholder %>"
+                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
                           class="postFormTextarea"></textarea>
             </td>
         </tr>
+        <% if ( content.moder >= 10 ) %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelRaw %></b>
+                </td>
+                <td class="postformField">
+                    <input type="checkbox" name="raw" value="true" />
+                </td>
+            </tr>
+        <% end %>
     </tbody>
 </table>
 <% end template %>

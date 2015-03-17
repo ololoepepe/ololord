@@ -177,27 +177,35 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, board->name());
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
     c.megabytesText = ts.translate("initBaseBoard", "MB", "megabytesText");
+    c.moder = Database::registeredUserLevel(req) / 10;
+    if (c.moder > 0) {
+        QStringList boards = Database::registeredUserBoards(req);
+        if (!boards.contains("*") && !boards.contains(board->name()))
+            c.moder = 0;
+    }
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
     c.postFormInputFile = ts.translate("initBaseBoard", "File(s):", "postFormInputFile");
-    c.postFormInputText = ts.translate("initBaseBoard", "Post:", "postFormInputText");
     SettingsLocker s;
     int maxText = s->value("Board/" + board->name() + "/max_text_length",
                            s->value("Board/max_text_length", 15000)).toInt();
-    c.postFormInputTextPlaceholder = Tools::toStd(tq.translate("initBaseBoard", "Comment. Max length %1",
-                                                               "postFormInputTextPlaceholder").arg(maxText));
+    c.postFormTextPlaceholder = Tools::toStd(tq.translate("initBaseBoard", "Comment. Max length %1",
+                                                           "postFormTextPlaceholder").arg(maxText));
     c.postFormLabelCaptcha = ts.translate("initBaseBoard", "Captcha:", "postFormLabelCaptcha");
     c.postFormLabelEmail = ts.translate("initBaseBoard", "E-mail:", "postFormLabelEmail");
     c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
     c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
+    c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
+    c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
     c.postingDisabledText = currentThread
             ? ts.translate("initBaseBoard", "Posting is disabled for this thread", "postingDisabledText")
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
+    c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
     c.selectFileText = ts.translate("initBaseBoard", "Select file", "selectFileText");
@@ -297,18 +305,21 @@ void renderNotFound(cppcms::application &app)
     Tools::log(app, "Page or file not found");
 }
 
+void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const QSet<quint64> &referencedPosts)
+{
+    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
+                         << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
+                         << "value=\"" << postNumber << "\" /> ";
+    foreach (quint64 pn, referencedPosts)
+        app.response().out() << "<input name=\"referencedPost\" type=\"hidden\" value=\"" << pn << "\" />";
+    app.response().out() << " </body></html>";
+}
+
 void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber)
 {
     app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
                          << "<title></title></head><body><input id=\"threadNumber\" type=\"hidden\" "
                          << "value=\"" << threadNumber << "\" /></body></html>";
-}
-
-void renderSuccessfulPost(cppcms::application &app, quint64 postNumber)
-{
-    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
-                         << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
-                         << "value=\"" << postNumber << "\" /></body></html>";
 }
 
 bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board)

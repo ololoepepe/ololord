@@ -148,3 +148,8 @@
     display: inline;
     vertical-align: top;
 }
+
+.referencedBy {
+    font-size: 0.8em;
+    color: #555555;
+}

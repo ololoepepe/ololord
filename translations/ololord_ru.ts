@@ -336,6 +336,34 @@ The default is 3.</source>
     </message>
 </context>
 <context>
+    <name>addToReferencedPosts</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>There is no such post</source>
+        <comment>description</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+</context>
+<context>
     <name>bBoard</name>
     <message>
         <source>/b/rotherhood</source>
@@ -1159,16 +1187,6 @@ Your choice:</source>
         <translation>Отправить</translation>
     </message>
     <message>
-        <source>Post:</source>
-        <comment>postFormInputText</comment>
-        <translation>Пост:</translation>
-    </message>
-    <message>
-        <source>Comment. Max length %1</source>
-        <comment>postFormInputTextPlaceholder</comment>
-        <translation>Комментарий. Макс. длина %1</translation>
-    </message>
-    <message>
         <source>Captcha:</source>
         <comment>postFormLabelCaptcha</comment>
         <translation>Captcha:</translation>
@@ -1347,6 +1365,26 @@ Your choice:</source>
         <source>Byte(s)</source>
         <comment>bytesText</comment>
         <translation>Байт(а)</translation>
+    </message>
+    <message>
+        <source>Comment. Max length %1</source>
+        <comment>postFormTextPlaceholder</comment>
+        <translation>Комментарий. Макс. длина %1</translation>
+    </message>
+    <message>
+        <source>Raw HTML:</source>
+        <comment>postFormLabelRaw</comment>
+        <translation>&quot;Сырой&quot; HTML:</translation>
+    </message>
+    <message>
+        <source>Post:</source>
+        <comment>postFormLabelText</comment>
+        <translation>Пост:</translation>
+    </message>
+    <message>
+        <source>Answers:</source>
+        <comment>referencedByText</comment>
+        <translation>Ответы:</translation>
     </message>
 </context>
 <context>
@@ -1784,6 +1822,24 @@ IP-адреса отделяются запятыми. Используется 
         <source>Invalid board(s)</source>
         <comment>error</comment>
         <translation>Неправильная(ые) доска(и)</translation>
+    </message>
+</context>
+<context>
+    <name>removeFromReferencedPosts</name>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>There is no such post</source>
+        <comment>description</comment>
+        <translation type="obsolete">Нет такого поста</translation>
     </message>
 </context>
 <context>

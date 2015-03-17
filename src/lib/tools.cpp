@@ -575,7 +575,8 @@ Post toPost(const PostParameters &params, const FileList &files)
     QString pwd = params.value("password");
     if (pwd.isEmpty())
         pwd = SettingsLocker()->value("Board/default_post_password").toString();
-    p.password = QCryptographicHash::hash(pwd.toLocal8Bit(), QCryptographicHash::Sha1);;
+    p.password = QCryptographicHash::hash(pwd.toLocal8Bit(), QCryptographicHash::Sha1);
+    p.raw = !params.value("raw").compare("true", Qt::CaseInsensitive);
     p.subject = params.value("subject");
     p.text = params.value("text");
     return p;

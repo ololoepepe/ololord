@@ -148,6 +148,29 @@ bool Post::showTripcode() const
     return showTripcode_;
 }
 
+bool Post::addReferencedBy(quint64 postNumber)
+{
+    QSet<quint64> nlist = referencedBy();
+    if (!postNumber)
+        return false;
+    nlist << postNumber;
+    setReferencedBy(nlist);
+    return true;
+}
+
+bool Post::addReferencedBy(const QSet<quint64> &list)
+{
+    QSet<quint64> nlist = referencedBy();
+    int sz = nlist.size();
+    foreach (quint64 pn, list) {
+        if (!pn)
+            continue;
+        nlist << pn;
+    }
+    setReferencedBy(nlist);
+    return sz != nlist.size();
+}
+
 QString Post::email() const
 {
     return email_;
@@ -168,6 +191,22 @@ QString Post::name() const
     return name_;
 }
 
+void Post::setRawText(const QString &text)
+{
+    rawText_ = text;
+}
+
+void Post::setReferencedBy(const QSet<quint64> &list)
+{
+    QVariantList vl;
+    foreach (quint64 pn, list) {
+        if (!pn)
+            continue;
+        vl << pn;
+    }
+    referencedBy_ = BeQt::serialize(vl);
+}
+
 QByteArray Post::password() const
 {
     return password_;
@@ -176,6 +215,41 @@ QByteArray Post::password() const
 QString Post::posterIp() const
 {
     return posterIp_;
+}
+
+QString Post::rawText() const
+{
+    return rawText_;
+}
+
+QSet<quint64> Post::referencedBy() const
+{
+    QSet<quint64> list;
+    foreach (const QVariant &v, BeQt::deserialize(referencedBy_).toList()) {
+        quint64 pn = v.toULongLong();
+        if (!pn)
+            continue;
+        list << pn;
+    }
+    return list;
+}
+
+bool Post::removeReferencedBy(quint64 postNumber)
+{
+    QSet<quint64> nlist = referencedBy();
+    bool b = nlist.remove(postNumber);
+    setReferencedBy(nlist);
+    return b;
+}
+
+bool Post::removeReferencedBy(const QSet<quint64> &list)
+{
+    QSet<quint64> nlist = referencedBy();
+    bool b = false;
+    foreach (quint64 pn, list)
+        b = b || nlist.remove(pn);
+    setReferencedBy(nlist);
+    return b;
 }
 
 void Post::setBannedFor(bool banned)

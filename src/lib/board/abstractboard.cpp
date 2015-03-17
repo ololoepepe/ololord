@@ -280,7 +280,7 @@ void AbstractBoard::createPost(cppcms::application &app)
     quint64 postNumber = 0L;
     if (!Database::createPost(p, &postNumber))
         return Controller::renderError(app, err, desc);
-    Controller::renderSuccessfulPost(app, postNumber);
+    Controller::renderSuccessfulPost(app, postNumber, p.referencedPosts);
     Tools::log(app, "Handled post creation");
 }
 
@@ -395,11 +395,6 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                                                 + QString::number(tt.number())) == "true");
             c.threads.push_back(thread);
         }
-        c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
-        if (c.moder) {
-            QStringList boards = Database::registeredUserBoards(app.request());
-            c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
-        }
         t.commit();
     }  catch (const odb::exception &e) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
@@ -495,11 +490,6 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
             if (!ok)
                 return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         }
-        c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
-        if (c.moder) {
-            QStringList boards = Database::registeredUserBoards(app.request());
-            c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
-        }
         t.commit();
     }  catch (const odb::exception &e) {
         return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
@@ -586,11 +576,6 @@ unsigned int AbstractBoard::postLimit() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/post_limit", s->value("Board/post_limit", 1000)).toUInt();
-}
-
-bool AbstractBoard::processCode() const
-{
-    return false;
 }
 
 QStringList AbstractBoard::rules(const QLocale &l) const
@@ -768,7 +753,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         } catch (const odb::exception &e) {
             return bRet(ok, false, error, Tools::fromStd(e.what()), Content::Post());
         }
-        p->text = Controller::processPostText(post.text(), name(), threadNumber, processCode());
+        p->text = Tools::toStd(post.text());
         p->threadNumber = threadNumber;
         p->showRegistered = false;
         p->showTripcode = post.showTripcode();
@@ -784,6 +769,10 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 p->countryName = "Unknown country";
             }
         }
+        QList<quint64> list = post.referencedBy().toList();
+        qSort(list);
+        foreach (quint64 pn, list)
+            p->referencedBy.push_back(pn);
     }
     Content::Post pp = *p;
     if (!inCache && !Cache::cachePost(name(), post.number(), p))
@@ -796,7 +785,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.countryName = ts.translate("AbstractBoard", "Unknown country", "countryName");
     int regLvl = Database::registeredUserLevel(req);
     if (regLvl >= RegisteredUser::ModerLevel) {
-        pp.rawPostText = Tools::toStd(post.text());
+        pp.rawPostText = Tools::toStd(post.rawText());
         pp.ip = Tools::toStd(post.posterIp());
     }
     pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));

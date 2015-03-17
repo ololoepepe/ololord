@@ -5,3 +5,5 @@
 [done] Implement complain button
 [done] Add ability to skipp logging for specified IPs
 [done] Implement uploaded files previews
+[done] Implement post map ("answers" block)
+[done] Enable [code] tag on all boards

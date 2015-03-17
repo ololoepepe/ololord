@@ -91,7 +91,6 @@ public:
     virtual QString name() const = 0;
     virtual bool postingEnabled() const;
     unsigned int postLimit() const;
-    virtual bool processCode() const;
     virtual QStringList rules(const QLocale &l) const;
     virtual QStringList saveFile(const Tools::File &f, bool *ok = 0);
     virtual bool showWhois() const;

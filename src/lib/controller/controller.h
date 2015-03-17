@@ -40,9 +40,8 @@ class request;
 
 #include <QDateTime>
 #include <QList>
+#include <QSet>
 #include <QString>
-
-#include <string>
 
 namespace Controller
 {
@@ -66,15 +65,16 @@ OLOLORD_EXPORT Content::Post getPost(const cppcms::http::request &req, const QSt
 OLOLORD_EXPORT void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle = QString());
 OLOLORD_EXPORT void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
     bool postingEnabled, const QString &pageTitle = QString(), quint64 currentThread = 0);
-OLOLORD_EXPORT std::string processPostText(QString text, const QString &boardName, quint64 threadNumber,
-                                           bool processCode);
+OLOLORD_EXPORT QString processPostText(QString text, const QString &boardName, quint64 threadNumber,
+                                       QSet<quint64> *referencedPosts = 0);
 OLOLORD_EXPORT void redirect(cppcms::application &app, const QString &where);
 OLOLORD_EXPORT void renderBan(cppcms::application &app, const Database::BanInfo &info);
 OLOLORD_EXPORT void renderError(cppcms::application &app, const QString &error,
                                 const QString &description = QString());
 OLOLORD_EXPORT void renderIpBan(cppcms::application &app, int level);
 OLOLORD_EXPORT void renderNotFound(cppcms::application &app);
-OLOLORD_EXPORT void renderSuccessfulPost(cppcms::application &app, quint64 postNumber);
+OLOLORD_EXPORT void renderSuccessfulPost(cppcms::application &app, quint64 postNumber,
+                                         const QSet<quint64> &referencedPosts);
 OLOLORD_EXPORT void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber);
 OLOLORD_EXPORT bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board);
 OLOLORD_EXPORT bool testParams(const AbstractBoard *board, cppcms::application &app,

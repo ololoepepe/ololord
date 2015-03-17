@@ -35,6 +35,7 @@ class request;
 #include <QDebug>
 #include <QList>
 #include <QMap>
+#include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -190,6 +191,7 @@ public:
     unsigned int postLimit;
     QString *error;
     QString *description;
+    QSet<quint64> referencedPosts;
 public:
     explicit CreatePostParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
                                   const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale()) :
@@ -233,6 +235,7 @@ public:
     QString email;
     QString *error;
     QString name;
+    bool raw;
     QString subject;
     QString text;
 public:
@@ -240,6 +243,7 @@ public:
         boardName(board), postNumber(post), request(req)
     {
         error = 0;
+        raw = false;
     }
 };
 
@@ -269,6 +273,7 @@ OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *e
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT quint64 lastPostNumber(const QString &boardName, QString *error = 0,
                                       const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool postExists(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req);
 OLOLORD_EXPORT QStringList registeredUserBoards(const QByteArray &hashpass);

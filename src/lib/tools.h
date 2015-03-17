@@ -64,6 +64,7 @@ struct Post
     FileList files;
     QString name;
     QByteArray password;
+    bool raw;
     QString subject;
     QString text;
 };

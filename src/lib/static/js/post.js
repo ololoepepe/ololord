@@ -178,7 +178,8 @@ function editPost(boardName, postNumber) {
             "text": text.value,
             "email": email.value,
             "name": name.value,
-            "subject": subject.value
+            "subject": subject.value,
+            "raw": form.querySelector("[name='raw']").checked
         };
         ajaxRequest("edit_post", [params], 5, function(res) {
             ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
@@ -476,7 +477,8 @@ function createPostNode(res, permanent) {
                 files.insertBefore(file, files.children[files.children.length - 1]);
         }
     }
-    var bannedFor = post.querySelector("[name='bannedFor']");
+    var bannedForTd = post.querySelector("[name='bannedForTd']");
+    var referencedByTd = post.querySelector("[name='referencedByTd']");
     var manyFilesTr = post.querySelector("[name='manyFilesTr']");
     var textOneFile = post.querySelector("[name='textOneFile']");
     if (res["files"].length <= 1) {
@@ -487,12 +489,34 @@ function createPostNode(res, permanent) {
         textOneFile.parentNode.removeChild(textOneFile);
         post.querySelector("[name='manyFilesTd']").colSpan = res["files"].length + 2;
         post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
-        bannedFor.colSpan = res["files"].length + 2;
+        bannedForTd.colSpan = res["files"].length + 2;
+        referencedByTd.colSpan = res["files"].length + 2;
     }
+    var bannedFor = post.querySelector("[name='bannedFor']");
     if (!!res["bannedFor"])
         bannedFor.style.display = "";
     else
         bannedFor.parentNode.removeChild(bannedFor);
+    var referencedBy = post.querySelector("[name='referencedBy']");
+    if (!!res["referencedBy"] && res["referencedBy"].length > 0) {
+        referencedBy.style.display = "";
+        for (var i = 0; i < res["referencedBy"].length; ++i) {
+            var pn = res["referencedBy"][i];
+            var a = document.createElement("a");
+            a.href = "javascript:void(0);";
+            a.onmouseover = function() {
+                viewPost(a, currentBoardName, pn);
+            };
+            a.onmouseout = function() {
+                noViewPost();
+            };
+            a.appendChild(document.createTextNode(">>" + pn));
+            referencedBy.appendChild(a);
+            referencedBy.appendChild(document.createTextNode(" "));
+        }
+    } else {
+        referencedBy.parentNode.removeChild(referencedBy);
+    }
     var perm = post.querySelector("[name='permanent']");
     if (!permanent) {
         perm.parentNode.removeChild(perm);

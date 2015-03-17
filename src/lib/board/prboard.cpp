@@ -68,11 +68,6 @@ QString prBoard::name() const
     return "pr";
 }
 
-bool prBoard::processCode() const
-{
-    return true;
-}
-
 QString prBoard::title(const QLocale &l) const
 {
     TranslatorQt tq(l);
