@@ -8,10 +8,8 @@
     <head>
         <% include baseHead() %>
         <% include settingsHead() %>
-        <% include navbarHead() %>
         <% include searchActionHead() %>
-        <% include titleHead() %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/rules.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style %>.css">
     </head>
     <body onload="javascript:initializeOnLoadSettings();">
         <% include settingsTexts() %>

@@ -354,7 +354,13 @@
                 <input name="subject" type="hidden" value="<%= post.rawSubject %>" />
                 <% if ( post.files.size() < 2 ) %>
                     <td class="postText">
-                        <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                        <% if ( thread ) %>
+                             <blockquote id="post<%= post.number %>Text"
+                                         class="blockquoteThread"><%= post.text | raw %></blockquote>
+                        <% else %>
+                            <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                        <% end %>
+                        
                     </td>
                 <% else %>
                     <td class="shrink"></td>
@@ -363,7 +369,12 @@
             <% if ( post.files.size() >= 2 ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"postText\">"; %>
-                        <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                        <% if ( thread ) %>
+                            <blockquote id="post<%= post.number %>Text"
+                                        class="blockquoteThread"><%= post.text | raw %></blockquote>
+                        <% else %>
+                            <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
+                        <% end %>
                     </td>
                 </tr>
             <% end %>
@@ -573,12 +584,7 @@
 </table>
 <% end template %>
 
-<% template bannerHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/banner.css">
-<% end template %>
-
 <% template createActionHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/create_action.css">
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/create_action.js"></script>
 <% if ( content.captchaEnabled ) %>
     <script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
@@ -586,7 +592,6 @@
 <% end template %>
 
 <% template boardHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/post.css">
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/post.js"></script>
 <% end %>
 

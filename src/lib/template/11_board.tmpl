@@ -83,13 +83,10 @@
     <head>
         <% include baseHead() %>
         <% include settingsHead() %>
-        <% include navbarHead() %>
-        <% include bannerHead() %>
         <% include createActionHead() %>
         <% include boardHead() %>
         <% include searchActionHead() %>
-        <% include titleHead() %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/board.css">
+        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style %>.css">
         <script type="text/javascript" src="/<%= sitePathPrefix %>js/board.js"></script>
     </head>
     <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadBoard();">

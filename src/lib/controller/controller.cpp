@@ -106,6 +106,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
     if (c.siteProtocol.empty())
         c.siteProtocol = "http";
+    c.style = Tools::toStd(Tools::cookieValue(req, "style"));
+    if (c.style.empty())
+        c.style = "photon";
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");

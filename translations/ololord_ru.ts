@@ -1735,6 +1735,11 @@ IP-адреса отделяются запятыми. Используется 
 Example: mysite.com</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Site protocol.
+Either http or https</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>

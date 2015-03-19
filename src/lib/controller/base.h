@@ -48,6 +48,7 @@ public:
     std::string siteDomain;
     std::string sitePathPrefix;
     std::string siteProtocol;
+    std::string style;
     std::string timeLabelText;
     std::string timeLocalText;
     std::string timeServerText;

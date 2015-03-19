@@ -566,6 +566,7 @@ function createPostNode(res, permanent) {
                 files.insertBefore(file, files.children[files.children.length - 1]);
         }
     }
+    var blockquoteThread = !!document.getElementById("currentThreadNumber");
     var bannedForTd = post.querySelector("[name='bannedForTd']");
     var referencedByTd = post.querySelector("[name='referencedByTd']");
     var manyFilesTr = post.querySelector("[name='manyFilesTr']");
@@ -573,11 +574,15 @@ function createPostNode(res, permanent) {
     if (res["files"].length <= 1) {
         manyFilesTr.parentNode.removeChild(manyFilesTr);
         textOneFile.innerHTML = res["text"];
+        if (blockquoteThread)
+            textOneFile.className = "blockquoteThread";
     } else {
         post.querySelector("[name='oneFileTd']").className = "shrink";
         textOneFile.parentNode.removeChild(textOneFile);
         post.querySelector("[name='manyFilesTd']").colSpan = res["files"].length + 2;
         post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
+        if (blockquoteThread)
+            textManyFiles.className = "blockquoteThread";
         bannedForTd.colSpan = res["files"].length + 2;
         referencedByTd.colSpan = res["files"].length + 2;
     }

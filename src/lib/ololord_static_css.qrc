@@ -1,25 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>static/css/board.css</file>
-        <file>static/css/home.css</file>
-        <file>static/css/thread.css</file>
-        <file>static/css/rules.css</file>
-        <file>static/css/base.css</file>
-        <file>static/css/error.css</file>
-        <file>static/css/ban.css</file>
-        <file>static/css/settings_bar.css</file>
-        <file>static/css/navbar.css</file>
-        <file>static/css/banner.css</file>
-        <file>static/css/post.css</file>
-        <file>static/css/board_image.css</file>
-        <file>static/css/board_video.css</file>
-        <file>static/css/title.css</file>
-        <file>static/css/not_found.css</file>
-        <file>static/css/search_action.css</file>
-        <file>static/css/create_action.css</file>
-        <file>static/css/ip_ban.css</file>
-        <file>static/css/create_action_pr.css</file>
-        <file>static/css/board_mlp.css</file>
-        <file>static/css/thread_echo.css</file>
+        <file>static/css/photon.css</file>
     </qresource>
 </RCC>
