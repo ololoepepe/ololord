@@ -21,6 +21,22 @@
         </select>
     </span>
     <span>
+        <%= styleLabelText %>
+        <select id="styleChangeSelect" class="select" onchange="javascript:changeStyle();">
+            <% foreach st in styles %>
+                <% item %>
+                    <% if ( st.name == content.style.name ) %>
+                        <option value="<%= st.name %>" selected="true">
+                    <% else %>
+                        <option value="<%= st.name %>">
+                    <% end %>
+                        <%= st.title %>
+                    </option>
+                <% end %>
+            <% end %>
+        </select>
+    </span>
+    <span>
         <%= timeLabelText %>
         <select id="timeChangeSelect" class="select" onchange="javascript:changeTime();">
             <% if ( content.currentTime == "local" ) %>

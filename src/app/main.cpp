@@ -648,7 +648,7 @@ void initSettings()
     nn->setDescription(t);
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "domain", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Site domain.\n"
+    nn->setDescription(BTranslation::translate("initSettings", "Site domain name.\n"
                                                "Example: mysite.com"));
     nn = new BSettingsNode(QVariant::String, "protocol", n);
     nn->setDescription(BTranslation::translate("initSettings", "Site protocol.\n"

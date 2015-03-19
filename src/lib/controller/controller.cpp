@@ -14,12 +14,14 @@
 
 #include <BCoreApplication>
 #include <BeQt>
+#include <BTranslation>
 
 #include <QChar>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QLocale>
+#include <QMap>
 #include <QMutex>
 #include <QSettings>
 #include <QString>
@@ -66,6 +68,10 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         }
         locales.push_back(toWithLocale(QLocale("en_US")));
     }
+    typedef QMap<QString, BTranslation> TranslationMap;
+    init_once(TranslationMap, styles, TranslationMap()) {
+        styles.insert("", BTranslation::translate("initBase", "Photon", "style name"));
+    }
     localeMutex.unlock();
     TranslatorStd ts(req);
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
@@ -106,9 +112,17 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
     if (c.siteProtocol.empty())
         c.siteProtocol = "http";
-    c.style = Tools::toStd(Tools::cookieValue(req, "style"));
-    if (c.style.empty())
-        c.style = "photon";
+    c.style.name = Tools::toStd(Tools::cookieValue(req, "style"));
+    if (c.style.name.empty())
+        c.style.name = "photon";
+    c.style.title = Tools::toStd(styles.value(Tools::fromStd(c.style.name)).translate());
+    c.styleLabelText = ts.translate("initBase", "Style:", "styleLabelText");
+    foreach (const QString &s, styles.keys()) {
+        Content::Base::Style st;
+        st.name = Tools::toStd(s);
+        st.title = Tools::toStd(styles.value(s).translate());
+        c.styles.push_back(st);
+    }
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");

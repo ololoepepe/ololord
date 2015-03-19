@@ -93,6 +93,15 @@ function changeLocale() {
     reloadPage();
 }
 
+function changeStyle() {
+    var sel = document.getElementById("styleChangeSelect");
+    var sn = sel.options[sel.selectedIndex].value;
+    setCookie("style", sn, {
+        "expires": Billion, "path": "/"
+    });
+    reloadPage();
+}
+
 function changeTime() {
     var sel = document.getElementById("timeChangeSelect");
     var ln = sel.options[sel.selectedIndex].value;

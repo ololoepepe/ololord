@@ -1108,6 +1108,16 @@ Your choice:</source>
         <comment>showPasswordText</comment>
         <translation>Показать пароль</translation>
     </message>
+    <message>
+        <source>Photon</source>
+        <comment>style name</comment>
+        <translation>Photon</translation>
+    </message>
+    <message>
+        <source>Style:</source>
+        <comment>styleLabelText</comment>
+        <translation>Стиль:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -1731,14 +1741,16 @@ IP-адреса отделяются запятыми. Используется 
 Пример: 127.0.0.1,192.168.0.*</translation>
     </message>
     <message>
-        <source>Site domain.
-Example: mysite.com</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Site protocol.
 Either http or https</source>
-        <translation type="unfinished"></translation>
+        <translation>Протокол сайта.
+Либо http, либо https</translation>
+    </message>
+    <message>
+        <source>Site domain name.
+Example: mysite.com</source>
+        <translation>Доменное имя сайта.
+Пример: mysite.com</translation>
     </message>
 </context>
 <context>

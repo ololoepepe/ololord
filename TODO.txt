@@ -10,3 +10,4 @@
 [done] Use wildcard matching for banned IP's
 [done] Implement image source search buttons
 [done] Merge CSS
+[done] Add ability to switch styles
