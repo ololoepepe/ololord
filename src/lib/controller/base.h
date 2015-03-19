@@ -45,7 +45,9 @@ public:
     std::string showPasswordText;
     std::string showSearchFormText;
     std::string showTripcodeText;
+    std::string siteDomain;
     std::string sitePathPrefix;
+    std::string siteProtocol;
     std::string timeLabelText;
     std::string timeLocalText;
     std::string timeServerText;

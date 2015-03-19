@@ -91,6 +91,8 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string editPostText;
     std::string enterPasswordText;
     std::string enterPasswordTitle;
+    std::string findSourceWithGoogleText;
+    std::string findSourceWithIqdbText;
     std::string fixedText;
     std::string fixThreadText;
     std::string hidePostFormText;

@@ -31,12 +31,12 @@
     white-space: nowrap;
 }
 
-.postHeader > a > img {
+.postHeader > a > img, .postFileSearch > a > img {
     opacity: 0.65;
     filter: alpha(opacity=65);
 }
 
-.postHeader > a > img:hover {
+.postHeader > a > img:hover, .postFileSearch > a > img:hover {
     opacity: 1;
     filter: alpha(opacity=100);
 }

@@ -90,6 +90,18 @@ static unsigned int ipNum(const QString &ip, bool *ok = 0)
     return bRet(ok, true, n);
 }
 
+/*static QString ipStr(unsigned int ip)
+{
+    QString s;
+    s += QString::number(ip / (256 * 256 * 256)) + ".";
+    ip %= (256 * 256 * 256);
+    s += QString::number(ip / (256 * 256)) + ".";
+    ip %= (256 * 256);
+    s += QString::number(ip / 256) + ".";
+    s += QString::number(ip % 256);
+    return s;
+}*/
+
 static QTime time(int msecs)
 {
     int h = msecs / BeQt::Hour;
@@ -271,8 +283,8 @@ QString hashpassString(const cppcms::http::request &req)
 int ipBanLevel(const QString &ip)
 {
     bool ok = false;
-    unsigned int n = ipNum(ip, &ok);
-    if (!ok || !n)
+    ipNum(ip, &ok);
+    if (!ok)
         return 0;
     Cache::IpBanInfoList *list = Cache::ipBanInfoList();
     int level = 0;
@@ -287,13 +299,14 @@ int ipBanLevel(const QString &ip)
             if (sll.size() != 2)
                 continue;
             Cache::IpBanInfo inf;
-            inf.ip = ipNum(sll.first(), &ok);
-            if (!ok || !inf.ip)
+            ipNum(QString(sll.first()).replace("*", "1").replace("?", "1"), &ok);
+            if (!ok)
                 continue;
+            inf.ip = sll.first();
             inf.level = sll.last().toUInt(&ok);
             if (!ok || !inf.level)
                 continue;
-            if (inf.ip == n)
+            if (QRegExp(inf.ip, Qt::CaseSensitive, QRegExp::Wildcard).exactMatch(ip))
                 level = inf.level;
             *list << inf;
         }
@@ -301,7 +314,7 @@ int ipBanLevel(const QString &ip)
             delete list;
     } else {
         foreach (const Cache::IpBanInfo &inf, *list) {
-            if (inf.ip == n) {
+            if (QRegExp(inf.ip, Qt::CaseSensitive, QRegExp::Wildcard).exactMatch(ip)) {
                 level = inf.level;
                 break;
             }

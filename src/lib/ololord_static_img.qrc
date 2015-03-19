@@ -251,5 +251,7 @@
         <file>static/img/file.png</file>
         <file>static/img/webm_file.png</file>
         <file>static/img/addfile.png</file>
+        <file>static/img/google.png</file>
+        <file>static/img/iqdb.png</file>
     </qresource>
 </RCC>

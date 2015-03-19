@@ -101,7 +101,11 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showSearchFormText = ts.translate("initBase", "Search", "showSearchFormText");
     c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
+    c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
+    c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
+    if (c.siteProtocol.empty())
+        c.siteProtocol = "http";
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
@@ -167,6 +171,8 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");
     c.enterPasswordTitle = ts.translate("initBaseBoard", "Enter password", "enterPasswordTitle");
+    c.findSourceWithGoogleText = ts.translate("initBaseBoard", "Find source with Google", "findSourceWithGoogleText");
+    c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");

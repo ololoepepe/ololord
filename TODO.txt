@@ -7,3 +7,5 @@
 [done] Implement post map ("answers" block)
 [done] Enable [code] tag on all boards
 [done] Add ability for admins to post raw HTML
+[done] Use wildcard matching for banned IP's
+[done] Implement image source search buttons

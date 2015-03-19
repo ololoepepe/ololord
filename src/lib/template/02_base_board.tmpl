@@ -158,6 +158,16 @@
     <div class="postFileSize">
         (<%= file.size %>)
     </div>
+    <% if ( "image" == file.type ) %>
+        <div class="postFileSearch">
+            <a href="//www.google.com/searchbyimage?image_url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
+               title="<%= findSourceWithGoogleText %>" target="_blank">
+                <img src="/<%= sitePathPrefix %>img/google.png"></a>
+            <a href="http://iqdb.org/?url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
+               title="<%= findSourceWithIqdbText %>" target="_blank">
+                <img src="/<%= sitePathPrefix %>img/iqdb.png"></a>
+        </div>
+    <% end %>
     <div>
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
@@ -416,6 +426,8 @@
 <input type="hidden" id="bytesText" value="<%= bytesText %>" />
 <input type="hidden" id="kilobytesText" value="<%= kilobytesText %>" />
 <input type="hidden" id="megabytesText" value="<%= megabytesText %>" />
+<input type="hidden" id="findSourceWithGoogleText" value="<%= findSourceWithGoogleText %>" />
+<input type="hidden" id="findSourceWithIqdbText" value="<%= findSourceWithIqdbText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
         <% item %>

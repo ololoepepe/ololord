@@ -1386,6 +1386,16 @@ Your choice:</source>
         <comment>referencedByText</comment>
         <translation>Ответы:</translation>
     </message>
+    <message>
+        <source>Find source with Google</source>
+        <comment>findSourceWithGoogleText</comment>
+        <translation>Найти соус с помощью Google</translation>
+    </message>
+    <message>
+        <source>Find source with Iqdb</source>
+        <comment>findSourceWithIqdbText</comment>
+        <translation>Найти соус с помощью Iqdb</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -1719,6 +1729,11 @@ Example: 127.0.0.1,192.168.0.*</source>
         <translation>Список IP-адресов, которые не логгируются.
 IP-адреса отделяются запятыми. Используется шаблон wildcard
 Пример: 127.0.0.1,192.168.0.*</translation>
+    </message>
+    <message>
+        <source>Site domain.
+Example: mysite.com</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

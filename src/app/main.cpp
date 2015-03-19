@@ -647,6 +647,12 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "supported_file_types", n);
     nn->setDescription(t);
     n = new BSettingsNode("Site", root);
+    nn = new BSettingsNode(QVariant::String, "domain", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Site domain.\n"
+                                               "Example: mysite.com"));
+    nn = new BSettingsNode(QVariant::String, "protocol", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Site protocol.\n"
+                                               "Either http or https"));
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
                                                "For example, if prefix is board/, the resulting URL will start with "
