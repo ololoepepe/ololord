@@ -303,22 +303,25 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         p->setName(post.name);
         p->setSubject(post.subject);
         p->setRawText(post.text);
+        if (board->premoderationEnabled() && post.premoderation)
+            p->setPremoderation(true);
         if (post.raw && registeredUserLevel(req) >= RegisteredUser::AdminLevel) {
             p->setText(post.text);
         } else {
             QSet<quint64> refs;
-            p->setText(Controller::processPostText(post.text, boardName, threadNumber, &refs));
-            if (!addToReferencedPosts(postNumber, boardName, refs, error, description))
-                return false;
-            bSet(referencedPosts, refs);
+            p->setText(Controller::processPostText(post.text, boardName, threadNumber,
+                                                   !p->premoderation() ? &refs : 0));
+            if (!p->premoderation()) {
+                if (!addToReferencedPosts(postNumber, boardName, refs, error, description))
+                    return false;
+                bSet(referencedPosts, refs);
+            }
         }
         p->setShowTripcode(!Tools::cookieValue(req, "show_tripcode").compare("true", Qt::CaseInsensitive));
         if (bump) {
             thread->setDateTime(dt);
             update(thread);
         }
-        if (board->premoderationEnabled() && post.premoderation)
-            p->setPremoderation(true);
         t->persist(p);
         bSet(pn, postNumber);
         ft.commit();
@@ -711,21 +714,21 @@ bool editPost(EditPostParameters &p)
         if (p.subject.length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, p.boardName)))
             return bRet(p.error, tq.translate("editPost", "Subject is too long", "error"), false);
         post->setRawText(p.text);
-        if (!removeFromReferencedPosts(p.postNumber, p.boardName, p.error))
+        post->setPremoderation(board->premoderationEnabled() && p.premoderation);
+        if (!post->premoderation() && !removeFromReferencedPosts(p.postNumber, p.boardName, p.error))
             return false;
         if (p.raw && lvl >= RegisteredUser::AdminLevel) {
             post->setText(p.text);
         } else {
             post->setText(Controller::processPostText(p.text, p.boardName, post->thread().load()->number(),
-                                                      &p.referencedPosts));
-            if (!addToReferencedPosts(p.postNumber, p.boardName, p.referencedPosts, p.error))
+                                                      !post->premoderation() ? &p.referencedPosts : 0));
+            if (!post->premoderation() && !addToReferencedPosts(p.postNumber, p.boardName, p.referencedPosts, p.error))
                 return false;
         }
         post->setEmail(p.email);
         post->setName(p.name);
         post->setSubject(p.subject);
         bool premodLast = post->premoderation();
-        post->setPremoderation(board->premoderationEnabled() && p.premoderation);
         if (post->premoderation() != premodLast) {
             Thread thread = *post->thread().load();
             if (thread.number() == post->number()) {

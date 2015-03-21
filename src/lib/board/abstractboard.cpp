@@ -497,7 +497,12 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         }
         pageTitle = opPost.subject();
         if (pageTitle.isEmpty()) {
-            pageTitle = opPost.text().replace(QRegExp("\\r?\\n+"), " ");
+            pageTitle = opPost.text().replace(QRegExp("\\r?\\n+"), " ").replace(QRegExp("<[^<>]+>"), "");
+            pageTitle.replace("&amp;", "&");
+            pageTitle.replace("&lt;", "<");
+            pageTitle.replace("&gt;", ">");
+            pageTitle.replace("&nbsp;", " ");
+            pageTitle.replace("&quot;", "\"");
             if (pageTitle.length() > 50)
                 pageTitle = pageTitle.left(47) + "...";
         }
@@ -758,7 +763,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->email = Tools::toStd(post.email());
         p->number = post.number();
         p->rawSubject = Tools::toStd(post.subject());
-        p->subject = p->subject;
+        p->subject = p->rawSubject;
         p->subjectIsRaw = false;
         p->rawName = Tools::toStd(post.name());
         p->premoderation = post.premoderation();

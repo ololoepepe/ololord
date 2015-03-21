@@ -50,7 +50,7 @@ function visibilityChangeListener(e) {
     if ("favicon.ico" != finame)
         link.href = link.href.replace("img/favicon_newmessage.ico", "favicon.ico");
     if (document.title.substring(0, 2) == "* ")
-        document.title = document.title.substring(2, document.title.length - 2);
+        document.title = document.title.substring(2);
 }
 
 function blinkFaviconNewMessage() {
@@ -64,7 +64,7 @@ function blinkFaviconNewMessage() {
 
 function insertPostNumberInternal(postNumber, position) {
     var field = document.getElementById("postFormInputText" + position);
-    var value = ">>" + postNumber;
+    var value = ">>" + postNumber + "\n";
     if (document.selection) {
         field.focus();
         var sel = document.selection.createRange();
@@ -72,15 +72,19 @@ function insertPostNumberInternal(postNumber, position) {
     } else if (field.selectionStart || field.selectionStart == "0") {
         var startPos = field.selectionStart;
         var endPos = field.selectionEnd;
-        field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos, field.value.length);
+        field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
     } else {
         field.value += value;
     }
+    return field;
 }
 
 function insertPostNumber(postNumber) {
-    insertPostNumberInternal(postNumber, "Top");
-    insertPostNumberInternal(postNumber, "Bottom");
+    var field = insertPostNumberInternal(postNumber, "Top");
+    if (!field.offsetParent)
+        field = insertPostNumberInternal(postNumber, "Bottom");
+    if (field.offsetParent)
+        field.focus();
 }
 
 function selectPost(post) {

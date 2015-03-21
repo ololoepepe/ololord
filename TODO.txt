@@ -15,6 +15,7 @@
 [done] Add ability to save all images from thread to disk
 [done] Implement pre-moderation
 [done] Fix post preview buttons displaying
+[done] Fix post link insertion
 [done] Implement real IP behind proxy detection
 * Implement proxy blocking
 * Implement file deduplication

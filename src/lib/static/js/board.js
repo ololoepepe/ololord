@@ -12,7 +12,9 @@ function posted() {
     var threadNumber = iframeDocument.querySelector("#threadNumber");
     formSubmitted.querySelector("[name='submit']").disabled = false;
     if (!!threadNumber) {
-        window.location.href = window.location.href + "/thread/" + threadNumber.value + ".html";
+        var href = window.location.href;
+        window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/"
+            + threadNumber.value + ".html";
     } else {
         formSubmitted = null;
         var errmsg = iframeDocument.querySelector("#errorMessage");
