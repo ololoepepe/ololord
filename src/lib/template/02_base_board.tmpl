@@ -100,7 +100,7 @@
                             </td>
                         </tr>
                     <% end %>
-                    <% if ( content.premoderationEnabled ) %>
+                    <% if ( content.premoderationEnabled && content.loggedIn ) %>
                         <tr>
                             <td class="postformLabel">
                                 <b><%= postFormLabelPremoderation %></b>
@@ -596,7 +596,7 @@
                 </td>
             </tr>
         <% end %>
-        <% if ( content.premoderationEnabled ) %>
+        <% if ( content.premoderationEnabled && content.loggedIn ) %>
             <tr>
                 <td class="postformLabel">
                     <b><%= postFormLabelPremoderation %></b>

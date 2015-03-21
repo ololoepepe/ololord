@@ -690,12 +690,6 @@ void initSettings()
                                                "Useful when a proxy HTTP server is used (for example, nginx).\n"
                                                "The server must be configured properly.\n"
                                                "The default is false."));
-    nn = new BSettingsNode(QVariant::Bool, "detect_proxy", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"
-                                               "Otherwise the address may be an address of a proxy server.\n"
-                                               "Works for non-transparent proxies only (X-Forwarded-For, "
-                                               "X-Client-IP).\n"
-                                               "The default is true."));
     nn = new BSettingsNode(QVariant::Int, "logging_mode", n);
     nn->setUserSetFunction(&setLoggingMode);
     nn->setDescription(BTranslation::translate("initSettings", "Logging mode. Possible values:\n"
@@ -712,6 +706,13 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
                                                "IP's are separated by commas. Wildcard matching is used.\n"
                                                "Example: 127.0.0.1,192.168.0.*"));
+    nn = new BSettingsNode("Proxy", n);
+    BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
+    nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"
+                                                "Otherwise the address may be an address of a proxy server.\n"
+                                                "Works for non-transparent proxies only (X-Forwarded-For, "
+                                                "X-Client-IP).\n"
+                                                "The default is true."));
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {
         nn = new BSettingsNode(s, n);

@@ -644,7 +644,7 @@ QString userIp(const cppcms::http::request &req, bool *proxy)
     SettingsLocker s;
     cppcms::http::request &r = *const_cast<cppcms::http::request *>(&req);
     bSet(proxy, false);
-    if (s->value("detect_proxy", true).toBool()) {
+    if (s->value("System/Proxy/detect_real_ip", true).toBool()) {
         QString ip = fromStd(r.getenv("HTTP_X_FORWARDED_FOR"));
         bool ok = false;
         ipNum(ip, &ok);
