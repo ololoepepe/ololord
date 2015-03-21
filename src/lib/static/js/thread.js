@@ -1,5 +1,66 @@
 var lastSelectedElement = null;
 var autoUpdateTimer = null;
+var blinkTimer = null;
+var pageVisible = "visible";
+
+function addVisibilityChangeListener(callback) {
+    if ("hidden" in document)
+        document.addEventListener("visibilitychange", callback);
+    else if ((hidden = "mozHidden") in document)
+        document.addEventListener("mozvisibilitychange", callback);
+    else if ((hidden = "webkitHidden") in document)
+        document.addEventListener("webkitvisibilitychange", callback);
+    else if ((hidden = "msHidden") in document)
+        document.addEventListener("msvisibilitychange", callback);
+    else if ("onfocusin" in document) //IE 9 and lower
+        document.onfocusin = document.onfocusout = callback;
+    else //All others
+        window.onpageshow = window.onpagehide = window.onfocus = window.onblur = callback;
+    if(document["hidden"] !== undefined) {
+        callback({
+            "type": document["hidden"] ? "blur" : "focus"
+        });
+    }
+}
+
+function visibilityChangeListener(e) {
+    var v = "visible";
+    var h = "hidden";
+    var eMap = {
+        "focus": v,
+        "focusin": v,
+        "pageshow": v,
+        "blur": h,
+        "focusout": h,
+        "pagehide": h
+    };
+    e = e || window.event;
+    if (e.type in eMap)
+        pageVisible = eMap[e.type];
+    else
+        pageVisible = this["hidden"] ? "hidden" : "visible";
+    if ("hidden" == pageVisible)
+        return;
+    if (!blinkTimer)
+        return;
+    clearInterval(blinkTimer);
+    blinkTimer = null;
+    var link = document.getElementById("favicon");
+    var finame = link.href.split("/").pop();
+    if ("favicon.ico" != finame)
+        link.href = link.href.replace("img/favicon_newmessage.ico", "favicon.ico");
+    if (document.title.substring(0, 2) == "* ")
+        document.title = document.title.substring(2, document.title.length - 2);
+}
+
+function blinkFaviconNewMessage() {
+    var link = document.getElementById("favicon");
+    var finame = link.href.split("/").pop();
+    if ("favicon.ico" == finame)
+        link.href = link.href.replace("favicon.ico", "img/favicon_newmessage.ico");
+    else
+        link.href = link.href.replace("img/favicon_newmessage.ico", "favicon.ico");
+}
 
 function insertPostNumberInternal(postNumber, position) {
     var field = document.getElementById("postFormInputText" + position);
@@ -61,6 +122,10 @@ function updateThread(boardName, threadNumber, autoUpdate, extraCallback) {
             if (!post)
                 continue;
             document.body.insertBefore(post, before);
+        }
+        if (!blinkTimer && "hidden" == pageVisible) {
+            blinkTimer = setInterval(blinkFaviconNewMessage, 500);
+            document.title = "* " + document.title;
         }
         if (!!extraCallback)
             extraCallback();
@@ -155,6 +220,7 @@ function downloadThread() {
 }
 
 function initializeOnLoadThread() {
+    addVisibilityChangeListener(visibilityChangeListener);
     document.body.onclick = globalOnclick;
     if (getCookie("auto_update") === "true") {
         var cbox = document.getElementById("autoUpdate_top");

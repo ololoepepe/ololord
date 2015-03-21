@@ -254,5 +254,6 @@
         <file>static/img/google.png</file>
         <file>static/img/iqdb.png</file>
         <file>static/img/download.png</file>
+        <file>static/img/favicon_newmessage.ico</file>
     </qresource>
 </RCC>
