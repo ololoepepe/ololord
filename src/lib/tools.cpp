@@ -638,12 +638,26 @@ QString toString(const QByteArray &hp, bool *ok)
     return bRet(ok, true, s);
 }
 
-QString userIp(const cppcms::http::request &req)
+QString userIp(const cppcms::http::request &req, bool *proxy)
 {
-    if (SettingsLocker()->value("System/use_x_real_ip", false).toBool())
-        return fromStd(const_cast<cppcms::http::request *>(&req)->getenv("HTTP_X_REAL_IP"));
+    SettingsLocker s;
+    cppcms::http::request &r = *const_cast<cppcms::http::request *>(&req);
+    bSet(proxy, false);
+    if (s->value("detect_proxy", true).toBool()) {
+        QString ip = fromStd(r.getenv("HTTP_X_FORWARDED_FOR"));
+        bool ok = false;
+        ipNum(ip, &ok);
+        if (ok)
+            return bRet(proxy, true, ip);
+        ip = fromStd(r.getenv("HTTP_X_CLIENT_IP"));
+        ipNum(ip, &ok);
+        if (ok)
+            return bRet(proxy, true, ip);
+    }
+    if (s->value("System/use_x_real_ip", false).toBool())
+        return fromStd(r.getenv("HTTP_X_REAL_IP"));
     else
-        return fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr());
+        return fromStd(r.remote_addr());
 }
 
 }

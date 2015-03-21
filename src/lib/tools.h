@@ -123,7 +123,7 @@ OLOLORD_EXPORT std::locale toStd(const QLocale &l);
 OLOLORD_EXPORT std::string toStd(const QString &s);
 OLOLORD_EXPORT std::list<std::string> toStd(const QStringList &sl);
 OLOLORD_EXPORT QString toString(const QByteArray &hp, bool *ok = 0);
-OLOLORD_EXPORT QString userIp(const cppcms::http::request &req);
+OLOLORD_EXPORT QString userIp(const cppcms::http::request &req, bool *proxy = 0);
 
 }
 

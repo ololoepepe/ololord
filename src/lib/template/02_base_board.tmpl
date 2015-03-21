@@ -168,7 +168,7 @@
                 <img src="/<%= sitePathPrefix %>img/iqdb.png"></a>
         </div>
     <% end %>
-    <div>
+    <div class="postFileFile">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
             <% if ( "webm" == file.thumbName ) %>
@@ -302,7 +302,11 @@
             <a name="banButton" href="javascript:banUser('<%= currentBoard.name %>', '<%= post.number %>');">
                 <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
         <% end %>
-        <a href="javascript:complain();">
+        <% if ( !thread && post.number == post.threadNumber ) %>
+            <a name="downloadButton" href="javascript:downloadThread();">
+                <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+        <% end %>
+        <a name="complainButton" href="javascript:complain();">
             <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
         <a name="deleteButton" href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
         <% if ( post.number == post.threadNumber ) %>

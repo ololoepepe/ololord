@@ -120,6 +120,40 @@ function posted() {
     }
 }
 
+function downloadThread() {
+    var as = document.body.querySelectorAll(".postFile > .postFileFile > a");
+    if (!as || as.length < 1)
+        return;
+    var progress = document.createElement("progress");
+    progress.className = "progressBlocking";
+    progress.max = as.length;
+    progress.value = 0;
+    document.body.appendChild(progress);
+    toCenter(progress, progress.offsetWidth, progress.offsetHeight);
+    var zip = new JSZip();
+    var append = function(i) {
+        if (i >= as.length) {
+            var content = zip.generate({
+                "type": "blob"
+            });
+            document.body.removeChild(progress);
+            saveAs(content, document.title + ".zip");
+            return;
+        }
+        var a = as[i];
+        JSZipUtils.getBinaryContent(a.href, function (err, data) {
+            if (!err) {
+                zip.file(a.href.split("/").pop(), data, {
+                    "binary": true
+                });
+            }
+            progress.value = +progress.value + 1;
+            append(i + 1);
+        });
+    };
+    append(0);
+}
+
 function initializeOnLoadThread() {
     document.body.onclick = globalOnclick;
     if (getCookie("auto_update") === "true") {

@@ -687,6 +687,12 @@ void initSettings()
                                                "Useful when a proxy HTTP server is used (for example, nginx).\n"
                                                "The server must be configured properly.\n"
                                                "The default is false."));
+    nn = new BSettingsNode(QVariant::Bool, "detect_proxy", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"
+                                               "Otherwise the address may be an address of a proxy server.\n"
+                                               "Works for non-transparent proxies only (X-Forwarded-For, "
+                                               "X-Client-IP).\n"
+                                               "The default is true."));
     nn = new BSettingsNode(QVariant::Int, "logging_mode", n);
     nn->setUserSetFunction(&setLoggingMode);
     nn->setDescription(BTranslation::translate("initSettings", "Logging mode. Possible values:\n"

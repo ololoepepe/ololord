@@ -253,5 +253,6 @@
         <file>static/img/addfile.png</file>
         <file>static/img/google.png</file>
         <file>static/img/iqdb.png</file>
+        <file>static/img/download.png</file>
     </qresource>
 </RCC>

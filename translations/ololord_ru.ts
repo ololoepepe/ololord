@@ -1406,6 +1406,11 @@ Your choice:</source>
         <comment>findSourceWithIqdbText</comment>
         <translation>Найти соус с помощью Iqdb</translation>
     </message>
+    <message>
+        <source>Download all thread files as a .zip archive</source>
+        <comment>downloadThreadText</comment>
+        <translation>Скачать все файлы из треда в виде .zip-архива</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -1751,6 +1756,16 @@ Either http or https</source>
 Example: mysite.com</source>
         <translation>Доменное имя сайта.
 Пример: mysite.com</translation>
+    </message>
+    <message>
+        <source>Determines if real IP of a client is detected.
+Otherwise the address may be an address of a proxy server.
+Works for non-transparent proxies only (X-Forwarded-For, X-Client-IP).
+The default is true.</source>
+        <translation>Определяет, обнаруживать ли настоящий IP-адрес клиента.
+В противном случае адрес может быть адресом прокси-сервера.
+Работает только для непрозрачных прокси (X-Forwarded-For, X-Client-IP).
+По умолчанию true.</translation>
     </message>
 </context>
 <context>

@@ -507,6 +507,13 @@ blockquote.blockquoteThread {
     /**/
 }
 
+.progressBlocking {
+    position: fixed;
+    z-index: 9970;
+    width: 600px;
+    height: 50px;
+}
+
 /*span.spoiler, span.spoiler a <- Board*/
 
 /*span.spoiler:hover <- Board*/

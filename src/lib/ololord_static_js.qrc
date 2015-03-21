@@ -9,5 +9,8 @@
         <file>static/js/post.js</file>
         <file>static/js/3rdparty/picoModal-2.1.0.min.js</file>
         <file>static/js/board_mlp.js</file>
+        <file>static/js/3rdparty/jszip.min.js</file>
+        <file>static/js/3rdparty/jszip-utils.min.js</file>
+        <file>static/js/3rdparty/FileSaver.min.js</file>
     </qresource>
 </RCC>

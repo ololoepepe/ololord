@@ -184,6 +184,8 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.currentThread = currentThread;
     c.deletePostText = ts.translate("initBaseBoard", "Delete post", "fixedText");
     c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "fixedText");
+    c.downloadThreadText = ts.translate("initBaseBoard", "Download all thread files as a .zip archive",
+                                        "downloadThreadText");
     c.editPostText = ts.translate("initBaseBoard", "Edit post", "editPostText");
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");

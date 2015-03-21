@@ -88,6 +88,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     unsigned long long currentThread;
     std::string deletePostText;
     std::string deleteThreadText;
+    std::string downloadThreadText;
     std::string editPostText;
     std::string enterPasswordText;
     std::string enterPasswordTitle;

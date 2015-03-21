@@ -433,31 +433,27 @@ function createPostFile(f) {
     if (f["type"] == "image") {
         var divFileSearch = document.createElement("div");
         divFileSearch.className = "postFileSearch";
-        var services = [
-            {
-                "link": "//www.google.com/searchbyimage?image_url=",
-                "text": document.getElementById("findSourceWithGoogleText").value,
-                "img": "google.png"
-            },
-            {
-                "link": "http://iqdb.org/?url=",
-                "text": document.getElementById("findSourceWithIqdbText").value,
-                "img": "iqdb.png"
-            }
-        ];
         var siteDomain = document.getElementById("siteDomain").value;
         var siteProtocol = document.getElementById("siteProtocol").value;
-        for (var i = 0; i < services.length; ++i) {
+        [{
+            "link": "//www.google.com/searchbyimage?image_url=",
+            "text": document.getElementById("findSourceWithGoogleText").value,
+            "img": "google.png"
+        }, {
+            "link": "http://iqdb.org/?url=",
+            "text": document.getElementById("findSourceWithIqdbText").value,
+            "img": "iqdb.png"
+        }].forEach(function(el) {
             var a = document.createElement("a");
-            a.href = services[i].link + siteProtocol + "://" + siteDomain + "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
-            a.title = services[i].text;
+            a.href = el.link + siteProtocol + "://" + siteDomain + "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
+            a.title = el.text;
             a.target = "_blank";
             var logo = document.createElement("img");
-            logo.src = "/" + sitePrefix + "img/" + services[i].img;
+            logo.src = "/" + sitePrefix + "img/" + el.img;
             a.appendChild(logo);
             divFileSearch.appendChild(a);
             divFileSearch.appendChild(document.createTextNode(" "));
-        }
+        });
         file.appendChild(divFileSearch);
     }
     var divImage = document.createElement("div");
