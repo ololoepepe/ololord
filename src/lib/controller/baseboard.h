@@ -47,6 +47,7 @@ struct OLOLORD_EXPORT Post
     std::string name;
     std::string nameRaw;
     unsigned long long number;
+    bool premoderation;
     std::string rawName;
     std::string rawPostText;
     std::string rawSubject;
@@ -114,6 +115,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postFormLabelEmail;
     std::string postFormLabelName;
     std::string postFormLabelPassword;
+    std::string postFormLabelPremoderation;
     std::string postFormLabelRaw;
     std::string postFormLabelSubject;
     std::string postFormLabelText;
@@ -121,6 +123,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postingDisabledText;
     bool postingEnabled;
     std::string postLimitReachedText;
+    bool premoderationEnabled;
     std::string referencedByText;
     std::string registeredText;
     std::string removeFileText;

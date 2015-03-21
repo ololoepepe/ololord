@@ -592,6 +592,7 @@ Post toPost(const PostParameters &params, const FileList &files)
     p.raw = !params.value("raw").compare("true", Qt::CaseInsensitive);
     p.subject = params.value("subject");
     p.text = params.value("text");
+    p.premoderation = !params.value("premoderation").compare("true", Qt::CaseInsensitive);
     return p;
 }
 

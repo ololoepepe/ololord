@@ -317,6 +317,8 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
             thread->setDateTime(dt);
             update(thread);
         }
+        if (board->premoderationEnabled() && post.premoderation)
+            p->setPremoderation(true);
         t->persist(p);
         bSet(pn, postNumber);
         ft.commit();
@@ -473,13 +475,8 @@ bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint
         if (hashpass == post->hashpass())
             return bRet(error, tq.translate("banUser", "You can't ban youself, baka", "error"), false);
         int lvl = registeredUserLevel(req);
-        if (lvl < RegisteredUser::ModerLevel || registeredUserLevel(post->hashpass()) >= lvl)
+        if (!moderOnBoard(req, board, sourceBoard) || registeredUserLevel(post->hashpass()) >= lvl)
             return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
-        if (lvl < RegisteredUser::AdminLevel) {
-            QStringList boards = registeredUserBoards(req);
-            if (!boards.contains("*") && (!boards.contains(sourceBoard) || !boards.contains(board)))
-                return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
-        }
         if (!banUser(sourceBoard, postNumber, board, level, reason, expires, error, tq.locale()))
             return false;
         t.commit();
@@ -557,7 +554,12 @@ void createSchema()
 quint64 createThread(CreateThreadParameters &p)
 {
     QString boardName = p.params.value("board");
+    AbstractBoard *board = AbstractBoard::board(boardName);
     TranslatorQt tq(p.locale);
+    if (!board) {
+        return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
+                    tq.translate("createThread", "Internal logic error", "description"), 0L);
+    }
     try {
         Transaction t;
         QString err;
@@ -580,8 +582,8 @@ quint64 createThread(CreateThreadParameters &p)
                     Result<ThreadCount> archivedCount = queryOne<ThreadCount, Thread>(
                                 odb::query<Thread>::board == boardName && odb::query<Thread>::archived == true);
                     if (archivedCount.error || !archivedCount) {
-                        return bRet(p.error, tq.translate("createThread", "Internal error", "error"),
-                                    p.description, tq.translate("createThread", "Internal database error", "error"), 0L);
+                        return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
+                                    tq.translate("createThread", "Internal database error", "error"), 0L);
                     }
                     if (archivedCount->count >= (int) p.archiveLimit) {
                         QList<ThreadIdDateTimeFixed> archivedList = query<ThreadIdDateTimeFixed, Thread>(
@@ -609,6 +611,8 @@ quint64 createThread(CreateThreadParameters &p)
         }
         QDateTime dt = QDateTime::currentDateTimeUtc();
         QSharedPointer<Thread> thread(new Thread(p.params.value("board"), postNumber, dt));
+        if (board->premoderationEnabled() && p.params.value("final").compare("true", Qt::CaseInsensitive))
+            thread->setPremoderation(true);
         t->persist(thread);
         if (!createPostInternal(p.request, p.params, p.files, 0, 0, &err, p.locale, &desc, dt, postNumber))
             return bRet(p.error, err, p.description, desc, 0L);
@@ -649,13 +653,8 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         if (password.isEmpty()) {
             if (hashpass != post->hashpass()) {
                 int lvl = registeredUserLevel(req);
-                if (lvl < RegisteredUser::ModerLevel || registeredUserLevel(post->hashpass()) >= lvl)
+                if (!moderOnBoard(req, boardName) || registeredUserLevel(post->hashpass()) >= lvl)
                     return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
-                if (lvl < RegisteredUser::AdminLevel) {
-                    QStringList boards = registeredUserBoards(req);
-                    if (!boards.contains("*") && !boards.contains(boardName))
-                        return bRet(error, tq.translate("deletePost", "Not enough rights", "error"), false);
-                }
             }
         } else if (password != post->password()) {
             return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
@@ -677,24 +676,30 @@ bool editPost(EditPostParameters &p)
         return bRet(p.error, tq.translate("editPost", "Invalid board name", "error"), false);
     if (!p.postNumber)
         return bRet(p.error, tq.translate("editPost", "Invalid post number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(p.request);
+    if (p.password.isEmpty() && hashpass.isEmpty())
+        return bRet(p.error, tq.translate("editPost", "Invalid password", "error"), false);
     try {
         Transaction t;
         if (!t)
             return bRet(p.error, tq.translate("editPost", "Internal database error", "error"), false);
-        QByteArray hashpass = Tools::hashpass(p.request);
-        if (hashpass.isEmpty())
-            return bRet(p.error, tq.translate("editPost", "Not logged in", "error"), false);
-        int lvl = registeredUserLevel(hashpass);
-        if (lvl < RegisteredUser::ModerLevel)
-            return bRet(p.error, tq.translate("editPost", "Not enough rights", "error"), false);
         Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == p.postNumber
                                                  && odb::query<Post>::board == p.boardName);
         if (post.error)
             return bRet(p.error, tq.translate("editPost", "Internal database error", "error"), false);
         if (!post)
             return bRet(p.error, tq.translate("editPost", "No such post", "error"), false);
-        if (post->hashpass() != hashpass && lvl <= registeredUserLevel(post->hashpass()))
+        int lvl = registeredUserLevel(hashpass);
+        if (lvl < RegisteredUser::ModerLevel && !post->premoderation())
             return bRet(p.error, tq.translate("editPost", "Not enough rights", "error"), false);
+        if (p.password.isEmpty()) {
+            if (hashpass != post->hashpass()) {
+                if (!moderOnBoard(p.request, board->name()) || registeredUserLevel(post->hashpass()) >= lvl)
+                    return bRet(p.error, tq.translate("editPost", "Not enough rights", "error"), false);
+            }
+        } else if (p.password != post->password()) {
+            return bRet(p.error, tq.translate("editPost", "Incorrect password", "error"), false);
+        }
         if (p.text.isEmpty() && post->files().isEmpty())
             return bRet(p.error, tq.translate("editPost", "No text provided", "error"), false);
         if (p.text.length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, p.boardName)))
@@ -719,6 +724,15 @@ bool editPost(EditPostParameters &p)
         post->setEmail(p.email);
         post->setName(p.name);
         post->setSubject(p.subject);
+        bool premodLast = post->premoderation();
+        post->setPremoderation(board->premoderationEnabled() && p.premoderation);
+        if (post->premoderation() != premodLast) {
+            Thread thread = *post->thread().load();
+            if (thread.number() == post->number()) {
+                thread.setPremoderation(post->premoderation());
+                t->update(thread);
+            }
+        }
         update(post);
         Cache::removePost(p.boardName, p.postNumber);
         t.commit();
@@ -745,18 +759,32 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
             return bRet(ok, false, error, tq.translate("getNewPosts", "Internal database error", "error"),
                         QList<Post>());
         }
-        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::board == boardName
-                                                         && odb::query<Thread>::number == threadNumber);
+        odb::query<Thread> q = odb::query<Thread>::board == boardName && odb::query<Thread>::number == threadNumber;
+        QByteArray hashpass = Tools::hashpass(req);
+        bool modOnBoard = moderOnBoard(req, boardName);
+        Result<Thread> thread = queryOne<Thread, Thread>(q);
         if (thread.error) {
             return bRet(ok, false, error, tq.translate("getNewPosts", "Internal database error", "error"),
                         QList<Post>());
         }
         if (!thread)
             return bRet(ok, false, error, tq.translate("getNewPosts", "No such thread", "error"), QList<Post>());
+        int lvl = registeredUserLevel(req);
+        Post opPost = *thread->posts().first().load();
+        if (opPost.premoderation() && hashpass != opPost.hashpass()
+                && (!modOnBoard || registeredUserLevel(opPost.hashpass()) >= lvl)) {
+            return bRet(ok, false, error, tq.translate("getNewPosts", "No such thread", "error"), QList<Post>());
+        }
         quint64 threadId = thread->id();
-        QList<Post> posts = query<Post, Post>(odb::query<Post>::board == boardName
-                                              && odb::query<Post>::thread == threadId
-                                              && odb::query<Post>::number > lastPostNumber);
+        odb::query<Post> qq = odb::query<Post>::board == boardName && odb::query<Post>::thread == threadId
+                && odb::query<Post>::number > lastPostNumber;
+        QList<Post> posts = query<Post, Post>(qq);
+        foreach (int i, bRangeR(posts.size() - 1, 0)) {
+            if (posts.at(i).premoderation() && hashpass != posts.at(i).hashpass()
+                    && (!modOnBoard || registeredUserLevel(posts.at(i).hashpass()) >= lvl)) {
+                posts.removeAt(i);
+            }
+        }
         t.commit();
         return bRet(ok, true, error, QString(), posts);
     }  catch (const odb::exception &e) {
@@ -776,12 +804,18 @@ Post getPost(const cppcms::http::request &req, const QString &boardName, quint64
         Transaction t;
         if (!t)
             return bRet(ok, false, error, tq.translate("getPost", "Internal database error", "error"), Post());
-        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
-                                                 && odb::query<Post>::number == postNumber);
+        odb::query<Post> q = odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber;
+        QByteArray hashpass = Tools::hashpass(req);
+        bool modOnBoard = moderOnBoard(req, boardName);
+        Result<Post> post = queryOne<Post, Post>(q);
         if (post.error)
             return bRet(ok, false, error, tq.translate("getPost", "Internal database error", "error"), Post());
         if (!post)
             return bRet(ok, false, error, tq.translate("getPost", "No such post", "error"), Post());
+        if (post->premoderation() && hashpass != post->hashpass()
+                && (!modOnBoard || registeredUserLevel(post->hashpass()) >= registeredUserLevel(req))) {
+            return bRet(ok, false, error, tq.translate("getPost", "No such post", "error"), Post());
+        }
         t.commit();
         return bRet(ok, true, error, QString(), *post);
     }  catch (const odb::exception &e) {
@@ -838,6 +872,25 @@ quint64 lastPostNumber(const QString &boardName, QString *error, const QLocale &
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), 0L);
     }
+}
+
+bool moderOnBoard(const cppcms::http::request &req, const QString &board1, const QString &board2)
+{
+    QByteArray hp = Tools::hashpass(req);
+    if (hp.isEmpty())
+        return false;
+    return moderOnBoard(hp, board1, board2);
+}
+
+bool moderOnBoard(const QByteArray &hashpass, const QString &board1, const QString &board2)
+{
+    int lvl = registeredUserLevel(hashpass);
+    if (lvl < RegisteredUser::ModerLevel)
+        return false;
+    if (lvl >= RegisteredUser::AdminLevel)
+        return true;
+    QStringList boards = registeredUserBoards(hashpass);
+    return (boards.contains("*") && boards.contains(board1) && (board2.isEmpty() || boards.contains(board2)));
 }
 
 bool postExists(const QString &boardName, quint64 postNumber)
@@ -982,14 +1035,8 @@ bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, 
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("setThreadFixed", "Internal database error", "error"), false);
-        int lvl = registeredUserLevel(req);
-        if (lvl < RegisteredUser::ModerLevel)
+        if (!moderOnBoard(req, boardName))
             return bRet(error, tq.translate("setThreadFixed", "Not enough rights", "error"), false);
-        if (lvl < RegisteredUser::AdminLevel) {
-            QStringList boards = registeredUserBoards(req);
-            if (!boards.contains("*") && !boards.contains(boardName))
-                return bRet(error, tq.translate("setThreadFixed", "Not enough rights", "error"), false);
-        }
         if (!setThreadFixedInternal(boardName, threadNumber, fixed, error, tq.locale()))
             return false;
         t.commit();
@@ -1019,14 +1066,8 @@ bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("setThreadOpened", "Internal database error", "error"), false);
-        int lvl = registeredUserLevel(req);
-        if (lvl < RegisteredUser::ModerLevel)
+        if (!moderOnBoard(req, boardName))
             return bRet(error, tq.translate("setThreadOpened", "Not enough rights", "error"), false);
-        if (lvl < RegisteredUser::AdminLevel) {
-            QStringList boards = registeredUserBoards(req);
-            if (!boards.contains("*") && !boards.contains(boardName))
-                return bRet(error, tq.translate("setThreadOpened", "Not enough rights", "error"), false);
-        }
         if (!setThreadOpenedInternal(boardName, threadNumber, opened, error, tq.locale()))
             return false;
         t.commit();

@@ -222,6 +222,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelEmail = ts.translate("initBaseBoard", "E-mail:", "postFormLabelEmail");
     c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
     c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
+    c.postFormLabelPremoderation = ts.translate("initBaseBoard", "Pre-moderation:", "postFormLabelPremoderation");
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
@@ -230,6 +231,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
+    c.premoderationEnabled = board->premoderationEnabled();
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");

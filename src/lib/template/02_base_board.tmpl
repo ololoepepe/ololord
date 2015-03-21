@@ -100,6 +100,17 @@
                             </td>
                         </tr>
                     <% end %>
+                    <% if ( content.premoderationEnabled ) %>
+                        <tr>
+                            <td class="postformLabel">
+                                <b><%= postFormLabelPremoderation %></b>
+                            </td>
+                            <td class="postformField">
+                                <input type="checkbox" id="postFormInputPremoderation<%= position %>"
+                                       name="premoderation" value="true" />
+                            </td>
+                        </tr>
+                    <% end %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormInputFile %></b>
@@ -274,7 +285,7 @@
                 <% end %>
             <% end %>
         <% end %>
-        <% if ( content.moder ) %>
+        <% if ( content.moder || post.premoderation ) %>
             <a name="editButton" href="javascript:editPost('<%= currentBoard.name %>', '<%= post.number %>');">
                 <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
         <% end %>
@@ -356,6 +367,11 @@
                 <input name="email" type="hidden" value="<%= post.email %>" />
                 <input name="name" type="hidden" value="<%= post.rawName %>" />
                 <input name="subject" type="hidden" value="<%= post.rawSubject %>" />
+                <% if ( post.premoderation ) %>
+                    <input name="premoderation" type="hidden" value="true" />
+                <% else %>
+                    <input name="premoderation" type="hidden" value="false" />
+                <% end %>
                 <% if ( post.files.size() < 2 ) %>
                     <td class="postText">
                         <% if ( thread ) %>
@@ -478,28 +494,24 @@
         <span name="dateTime"></span>
         #<a name="number"></a>
         <span name="permanent" style="display: none;">
-            <span name="moder" style="display: none;">
-                <a name="editButton" href="javascript:editPost('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
-                <a name="fixButton"
-                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
-                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
-                <a name="unfixButton"
-                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
-                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
-                <a name="closeButton"
-                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
-                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
-                <a name="openButton"
-                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
-                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
-                <a name="banButton" href="javascript:banUser('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
-                <input id="post%postNumber%RawText" name="rawText" type="hidden" value="" />
-                <input name="email" type="hidden" value="%email%" />
-                <input name="name" type="hidden" value="%rawName%" />
-                <input name="subject" type="hidden" value="%rawSubject%" />
-            </span>
+            <a name="editButton" href="javascript:editPost('<%= currentBoard.name %>', '%postNumber%');">
+                <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+            <a name="fixButton" href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
+                <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+            <a name="unfixButton" href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
+                <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+            <a name="closeButton"
+               href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
+                <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+            <a name="openButton" href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
+                <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+            <a name="banButton" href="javascript:banUser('<%= currentBoard.name %>', '%postNumber%');">
+                <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+            <input id="post%postNumber%RawText" name="rawText" type="hidden" value="" />
+            <input name="email" type="hidden" value="" />
+            <input name="name" type="hidden" value="" />
+            <input name="subject" type="hidden" value="" />
+            <input name="premoderation" type="hidden" value="false" />
             <a href="javascript:complain();">
                 <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
             <a name="deleteButton" href="javascript:deletePost('<%= currentBoard.name %>', '%postNumber%', true);">
@@ -584,6 +596,24 @@
                 </td>
             </tr>
         <% end %>
+        <% if ( content.premoderationEnabled ) %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelPremoderation %></b>
+                </td>
+                <td class="postformField">
+                    <input type="checkbox" name="premoderation" value="true" />
+                </td>
+            </tr>
+        <% end %>
+        <tr>
+            <td class="postformLabel">
+                <b><%= postFormLabelPassword %></b>
+            </td>
+            <td class="postformField">
+                <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
+             </td>
+         </tr>
     </tbody>
 </table>
 <% end template %>

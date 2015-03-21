@@ -11,12 +11,12 @@
 [done] Implement image source search buttons
 [done] Merge CSS
 [done] Add ability to switch styles
-* Implement pre-moderation
-* Implement proxy blocking
-[done] Implement real IP behind proxy detection
-* Implement file deduplication
-* Make HTML compatible with Dollchan Extension Tools
 [done] Implement favicon blinking on new posts
 [done] Add ability to save all images from thread to disk
+[done] Implement pre-moderation
+[done] Implement real IP behind proxy detection
+* Implement proxy blocking
+* Implement file deduplication
+* Make HTML compatible with Dollchan Extension Tools
 * Improve JS code style
 * Fix post preview buttons displaying

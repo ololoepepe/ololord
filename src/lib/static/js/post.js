@@ -227,7 +227,21 @@ function editPost(boardName, postNumber) {
     subject.value = post.querySelector("[name='subject']").value;
     text.appendChild(document.createTextNode(postText.value));
     var moder = (document.getElementById("moder").value === "true");
+    var premoderationField = form.querySelector("[name='premoderation']");
+    if (!!premoderationField) {
+        if (post.querySelector("[name='premoderation']").value == "true")
+            premoderationField.checked = true;
+        else
+            premoderationField.parentNode.parentNode.style.display = "none";
+    }
     showDialog(title, null, form, function() {
+        var pwd = form.querySelector("[name='password']").value;
+        if (pwd.length < 1) {
+            if (!getCookie("hashpass"))
+                return alert(document.getElementById("notLoggedInText").value);
+        } else if (!isHashpass(pwd)) {
+            pwd = toHashpass(pwd);
+        }
         var params = {
             "boardName": boardName,
             "postNumber": +postNumber,
@@ -235,7 +249,9 @@ function editPost(boardName, postNumber) {
             "email": email.value,
             "name": name.value,
             "subject": subject.value,
-            "raw": !!moder ? form.querySelector("[name='raw']").checked : false
+            "raw": !!moder ? form.querySelector("[name='raw']").checked : false,
+            "premoderation": !!premoderationField ? premoderationField.checked : false,
+            "password": pwd
         };
         ajaxRequest("edit_post", [params], 5, function(rese) {
             ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
@@ -638,18 +654,32 @@ function createPostNode(res, permanent) {
     hideButton.href = hideButton.href.replace("%postNumber%", res["number"]);
     
     hideButton.href = hideButton.href.replace("%hide%", !hidden);
-    var m = post.querySelector("[name='moder']");
-    if (!moder) {
-        m.parentNode.removeChild(m);
-        return post;
-    }
-    m.style.display = "";
     var editButton = post.querySelector("[name='editButton']");
-    editButton.href = editButton.href.replace("%postNumber%", res["number"]);
     var fixButton = post.querySelector("[name='fixButton']");
     var unfixButton = post.querySelector("[name='unfixButton']");
     var openButton = post.querySelector("[name='openButton']");
     var closeButton = post.querySelector("[name='closeButton']");
+    var banButton = post.querySelector("[name='banButton']");
+    var rawText = post.querySelector("[name='rawText']");
+    post.querySelector("[name='premoderation']").value = !!res["premoderation"];
+    if (moder || !!res["premoderation"]) {
+        editButton.href = editButton.href.replace("%postNumber%", res["number"]);
+        rawText.id = rawText.id.replace("%postNumber%", res["number"]);
+        rawText.value = res["rawPostText"];
+        post.querySelector("[name='email']").value = res["email"];
+        post.querySelector("[name='name']").value = res["rawName"];
+        post.querySelector("[name='subject']").value = res["rawSubject"];
+    } else {
+        editButton.parentNode.removeChild(editButton);
+    }
+    if (!moder) {
+        fixButton.parentNode.removeChild(fixButton);
+        unfixButton.parentNode.removeChild(unfixButton);
+        openButton.parentNode.removeChild(openButton);
+        closeButton.parentNode.removeChild(closeButton);
+        banButton.parentNode.removeChild(banButton);
+        return post;
+    }
     var toThread = post.querySelector("[name='toThread']");
     if (res["number"] === res["threadNumber"]) {
         if (!!res["fixed"]) {
@@ -680,14 +710,7 @@ function createPostNode(res, permanent) {
         closeButton.parentNode.removeChild(closeButton);
         toThread.parentNode.removeChild(toThread);
     }
-    var banButton = post.querySelector("[name='banButton']");
     banButton.href = banButton.href.replace("%postNumber%", res["number"]);
-    var rawText = post.querySelector("[name='rawText']");
-    rawText.id = rawText.id.replace("%postNumber%", res["number"]);
-    rawText.value = res["rawPostText"];
-    post.querySelector("[name='email']").value = res["email"];
-    post.querySelector("[name='name']").value = res["rawName"];
-    post.querySelector("[name='subject']").value = res["rawSubject"];
     return post;
 }
 

@@ -574,6 +574,11 @@ The default is 3.</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
 </context>
 <context>
     <name>deletePost</name>
@@ -702,11 +707,6 @@ The default is 3.</source>
         <translation>Отсутствует текст</translation>
     </message>
     <message>
-        <source>Not logged in</source>
-        <comment>error</comment>
-        <translation>Не залогинен</translation>
-    </message>
-    <message>
         <source>Text is too long</source>
         <comment>error</comment>
         <translation>Текст слишком длинный</translation>
@@ -725,6 +725,16 @@ The default is 3.</source>
         <source>Subject is too long</source>
         <comment>error</comment>
         <translation>Тема слишком длинная</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
     </message>
 </context>
 <context>
@@ -1411,6 +1421,11 @@ Your choice:</source>
         <comment>downloadThreadText</comment>
         <translation>Скачать все файлы из треда в виде .zip-архива</translation>
     </message>
+    <message>
+        <source>Pre-moderation:</source>
+        <comment>postFormLabelPremoderation</comment>
+        <translation>Премодерация:</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -1766,6 +1781,18 @@ The default is true.</source>
 В противном случае адрес может быть адресом прокси-сервера.
 Работает только для непрозрачных прокси (X-Forwarded-For, X-Client-IP).
 По умолчанию true.</translation>
+    </message>
+    <message>
+        <source>Determines if pre-moderation is enabled on this board.
+The default is false.</source>
+        <translation>Определяет, включена ли премодерация на этой доске.
+По умолчанию false.</translation>
+    </message>
+    <message>
+        <source>Determines if pre-moderation is enabled.
+The default is false.</source>
+        <translation>Определяет, включена ли премодерация.
+По умолчанию false.</translation>
     </message>
 </context>
 <context>

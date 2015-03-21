@@ -35,6 +35,7 @@ private:
     bool postingEnabled_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(thread_))
     Posts posts_;
+    bool premoderation_;
 public:
     explicit Thread(const QString &board, quint64 number, const QDateTime &dateTime);
 private:
@@ -49,11 +50,13 @@ public:
     bool postingEnabled() const;
     const Posts &posts() const;
     Posts &posts();
+    bool premoderation() const;
     void setArchived(bool archived);
     void setBoard(const QString &board);
     void setDateTime(const QDateTime &dateTime);
     void setFixed(bool fixed);
     void setPostingEnabled(bool enabled);
+    void setPremoderation(bool pm);
 private:
     friend class odb::access;
 };
@@ -92,6 +95,7 @@ private:
     QByteArray files_;
     QByteArray hashpass_;
     QString name_;
+    bool premoderation_;
     PRAGMA_DB(not_null)
     QByteArray password_;
     QString posterIp_;
@@ -119,6 +123,7 @@ public:
     QByteArray hashpass() const;
     QString name() const;
     QByteArray password() const;
+    bool premoderation() const;
     QString posterIp() const;
     QString rawText() const;
     QSet<quint64> referencedBy() const;
@@ -129,6 +134,7 @@ public:
     void setEmail(const QString &email);
     void setFiles(const QStringList &files);
     void setName(const QString &name);
+    void setPremoderation(bool pm);
     void setRawText(const QString &text);
     void setReferencedBy(const QSet<quint64> &list);
     void setSubject(const QString &subject);

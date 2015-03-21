@@ -31,6 +31,7 @@ class request;
 
 #include <BCoreApplication>
 
+#include <QByteArray>
 #include <QDateTime>
 #include <QDebug>
 #include <QList>
@@ -235,6 +236,8 @@ public:
     QString email;
     QString *error;
     QString name;
+    QByteArray password;
+    bool premoderation;
     bool raw;
     QString subject;
     QString text;
@@ -244,6 +247,7 @@ public:
         boardName(board), postNumber(post), request(req)
     {
         error = 0;
+        premoderation = false;
         raw = false;
     }
 };
@@ -274,6 +278,10 @@ OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *e
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT quint64 lastPostNumber(const QString &boardName, QString *error = 0,
                                       const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool moderOnBoard(const cppcms::http::request &req, const QString &board1,
+                                 const QString &board2 = QString());
+OLOLORD_EXPORT bool moderOnBoard(const QByteArray &hashpass, const QString &boardName,
+                                 const QString &board2 = QString());
 OLOLORD_EXPORT bool postExists(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req);

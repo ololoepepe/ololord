@@ -56,6 +56,7 @@ static cppcms::json::object toJson(const Content::Post &post)
     o["threadNumber"] = post.threadNumber;
     o["subject"] = post.subject;
     o["subjectIsRaw"] = post.subjectIsRaw;
+    o["premoderation"] = post.premoderation;
     o["rawName"] = post.rawName;
     o["rawSubject"] = post.rawSubject;
     o["text"] = post.text;
@@ -122,6 +123,8 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     p.raw = params.at("raw").boolean();
     p.subject = Tools::fromStd(params.at("subject").str());
     p.text = Tools::fromStd(params.at("text").str());
+    p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
+    p.premoderation = params.at("premoderation").boolean();
     QString err;
     if (!Database::editPost(p))
         return server.return_error(Tools::toStd(err));
