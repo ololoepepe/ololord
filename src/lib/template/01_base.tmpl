@@ -51,7 +51,7 @@
     <span>
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
-            <button class="button" onclick="javascript:doLogout();"><%= loginButtonText %></button>
+            <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
             <input id="showTripcodeCheckbox" type="checkbox" class="checkbox" title="<%= showTripcodeText %>"
                    onclick="javascript:switchShowTripcode();" name="showTripcode" />
         <% else %>
@@ -134,10 +134,6 @@
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/picoModal-2.1.0.min.js"></script>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/settings.js"></script>
-<% end template %>
-
-<% template searchActionHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/search_action.js"></script>
 <% end template %>
 
 <% end view %>

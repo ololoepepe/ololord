@@ -14,9 +14,9 @@
 [done] Implement favicon blinking on new posts
 [done] Add ability to save all images from thread to disk
 [done] Implement pre-moderation
+[done] Fix post preview buttons displaying
 [done] Implement real IP behind proxy detection
 * Implement proxy blocking
 * Implement file deduplication
 * Make HTML compatible with Dollchan Extension Tools
 * Improve JS code style
-* Fix post preview buttons displaying

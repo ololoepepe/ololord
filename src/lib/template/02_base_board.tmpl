@@ -618,15 +618,11 @@
 </table>
 <% end template %>
 
-<% template createActionHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/create_action.js"></script>
+<% template boardHead() %>
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/post.js"></script>
 <% if ( content.captchaEnabled ) %>
     <script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
 <% end %>
-<% end template %>
-
-<% template boardHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/post.js"></script>
 <% end %>
 
 <% end view %>

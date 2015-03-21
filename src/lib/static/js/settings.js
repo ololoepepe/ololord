@@ -1,4 +1,23 @@
+var lord = lord || {};
+
 var Billion = 2 * 1000 * 1000 * 1000;
+
+var searchFormVisible = {
+    "top": false,
+    "bottom": false
+};
+
+function showHideSearchForm(position) {
+    var theButton = document.getElementById("showHideSearchFormButton" + position);
+    if (searchFormVisible[position]) {
+        theButton.innerHTML = document.getElementById("showSearchFormText").value;
+        document.getElementById("searchForm" + position).className = "searchFormInvisible";
+    } else {
+        theButton.innerHTML = document.getElementById("hideSearchFormText").value;
+        document.getElementById("searchForm" + position).className = "searchFormVisible";
+    }
+    searchFormVisible[position] = !searchFormVisible[position];
+}
 
 function getCookie(name) {
     var matches = document.cookie.match(
@@ -132,7 +151,7 @@ function doLogin() {
     reloadPage();
 }
 
-function doLogout() {
+lord.doLogout = function() {
     setCookie("hashpass", "", {
         "expires": Billion, "path": "/"
     });
