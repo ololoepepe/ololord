@@ -139,6 +139,17 @@ span.spoiler:hover a {
 }
 
 /*
+    Board video
+*/
+
+.theVideo {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+
+/*
     Board /mlp/
 */
 
@@ -155,17 +166,6 @@ span.spoiler:hover a {
 
 .hiddenButton {
     display: none;
-}
-
-/*
-    Board video
-*/
-
-.theVideo {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    text-align: center;
 }
 
 /*

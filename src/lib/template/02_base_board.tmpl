@@ -35,13 +35,13 @@
 <% if ( content.postingEnabled ) %>
     <div class="createAction">
         <div>
-            [<a id="showHidePostFormButton<%= position %>" href="javascript:showHidePostForm('<%= position %>');">
+            [<a id="showHidePostFormButton<%= position %>" href="javascript:lord.showHidePostForm('<%= position %>');">
                 <%= showPostFormText %>
             </a>]
         </div>
         <form id="postForm<%= position %>" class="postFormInvisible" method="post" accept-charset="utf-8"
               action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data"
-              target="kostyleeque" onsubmit="submitted(this);">
+              target="kostyleeque" onsubmit="lord.submitted(this);">
             <input type="hidden" id="postFormInputBoard<%= position %>" value="<%= currentBoard.name %>"
                    name="board" />
             <% if ( content.currentThread > 0 ) %>
@@ -115,12 +115,13 @@
                             <b><%= postFormInputFile %></b>
                         </td>
                         <td class="postformField">
-                            <div class="postformFile" onclick="browseFile(event, this);" title="<%= selectFileText %>">
+                            <div class="postformFile" onclick="lord.browseFile(event, this);"
+                                 title="<%= selectFileText %>">
                                 <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
-                                <input type="file" name="file" onchange="fileSelected(this);" class="postformFileInput"
-                                       accept="<%= supportedFileTypes %>" />
+                                <input type="file" name="file" onchange="lord.fileSelected(this);"
+                                       class="postformFileInput" accept="<%= supportedFileTypes %>" />
                                 <span class="postformFileText"></span>
-                                <a href="javascript:void(0);" style="display: none;" onclick="removeFile(this);"
+                                <a href="javascript:void(0);" style="display: none;" onclick="lord.removeFile(this);"
                                    class="postformFileRemoveButton">
                                     <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
                                          class="postformFileRemoveImage"></a>
@@ -180,7 +181,7 @@
     <% end %>
     <div class="postFileFile">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
-           onclick="return showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
+           onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
             <% if ( "webm" == file.thumbName ) %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.thumbSizeX %>"
@@ -262,10 +263,10 @@
                 <% end %>
             <% else %>
                 <% if ( content.moder ) %>
-                    #<a href="javascript:insertPostNumber(<%= post.number %>);"
+                    #<a href="javascript:lord.insertPostNumber(<%= post.number %>);"
                         title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="javascript:insertPostNumber(<%= post.number %>);"><%= post.number %></a>
+                    #<a href="javascript:lord.insertPostNumber(<%= post.number %>);"><%= post.number %></a>
                 <% end %>
             <% end %>
         <% else %>
@@ -285,40 +286,41 @@
             <% end %>
         <% end %>
         <% if ( content.moder || post.premoderation ) %>
-            <a name="editButton" href="javascript:editPost('<%= currentBoard.name %>', '<%= post.number %>');">
+            <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
                 <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
         <% end %>
         <% if ( content.moder && post.number == post.threadNumber ) %>
             <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
                 <a name="fixButton"
-                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                   href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
                     <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
             <% else %>
                 <a name="fixButton"
-                   href="javascript:setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                   href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
                     <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
             <% end %>
             <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
                 <a name="closeButton"
-                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                   href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
                     <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
             <% else %>
                 <a name="closeButton"
-                   href="javascript:setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                   href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
                     <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
             <% end %>
         <% end %>
         <% if ( content.moder ) %>
-            <a name="banButton" href="javascript:banUser('<%= currentBoard.name %>', '<%= post.number %>');">
+            <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
                 <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
         <% end %>
         <% if ( !thread && post.number == post.threadNumber ) %>
-            <a name="downloadButton" href="javascript:downloadThread();">
+            <a name="downloadButton" href="javascript:lord.downloadThread();">
                 <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
         <% end %>
-        <a name="complainButton" href="javascript:complain();">
+        <a name="complainButton" href="javascript:lord.complain();">
             <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
-        <a name="deleteButton" href="javascript:deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+        <a name="deleteButton"
+           href="javascript:lord.deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
         <% if ( post.number == post.threadNumber ) %>
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
         <% else %>
@@ -327,21 +329,21 @@
         <% if ( post.number == post.threadNumber ) %>
             <% if ( (thread && thread->hidden) || (!thread && dynamic_cast<Content::Thread *>(&content)->hidden) ) %>
                 <a name="hideButton" id="hidePost<%= post.number %>"
-                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                   href="javascript:lord.setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <% else %>
                 <a name="hideButton" id="hidePost<%= post.number %>"
-                   href="javascript:setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                   href="javascript:lord.setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <% end %>
         <% else %>
             <% if ( post.hidden ) %>
                 <a name="hideButton" id="hidePost<%= post.number %>"
-                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                   href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <% else %>
                 <a name="hideButton" id="hidePost<%= post.number %>"
-                   href="javascript:setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                   href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <% end %>
         <% end %>
@@ -408,8 +410,8 @@
                         <%foreach pn in post.referencedBy %>
                             <% item %>
                                 <a href="javascript:void(0);"
-                                   onmouseover="viewPost(this, '<%= currentBoard.name %>', <%= pn %>);"
-                                   onmouseout="noViewPost();">&gt;&gt;<%= pn %></a>
+                                   onmouseover="lord.viewPost(this, '<%= currentBoard.name %>', <%= pn %>);"
+                                   onmouseout="lord.noViewPost();">&gt;&gt;<%= pn %></a>
                             <% end %>
                         <% end %>
                     </span>
@@ -495,30 +497,34 @@
         <span name="dateTime"></span>
         #<a name="number"></a>
         <span name="permanent" style="display: none;">
-            <a name="editButton" href="javascript:editPost('<%= currentBoard.name %>', '%postNumber%');">
+            <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '%postNumber%');">
                 <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
-            <a name="fixButton" href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
+            <a name="fixButton"
+               href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
                 <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
-            <a name="unfixButton" href="javascript:setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
+            <a name="unfixButton"
+               href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
                 <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
             <a name="closeButton"
-               href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
+               href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
                 <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
-            <a name="openButton" href="javascript:setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
+            <a name="openButton"
+               href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
                 <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
-            <a name="banButton" href="javascript:banUser('<%= currentBoard.name %>', '%postNumber%');">
+            <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '%postNumber%');">
                 <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
             <input id="post%postNumber%RawText" name="rawText" type="hidden" value="" />
             <input name="email" type="hidden" value="" />
             <input name="name" type="hidden" value="" />
             <input name="subject" type="hidden" value="" />
             <input name="premoderation" type="hidden" value="false" />
-            <a href="javascript:complain();">
+            <a href="javascript:lord.complain();">
                 <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
-            <a name="deleteButton" href="javascript:deletePost('<%= currentBoard.name %>', '%postNumber%', true);">
+            <a name="deleteButton"
+               href="javascript:lord.deletePost('<%= currentBoard.name %>', '%postNumber%', true);">
                 <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
             <a id="hidePost%postNumber%" name="hideButton"
-               href="javascript:setPostHidden('<%= currentBoard.name %>', '%postNumber%', %hide%);">
+               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '%postNumber%', %hide%);">
                 <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <span name="toThread" style="display: none;">
                 [<a name="toThreadLink"
@@ -620,7 +626,7 @@
 <% end template %>
 
 <% template boardHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/post.js"></script>
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/base_board.js"></script>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/lib-typedarrays-min.js"></script>
 <% if ( content.captchaEnabled ) %>
     <script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>

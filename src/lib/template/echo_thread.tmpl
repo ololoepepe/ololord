@@ -2,11 +2,6 @@
 <% skin my_skin %>
 <% view echo_thread uses Content::echoThread extends thread %>
 
-<% template head() %>
-<%include thread::head() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
-<% end template %>
-
 <% template body() %>
 <%include thread::body() %>
 <iframe src="<%= threadLink | raw %>" name="externalThreadFrame" scrolling="auto" class="externalThreadFrame"

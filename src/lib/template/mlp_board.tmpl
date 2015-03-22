@@ -7,8 +7,22 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <% include baseHead(0) %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
-        <script type="text/javascript" src="/<%= sitePathPrefix %>js/board_mlp.js"></script>
+        <script type="text/javascript">
+            /*ololord global object*/
+
+            var lord = lord || {};
+
+            /*Functions*/
+
+            lord.nextStage = function() {
+                document.getElementById("theVideo").pause();
+                document.getElementById("firstStageVideo").className += " hiddenVideo";
+                document.getElementById("nextStageButton").className += " hiddenButton";
+                var nsv = document.getElementById("nextStageVideo");
+                nsv.className = nsv.className.replace(" hiddenVideo", "");
+                document.getElementById("theVideo2").play();
+            };
+        </script>
     </head>
     <body>
         <div id="firstStageVideo" class="theVideo">
@@ -18,7 +32,7 @@
             </video> 
         </div>
         <button id="nextStageButton" class="button theButton"
-                onclick="javascript:nextStage();"><%= buttonText %></button>
+                onclick="javascript:lord.nextStage();"><%= buttonText %></button>
         <div id="nextStageVideo" class="theVideo hiddenVideo">
             <video id="theVideo2">
                 <source src="/<%= sitePathPrefix %>video/<%= videoFileName2 %>" type="<%= videoType %>" />

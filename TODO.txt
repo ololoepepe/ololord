@@ -17,7 +17,7 @@
 [done] Fix post preview buttons displaying
 [done] Fix post link insertion
 [done] Implement file deduplication
+[done] Encapsulate JS API in a namespace
 [done] Implement real IP behind proxy detection
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
-* Improve JS code style

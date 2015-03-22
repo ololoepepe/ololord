@@ -1,41 +1,30 @@
-var postPreviews = {};
-var lastPostPreview = null;
-var lastPostPreviewTimer = null;
-var formSubmitted = null;
-var popups = [];
-var images = {};
-var img = null;
-var postFormVisible = {
+/*ololord global object*/
+
+var lord = lord || {};
+
+/*Variables*/
+
+lord.postPreviews = {};
+lord.lastPostPreview = null;
+lord.lastPostPreviewTimer = null;
+lord.formSubmitted = null;
+lord.popups = [];
+lord.images = {};
+lord.img = null;
+lord.postFormVisible = {
     "top": false,
     "bottom": false
 };
 
-function showHidePostForm(position) {
-    var theButton = document.getElementById("showHidePostFormButton" + position);
-    if (postFormVisible[position]) {
-        theButton.innerHTML = document.getElementById("showPostFormText").value;
-        document.getElementById("postForm" + position).className = "postFormInvisible";
-    } else {
-        theButton.innerHTML = document.getElementById("hidePostFormText").value;
-        document.getElementById("postForm" + position).className = "postFormVisible";
-        var captcha = document.getElementById("googleCaptcha");
-        if (!!captcha) {
-            var p = ("Top" === position) ? "Bottom" : "Top";
-            if (postFormVisible[p])
-                showHidePostForm(p);
-            document.getElementById("googleCaptcha" + position).appendChild(captcha);
-        }
-    }
-    postFormVisible[position] = !postFormVisible[position];
-}
+/*Functions*/
 
-function toCenter(element, sizeHintX, sizeHintY) {
+lord.toCenter = function(element, sizeHintX, sizeHintY) {
     var doc = document.documentElement;
     element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
     element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
-}
+};
 
-function resetScale(image) {
+lord.resetScale = function(image) {
     var k = (image.scale / 100);
     var tr = "scale(" + k + ", " + k + ")";
     //Fuck you all who create those stupid browser-specific features
@@ -44,9 +33,9 @@ function resetScale(image) {
     image.style.msTransform = tr;
     image.style.OTransform = tr;
     image.style.transform = tr;
-}
+};
 
-function removeReferences(postNumber) {
+lord.removeReferences = function(postNumber) {
     postNumber = +postNumber;
     if (isNaN(postNumber))
         return;
@@ -68,9 +57,9 @@ function removeReferences(postNumber) {
             }
         }
     }
-}
+};
 
-function addReferences(postNumber, referencedPosts) {
+lord.addReferences = function(postNumber, referencedPosts) {
     postNumber = +postNumber;
     if (isNaN(postNumber))
         return;
@@ -90,18 +79,18 @@ function addReferences(postNumber, referencedPosts) {
         var a = document.createElement("a");
         a.href = "javascript:void(0);";
         a.addEventListener("mouseover", function(e) {
-            viewPost(this, currentBoardName, postNumber);
+            lord.viewPost(this, currentBoardName, postNumber);
         });
         a.onmouseout = function() {
-            noViewPost();
+            lord.noViewPost();
         };
         referencedBy.appendChild(document.createTextNode(" "));
         a.appendChild(document.createTextNode(">>" + postNumber));
         referencedBy.appendChild(a);
     }
-}
+};
 
-function setInitialScale(image, sizeHintX, sizeHintY) {
+lord.setInitialScale = function(image, sizeHintX, sizeHintY) {
     var doc = document.documentElement;
     var maxWidth = doc.clientWidth - 10;
     var maxHeight = doc.clientHeight - 10;
@@ -112,9 +101,9 @@ function setInitialScale(image, sizeHintX, sizeHintY) {
     if (sizeHintY > maxHeight)
         kh = maxHeight / sizeHintY;
     image.scale = ((kw < kh) ? kw : kh) * 100;
-}
+};
 
-function showPopup(text, timeout, additionalClassNames) {
+lord.showPopup = function(text, timeout, additionalClassNames) {
     if (!text)
         return;
     if (isNaN(+timeout))
@@ -123,43 +112,29 @@ function showPopup(text, timeout, additionalClassNames) {
     msg.className = "popup";
     if (!!additionalClassNames)
         msg.className += " " + additionalClassNames;
-    if (popups.length > 0) {
-        var prev = popups[popups.length - 1];
+    if (lord.popups.length > 0) {
+        var prev = lord.popups[lord.popups.length - 1];
         msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
     }
     msg.appendChild(document.createTextNode(text));
     document.body.appendChild(msg);
-    popups.push(msg);
+    lord.popups.push(msg);
     setTimeout(function() {
         var offsH = msg.offsetHeight + 5;
         document.body.removeChild(msg);
-        var ind = popups.indexOf(msg);
+        var ind = lord.popups.indexOf(msg);
         if (ind < 0)
             return;
-        popups.splice(ind, 1);
-        for (var i = 0; i < popups.length; ++i) {
-            var top = +popups[i].style.top.replace("px", "");
+        lord.popups.splice(ind, 1);
+        for (var i = 0; i < lord.popups.length; ++i) {
+            var top = +lord.popups[i].style.top.replace("px", "");
             top -= offsH;
-            popups[i].style.top = top + "px";
+            lord.popups[i].style.top = top + "px";
         }
     }, 5000);
-}
-
-function cumulativeOffset(element) {
-    var top = 0;
-    var left = 0;
-    do {
-        top += element.offsetTop || 0;
-        left += element.offsetLeft || 0;
-        element = element.offsetParent;
-    } while(element);
-    return {
-        "top": top,
-        "left": left
-    };
 };
 
-function traverseChildren(elem) {
+lord.traverseChildren = function(elem) {
     var children = [];
     var q = [];
     q.push(elem);
@@ -173,9 +148,9 @@ function traverseChildren(elem) {
         pushAll(elem.children);
     }
     return children;
-}
+};
 
-function ajaxRequest(method, params, id, callback) {
+lord.ajaxRequest = function(method, params, id, callback) {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
     var prefix = document.getElementById("sitePathPrefix").value;
@@ -200,258 +175,9 @@ function ajaxRequest(method, params, id, callback) {
         }
     };
     xhr.send(JSON.stringify(request));
-}
+};
 
-function showPasswordDialog(title, label, callback) {
-    var div = document.createElement("div");
-    var input = document.createElement("input");
-    input.type = "password";
-    input.className = "input";
-    input.maxlength = 150;
-    input.size = 30;
-    div.appendChild(input);
-    var sw = document.createElement("input");
-    sw.type = "checkbox";
-    sw.className = "checkbox";
-    sw.title = document.getElementById("showPasswordText").value;
-    sw.onclick = function() {
-        if (input.type === "password")
-            input.type = "text";
-        else if (input.type === "text")
-            input.type = "password";
-    };
-    div.appendChild(sw);
-    showDialog(title, label, div, function() {
-        callback(input.value);
-    }, function() {
-        input.focus();
-    });
-}
-
-function editPost(boardName, postNumber) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    var post = document.getElementById("post" + postNumber);
-    if (!post)
-        return;
-    var postText = document.getElementById("post" + postNumber + "RawText");
-    if (!postText)
-        return;
-    var title = document.getElementById("editPostText").value;
-    var form = document.getElementById("editPostTemplate").cloneNode(true);
-    form.id = "";
-    form.style.display = "";
-    var email = form.querySelector("[name='email']");
-    var name = form.querySelector("[name='name']");
-    var subject = form.querySelector("[name='subject']");
-    var text = form.querySelector("[name='text']");
-    email.value = post.querySelector("[name='email']").value;
-    name.value = post.querySelector("[name='name']").value;
-    subject.value = post.querySelector("[name='subject']").value;
-    text.appendChild(document.createTextNode(postText.value));
-    var moder = (document.getElementById("moder").value === "true");
-    var premoderationField = form.querySelector("[name='premoderation']");
-    if (!!premoderationField) {
-        if (post.querySelector("[name='premoderation']").value == "true")
-            premoderationField.checked = true;
-        else
-            premoderationField.parentNode.parentNode.style.display = "none";
-    }
-    showDialog(title, null, form, function() {
-        var pwd = form.querySelector("[name='password']").value;
-        if (pwd.length < 1) {
-            if (!getCookie("hashpass"))
-                return alert(document.getElementById("notLoggedInText").value);
-        } else if (!isHashpass(pwd)) {
-            pwd = toHashpass(pwd);
-        }
-        var params = {
-            "boardName": boardName,
-            "postNumber": +postNumber,
-            "text": text.value,
-            "email": email.value,
-            "name": name.value,
-            "subject": subject.value,
-            "raw": !!moder ? form.querySelector("[name='raw']").checked : false,
-            "premoderation": !!premoderationField ? premoderationField.checked : false,
-            "password": pwd
-        };
-        ajaxRequest("edit_post", [params], 5, function(rese) {
-            ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
-                var newPost = createPostNode(res, true);
-                if (!newPost)
-                    return;
-                removeReferences(postNumber);
-                addReferences(postNumber, rese);
-                var postLimit = post.querySelector("[name='postLimit']");
-                var bumpLimit = post.querySelector("[name='bumpLimit']");
-                if (!!postLimit || !!bumpLimit) {
-                    var postHeader = newPost.querySelector(".postHeader");
-                    if (!!postLimit)
-                        postHeader.appendChild(postLimit.cloneNode(true));
-                    if (!!bumpLimit)
-                        postHeader.appendChild(bumpLimit.cloneNode(true));
-                }
-                post.parentNode.replaceChild(newPost, post);
-            });
-        });
-    });
-}
-
-function setThreadFixed(boardName, postNumber, fixed) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    if (!getCookie("hashpass"))
-        return alert(document.getElementById("notLoggedInText").value);
-    ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, reloadPage);
-}
-
-function setThreadOpened(boardName, postNumber, opened) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    if (!getCookie("hashpass"))
-        return alert(document.getElementById("notLoggedInText").value);
-    ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, reloadPage);
-}
-
-function banUser(boardName, postNumber) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    var title = document.getElementById("banUserText").value;
-    var div = document.createElement("div");
-    var div1 = document.createElement("div");
-    div1.appendChild(document.createTextNode(document.getElementById("boardLabelText").value));
-    var selBoard = document.getElementById("availableBoardsSelect").cloneNode(true);
-    selBoard.style.display = "block";
-    div1.appendChild(selBoard);
-    div.appendChild(div1);
-    var div2 = document.createElement("div");
-    div2.appendChild(document.createTextNode(document.getElementById("banLevelLabelText").value));
-    var selLevel = document.getElementById("banLevelsSelect").cloneNode(true);
-    selLevel.style.display = "block";
-    div2.appendChild(selLevel);
-    div.appendChild(div2);
-    var div3 = document.createElement("div");
-    div3.appendChild(document.createTextNode(document.getElementById("banReasonLabelText").value));
-    var inputReason = document.createElement("input");
-    inputReason.type = "text";
-    inputReason.className = "input";
-    div3.appendChild(inputReason);
-    div.appendChild(div3);
-    var div4 = document.createElement("div");
-    div4.appendChild(document.createTextNode(document.getElementById("banExpiresLabelText").value));
-    var inputExpires = document.createElement("input");
-    inputExpires.type = "text";
-    inputExpires.placeholder = "dd.MM.yyyy:hh";
-    inputExpires.className = "input";
-    div4.appendChild(inputExpires);
-    div.appendChild(div4);
-    showDialog(title, null, div, function() {
-        var params = {
-            "boardName": boardName,
-            "postNumber": +postNumber,
-            "board": selBoard.options[selBoard.selectedIndex].value,
-            "level": +selLevel.options[selLevel.selectedIndex].value,
-            "reason": inputReason.value,
-            "expires": inputExpires.value
-        };
-        ajaxRequest("ban_user", [params], 4, function(res) {
-            reloadPage();
-        });
-    });
-}
-
-function deletePost(boardName, postNumber, fromThread) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    var title = document.getElementById("enterPasswordTitle").value;
-    var label = document.getElementById("enterPasswordText").value;
-    showPasswordDialog(title, label, function(pwd) {
-        if (null === pwd)
-            return;
-        if (pwd.length < 1) {
-            if (!getCookie("hashpass"))
-                return alert(document.getElementById("notLoggedInText").value);
-        } else if (!isHashpass(pwd)) {
-            pwd = toHashpass(pwd);
-        }
-        ajaxRequest("delete_post", [boardName, +postNumber, pwd], 1, function(res) {
-            var post = document.getElementById("post" + postNumber);
-            if (!post) {
-                if (!!fromThread) {
-                    var suffix = "thread/" + postNumber + ".html";
-                    window.location.href = window.location.href.replace(suffix, "").split("#").shift();
-                } else {
-                    reloadPage();
-                }
-                return;
-            } else if (post.className.indexOf("opPost") > -1) {
-                var suffix = "thread/" + postNumber + ".html";
-                window.location.href = window.location.href.replace(suffix, "").split("#").shift();
-            } else {
-                post.parentNode.removeChild(post);
-                removeReferences(postNumber);
-            }
-        });
-    });
-}
-
-function setPostHidden(boardName, postNumber, hidden) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    var post = document.getElementById("post" + postNumber);
-    var sw = document.getElementById("hidePost" + postNumber);
-    if (!!hidden) {
-        post.className += " hiddenPost";
-        sw.href = sw.href.replace("true", "false");
-        setCookie("postHidden" + boardName + postNumber, "true", {
-            "expires": Billion, "path": "/"
-        });
-    } else {
-        post.className = post.className.replace(" hiddenPost", "");
-        sw.href = sw.href.replace("false", "true");
-        setCookie("postHidden" + boardName + postNumber, "true", {
-            "expires": -1, "path": "/"
-        });
-    }
-}
-
-function setThreadHidden(boardName, postNumber, hidden) {
-    if (!boardName || isNaN(+postNumber))
-        return;
-    var post = document.getElementById("post" + postNumber);
-    var sw = document.getElementById("hidePost" + postNumber);
-    var thread = document.getElementById("thread" + postNumber);
-    var omitted = document.getElementById("threadOmitted" + postNumber);
-    var posts = document.getElementById("threadPosts" + postNumber);
-    if (!!hidden) {
-        post.className += " hiddenPost";
-        if (!!thread)
-            thread.className = "hiddenThread";
-        if (!!omitted)
-            omitted.className += " hiddenPosts";
-        if (!!posts)
-            posts.className += " hiddenPosts";
-        sw.href = sw.href.replace("true", "false");
-        setCookie("postHidden" + boardName + postNumber, "true", {
-            "expires": Billion, "path": "/"
-        });
-    } else {
-        post.className = post.className.replace(" hiddenPost", "");
-        if (!!thread)
-            thread.className = "";
-        if (!!omitted)
-            omitted.className = omitted.className.replace(" hiddenPosts", "");
-        if (!!posts)
-            posts.className = posts.className.replace(" hiddenPosts", "");
-        sw.href = sw.href.replace("false", "true");
-        setCookie("postHidden" + boardName + postNumber, "true", {
-            "expires": -1, "path": "/"
-        });
-    }
-}
-
-function createPostFile(f) {
+lord.createPostFile = function(f) {
     if (!f)
         return null;
     var sitePrefix = document.getElementById("sitePathPrefix").value;
@@ -500,7 +226,7 @@ function createPostFile(f) {
     aImage.href = "/" + sitePrefix + currentBoardName + "/" + f["sourceName"];
     if ("image" === f["type"]) {
         aImage.onclick = function(e) {
-            return showImage("/" + sitePrefix + currentBoardName + "/" + f["sourceName"], f["type"], f["sizeX"],
+            return lord.showImage("/" + sitePrefix + currentBoardName + "/" + f["sourceName"], f["type"], f["sizeX"],
                              f["sizeY"]);
         };
     }
@@ -520,9 +246,9 @@ function createPostFile(f) {
     divImage.appendChild(aImage);
     file.appendChild(divImage);
     return file;
-}
+};
 
-function createPostNode(res, permanent) {
+lord.createPostNode = function(res, permanent) {
     if (!res)
         return null;
     post = document.getElementById("postTemplate");
@@ -532,7 +258,7 @@ function createPostNode(res, permanent) {
     post.id = !!permanent ? ("post" + res["number"]) : "";
     post.style.display = "";
     var currentBoardName = document.getElementById("currentBoardName").value;
-    var hidden = (getCookie("postHidden" + currentBoardName + res["number"]) === "true");
+    var hidden = (lord.getCookie("postHidden" + currentBoardName + res["number"]) === "true");
     if (hidden)
         post.className += " hiddenPost";
     var fixed = post.querySelector("[name='fixed']");
@@ -596,7 +322,7 @@ function createPostNode(res, permanent) {
     var files = post.querySelector((res["files"].length <= 1) ? "[name='files']" : "[name='manyFilesTr']");
     if (!!res["files"]) {
         for (var i = 0; i < res["files"].length; ++i) {
-            var file = createPostFile(res["files"][i]);
+            var file = lord.createPostFile(res["files"][i]);
             if (!!file)
                 files.insertBefore(file, files.children[files.children.length - 1]);
         }
@@ -636,10 +362,10 @@ function createPostNode(res, permanent) {
             var a = document.createElement("a");
             a.href = "javascript:void(0);";
             a.addEventListener("mouseover", function(e) {
-                viewPost(this, currentBoardName, pn);
+                lord.viewPost(this, currentBoardName, pn);
             });
             a.onmouseout = function() {
-                noViewPost();
+                lord.noViewPost();
             };
             referencedBy.appendChild(document.createTextNode(" "));
             a.appendChild(document.createTextNode(">>" + pn));
@@ -737,13 +463,340 @@ function createPostNode(res, permanent) {
     }
     banButton.href = banButton.href.replace("%postNumber%", res["number"]);
     return post;
-}
+};
 
-function viewPostStage2(link, postNumber, post) {
+lord.clearFileInput = function(div) {
+    var preview = div.querySelector("img");
+    if (!!preview && div == preview.parentNode)
+        preview.src = "/" + document.getElementById("sitePathPrefix").value + "img/addfile.png";
+    var span = div.querySelector("span");
+    if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
+        span.removeChild(span.childNodes[0]);
+    div.fileHash = null;
+};
+
+lord.readableSize = function(sz) {
+    sz = +sz;
+    if (isNaN(sz))
+        return "";
+    if (sz / 1024 >= 1) {
+        sz /= 1024;
+        if (sz / 1024 >= 1) {
+            sz = (sz / 1024).toFixed(1);
+            sz += " " + document.getElementById("megabytesText").value;
+        } else {
+            sz = sz.toFixed(1);
+            sz += " " + document.getElementById("kilobytesText").value;
+        }
+    } else {
+        sz = sz.toString();
+        sz += " " + document.getElementById("bytesText").value;
+    }
+    return sz;
+};
+
+lord.getFileHashes = function(div) {
+    return div.parentNode.parentNode.parentNode.parentNode.parentNode.querySelector("[name='fileHashes']");
+};
+
+lord.hideImage = function() {
+    if (!!lord.img) {
+        if ("webm" === lord.img.fileType) {
+            lord.img.pause();
+            lord.img.load();
+        }
+        lord.img.style.display = "none";
+        lord.img = null;
+    }
+};
+
+lord.globalOnclick = function(e) {
+    if (!!e.button)
+        return;
+    var t = e.target;
+    if (!!t && !!lord.img && t == lord.img)
+        return;
+    while (!!t) {
+        if (t.tagName === "A" && (!!t.onclick || !!t.onmousedown || !!t.href))
+            return;
+        t = t.parentNode;
+    }
+    lord.hideImage();
+};
+
+lord.showPasswordDialog = function(title, label, callback) {
+    var div = document.createElement("div");
+    var input = document.createElement("input");
+    input.type = "password";
+    input.className = "input";
+    input.maxlength = 150;
+    input.size = 30;
+    div.appendChild(input);
+    var sw = document.createElement("input");
+    sw.type = "checkbox";
+    sw.className = "checkbox";
+    sw.title = document.getElementById("showPasswordText").value;
+    sw.onclick = function() {
+        if (input.type === "password")
+            input.type = "text";
+        else if (input.type === "text")
+            input.type = "password";
+    };
+    div.appendChild(sw);
+    lord.showDialog(title, label, div, function() {
+        callback(input.value);
+    }, function() {
+        input.focus();
+    });
+};
+
+lord.showHidePostForm = function(position) {
+    var theButton = document.getElementById("showHidePostFormButton" + position);
+    if (lord.postFormVisible[position]) {
+        theButton.innerHTML = document.getElementById("showPostFormText").value;
+        document.getElementById("postForm" + position).className = "postFormInvisible";
+    } else {
+        theButton.innerHTML = document.getElementById("hidePostFormText").value;
+        document.getElementById("postForm" + position).className = "postFormVisible";
+        var captcha = document.getElementById("googleCaptcha");
+        if (!!captcha) {
+            var p = ("Top" === position) ? "Bottom" : "Top";
+            if (lord.postFormVisible[p])
+                lord.showHidePostForm(p);
+            document.getElementById("googleCaptcha" + position).appendChild(captcha);
+        }
+    }
+    lord.postFormVisible[position] = !lord.postFormVisible[position];
+};
+
+lord.deletePost = function(boardName, postNumber, fromThread) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var title = document.getElementById("enterPasswordTitle").value;
+    var label = document.getElementById("enterPasswordText").value;
+    lord.showPasswordDialog(title, label, function(pwd) {
+        if (null === pwd)
+            return;
+        if (pwd.length < 1) {
+            if (!lord.getCookie("hashpass"))
+                return alert(document.getElementById("notLoggedInText").value);
+        } else if (!lord.isHashpass(pwd)) {
+            pwd = lord.toHashpass(pwd);
+        }
+        lord.ajaxRequest("delete_post", [boardName, +postNumber, pwd], 1, function(res) {
+            var post = document.getElementById("post" + postNumber);
+            if (!post) {
+                if (!!fromThread) {
+                    var suffix = "thread/" + postNumber + ".html";
+                    window.location.href = window.location.href.replace(suffix, "").split("#").shift();
+                } else {
+                    lord.reloadPage();
+                }
+                return;
+            } else if (post.className.indexOf("opPost") > -1) {
+                var suffix = "thread/" + postNumber + ".html";
+                window.location.href = window.location.href.replace(suffix, "").split("#").shift();
+            } else {
+                post.parentNode.removeChild(post);
+                lord.removeReferences(postNumber);
+            }
+        });
+    });
+};
+
+lord.setThreadFixed = function(boardName, postNumber, fixed) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    if (!lord.getCookie("hashpass"))
+        return alert(document.getElementById("notLoggedInText").value);
+    lord.ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, lord.reloadPage);
+};
+
+lord.setThreadOpened = function(boardName, postNumber, opened) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    if (!lord.getCookie("hashpass"))
+        return alert(document.getElementById("notLoggedInText").value);
+    lord.ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, lord.reloadPage);
+};
+
+lord.banUser = function(boardName, postNumber) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var title = document.getElementById("banUserText").value;
+    var div = document.createElement("div");
+    var div1 = document.createElement("div");
+    div1.appendChild(document.createTextNode(document.getElementById("boardLabelText").value));
+    var selBoard = document.getElementById("availableBoardsSelect").cloneNode(true);
+    selBoard.style.display = "block";
+    div1.appendChild(selBoard);
+    div.appendChild(div1);
+    var div2 = document.createElement("div");
+    div2.appendChild(document.createTextNode(document.getElementById("banLevelLabelText").value));
+    var selLevel = document.getElementById("banLevelsSelect").cloneNode(true);
+    selLevel.style.display = "block";
+    div2.appendChild(selLevel);
+    div.appendChild(div2);
+    var div3 = document.createElement("div");
+    div3.appendChild(document.createTextNode(document.getElementById("banReasonLabelText").value));
+    var inputReason = document.createElement("input");
+    inputReason.type = "text";
+    inputReason.className = "input";
+    div3.appendChild(inputReason);
+    div.appendChild(div3);
+    var div4 = document.createElement("div");
+    div4.appendChild(document.createTextNode(document.getElementById("banExpiresLabelText").value));
+    var inputExpires = document.createElement("input");
+    inputExpires.type = "text";
+    inputExpires.placeholder = "dd.MM.yyyy:hh";
+    inputExpires.className = "input";
+    div4.appendChild(inputExpires);
+    div.appendChild(div4);
+    lord.showDialog(title, null, div, function() {
+        var params = {
+            "boardName": boardName,
+            "postNumber": +postNumber,
+            "board": selBoard.options[selBoard.selectedIndex].value,
+            "level": +selLevel.options[selLevel.selectedIndex].value,
+            "reason": inputReason.value,
+            "expires": inputExpires.value
+        };
+        lord.ajaxRequest("ban_user", [params], 4, function(res) {
+            lord.reloadPage();
+        });
+    });
+};
+
+lord.editPost = function(boardName, postNumber) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var post = document.getElementById("post" + postNumber);
+    if (!post)
+        return;
+    var postText = document.getElementById("post" + postNumber + "RawText");
+    if (!postText)
+        return;
+    var title = document.getElementById("editPostText").value;
+    var form = document.getElementById("editPostTemplate").cloneNode(true);
+    form.id = "";
+    form.style.display = "";
+    var email = form.querySelector("[name='email']");
+    var name = form.querySelector("[name='name']");
+    var subject = form.querySelector("[name='subject']");
+    var text = form.querySelector("[name='text']");
+    email.value = post.querySelector("[name='email']").value;
+    name.value = post.querySelector("[name='name']").value;
+    subject.value = post.querySelector("[name='subject']").value;
+    text.appendChild(document.createTextNode(postText.value));
+    var moder = (document.getElementById("moder").value === "true");
+    var premoderationField = form.querySelector("[name='premoderation']");
+    if (!!premoderationField) {
+        if (post.querySelector("[name='premoderation']").value == "true")
+            premoderationField.checked = true;
+        else
+            premoderationField.parentNode.parentNode.style.display = "none";
+    }
+    lord.showDialog(title, null, form, function() {
+        var pwd = form.querySelector("[name='password']").value;
+        if (pwd.length < 1) {
+            if (!lord.getCookie("hashpass"))
+                return alert(document.getElementById("notLoggedInText").value);
+        } else if (!lord.isHashpass(pwd)) {
+            pwd = lord.toHashpass(pwd);
+        }
+        var params = {
+            "boardName": boardName,
+            "postNumber": +postNumber,
+            "text": text.value,
+            "email": email.value,
+            "name": name.value,
+            "subject": subject.value,
+            "raw": !!moder ? form.querySelector("[name='raw']").checked : false,
+            "premoderation": !!premoderationField ? premoderationField.checked : false,
+            "password": pwd
+        };
+        lord.ajaxRequest("edit_post", [params], 5, function(rese) {
+            lord.ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
+                var newPost = lord.createPostNode(res, true);
+                if (!newPost)
+                    return;
+                lord.removeReferences(postNumber);
+                lord.addReferences(postNumber, rese);
+                var postLimit = post.querySelector("[name='postLimit']");
+                var bumpLimit = post.querySelector("[name='bumpLimit']");
+                if (!!postLimit || !!bumpLimit) {
+                    var postHeader = newPost.querySelector(".postHeader");
+                    if (!!postLimit)
+                        postHeader.appendChild(postLimit.cloneNode(true));
+                    if (!!bumpLimit)
+                        postHeader.appendChild(bumpLimit.cloneNode(true));
+                }
+                post.parentNode.replaceChild(newPost, post);
+            });
+        });
+    });
+};
+
+lord.setPostHidden = function(boardName, postNumber, hidden) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var post = document.getElementById("post" + postNumber);
+    var sw = document.getElementById("hidePost" + postNumber);
+    if (!!hidden) {
+        post.className += " hiddenPost";
+        sw.href = sw.href.replace("true", "false");
+        lord.setCookie("postHidden" + boardName + postNumber, "true", {
+            "expires": lord.Billion, "path": "/"
+        });
+    } else {
+        post.className = post.className.replace(" hiddenPost", "");
+        sw.href = sw.href.replace("false", "true");
+        lord.setCookie("postHidden" + boardName + postNumber, "true", {
+            "expires": -1, "path": "/"
+        });
+    }
+};
+
+lord.setThreadHidden = function(boardName, postNumber, hidden) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var post = document.getElementById("post" + postNumber);
+    var sw = document.getElementById("hidePost" + postNumber);
+    var thread = document.getElementById("thread" + postNumber);
+    var omitted = document.getElementById("threadOmitted" + postNumber);
+    var posts = document.getElementById("threadPosts" + postNumber);
+    if (!!hidden) {
+        post.className += " hiddenPost";
+        if (!!thread)
+            thread.className = "hiddenThread";
+        if (!!omitted)
+            omitted.className += " hiddenPosts";
+        if (!!posts)
+            posts.className += " hiddenPosts";
+        sw.href = sw.href.replace("true", "false");
+        lord.setCookie("postHidden" + boardName + postNumber, "true", {
+            "expires": lord.Billion, "path": "/"
+        });
+    } else {
+        post.className = post.className.replace(" hiddenPost", "");
+        if (!!thread)
+            thread.className = "";
+        if (!!omitted)
+            omitted.className = omitted.className.replace(" hiddenPosts", "");
+        if (!!posts)
+            posts.className = posts.className.replace(" hiddenPosts", "");
+        sw.href = sw.href.replace("false", "true");
+        lord.setCookie("postHidden" + boardName + postNumber, "true", {
+            "expires": -1, "path": "/"
+        });
+    }
+};
+
+lord.viewPostStage2 = function(link, postNumber, post) {
     post.onmouseout = function(event) {
         var next = post;
         while (!!next) {
-            var list = traverseChildren(next);
+            var list = lord.traverseChildren(next);
             var e = event.toElement || event.relatedTarget;
             if (list.indexOf(e) >= 0)
                 return;
@@ -757,18 +810,18 @@ function viewPostStage2(link, postNumber, post) {
     post.onmouseover = function(event) {
         post.mustHide = false;
     };
-    if (!postPreviews[postNumber])
-        postPreviews[postNumber] = post;
+    if (!lord.postPreviews[postNumber])
+        lord.postPreviews[postNumber] = post;
     else
         post.style.display = "";
-    post.previousPostPreview = lastPostPreview;
-    if (!!lastPostPreview)
-        lastPostPreview.nextPostPreview = post;
-    lastPostPreview = post;
+    post.previousPostPreview = lord.lastPostPreview;
+    if (!!lord.lastPostPreview)
+        lord.lastPostPreview.nextPostPreview = post;
+    lord.lastPostPreview = post;
     post.mustHide = true;
-    if (!!lastPostPreviewTimer) {
-        clearTimeout(lastPostPreviewTimer);
-        lastPostPreviewTimer = null;
+    if (!!lord.lastPostPreviewTimer) {
+        clearTimeout(lord.lastPostPreviewTimer);
+        lord.lastPostPreviewTimer = null;
     }
     document.body.appendChild(post);
     post.style.position = "absolute";
@@ -789,21 +842,21 @@ function viewPostStage2(link, postNumber, post) {
         ? (scrollTop + coords.bottom - 4 + "px")
         : (scrollTop + coords.top - post.scrollHeight - 4 + "px");
     post.style.zIndex = 9001;
-}
+};
 
-function viewPost(link, boardName, postNumber) {
+lord.viewPost = function(link, boardName, postNumber) {
     if (!link || !boardName || isNaN(+postNumber))
         return;
     var post = document.getElementById("post" + postNumber);
     if (!post)
-        post = postPreviews[postNumber];
+        post = lord.postPreviews[postNumber];
     if (!post) {
-        ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
-            post = createPostNode(res);
+        lord.ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
+            post = lord.createPostNode(res);
             if (!post)
                 return;
             post["fromAjax"] = true;
-            viewPostStage2(link, postNumber, post);
+            lord.viewPostStage2(link, postNumber, post);
         });
     } else {
         var fromAjax = !!post.fromAjax;
@@ -816,7 +869,7 @@ function viewPost(link, boardName, postNumber) {
                 var pn = +a.innerHTML.replace("&gt;&gt;", "");
                 if (isNaN(pn))
                     return;
-                viewPost(a, boardName, pn);
+                lord.viewPost(a, boardName, pn);
             });
             post.addEventListener("mouseout", function(e) {
                 var a = e.target;
@@ -825,11 +878,11 @@ function viewPost(link, boardName, postNumber) {
                 var pn = +a.innerHTML.replace("&gt;&gt;", "");
                 if (isNaN(pn))
                     return;
-                noViewPost();
+                lord.noViewPost();
             });
         }
         post.className = post.className.replace("opPost", "post");
-        var list = traverseChildren(post);
+        var list = lord.traverseChildren(post);
         for (var i = 0; i < list.length; ++i) {
             switch (list[i].name) {
             case "editButton":
@@ -845,54 +898,20 @@ function viewPost(link, boardName, postNumber) {
             }
             list[i].id = "";
         }
-        viewPostStage2(link, postNumber, post);
+        lord.viewPostStage2(link, postNumber, post);
     }
-}
+};
 
-function noViewPost() {
-    lastPostPreviewTimer = setTimeout(function() {
-        if (!lastPostPreview)
+lord.noViewPost = function() {
+    lord.lastPostPreviewTimer = setTimeout(function() {
+        if (!lord.lastPostPreview)
             return;
-        if (!!lastPostPreview.mustHide && !!lastPostPreview.parentNode)
-            lastPostPreview.parentNode.removeChild(lastPostPreview);
+        if (!!lord.lastPostPreview.mustHide && !!lord.lastPostPreview.parentNode)
+            lord.lastPostPreview.parentNode.removeChild(lord.lastPostPreview);
     }, 500);
-}
+};
 
-function clearFileInput(div) {
-    var preview = div.querySelector("img");
-    if (!!preview && div == preview.parentNode)
-        preview.src = "/" + document.getElementById("sitePathPrefix").value + "img/addfile.png";
-    var span = div.querySelector("span");
-    if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
-        span.removeChild(span.childNodes[0]);
-    div.fileHash = null;
-}
-
-function readableSize(sz) {
-    sz = +sz;
-    if (isNaN(sz))
-        return "";
-    if (sz / 1024 >= 1) {
-        sz /= 1024;
-        if (sz / 1024 >= 1) {
-            sz = (sz / 1024).toFixed(1);
-            sz += " " + document.getElementById("megabytesText").value;
-        } else {
-            sz = sz.toFixed(1);
-            sz += " " + document.getElementById("kilobytesText").value;
-        }
-    } else {
-        sz = sz.toString();
-        sz += " " + document.getElementById("bytesText").value;
-    }
-    return sz;
-}
-
-function getFileHashes(div) {
-    return div.parentNode.parentNode.parentNode.parentNode.parentNode.querySelector("[name='fileHashes']");
-}
-
-function fileSelected(current) {
+lord.fileSelected = function(current) {
     if (!current)
         return;
     var inp = document.getElementById("maxFileCount");
@@ -903,10 +922,11 @@ function fileSelected(current) {
         return;
     var div = current.parentNode;
     if (current.value == "")
-        return removeFile(div.querySelector("a"));
-    clearFileInput(div);
+        return lord.removeFile(div.querySelector("a"));
+    lord.clearFileInput(div);
     var file = current.files[0];
-    div.querySelector("span").appendChild(document.createTextNode(file.name + " (" + readableSize(file.size) + ")"));
+    div.querySelector("span").appendChild(document.createTextNode(file.name
+        + " (" + lord.readableSize(file.size) + ")"));
     var binaryReader = new FileReader();
     binaryReader.readAsArrayBuffer(file);
     var oldDiv = div;
@@ -914,11 +934,11 @@ function fileSelected(current) {
     binaryReader.onload = function(e) {
         var wordArray = CryptoJS.lib.WordArray.create(e.target.result);
         var currentBoardName = document.getElementById("currentBoardName").value;
-        var fileHash = toHashpass(wordArray);
-        ajaxRequest("get_file_existence", [currentBoardName, fileHash], 8, function(res) {
+        var fileHash = lord.toHashpass(wordArray);
+        lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], 8, function(res) {
             if (!res)
                 return;
-            var fileHashes = getFileHashes(oldDiv);
+            var fileHashes = lord.getFileHashes(oldDiv);
             fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
             var f = previous.onchange;
             delete previous.onchange;
@@ -948,18 +968,18 @@ function fileSelected(current) {
         parent.children[i].querySelector("a").style.display = "inline";
     }
     div = div.cloneNode(true);
-    clearFileInput(div);
+    lord.clearFileInput(div);
     div.querySelector("a").style.display = "none";
     div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
     parent.appendChild(div);
-}
+};
 
-function removeFile(current) {
+lord.removeFile = function(current) {
     if (!current)
         return;
     var div = current.parentNode;
     if (!!div.fileHash) {
-        var fileHashes = getFileHashes(div);
+        var fileHashes = lord.getFileHashes(div);
         var val = fileHashes.value.replace("," + div.fileHash, "");
         if (val === fileHashes.value)
             val = fileHashes.value.replace(div.fileHash + ",", "");
@@ -969,7 +989,7 @@ function removeFile(current) {
     }
     var parent = div.parentNode;
     parent.removeChild(div);
-    clearFileInput(div);
+    lord.clearFileInput(div);
     if (parent.children.length > 1) {
         for (var i = 0; i < parent.children.length; ++i) {
             if (!parent.children[i].fileHash && parent.children[i].querySelector("input").value === "")
@@ -997,9 +1017,9 @@ function removeFile(current) {
         div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
         parent.appendChild(div);
     }
-}
+};
 
-function browseFile(e, div) {
+lord.browseFile = function(e, div) {
     var inp = div.querySelector("input");
     if (!inp)
         return;
@@ -1011,51 +1031,21 @@ function browseFile(e, div) {
         a = a.parentNode;
     }
     inp.click();
-}
+};
 
-function submitted(form) {
-    formSubmitted = form;
-    form.querySelector("[name='submit']").disabled = true;
-}
-
-function hideImage() {
-    if (!!img) {
-        if ("webm" === img.fileType) {
-            img.pause();
-            img.load();
-        }
-        img.style.display = "none";
-        img = null;
-    }
-}
-
-function globalOnclick(e) {
-    if (!!e.button)
-        return;
-    var t = e.target;
-    if (!!t && !!img && t == img)
-        return;
-    while (!!t) {
-        if (t.tagName === "A" && (!!t.onclick || !!t.onmousedown || !!t.href))
-            return;
-        t = t.parentNode;
-    }
-    hideImage();
-}
-
-function showImage(href, type, sizeHintX, sizeHintY) {
-    hideImage();
+lord.showImage = function(href, type, sizeHintX, sizeHintY) {
+    lord.hideImage();
     if (!href || !type)
         return true;
-    img = images[href];
-    if (!!img) {
-        setInitialScale(img, sizeHintX, sizeHintY);
-        resetScale(img);
-        img.style.display = "";
-        toCenter(img, sizeHintX, sizeHintY);
-        if ("webm" === img.fileType) {
+    lord.img = lord.images[href];
+    if (!!lord.img) {
+        lord.setInitialScale(lord.img, sizeHintX, sizeHintY);
+        lord.resetScale(lord.img);
+        lord.img.style.display = "";
+        lord.toCenter(lord.img, sizeHintX, sizeHintY);
+        if ("webm" === lord.img.fileType) {
             setTimeout(function() {
-                img.play();
+                lord.img.play();
             }, 500);
         }
         return false;
@@ -1063,89 +1053,119 @@ function showImage(href, type, sizeHintX, sizeHintY) {
     if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
         return true;
     if ("image" === type) {
-        img = document.createElement("img");
-        img.src = href;
+        lord.img = document.createElement("img");
+        lord.img.src = href;
     } else if ("webm" === type) {
-        img = document.createElement("video");
-        img.controls = "controls";
+        lord.img = document.createElement("video");
+        lord.img.controls = "controls";
         var src = document.createElement("source");
         src.src = href;
         src.type = "video/webm";
-        img.appendChild(src);
+        lord.img.appendChild(src);
     }
-    img.fileType = type;
-    setInitialScale(img, sizeHintX, sizeHintY);
-    resetScale(img);
-    img.moving = false;
-    img.coord = {
+    lord.img.fileType = type;
+    lord.setInitialScale(lord.img, sizeHintX, sizeHintY);
+    lord.resetScale(lord.img);
+    lord.img.moving = false;
+    lord.img.coord = {
         "x": 0,
         "y": 0
     };
-    img.initialCoord = {
+    lord.img.initialCoord = {
         "x": 0,
         "y": 0
     };
-    img.className = "movableImage";
+    lord.img.className = "movableImage";
     var wheelHandler = function(e) {
         var e = window.event || e; //Old IE support
         e.preventDefault();
         var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-        img.scale += delta;
-        resetScale(img);
+        lord.img.scale += delta;
+        lord.resetScale(lord.img);
     };
-    if (img.addEventListener) {
-    	img.addEventListener("mousewheel", wheelHandler, false); //IE9, Chrome, Safari, Opera
-	    img.addEventListener("DOMMouseScroll", wheelHandler, false); //Firefox
+    if (lord.img.addEventListener) {
+    	lord.img.addEventListener("mousewheel", wheelHandler, false); //IE9, Chrome, Safari, Opera
+	    lord.img.addEventListener("DOMMouseScroll", wheelHandler, false); //Firefox
     } else {
-        img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
+        lord.img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
     }
     if ("image" === type) {
-        img.onmousedown = function(e) {
+        lord.img.onmousedown = function(e) {
             if (!!e.button)
                 return;
             e.preventDefault();
-            img.moving = true;
-            img.coord.x = e.clientX;
-            img.coord.y = e.clientY;
-            img.initialCoord.x = e.clientX;
-            img.initialCoord.y = e.clientY;
+            lord.img.moving = true;
+            lord.img.coord.x = e.clientX;
+            lord.img.coord.y = e.clientY;
+            lord.img.initialCoord.x = e.clientX;
+            lord.img.initialCoord.y = e.clientY;
         };
-        img.onmouseup = function(e) {
+        lord.img.onmouseup = function(e) {
             if (!!e.button)
                 return;
             e.preventDefault();
-            img.moving = false;
-            if (img.initialCoord.x === e.clientX && img.initialCoord.y === e.clientY) {
+            lord.img.moving = false;
+            if (lord.img.initialCoord.x === e.clientX && lord.img.initialCoord.y === e.clientY) {
                 if ("webm" === type) {
-                    img.pause();
-                    img.currentTime = 0;
+                    lord.img.pause();
+                    lord.img.currentTime = 0;
                 }
-                img.style.display = "none";
+                lord.img.style.display = "none";
             }
         };
-        img.onmousemove = function(e) {
-            if (!img.moving)
+        lord.img.onmousemove = function(e) {
+            if (!lord.img.moving)
                 return;
             e.preventDefault();
-            var dx = e.clientX - img.coord.x;
-            var dy = e.clientY - img.coord.y;
-            img.style.left = (img.offsetLeft + dx) + "px";
-            img.style.top = (img.offsetTop + dy) + "px";
-            img.coord.x = e.clientX;
-            img.coord.y = e.clientY;
+            var dx = e.clientX - lord.img.coord.x;
+            var dy = e.clientY - lord.img.coord.y;
+            lord.img.style.left = (lord.img.offsetLeft + dx) + "px";
+            lord.img.style.top = (lord.img.offsetTop + dy) + "px";
+            lord.img.coord.x = e.clientX;
+            lord.img.coord.y = e.clientY;
         };
     }
-    document.body.appendChild(img);
-    toCenter(img, sizeHintX, sizeHintY);
-    if ("webm" === img.fileType) {
+    document.body.appendChild(lord.img);
+    lord.toCenter(lord.img, sizeHintX, sizeHintY);
+    if ("webm" === lord.img.fileType) {
         setTimeout(function() {
-            img.play();
+            lord.img.play();
         }, 500);
     }
-    images[href] = img;
+    lord.images[href] = lord.img;
     return false;
-}
+};
 
-function complain() {
+lord.complain = function() {
     alert(document.getElementById("complainMessage").value);
-}
+};
+
+lord.submitted = function(form) {
+    lord.formSubmitted = form;
+    form.querySelector("[name='submit']").disabled = true;
+};
+
+lord.postedOnBoard = function() {
+    if (!lord.formSubmitted)
+        return;
+    var iframe = document.getElementById("kostyleeque");
+    var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+    var threadNumber = iframeDocument.querySelector("#threadNumber");
+    lord.formSubmitted.querySelector("[name='submit']").disabled = false;
+    if (!!threadNumber) {
+        var href = window.location.href.split("#").shift();
+        window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/"
+            + threadNumber.value + ".html";
+    } else {
+        lord.formSubmitted = null;
+        var errmsg = iframeDocument.querySelector("#errorMessage");
+        var errdesc = iframeDocument.querySelector("#errorDescription");
+        lord.showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML);
+        grecaptcha.reset();
+    }
+};
+
+lord.initializeOnLoadBaseBoard = function() {
+    lord.initializeOnLoadSettings();
+    document.body.onclick = lord.globalOnclick;
+};

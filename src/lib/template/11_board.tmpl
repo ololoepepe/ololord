@@ -83,15 +83,13 @@
     <head>
         <% include baseHead(1) %>
         <% include boardHead() %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
-        <script type="text/javascript" src="/<%= sitePathPrefix %>js/board.js"></script>
     </head>
-    <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadBoard();">
+    <body onload="javascript:lord.initializeOnLoadBaseBoard();">
         <% include baseTexts() %>
         <% include boardTexts() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>
-        <iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="posted();"></iframe>
+        <iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="lord.postedOnBoard();"></iframe>
         <a id="top"></a>
         <% include settings() %>
         <br />
