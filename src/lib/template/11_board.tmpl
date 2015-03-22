@@ -81,15 +81,13 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <% include baseHead() %>
-        <% include settingsHead() %>
+        <% include baseHead(1) %>
         <% include boardHead() %>
         <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
         <script type="text/javascript" src="/<%= sitePathPrefix %>js/board.js"></script>
     </head>
     <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadBoard();">
         <% include baseTexts() %>
-        <% include settingsTexts() %>
         <% include boardTexts() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>

@@ -95,10 +95,7 @@ function selectPost(post) {
     lastSelectedElement = document.getElementById("post" + post);
     if (!!lastSelectedElement)
         lastSelectedElement.style.backgroundColor = "#EEDACB";
-    if (window.location.href.split("#").length < 2)
-        window.location.href = window.location.href + "#" + post;
-    else
-        window.location.href = window.location.href.split("#")[0] + "#" + post;
+    window.location.href = window.location.href.split("#").shift() + "#" + post;
 }
 
 function updateThread(boardName, threadNumber, autoUpdate, extraCallback) {

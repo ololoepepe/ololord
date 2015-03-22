@@ -553,8 +553,9 @@ bool AbstractBoard::isCaptchaValid(const cppcms::http::request &req, const Tools
     try {
         curlpp::Cleanup curlppCleanup;
         Q_UNUSED(curlppCleanup)
-        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2";
+        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2&remoteip=%3";
         url = url.arg(SettingsLocker()->value("Site/captcha_private_key").toString()).arg(captcha);
+        url = url.arg(Tools::userIp(req));
         curlpp::Easy request;
         request.setOpt(curlpp::options::Url(Tools::toStd(url)));
         std::ostringstream os;

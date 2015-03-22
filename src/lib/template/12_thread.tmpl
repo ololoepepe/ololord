@@ -22,8 +22,7 @@
 <% end template %>
 
 <% template head() %>
-<% include baseHead() %>
-<% include settingsHead() %>
+<% include baseHead(1) %>
 <% include boardHead() %>
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/FileSaver.min.js"></script>
@@ -34,7 +33,6 @@
 
 <% template body() %>
 <% include baseTexts() %>
-<% include settingsTexts() %>
 <% include boardTexts() %>
 <% include navigationButton("bottom") %>
 <% include navigationButton("top") %>

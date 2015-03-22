@@ -1,7 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>static/js/thread.js</file>
-        <file>static/js/settings.js</file>
         <file>static/js/board.js</file>
         <file>static/js/3rdparty/sha1.js</file>
         <file>static/js/post.js</file>
@@ -11,5 +10,6 @@
         <file>static/js/3rdparty/jszip-utils.min.js</file>
         <file>static/js/3rdparty/FileSaver.min.js</file>
         <file>static/js/3rdparty/lib-typedarrays-min.js</file>
+        <file>static/js/base.js</file>
     </qresource>
 </RCC>

@@ -380,14 +380,14 @@ function deletePost(boardName, postNumber, fromThread) {
             if (!post) {
                 if (!!fromThread) {
                     var suffix = "thread/" + postNumber + ".html";
-                    window.location.href = window.location.href.replace(suffix, "");
+                    window.location.href = window.location.href.replace(suffix, "").split("#").shift();
                 } else {
                     reloadPage();
                 }
                 return;
             } else if (post.className.indexOf("opPost") > -1) {
                 var suffix = "thread/" + postNumber + ".html";
-                window.location.href = window.location.href.replace(suffix, "");
+                window.location.href = window.location.href.replace(suffix, "").split("#").shift();
             } else {
                 post.parentNode.removeChild(post);
                 removeReferences(postNumber);

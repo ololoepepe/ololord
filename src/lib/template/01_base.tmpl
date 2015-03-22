@@ -116,24 +116,20 @@
 <input type="hidden" id="sitePathPrefix" value="<%= sitePathPrefix %>" />
 <input type="hidden" id="siteDomain" value="<%= siteDomain %>" />
 <input type="hidden" id="siteProtocol" value="<%= siteProtocol %>" />
-<% end template %>
-
-<% template settingsTexts() %>
 <input type="hidden" id="showPasswordText" value="<%= showPasswordText %>" />
 <input type="hidden" id="cancelButtonText" value="<%= cancelButtonText %>" />
 <input type="hidden" id="confirmButtonText" value="<%= confirmButtonText %>" />
 <% end template %>
 
-<% template baseHead() %>
+<% template baseHead(bool javascript) %>
 <title><%= pageTitle %></title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
-<% end template %>
-
-<% template settingsHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/picoModal-2.1.0.min.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/settings.js"></script>
+<% if ( javascript ) %>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/picoModal-2.1.0.min.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/base.js"></script>
+<% end %>
 <% end template %>
 
 <% end view %>
