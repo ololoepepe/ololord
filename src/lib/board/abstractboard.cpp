@@ -327,6 +327,7 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
         return;
     foreach (const QString &fn, fileNames) {
         QFile::remove(path + "/" + fn);
+        Database::removeFileHash(name() + "/" + fn);
         QFileInfo fii(fn);
         QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
         QFile::remove(path + "/" + fii.baseName() + ".ololord-file-info");
@@ -622,7 +623,7 @@ QStringList AbstractBoard::rules(const QLocale &l) const
     return Tools::rules("rules", l) + Tools::rules("rules/" + name(), l);
 }
 
-QStringList AbstractBoard::saveFile(const Tools::File &f, bool *ok)
+QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
 {
 #if defined(Q_OS_WIN)
     static const QString FfmpegDefault = "ffmpeg.exe";
@@ -631,17 +632,17 @@ QStringList AbstractBoard::saveFile(const Tools::File &f, bool *ok)
 #endif
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
-        return bRet(ok, false, QStringList());
+        return bRet(ok, false, QString());
     QString path = storagePath + "/img/" + name();
     if (!BDirTools::mkpath(path))
-        return bRet(ok, false, QStringList());
+        return bRet(ok, false, QString());
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
     QString sfn = path + "/" + dt + "." + suffix;
     FileTransaction t;
     t.addFile(sfn);
-    if (!BDirTools::writeFile(sfn, f.data))
-        return bRet(ok, false, QStringList());
+    if (!BDirTools::writeFile(sfn, f.data) || !Database::addFileHash(f.data, name() + "/" + QFileInfo(sfn).fileName()))
+        return bRet(ok, false, QString());
     QVariantMap m;
     QImage img;
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
@@ -651,10 +652,10 @@ QStringList AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
             t.addFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
-                return bRet(ok, false, QStringList());
+                return bRet(ok, false, QString());
             scaleThumbnail(img, m);
             if (!img.save(path + "/" + dt + "s.png", "png"))
-                return bRet(ok, false, QStringList());
+                return bRet(ok, false, QString());
             m.insert("thumbFileName", dt + "s.png");
         } else {
             m.insert("thumbFileName", "webm");
@@ -664,21 +665,21 @@ QStringList AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         QBuffer buff(&data);
         buff.open(QIODevice::ReadOnly);
         if (!img.load(&buff, suffix.toLower().toLatin1().data()))
-            return bRet(ok, false, QStringList());
+            return bRet(ok, false, QString());
         scaleThumbnail(img, m);
         if (!suffix.compare("gif", Qt::CaseInsensitive))
             suffix = "png";
         t.addFile(path + "/" + dt + "s." + suffix);
         if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
-            return bRet(ok, false, QStringList());
+            return bRet(ok, false, QString());
         m.insert("thumbFileName", dt + "s." + suffix);
     }
     QString ifn = path + "/" + dt + ".ololord-file-info";
     t.addFile(ifn);
     if (!BDirTools::writeFile(ifn, BeQt::serialize(m)))
-        return bRet(ok, false, QStringList());
+        return bRet(ok, false, QString());
     t.commit();
-    return bRet(ok, true, QStringList() << QFileInfo(sfn).fileName());
+    return bRet(ok, true, QFileInfo(sfn).fileName());
 }
 
 bool AbstractBoard::showWhois() const

@@ -30,6 +30,7 @@ public:
     void banUser(const cppcms::json::object &params);
     void deletePost(std::string boardName, long long postNumber, std::string password);
     void editPost(const cppcms::json::object &params);
+    void getFileExistence(std::string boardName, std::string hash);
     void getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber);
     void getPost(std::string boardName, long long postNumber);
     QList<Handler> handlers() const;

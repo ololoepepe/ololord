@@ -593,7 +593,7 @@ function createPostNode(res, permanent) {
             number.href += "i";
         number.href += res["number"];
     }
-    var files = post.querySelector("[name='files']");
+    var files = post.querySelector((res["files"].length <= 1) ? "[name='files']" : "[name='manyFilesTr']");
     if (!!res["files"]) {
         for (var i = 0; i < res["files"].length; ++i) {
             var file = createPostFile(res["files"][i]);
@@ -604,8 +604,10 @@ function createPostNode(res, permanent) {
     var blockquoteThread = !!document.getElementById("currentThreadNumber");
     var bannedForTd = post.querySelector("[name='bannedForTd']");
     var referencedByTd = post.querySelector("[name='referencedByTd']");
+    var oneFileTr = post.querySelector("[name='files']");
     var manyFilesTr = post.querySelector("[name='manyFilesTr']");
     var textOneFile = post.querySelector("[name='textOneFile']");
+    var textManyFiles = post.querySelector("[name='textManyFiles']");
     if (res["files"].length <= 1) {
         manyFilesTr.parentNode.removeChild(manyFilesTr);
         textOneFile.innerHTML = res["text"];
@@ -613,7 +615,7 @@ function createPostNode(res, permanent) {
             textOneFile.className = "blockquoteThread";
     } else {
         post.querySelector("[name='oneFileTd']").className = "shrink";
-        textOneFile.parentNode.removeChild(textOneFile);
+        oneFileTr.parentNode.removeChild(oneFileTr);
         post.querySelector("[name='manyFilesTd']").colSpan = res["files"].length + 2;
         post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
         if (blockquoteThread)
@@ -863,6 +865,7 @@ function clearFileInput(div) {
     var span = div.querySelector("span");
     if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
         span.removeChild(span.childNodes[0]);
+    div.fileHash = null;
 }
 
 function readableSize(sz) {
@@ -885,6 +888,10 @@ function readableSize(sz) {
     return sz;
 }
 
+function getFileHashes(div) {
+    return div.parentNode.parentNode.parentNode.parentNode.parentNode.querySelector("[name='fileHashes']");
+}
+
 function fileSelected(current) {
     if (!current)
         return;
@@ -895,13 +902,34 @@ function fileSelected(current) {
     if (isNaN(maxCount))
         return;
     var div = current.parentNode;
+    if (current.value == "")
+        return removeFile(div.querySelector("a"));
     clearFileInput(div);
     var file = current.files[0];
     div.querySelector("span").appendChild(document.createTextNode(file.name + " (" + readableSize(file.size) + ")"));
+    var binaryReader = new FileReader();
+    binaryReader.readAsArrayBuffer(file);
+    var oldDiv = div;
+    var previous = current;
+    binaryReader.onload = function(e) {
+        var wordArray = CryptoJS.lib.WordArray.create(e.target.result);
+        var currentBoardName = document.getElementById("currentBoardName").value;
+        var fileHash = toHashpass(wordArray);
+        ajaxRequest("get_file_existence", [currentBoardName, fileHash], 8, function(res) {
+            if (!res)
+                return;
+            var fileHashes = getFileHashes(oldDiv);
+            fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
+            var f = previous.onchange;
+            delete previous.onchange;
+            previous.value = "";
+            previous.onchange = f;
+            oldDiv.fileHash = fileHash;
+        });
+    };
     if (!!current.value.match(/\.(jpe?g|png|gif)$/i)) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
-        var oldDiv = div;
         reader.onload = function(e) {
             oldDiv.querySelector("img").src = e.target.result;
         };
@@ -915,7 +943,7 @@ function fileSelected(current) {
     if (parent.children.length >= maxCount)
         return;
     for (var i = 0; i < parent.children.length; ++i) {
-        if (parent.children[i].querySelector("input").value === "")
+        if (!parent.children[i].fileHash && parent.children[i].querySelector("input").value === "")
             return;
         parent.children[i].querySelector("a").style.display = "inline";
     }
@@ -930,12 +958,21 @@ function removeFile(current) {
     if (!current)
         return;
     var div = current.parentNode;
+    if (!!div.fileHash) {
+        var fileHashes = getFileHashes(div);
+        var val = fileHashes.value.replace("," + div.fileHash, "");
+        if (val === fileHashes.value)
+            val = fileHashes.value.replace(div.fileHash + ",", "");
+        if (val === fileHashes.value)
+            val = fileHashes.value.replace(div.fileHash, "");
+        fileHashes.value = val;
+    }
     var parent = div.parentNode;
     parent.removeChild(div);
     clearFileInput(div);
     if (parent.children.length > 1) {
         for (var i = 0; i < parent.children.length; ++i) {
-            if (parent.children[i].querySelector("input").value === "")
+            if (!parent.children[i].fileHash && parent.children[i].querySelector("input").value === "")
                 return;
         }
         var inp = document.getElementById("maxFileCount");
@@ -951,8 +988,10 @@ function removeFile(current) {
         div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
         parent.appendChild(div);
     }
-    if (parent.children.length > 0 && parent.children[0].querySelector("input").value === "")
+    if (parent.children.length > 0 && !parent.children[0].fileHash
+            && parent.children[0].querySelector("input").value === "") {
         parent.children[0].querySelector("a").style.display = "none";
+    }
     if (parent.children.length < 1) {
         div.querySelector("a").style.display = "none";
         div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way

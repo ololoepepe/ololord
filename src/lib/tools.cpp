@@ -583,6 +583,7 @@ Post toPost(const PostParameters &params, const FileList &files)
 {
     Post p;
     p.email = params.value("email");
+    p.fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
     p.files = files;
     p.name = params.value("name");
     QString pwd = params.value("password");

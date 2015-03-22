@@ -386,11 +386,12 @@ bool testParams(const AbstractBoard *board, cppcms::application &app, const Tool
     QString boardName = board->name();
     int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, boardName);
     QString err;
+    QStringList fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
     if (!board->testParams(params, post, tq.locale(), &err)){
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
         Tools::log(app, "Invalid field");
         return false;
-    } else if (files.size() > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {
+    } else if ((files.size() + fileHashes.size()) > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Too many files", "description"));
         Tools::log(app, "File is too big");

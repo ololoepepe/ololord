@@ -93,7 +93,7 @@ public:
     unsigned int postLimit() const;
     bool premoderationEnabled() const;
     virtual QStringList rules(const QLocale &l) const;
-    virtual QStringList saveFile(const Tools::File &f, bool *ok = 0);
+    virtual QString saveFile(const Tools::File &f, bool *ok = 0);
     virtual bool showWhois() const;
     virtual QString supportedFileTypes() const;
     virtual bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l,

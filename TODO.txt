@@ -16,8 +16,8 @@
 [done] Implement pre-moderation
 [done] Fix post preview buttons displaying
 [done] Fix post link insertion
+[done] Implement file deduplication
 [done] Implement real IP behind proxy detection
 * Implement proxy blocking
-* Implement file deduplication
 * Make HTML compatible with Dollchan Extension Tools
 * Improve JS code style

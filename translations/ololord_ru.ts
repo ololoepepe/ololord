@@ -277,6 +277,14 @@ The default is 3.</source>
     </message>
 </context>
 <context>
+    <name>ActionAjaxHandler</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>ActionRoute</name>
     <message>
         <source>Unknown action</source>
@@ -297,6 +305,49 @@ The default is 3.</source>
         <source>There is no such board</source>
         <comment>description</comment>
         <translation>Нет такой доски</translation>
+    </message>
+</context>
+<context>
+    <name>FileTransaction</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid file hash</source>
+        <comment>error</comment>
+        <translation>Недействительный хэш файла</translation>
+    </message>
+    <message>
+        <source>Invalid file hash provided</source>
+        <comment>description</comment>
+        <translation>Передан недействительный хэш файла</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No source file</source>
+        <comment>error</comment>
+        <translation>Нет исходного файла</translation>
+    </message>
+    <message>
+        <source>No source file for this file hash</source>
+        <comment>description</comment>
+        <translation>Для этого хеша файла нет исходного файла</translation>
+    </message>
+    <message>
+        <source>Internal file system error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка файловой системы</translation>
     </message>
 </context>
 <context>

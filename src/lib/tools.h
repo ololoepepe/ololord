@@ -2,7 +2,6 @@
 #define TOOLS_H
 
 class QLocale;
-class QStringList;
 
 namespace cppcms
 {
@@ -41,6 +40,7 @@ class locale;
 #include <QList>
 #include <QMap>
 #include <QString>
+#include <QStringList>
 
 #include <list>
 #include <string>
@@ -61,6 +61,7 @@ typedef QList<File> FileList;
 struct Post
 {
     QString email;
+    QStringList fileHashes;
     FileList files;
     QString name;
     QByteArray password;

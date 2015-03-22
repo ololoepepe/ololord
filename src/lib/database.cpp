@@ -5,6 +5,8 @@
 #include "controller/controller.h"
 #include "stored/banneduser.h"
 #include "stored/banneduser-odb.hxx"
+#include "stored/filehash.h"
+#include "stored/filehash-odb.hxx"
 #include "stored/postcounter.h"
 #include "stored/postcounter-odb.hxx"
 #include "stored/registereduser.h"
@@ -16,14 +18,22 @@
 #include "translator.h"
 
 #include <BDirTools>
+#include <BeQt>
 
+#include <QByteArray>
 #include <QCryptographicHash>
+#include <QDateTime>
 #include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QScopedPointer>
 #include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
+#include <QVariantMap>
 
 #include <cppcms/http_request.h>
 
@@ -72,11 +82,75 @@ public:
         if (!board)
             return false;
         bool b = false;
-        QStringList fns = board->saveFile(f, &b);
+        QString fn = board->saveFile(f, &b);
         if (!b)
             return false;
-        mfileNames << fns;
+        mfileNames << fn;
         return true;
+    }
+    bool saveFileHash(const QString &hashString, QString *error, QString *description, const QLocale &l)
+    {
+        TranslatorQt tq(l);
+        if (!board) {
+            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
+                        tq.translate("FileTransaction", "Internal logic error", "description"), false);
+        }
+        bool ok = false;
+        QByteArray fh = Tools::toHashpass(hashString, &ok);
+        if (!ok || fh.isEmpty()) {
+            return bRet(error, tq.translate("FileTransaction", "Invalid file hash", "error"), description,
+                        tq.translate("FileTransaction", "Invalid file hash provided", "description"), false);
+        }
+        QStringList paths = Database::fileHashPaths(fh, &ok);
+        if (!ok) {
+            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
+                        tq.translate("FileTransaction", "Internal database error", "description"), false);
+        }
+        if (paths.isEmpty()) {
+            return bRet(error, tq.translate("FileTransaction", "No source file", "error"), description,
+                        tq.translate("FileTransaction", "No source file for this file hash", "description"), false);
+        }
+        QString storagePath = Tools::storagePath();
+        if (storagePath.isEmpty()) {
+            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
+                        tq.translate("FileTransaction", "Internal file system error", "description"), false);
+        }
+        QString sfn = storagePath + "/img/" + paths.first();
+        QFileInfo fi(sfn);
+        QString path = fi.path();
+        QString baseName = fi.baseName();
+        QString suffix = fi.suffix();
+        QStringList sl = BDirTools::entryList(path, QStringList() << (baseName + "s.*"), QDir::Files);
+        QString sofn = path + "/" + baseName + ".ololord-file-info";
+        if (!fi.exists() || sl.size() != 1 || !QFileInfo(sofn).exists()) {
+            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
+                        tq.translate("FileTransaction", "Internal file system error", "description"), false);
+        }
+        QString spfn = sl.first();
+        QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+        path = QFileInfo(path).path() + "/" + board->name();
+        QString fn = path + "/" + dt + "." + suffix;
+        QString pfn = path + "/" + dt + "s." + QFileInfo(spfn).suffix();
+        QString ofn = path + "/" + dt + ".ololord-file-info";
+        QVariantMap m = BeQt::deserialize(BDirTools::readFile(sofn, -1, &ok)).toMap();
+        if (!ok) {
+            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
+                        tq.translate("FileTransaction", "Internal file system error", "description"), false);
+        }
+        m["thumbFileName"] = QFileInfo(pfn).fileName();
+        if (!Database::addFileHash(hashString, board->name() + "/" + dt + "." + suffix)) {
+            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
+                        tq.translate("FileTransaction", "Internal database error", "description"), false);
+        }
+        if (!QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn) || !BDirTools::writeFile(ofn, BeQt::serialize(m))) {
+            QFile::remove(fn);
+            QFile::remove(pfn);
+            QFile::remove(ofn);
+            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
+                        tq.translate("FileTransaction", "Internal file system error", "description"), false);
+        }
+        mfileNames << QFileInfo(fn).fileName();
+        return bRet(error, QString(), description, QString(), true);
     }
 };
 
@@ -262,12 +336,12 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
                 board->captchaSolved(ip);
             }
         }
-        if (dt.isValid() && post.files.isEmpty()) {
+        if (dt.isValid() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
             return bRet(error, tq.translate("createPostInternalt", "No file", "error"), description,
                         tq.translate("createPostInternalt", "Attempt to create a thread without attaching a file",
                                      "description"), false);
         }
-        if (post.text.isEmpty() && post.files.isEmpty()) {
+        if (post.text.isEmpty() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
             return bRet(error, tq.translate("createPostInternalt", "No file/text", "error"), description,
                         tq.translate("createPostInternalt", "Both file and comment are missing", "description"),
                         false);
@@ -298,6 +372,10 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
                 return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
                             tq.translate("createPostInternalt", "Internal file system error", "description"), false);
             }
+        }
+        foreach (const QString &fhs, post.fileHashes) {
+            if (!ft.saveFileHash(fhs, error, description, tq.locale()))
+                return false;
         }
         p->setFiles(ft.fileNames());
         p->setName(post.name);
@@ -439,6 +517,47 @@ static bool threadIdDateTimeFixedLessThan(const ThreadIdDateTimeFixed &t1, const
         return true;
     else
         return false;
+}
+
+bool addFileHash(const QByteArray &data, const QString &path)
+{
+    if (data.isEmpty() || path.isEmpty())
+        return false;
+    QByteArray hash = QCryptographicHash::hash(data, QCryptographicHash::Sha1);
+    try {
+        Transaction t;
+        if (!t)
+            return false;
+        FileHash fh(path, hash);
+        t->persist(fh);
+        t.commit();
+        return true;
+    } catch (const odb::exception &e) {
+        qDebug() << Tools::fromStd(e.what());
+        return false;
+    }
+}
+
+bool addFileHash(const QString &hashString, const QString &path)
+{
+    if (hashString.isEmpty())
+        return false;
+    bool ok = false;
+    QByteArray hash = Tools::toHashpass(hashString, &ok);
+    if (!ok)
+        return false;
+    try {
+        Transaction t;
+        if (!t)
+            return false;
+        FileHash fh(path, hash);
+        t->persist(fh);
+        t.commit();
+        return true;
+    } catch (const odb::exception &e) {
+        qDebug() << Tools::fromStd(e.what());
+        return false;
+    }
 }
 
 bool banUser(const QString &ip, const QString &board, int level, const QString &reason, const QDateTime &expires,
@@ -745,6 +864,67 @@ bool editPost(EditPostParameters &p)
     }
 }
 
+bool fileHashExists(const QByteArray &hash, bool *ok)
+{
+    if (hash.isEmpty())
+        return bRet(ok, false, false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(ok, false, false);
+        Result<FileHashCount> count = queryOne<FileHashCount, FileHash>(odb::query<FileHash>::hash == hash);
+        if (count.error)
+            return bRet(ok, false, false);
+        t.commit();
+        return bRet(ok, true, count->count > 0);
+    } catch (const odb::exception &e) {
+        qDebug() << Tools::fromStd(e.what());
+        return bRet(ok, false, false);
+    }
+}
+
+bool fileHashExists(const QString &hashString, bool *ok)
+{
+    if (hashString.isEmpty())
+        return bRet(ok, false, false);
+    bool b = false;
+    QByteArray hash = Tools::toHashpass(hashString, &b);
+    if (!b || hash.isEmpty())
+        return bRet(ok, false, false);
+    return fileHashExists(hash, ok);
+}
+
+QStringList fileHashPaths(const QByteArray &hash, bool *ok)
+{
+    if (hash.isEmpty())
+        return bRet(ok, false, QStringList());
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(ok, false, QStringList());
+        QList<FileHash> list = query<FileHash, FileHash>(odb::query<FileHash>::hash == hash);
+        t.commit();
+        QStringList sl;
+        foreach (const FileHash &fh, list)
+            sl << fh.path();
+        return bRet(ok, true, sl);
+    } catch (const odb::exception &e) {
+        qDebug() << Tools::fromStd(e.what());
+        return bRet(ok, false, QStringList());
+    }
+}
+
+QStringList fileHashPaths(const QString &hashString, bool *ok)
+{
+    if (hashString.isEmpty())
+        return bRet(ok, false, QStringList());
+    bool b = false;
+    QByteArray hash = Tools::toHashpass(hashString, &b);
+    if (!b || hash.isEmpty())
+        return bRet(ok, false, QStringList());
+    return fileHashPaths(hash, ok);
+}
+
 QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
                         quint64 lastPostNumber, bool *ok, QString *error)
 {
@@ -1015,6 +1195,28 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
+bool removeFileHash(const QString &path)
+{
+    if (path.isEmpty())
+        return false;
+    try {
+        Transaction t;
+        if (!t)
+            return false;
+        Result<FileHash> hash = queryOne<FileHash, FileHash>(odb::query<FileHash>::path == path);
+        if (hash.error)
+            return false;
+        if (!hash)
+            return true;
+        erase(hash);
+        t.commit();
+        return true;
+    } catch (const odb::exception &e) {
+        qDebug() << Tools::fromStd(e.what());
+        return false;
     }
 }
 

@@ -4,6 +4,7 @@
 #include "controller/controller.h"
 #include "controller/baseboard.h"
 #include "tools.h"
+#include "translator.h"
 
 #include <BTextTools>
 
@@ -137,6 +138,20 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     Tools::log(server, "Handled AJAX edit post");
 }
 
+void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash)
+{
+    Tools::log(server, "Handling AJAX get file existence");
+    if (!testBan(Tools::fromStd(boardName), true))
+        return;
+    bool ok = false;
+    bool exists = Database::fileHashExists(Tools::fromStd(hash), &ok);
+    TranslatorStd ts;
+    if (!ok)
+        return server.return_error(ts.translate("ActionAjaxHandler", "Internal database error", "error"));
+    server.return_result(exists);
+    Tools::log(server, "Handled AJAX get file exsistence");
+}
+
 void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber)
 {
     Tools::log(server, "Handling AJAX get new posts");
@@ -179,6 +194,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
     list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
+    list << Handler("get_file_existence", cppcms::rpc::json_method(&ActionAjaxHandler::getFileExistence, self),
+                    method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);
     list << Handler("set_thread_fixed", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadFixed, self),

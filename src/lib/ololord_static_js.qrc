@@ -10,5 +10,6 @@
         <file>static/js/3rdparty/jszip.min.js</file>
         <file>static/js/3rdparty/jszip-utils.min.js</file>
         <file>static/js/3rdparty/FileSaver.min.js</file>
+        <file>static/js/3rdparty/lib-typedarrays-min.js</file>
     </qresource>
 </RCC>

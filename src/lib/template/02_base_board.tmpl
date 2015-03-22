@@ -34,8 +34,6 @@
 <% template createAction(std::string position) %>
 <% if ( content.postingEnabled ) %>
     <div class="createAction">
-        <input type="hidden" id="hidePostFormText" value="<%= hidePostFormText %>" />
-        <input type="hidden" id="showPostFormText" value="<%= showPostFormText %>" />
         <div>
             [<a id="showHidePostFormButton<%= position %>" href="javascript:showHidePostForm('<%= position %>');">
                 <%= showPostFormText %>
@@ -50,6 +48,7 @@
                 <input type="hidden" id="postFormInputThread<%= position %>" value="<%= currentThread %>"
                        name="thread" />
             <% end %>
+            <input type="hidden" id="postFormInput<%= position %>" value="" name="fileHashes" />
             <table class="postFormTable">
                 <tbody>
                     <tr>
@@ -459,6 +458,8 @@
 <input type="hidden" id="megabytesText" value="<%= megabytesText %>" />
 <input type="hidden" id="findSourceWithGoogleText" value="<%= findSourceWithGoogleText %>" />
 <input type="hidden" id="findSourceWithIqdbText" value="<%= findSourceWithIqdbText %>" />
+<input type="hidden" id="hidePostFormText" value="<%= hidePostFormText %>" />
+<input type="hidden" id="showPostFormText" value="<%= showPostFormText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
         <% item %>
@@ -620,6 +621,7 @@
 
 <% template boardHead() %>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/post.js"></script>
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/lib-typedarrays-min.js"></script>
 <% if ( content.captchaEnabled ) %>
     <script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
 <% end %>

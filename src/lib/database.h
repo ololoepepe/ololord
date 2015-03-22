@@ -252,6 +252,8 @@ public:
     }
 };
 
+OLOLORD_EXPORT bool addFileHash(const QByteArray &data, const QString &path);
+OLOLORD_EXPORT bool addFileHash(const QString &hashString, const QString &path);
 OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int level = 1,
                             const QString &reason = QString(), const QDateTime &expires = QDateTime(),
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
@@ -270,6 +272,10 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QSt
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
 OLOLORD_EXPORT bool editPost(EditPostParameters &p);
+OLOLORD_EXPORT bool fileHashExists(const QByteArray &hash, bool *ok = 0);
+OLOLORD_EXPORT bool fileHashExists(const QString &hashString, bool *ok = 0);
+OLOLORD_EXPORT QStringList fileHashPaths(const QByteArray &hash, bool *ok = 0);
+OLOLORD_EXPORT QStringList fileHashPaths(const QString &hashString, bool *ok = 0);
 OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
                                        quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
@@ -291,6 +297,7 @@ OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass);
 OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level = RegisteredUser::UserLevel,
                                  const QStringList &boards = QStringList("*"), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool removeFileHash(const QString &path);
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, QString *error = 0,
                                    const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed,

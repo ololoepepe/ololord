@@ -167,6 +167,9 @@ function posted() {
     formSubmitted.querySelector("[name='submit']").disabled = false;
     if (!!postNumber) {
         formSubmitted.reset();
+        var divs = formSubmitted.querySelectorAll(".postformFile");
+        for (var i = divs.length - 1; i >= 0; --i)
+            removeFile(divs[i].querySelector("a"));
         formSubmitted = null;
         var boardName = document.getElementById("currentBoardName").value;
         var threadNumber = document.getElementById("currentThreadNumber").value;
