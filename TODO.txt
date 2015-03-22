@@ -1,23 +1,2 @@
-[done] Implement movable images
-[done] Improve file info storage
-[done] Improve post editing
-[done] Implement complain button
-[done] Add ability to skip logging for specified IPs
-[done] Implement uploaded files previews
-[done] Implement post map ("answers" block)
-[done] Enable [code] tag on all boards
-[done] Add ability for admins to post raw HTML
-[done] Use wildcard matching for banned IP's
-[done] Implement image source search buttons
-[done] Merge CSS
-[done] Add ability to switch styles
-[done] Implement favicon blinking on new posts
-[done] Add ability to save all images from thread to disk
-[done] Implement pre-moderation
-[done] Fix post preview buttons displaying
-[done] Fix post link insertion
-[done] Implement file deduplication
-[done] Encapsulate JS API in a namespace
-[done] Implement real IP behind proxy detection
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

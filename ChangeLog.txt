@@ -1,3 +1,26 @@
+=== ololord 0.1.0-beta9 (22 March 2015) ===
+    * Implement movable images
+    * Improve file info storage
+    * Improve post editing
+    * Implement complain button
+    * Add ability to skip logging for specified IPs
+    * Implement uploaded files previews
+    * Implement post map ("answers" block)
+    * Enable [code] tag on all boards
+    * Add ability for admins to post raw HTML
+    * Use wildcard matching for banned IP's
+    * Implement image source search buttons
+    * Merge CSS
+    * Add ability to switch styles
+    * Implement favicon blinking on new posts
+    * Add ability to save all images from thread to disk
+    * Implement pre-moderation
+    * Fix post preview buttons displaying
+    * Fix post link insertion
+    * Implement file deduplication
+    * Encapsulate JS API in a namespace
+    * Implement real IP behind proxy detection
+
 === ololord 0.1.0-beta8 (13 March 2015) ===
     * Add ability to post several files
     * Fix post preview in Google Chrome
