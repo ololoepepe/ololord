@@ -31,10 +31,12 @@ class request;
 
 #include <BCoreApplication>
 
+#include <QByteArray>
 #include <QDateTime>
 #include <QDebug>
 #include <QList>
 #include <QMap>
+#include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -170,6 +172,15 @@ template <typename T> bool erase(const Result<T> &t)
 }
 #endif
 
+struct OLOLORD_EXPORT BanInfo
+{
+    QString boardName;
+    QDateTime dateTime;
+    QString reason;
+    QDateTime expires;
+    int level;
+};
+
 struct OLOLORD_EXPORT CreatePostParameters
 {
     const QList<Tools::File> &files;
@@ -181,6 +192,7 @@ public:
     unsigned int postLimit;
     QString *error;
     QString *description;
+    QSet<quint64> referencedPosts;
 public:
     explicit CreatePostParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
                                   const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale()) :
@@ -215,15 +227,33 @@ public:
     }
 };
 
-struct OLOLORD_EXPORT BanInfo
+struct OLOLORD_EXPORT EditPostParameters
 {
-    QString boardName;
-    QDateTime dateTime;
-    QString reason;
-    QDateTime expires;
-    int level;
+    const QString &boardName;
+    const quint64 postNumber;
+    const cppcms::http::request &request;
+public:
+    QString email;
+    QString *error;
+    QString name;
+    QByteArray password;
+    bool premoderation;
+    bool raw;
+    QString subject;
+    QString text;
+    QSet<quint64> referencedPosts;
+public:
+    explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post) :
+        boardName(board), postNumber(post), request(req)
+    {
+        error = 0;
+        premoderation = false;
+        raw = false;
+    }
 };
 
+OLOLORD_EXPORT bool addFileHash(const QByteArray &data, const QString &path);
+OLOLORD_EXPORT bool addFileHash(const QString &hashString, const QString &path);
 OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int level = 1,
                             const QString &reason = QString(), const QDateTime &expires = QDateTime(),
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
@@ -241,8 +271,11 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QSt
                                const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
-OLOLORD_EXPORT bool editPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
-                             const QString &text, QString *error = 0);
+OLOLORD_EXPORT bool editPost(EditPostParameters &p);
+OLOLORD_EXPORT bool fileHashExists(const QByteArray &hash, bool *ok = 0);
+OLOLORD_EXPORT bool fileHashExists(const QString &hashString, bool *ok = 0);
+OLOLORD_EXPORT QStringList fileHashPaths(const QByteArray &hash, bool *ok = 0);
+OLOLORD_EXPORT QStringList fileHashPaths(const QString &hashString, bool *ok = 0);
 OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
                                        quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
@@ -251,6 +284,11 @@ OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *e
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT quint64 lastPostNumber(const QString &boardName, QString *error = 0,
                                       const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool moderOnBoard(const cppcms::http::request &req, const QString &board1,
+                                 const QString &board2 = QString());
+OLOLORD_EXPORT bool moderOnBoard(const QByteArray &hashpass, const QString &boardName,
+                                 const QString &board2 = QString());
+OLOLORD_EXPORT bool postExists(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req);
 OLOLORD_EXPORT QStringList registeredUserBoards(const QByteArray &hashpass);
@@ -259,6 +297,7 @@ OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass);
 OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level = RegisteredUser::UserLevel,
                                  const QStringList &boards = QStringList("*"), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool removeFileHash(const QString &path);
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, QString *error = 0,
                                    const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed,

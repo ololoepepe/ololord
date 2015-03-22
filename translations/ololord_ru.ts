@@ -277,6 +277,14 @@ The default is 3.</source>
     </message>
 </context>
 <context>
+    <name>ActionAjaxHandler</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>ActionRoute</name>
     <message>
         <source>Unknown action</source>
@@ -297,6 +305,49 @@ The default is 3.</source>
         <source>There is no such board</source>
         <comment>description</comment>
         <translation>Нет такой доски</translation>
+    </message>
+</context>
+<context>
+    <name>FileTransaction</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid file hash</source>
+        <comment>error</comment>
+        <translation>Недействительный хэш файла</translation>
+    </message>
+    <message>
+        <source>Invalid file hash provided</source>
+        <comment>description</comment>
+        <translation>Передан недействительный хэш файла</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No source file</source>
+        <comment>error</comment>
+        <translation>Нет исходного файла</translation>
+    </message>
+    <message>
+        <source>No source file for this file hash</source>
+        <comment>description</comment>
+        <translation>Для этого хеша файла нет исходного файла</translation>
+    </message>
+    <message>
+        <source>Internal file system error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка файловой системы</translation>
     </message>
 </context>
 <context>
@@ -333,6 +384,34 @@ The default is 3.</source>
         <source>Kamina</source>
         <comment>defaultUserName</comment>
         <translation>Камина</translation>
+    </message>
+</context>
+<context>
+    <name>addToReferencedPosts</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>There is no such post</source>
+        <comment>description</comment>
+        <translation>Нет такого поста</translation>
     </message>
 </context>
 <context>
@@ -546,6 +625,11 @@ The default is 3.</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
 </context>
 <context>
     <name>deletePost</name>
@@ -674,14 +758,34 @@ The default is 3.</source>
         <translation>Отсутствует текст</translation>
     </message>
     <message>
-        <source>Not logged in</source>
-        <comment>error</comment>
-        <translation>Не залогинен</translation>
-    </message>
-    <message>
         <source>Text is too long</source>
         <comment>error</comment>
         <translation>Текст слишком длинный</translation>
+    </message>
+    <message>
+        <source>E-mail is too long</source>
+        <comment>error</comment>
+        <translation>Эл. почта слишком длинная</translation>
+    </message>
+    <message>
+        <source>Name is too long</source>
+        <comment>error</comment>
+        <translation>Имя слишком длинное</translation>
+    </message>
+    <message>
+        <source>Subject is too long</source>
+        <comment>error</comment>
+        <translation>Тема слишком длинная</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
     </message>
 </context>
 <context>
@@ -1065,6 +1169,16 @@ Your choice:</source>
         <comment>showPasswordText</comment>
         <translation>Показать пароль</translation>
     </message>
+    <message>
+        <source>Photon</source>
+        <comment>style name</comment>
+        <translation>Photon</translation>
+    </message>
+    <message>
+        <source>Style:</source>
+        <comment>styleLabelText</comment>
+        <translation>Стиль:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -1142,16 +1256,6 @@ Your choice:</source>
         <source>Send</source>
         <comment>postFormButtonSubmit</comment>
         <translation>Отправить</translation>
-    </message>
-    <message>
-        <source>Post:</source>
-        <comment>postFormInputText</comment>
-        <translation>Пост:</translation>
-    </message>
-    <message>
-        <source>Comment. Max length %1</source>
-        <comment>postFormInputTextPlaceholder</comment>
-        <translation>Комментарий. Макс. длина %1</translation>
     </message>
     <message>
         <source>Captcha:</source>
@@ -1302,6 +1406,76 @@ Your choice:</source>
         <source>Remove this file</source>
         <comment>removeFileText</comment>
         <translation>Убрать этот файл</translation>
+    </message>
+    <message>
+        <source>Complain</source>
+        <comment>complainText</comment>
+        <translation>Пожаловаться</translation>
+    </message>
+    <message>
+        <source>Go complain to your mum, you whiner!</source>
+        <comment>complainMessage</comment>
+        <translation>Мамке своей пожалуйся, нытик!</translation>
+    </message>
+    <message>
+        <source>KB</source>
+        <comment>kilobytesText</comment>
+        <translation>КБ</translation>
+    </message>
+    <message>
+        <source>MB</source>
+        <comment>megabytesText</comment>
+        <translation>МБ</translation>
+    </message>
+    <message>
+        <source>Select file</source>
+        <comment>selectFileText</comment>
+        <translation>Выбрать файл</translation>
+    </message>
+    <message>
+        <source>Byte(s)</source>
+        <comment>bytesText</comment>
+        <translation>Байт(а)</translation>
+    </message>
+    <message>
+        <source>Comment. Max length %1</source>
+        <comment>postFormTextPlaceholder</comment>
+        <translation>Комментарий. Макс. длина %1</translation>
+    </message>
+    <message>
+        <source>Raw HTML:</source>
+        <comment>postFormLabelRaw</comment>
+        <translation>&quot;Сырой&quot; HTML:</translation>
+    </message>
+    <message>
+        <source>Post:</source>
+        <comment>postFormLabelText</comment>
+        <translation>Пост:</translation>
+    </message>
+    <message>
+        <source>Answers:</source>
+        <comment>referencedByText</comment>
+        <translation>Ответы:</translation>
+    </message>
+    <message>
+        <source>Find source with Google</source>
+        <comment>findSourceWithGoogleText</comment>
+        <translation>Найти соус с помощью Google</translation>
+    </message>
+    <message>
+        <source>Find source with Iqdb</source>
+        <comment>findSourceWithIqdbText</comment>
+        <translation>Найти соус с помощью Iqdb</translation>
+    </message>
+    <message>
+        <source>Download all thread files as a .zip archive</source>
+        <comment>downloadThreadText</comment>
+        <translation>Скачать все файлы из треда в виде .zip-архива</translation>
+    </message>
+    <message>
+        <source>Pre-moderation:</source>
+        <comment>postFormLabelPremoderation</comment>
+        <translation>Премодерация:</translation>
     </message>
 </context>
 <context>
@@ -1629,6 +1803,48 @@ The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
         <translation>Команда вызова утилиты ffmpeg (возможно, полный путь).
 По умолчанию ffmpeg (UNIX) или ffmpeg.exe (Windows).</translation>
     </message>
+    <message>
+        <source>List of IP addresses which are not logged.
+IP&apos;s are separated by commas. Wildcard matching is used.
+Example: 127.0.0.1,192.168.0.*</source>
+        <translation>Список IP-адресов, которые не логгируются.
+IP-адреса отделяются запятыми. Используется шаблон wildcard
+Пример: 127.0.0.1,192.168.0.*</translation>
+    </message>
+    <message>
+        <source>Site protocol.
+Either http or https</source>
+        <translation>Протокол сайта.
+Либо http, либо https</translation>
+    </message>
+    <message>
+        <source>Site domain name.
+Example: mysite.com</source>
+        <translation>Доменное имя сайта.
+Пример: mysite.com</translation>
+    </message>
+    <message>
+        <source>Determines if real IP of a client is detected.
+Otherwise the address may be an address of a proxy server.
+Works for non-transparent proxies only (X-Forwarded-For, X-Client-IP).
+The default is true.</source>
+        <translation>Определяет, обнаруживать ли настоящий IP-адрес клиента.
+В противном случае адрес может быть адресом прокси-сервера.
+Работает только для непрозрачных прокси (X-Forwarded-For, X-Client-IP).
+По умолчанию true.</translation>
+    </message>
+    <message>
+        <source>Determines if pre-moderation is enabled on this board.
+The default is false.</source>
+        <translation>Определяет, включена ли премодерация на этой доске.
+По умолчанию false.</translation>
+    </message>
+    <message>
+        <source>Determines if pre-moderation is enabled.
+The default is false.</source>
+        <translation>Определяет, включена ли премодерация.
+По умолчанию false.</translation>
+    </message>
 </context>
 <context>
     <name>intBoard</name>
@@ -1731,6 +1947,19 @@ The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
         <source>Invalid board(s)</source>
         <comment>error</comment>
         <translation>Неправильная(ые) доска(и)</translation>
+    </message>
+</context>
+<context>
+    <name>removeFromReferencedPosts</name>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>
@@ -1865,6 +2094,13 @@ The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
     <message>
         <source>Enter logging mode:</source>
         <translation>Введите режим ведения логов:</translation>
+    </message>
+</context>
+<context>
+    <name>setLoggingSkipIp</name>
+    <message>
+        <source>Enter skipped IP&apos;s:</source>
+        <translation>Введите пропускаемые IP-адреса:</translation>
     </message>
 </context>
 <context>

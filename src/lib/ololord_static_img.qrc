@@ -247,5 +247,13 @@
         <file>static/img/edit.png</file>
         <file>static/img/down.png</file>
         <file>static/img/up.png</file>
+        <file>static/img/complain.png</file>
+        <file>static/img/file.png</file>
+        <file>static/img/webm_file.png</file>
+        <file>static/img/addfile.png</file>
+        <file>static/img/google.png</file>
+        <file>static/img/iqdb.png</file>
+        <file>static/img/download.png</file>
+        <file>static/img/favicon_newmessage.ico</file>
     </qresource>
 </RCC>

@@ -20,6 +20,7 @@
 #include <QDir>
 #include <QFileInfo>
 #include <QImage>
+#include <QList>
 #include <QLocale>
 #include <QMap>
 #include <QMutex>
@@ -63,6 +64,8 @@ public:
 static QMutex cityNameMutex(QMutex::Recursive);
 static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
+static QList<QRegExp> loggingSkipIps;
+static QMutex loggingSkipIpsMutex(QMutex::Recursive);
 static QMutex storagePathMutex(QMutex::Recursive);
 static QMutex timezoneMutex(QMutex::Recursive);
 
@@ -86,6 +89,18 @@ static unsigned int ipNum(const QString &ip, bool *ok = 0)
         return bRet(ok, false, 0);
     return bRet(ok, true, n);
 }
+
+/*static QString ipStr(unsigned int ip)
+{
+    QString s;
+    s += QString::number(ip / (256 * 256 * 256)) + ".";
+    ip %= (256 * 256 * 256);
+    s += QString::number(ip / (256 * 256)) + ".";
+    ip %= (256 * 256);
+    s += QString::number(ip / 256) + ".";
+    s += QString::number(ip % 256);
+    return s;
+}*/
 
 static QTime time(int msecs)
 {
@@ -268,8 +283,8 @@ QString hashpassString(const cppcms::http::request &req)
 int ipBanLevel(const QString &ip)
 {
     bool ok = false;
-    unsigned int n = ipNum(ip, &ok);
-    if (!ok || !n)
+    ipNum(ip, &ok);
+    if (!ok)
         return 0;
     Cache::IpBanInfoList *list = Cache::ipBanInfoList();
     int level = 0;
@@ -284,13 +299,14 @@ int ipBanLevel(const QString &ip)
             if (sll.size() != 2)
                 continue;
             Cache::IpBanInfo inf;
-            inf.ip = ipNum(sll.first(), &ok);
-            if (!ok || !inf.ip)
+            ipNum(QString(sll.first()).replace("*", "1").replace("?", "1"), &ok);
+            if (!ok)
                 continue;
+            inf.ip = sll.first();
             inf.level = sll.last().toUInt(&ok);
             if (!ok || !inf.level)
                 continue;
-            if (inf.ip == n)
+            if (QRegExp(inf.ip, Qt::CaseSensitive, QRegExp::Wildcard).exactMatch(ip))
                 level = inf.level;
             *list << inf;
         }
@@ -298,7 +314,7 @@ int ipBanLevel(const QString &ip)
             delete list;
     } else {
         foreach (const Cache::IpBanInfo &inf, *list) {
-            if (inf.ip == n) {
+            if (QRegExp(inf.ip, Qt::CaseSensitive, QRegExp::Wildcard).exactMatch(ip)) {
                 level = inf.level;
                 break;
             }
@@ -349,7 +365,16 @@ void log(const cppcms::application &app, const QString &what)
 
 void log(const cppcms::http::request &req, const QString &what)
 {
-    bLog("[" + userIp(req) + "] " + what);
+    do_once(init)
+        resetLoggingSkipIps();
+    QString ip = userIp(req);
+    QMutexLocker locker(&loggingSkipIpsMutex);
+    foreach (const QRegExp &rx, loggingSkipIps) {
+        if (rx.exactMatch(ip))
+            return;
+    }
+    locker.unlock();
+    bLog("[" + ip + "] " + what);
 }
 
 unsigned int maxInfo(MaxInfo m, const QString &boardName)
@@ -455,6 +480,16 @@ cppcms::json::value readJsonValue(const QString &fileName, bool *ok)
         return bRet(ok, false, cppcms::json::value());
 }
 
+void resetLoggingSkipIps()
+{
+    QStringList list = SettingsLocker()->value("System/logging_skip_ip").toString().split(QRegExp("\\,\\s*"),
+                                                                                          QString::SkipEmptyParts);
+    QMutexLocker locker(&loggingSkipIpsMutex);
+    loggingSkipIps.clear();
+    foreach (const QString &s, list)
+        loggingSkipIps << QRegExp(s, Qt::CaseSensitive, QRegExp::Wildcard);
+}
+
 QStringList rules(const QString &prefix, const QLocale &l)
 {
     QStringList *sl = Cache::rules(l, prefix);
@@ -548,14 +583,17 @@ Post toPost(const PostParameters &params, const FileList &files)
 {
     Post p;
     p.email = params.value("email");
+    p.fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
     p.files = files;
     p.name = params.value("name");
     QString pwd = params.value("password");
     if (pwd.isEmpty())
         pwd = SettingsLocker()->value("Board/default_post_password").toString();
-    p.password = QCryptographicHash::hash(pwd.toLocal8Bit(), QCryptographicHash::Sha1);;
+    p.password = QCryptographicHash::hash(pwd.toLocal8Bit(), QCryptographicHash::Sha1);
+    p.raw = !params.value("raw").compare("true", Qt::CaseInsensitive);
     p.subject = params.value("subject");
     p.text = params.value("text");
+    p.premoderation = !params.value("premoderation").compare("true", Qt::CaseInsensitive);
     return p;
 }
 
@@ -602,12 +640,26 @@ QString toString(const QByteArray &hp, bool *ok)
     return bRet(ok, true, s);
 }
 
-QString userIp(const cppcms::http::request &req)
+QString userIp(const cppcms::http::request &req, bool *proxy)
 {
-    if (SettingsLocker()->value("System/use_x_real_ip", false).toBool())
-        return fromStd(const_cast<cppcms::http::request *>(&req)->getenv("HTTP_X_REAL_IP"));
+    SettingsLocker s;
+    cppcms::http::request &r = *const_cast<cppcms::http::request *>(&req);
+    bSet(proxy, false);
+    if (s->value("System/Proxy/detect_real_ip", true).toBool()) {
+        QString ip = fromStd(r.getenv("HTTP_X_FORWARDED_FOR"));
+        bool ok = false;
+        ipNum(ip, &ok);
+        if (ok)
+            return bRet(proxy, true, ip);
+        ip = fromStd(r.getenv("HTTP_X_CLIENT_IP"));
+        ipNum(ip, &ok);
+        if (ok)
+            return bRet(proxy, true, ip);
+    }
+    if (s->value("System/use_x_real_ip", false).toBool())
+        return fromStd(r.getenv("HTTP_X_REAL_IP"));
     else
-        return fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr());
+        return fromStd(r.remote_addr());
 }
 
 }

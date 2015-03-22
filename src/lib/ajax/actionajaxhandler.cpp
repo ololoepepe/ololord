@@ -4,6 +4,7 @@
 #include "controller/controller.h"
 #include "controller/baseboard.h"
 #include "tools.h"
+#include "translator.h"
 
 #include <BTextTools>
 
@@ -33,7 +34,10 @@ static cppcms::json::object toJson(const Content::Post &post)
     for (std::list<Content::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {
         const Content::File &file = *i;
         cppcms::json::object f;
+        f["type"] = file.type;
         f["size"] = file.size;
+        f["thumbSizeX"] = file.thumbSizeX;
+        f["thumbSizeY"] = file.thumbSizeY;
         f["sizeX"] = file.sizeX;
         f["sizeY"] = file.sizeY;
         f["sourceName"] = file.sourceName;
@@ -53,9 +57,18 @@ static cppcms::json::object toJson(const Content::Post &post)
     o["threadNumber"] = post.threadNumber;
     o["subject"] = post.subject;
     o["subjectIsRaw"] = post.subjectIsRaw;
+    o["premoderation"] = post.premoderation;
+    o["rawName"] = post.rawName;
+    o["rawSubject"] = post.rawSubject;
     o["text"] = post.text;
     o["rawPostText"] = post.rawPostText;
     o["tripcode"] = post.tripcode;
+    cppcms::json::array refs;
+    for (std::list<unsigned long long>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end();
+         ++i) {
+        refs.push_back(*i);
+    }
+    o["referencedBy"] = refs;
     return o;
 }
 
@@ -67,6 +80,7 @@ ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
 
 void ActionAjaxHandler::banUser(const cppcms::json::object &params)
 {
+    Tools::log(server, "Handling AJAX ban user");
     QString sourceBoard = Tools::fromStd(params.at("boardName").str());
     long long pn = (long long) params.at("postNumber").number();
     quint64 postNumber = pn > 0 ? quint64(pn) : 0;
@@ -80,10 +94,12 @@ void ActionAjaxHandler::banUser(const cppcms::json::object &params)
     if (!Database::banUser(server.request(), sourceBoard, postNumber, board, level, reason, expires, &err))
         return server.return_error(Tools::toStd(err));
     server.return_result(true);
+    Tools::log(server, "Handled AJAX ban user");
 }
 
 void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string password)
 {
+    Tools::log(server, "Handling AJAX delete post");
     if (!testBan(Tools::fromStd(boardName)))
         return;
     QString err;
@@ -92,22 +108,53 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
         return server.return_error(Tools::toStd(err));
     }
     server.return_result(true);
+    Tools::log(server, "Handled AJAX delete post");
 }
 
-void ActionAjaxHandler::editPost(std::string boardName, long long postNumber, std::string text)
+void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 {
-    if (!testBan(Tools::fromStd(boardName)))
+    Tools::log(server, "Handling AJAX edit post");
+    QString boardName = Tools::fromStd(params.at("boardName").str());
+    if (!testBan(boardName))
         return;
+    long long pn = (long long) params.at("postNumber").number();
+    Database::EditPostParameters p(server.request(), boardName, pn > 0 ? quint64(pn) : 0);
+    p.email = Tools::fromStd(params.at("email").str());
+    p.name = Tools::fromStd(params.at("name").str());
+    p.raw = params.at("raw").boolean();
+    p.subject = Tools::fromStd(params.at("subject").str());
+    p.text = Tools::fromStd(params.at("text").str());
+    p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
+    p.premoderation = params.at("premoderation").boolean();
     QString err;
-    if (!Database::editPost(server.request(), Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0,
-                            Tools::fromStd(text), &err)) {
+    if (!Database::editPost(p))
         return server.return_error(Tools::toStd(err));
-    }
-    server.return_result(true);
+    cppcms::json::array refs;
+    QList<quint64> list = p.referencedPosts.toList();
+    qSort(list);
+    foreach (quint64 pn, list)
+        refs.push_back(pn);
+    server.return_result(refs);
+    Tools::log(server, "Handled AJAX edit post");
+}
+
+void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash)
+{
+    Tools::log(server, "Handling AJAX get file existence");
+    if (!testBan(Tools::fromStd(boardName), true))
+        return;
+    bool ok = false;
+    bool exists = Database::fileHashExists(Tools::fromStd(hash), &ok);
+    TranslatorStd ts;
+    if (!ok)
+        return server.return_error(ts.translate("ActionAjaxHandler", "Internal database error", "error"));
+    server.return_result(exists);
+    Tools::log(server, "Handled AJAX get file exsistence");
 }
 
 void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber)
 {
+    Tools::log(server, "Handling AJAX get new posts");
     if (!testBan(Tools::fromStd(boardName), true))
         return;
     bool ok = false;
@@ -121,10 +168,12 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
     foreach (const Content::Post &p, posts)
         a.push_back(toJson(p));
     server.return_result(a);
+    Tools::log(server, "Handled AJAX get new posts");
 }
 
 void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
 {
+    Tools::log(server, "Handling AJAX get post");
     if (!testBan(Tools::fromStd(boardName), true))
         return;
     bool ok = false;
@@ -135,6 +184,7 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
     if (!ok)
         return server.return_error(Tools::toStd(err));
     server.return_result(toJson(post));
+    Tools::log(server, "Handled AJAX get post");
 }
 
 QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
@@ -144,6 +194,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
     list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
+    list << Handler("get_file_existence", cppcms::rpc::json_method(&ActionAjaxHandler::getFileExistence, self),
+                    method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);
     list << Handler("set_thread_fixed", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadFixed, self),
@@ -155,6 +207,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
 
 void ActionAjaxHandler::setThreadFixed(std::string boardName, long long postNumber, bool fixed)
 {
+    Tools::log(server, "Handling AJAX set thread fixed");
     if (!testBan(Tools::fromStd(boardName)))
         return;
     QString err;
@@ -163,10 +216,12 @@ void ActionAjaxHandler::setThreadFixed(std::string boardName, long long postNumb
         return server.return_error(Tools::toStd(err));
     }
     server.return_result(true);
+    Tools::log(server, "Handled AJAX set thread fixed");
 }
 
 void ActionAjaxHandler::setThreadOpened(std::string boardName, long long postNumber, bool opened)
 {
+    Tools::log(server, "Handling AJAX set thread opened");
     if (!testBan(Tools::fromStd(boardName)))
         return;
     QString err;
@@ -175,4 +230,5 @@ void ActionAjaxHandler::setThreadOpened(std::string boardName, long long postNum
         return server.return_error(Tools::toStd(err));
     }
     server.return_result(true);
+    Tools::log(server, "Handled AJAX set thread opened");
 }

@@ -26,20 +26,21 @@ StaticFilesRoute::StaticFilesRoute(cppcms::application &app, Mode m) :
 void StaticFilesRoute::handle(std::string p)
 {
     QString path = Tools::fromStd(p);
-    Tools::log(application, "Handling static file: " + path);
+    Tools::log(application, "Handling " + QString(StaticFilesMode == mode ? "static" : "dynamic") + " file: " + path);
     typedef QByteArray *(*GetCacheFunction)(const QString &path);
     typedef bool (*SetCacheFunction)(const QString &path, QByteArray *data);
     if (!Controller::testRequest(application, Controller::GetRequest))
         return;
     if (path.contains("../") || path.contains("/..")) //NOTE: Are you trying to cheat me?
         return Controller::renderNotFound(application);
-    GetCacheFunction getCache = Prefix.startsWith("static") ? &Cache::staticFile : &Cache::dynamicFile;
-    SetCacheFunction setCache = Prefix.startsWith("static") ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
+    GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
+    SetCacheFunction setCache = (StaticFilesMode == mode) ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
     QByteArray *data = getCache(path);
     if (data) {
         application.response().content_type("");
         application.response().out().write(data->data(), data->size());
-        return Tools::log(application, "Handled static file successfully (cached)");
+        return Tools::log(application, "Handled " + QString(StaticFilesMode == mode ? "static" : "dynamic")
+                          + " file successfully (cached)");
     }
     QString fn = BDirTools::findResource(Prefix + "/" + path, BDirTools::AllResources);
     if (fn.startsWith(":")) { //NOTE: No need to cache files stored in memory
@@ -49,7 +50,8 @@ void StaticFilesRoute::handle(std::string p)
             return Controller::renderNotFound(application);
         application.response().content_type("");
         application.response().out().write(ba.data(), ba.size());
-        return Tools::log(application, "Handled static file successfully (in-memory)");
+        return Tools::log(application, "Handled " + QString(StaticFilesMode == mode ? "static" : "dynamic")
+                          + " file successfully (in-memory)");
     }
     bool ok = false;
     data = new QByteArray(BDirTools::readFile(fn, -1, &ok));
@@ -59,7 +61,8 @@ void StaticFilesRoute::handle(std::string p)
     application.response().out().write(data->data(), data->size());
     if (!setCache(path, data))
         delete data;
-    Tools::log(application, "Handled static file successfully");
+    Tools::log(application, "Handled " + QString(StaticFilesMode == mode ? "static" : "dynamic")
+               + " file successfully");
 }
 
 void StaticFilesRoute::handle(std::string boardName, std::string path)

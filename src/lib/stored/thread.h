@@ -8,6 +8,7 @@ class Post;
 #include <QByteArray>
 #include <QDateTime>
 #include <QList>
+#include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -34,6 +35,7 @@ private:
     bool postingEnabled_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(thread_))
     Posts posts_;
+    bool premoderation_;
 public:
     explicit Thread(const QString &board, quint64 number, const QDateTime &dateTime);
 private:
@@ -48,11 +50,13 @@ public:
     bool postingEnabled() const;
     const Posts &posts() const;
     Posts &posts();
+    bool premoderation() const;
     void setArchived(bool archived);
     void setBoard(const QString &board);
     void setDateTime(const QDateTime &dateTime);
     void setFixed(bool fixed);
     void setPostingEnabled(bool enabled);
+    void setPremoderation(bool pm);
 private:
     friend class odb::access;
 };
@@ -91,9 +95,12 @@ private:
     QByteArray files_;
     QByteArray hashpass_;
     QString name_;
+    bool premoderation_;
     PRAGMA_DB(not_null)
     QByteArray password_;
     QString posterIp_;
+    QString rawText_;
+    QByteArray referencedBy_;
     QString subject_;
     QString text_;
     PRAGMA_DB(not_null)
@@ -109,17 +116,27 @@ public:
     QDateTime dateTime() const;
     bool bannedFor() const;
     bool showTripcode() const;
+    bool addReferencedBy(quint64 postNumber);
+    bool addReferencedBy(const QSet<quint64> &list);
     QString email() const;
     QStringList files() const;
     QByteArray hashpass() const;
     QString name() const;
     QByteArray password() const;
+    bool premoderation() const;
     QString posterIp() const;
+    QString rawText() const;
+    QSet<quint64> referencedBy() const;
+    bool removeReferencedBy(quint64 postNumber);
+    bool removeReferencedBy(const QSet<quint64> &list);
     void setBannedFor(bool banned);
     void setShowTripcode(bool show);
     void setEmail(const QString &email);
     void setFiles(const QStringList &files);
     void setName(const QString &name);
+    void setPremoderation(bool pm);
+    void setRawText(const QString &text);
+    void setReferencedBy(const QSet<quint64> &list);
     void setSubject(const QString &subject);
     void setText(const QString &text);
     QString subject() const;

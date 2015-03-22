@@ -21,6 +21,7 @@ Thread::Thread(const QString &board, quint64 number, const QDateTime &dateTime)
     archived_ = false;
     fixed_ = false;
     postingEnabled_ = true;
+    premoderation_ = false;
 }
 
 Thread::Thread()
@@ -73,6 +74,11 @@ Thread::Posts &Thread::posts()
     return posts_;
 }
 
+bool Thread::premoderation() const
+{
+    return premoderation_;
+}
+
 void Thread::setArchived(bool archived)
 {
     archived_ = archived;
@@ -98,6 +104,11 @@ void Thread::setPostingEnabled(bool enabled)
     postingEnabled_ = enabled;
 }
 
+void Thread::setPremoderation(bool pm)
+{
+    premoderation_ = pm;
+}
+
 Post::Post()
 {
     //
@@ -115,6 +126,7 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     showTripcode_ = false;
     thread_ = thread;
     posterIp_ = posterIp;
+    premoderation_ = false;
     password_ = password;
 }
 
@@ -148,6 +160,29 @@ bool Post::showTripcode() const
     return showTripcode_;
 }
 
+bool Post::addReferencedBy(quint64 postNumber)
+{
+    QSet<quint64> nlist = referencedBy();
+    if (!postNumber)
+        return false;
+    nlist << postNumber;
+    setReferencedBy(nlist);
+    return true;
+}
+
+bool Post::addReferencedBy(const QSet<quint64> &list)
+{
+    QSet<quint64> nlist = referencedBy();
+    int sz = nlist.size();
+    foreach (quint64 pn, list) {
+        if (!pn)
+            continue;
+        nlist << pn;
+    }
+    setReferencedBy(nlist);
+    return sz != nlist.size();
+}
+
 QString Post::email() const
 {
     return email_;
@@ -173,9 +208,49 @@ QByteArray Post::password() const
     return password_;
 }
 
+bool Post::premoderation() const
+{
+    return premoderation_;
+}
+
 QString Post::posterIp() const
 {
     return posterIp_;
+}
+
+QString Post::rawText() const
+{
+    return rawText_;
+}
+
+QSet<quint64> Post::referencedBy() const
+{
+    QSet<quint64> list;
+    foreach (const QVariant &v, BeQt::deserialize(referencedBy_).toList()) {
+        quint64 pn = v.toULongLong();
+        if (!pn)
+            continue;
+        list << pn;
+    }
+    return list;
+}
+
+bool Post::removeReferencedBy(quint64 postNumber)
+{
+    QSet<quint64> nlist = referencedBy();
+    bool b = nlist.remove(postNumber);
+    setReferencedBy(nlist);
+    return b;
+}
+
+bool Post::removeReferencedBy(const QSet<quint64> &list)
+{
+    QSet<quint64> nlist = referencedBy();
+    bool b = false;
+    foreach (quint64 pn, list)
+        b = b || nlist.remove(pn);
+    setReferencedBy(nlist);
+    return b;
 }
 
 void Post::setBannedFor(bool banned)
@@ -201,6 +276,27 @@ void Post::setFiles(const QStringList &files)
 void Post::setName(const QString &name)
 {
     name_ = name;
+}
+
+void Post::setPremoderation(bool pm)
+{
+    premoderation_ = pm;
+}
+
+void Post::setRawText(const QString &text)
+{
+    rawText_ = text;
+}
+
+void Post::setReferencedBy(const QSet<quint64> &list)
+{
+    QVariantList vl;
+    foreach (quint64 pn, list) {
+        if (!pn)
+            continue;
+        vl << pn;
+    }
+    referencedBy_ = BeQt::serialize(vl);
 }
 
 void Post::setSubject(const QString &subject)

@@ -2,7 +2,6 @@
 #define TOOLS_H
 
 class QLocale;
-class QStringList;
 
 namespace cppcms
 {
@@ -41,6 +40,7 @@ class locale;
 #include <QList>
 #include <QMap>
 #include <QString>
+#include <QStringList>
 
 #include <list>
 #include <string>
@@ -61,9 +61,12 @@ typedef QList<File> FileList;
 struct Post
 {
     QString email;
+    QStringList fileHashes;
     FileList files;
     QString name;
     QByteArray password;
+    bool premoderation;
+    bool raw;
     QString subject;
     QString text;
 };
@@ -110,6 +113,7 @@ OLOLORD_EXPORT QStringList news(const QLocale &l);
 OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request);
 OLOLORD_EXPORT PostParameters postParameters(const cppcms::http::request &request);
 OLOLORD_EXPORT cppcms::json::value readJsonValue(const QString &fileName, bool *ok = 0);
+OLOLORD_EXPORT void resetLoggingSkipIps();
 OLOLORD_EXPORT QStringList rules(const QString &prefix, const QLocale &l);
 OLOLORD_EXPORT QString storagePath();
 OLOLORD_EXPORT QStringList supportedCodeLanguages();
@@ -121,7 +125,7 @@ OLOLORD_EXPORT std::locale toStd(const QLocale &l);
 OLOLORD_EXPORT std::string toStd(const QString &s);
 OLOLORD_EXPORT std::list<std::string> toStd(const QStringList &sl);
 OLOLORD_EXPORT QString toString(const QByteArray &hp, bool *ok = 0);
-OLOLORD_EXPORT QString userIp(const cppcms::http::request &req);
+OLOLORD_EXPORT QString userIp(const cppcms::http::request &req, bool *proxy = 0);
 
 }
 

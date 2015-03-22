@@ -58,6 +58,7 @@
 #include <QStringList>
 #include <QtAlgorithms>
 #include <QVariant>
+#include <QVariantMap>
 
 #include <cppcms/application.h>
 #include <cppcms/http_request.h>
@@ -78,6 +79,48 @@
 #include <vector>
 
 #include <fstream>
+
+class FileTransaction
+{
+private:
+    bool commited;
+    QStringList mfileNames;
+public:
+    explicit FileTransaction()
+    {
+        commited = false;
+    }
+    ~FileTransaction()
+    {
+        if (commited)
+            return;
+        foreach (const QString &fn, mfileNames)
+            QFile::remove(fn);
+    }
+public:
+    void commit()
+    {
+        commited = true;
+    }
+    QStringList fileNames() const
+    {
+        return mfileNames;
+    }
+    void addFile(const QString &fn)
+    {
+        mfileNames << fn;
+    }
+};
+
+static void scaleThumbnail(QImage &img, QVariantMap &m)
+{
+    m.insert("height", img.height());
+    m.insert("width", img.width());
+    if (img.height() > 200 || img.width() > 200)
+        img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    m.insert("thumbHeight", img.height());
+    m.insert("thumbWidth", img.width());
+}
 
 static bool threadLessThan(const Thread &t1, const Thread &t2)
 {
@@ -237,7 +280,7 @@ void AbstractBoard::createPost(cppcms::application &app)
     quint64 postNumber = 0L;
     if (!Database::createPost(p, &postNumber))
         return Controller::renderError(app, err, desc);
-    Controller::renderSuccessfulPost(app, postNumber);
+    Controller::renderSuccessfulPost(app, postNumber, p.referencedPosts);
     Tools::log(app, "Handled post creation");
 }
 
@@ -284,8 +327,10 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
         return;
     foreach (const QString &fn, fileNames) {
         QFile::remove(path + "/" + fn);
+        Database::removeFileHash(name() + "/" + fn);
         QFileInfo fii(fn);
         QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
+        QFile::remove(path + "/" + fii.baseName() + ".ololord-file-info");
         if (suff.compare("webm", Qt::CaseInsensitive))
             QFile::remove(path + "/" + fii.baseName() + "s." + suff);
         else
@@ -295,7 +340,7 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
 
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
-    Tools::log(app, "Handling board");
+    Tools::log(app, "Handling board: " + name());
     if (!Controller::testBan(app, Controller::ReadAction, name()))
         return;
     TranslatorQt tq(app.request());
@@ -317,8 +362,18 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
-        QList<Thread> list = Database::query<Thread, Thread>(odb::query<Thread>::board == name()
-                                                             && odb::query<Thread>::archived == false);
+        odb::query<Thread> q = odb::query<Thread>::board == name() && odb::query<Thread>::archived == false;
+        QByteArray hashpass = Tools::hashpass(app.request());
+        bool modOnBoard = Database::moderOnBoard(app.request(), name());
+        QList<Thread> list = Database::query<Thread, Thread>(q);
+        int lvl = Database::registeredUserLevel(app.request());
+        foreach (int i, bRangeR(list.size() - 1, 0)) {
+            Post opPost = *list.at(i).posts().first().load();
+            if (opPost.premoderation() && opPost.hashpass() != hashpass
+                    && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
+                list.removeAt(i);
+            }
+        }
         qSort(list.begin(), list.end(), &threadLessThan);
         pageCount = (list.size() / threadsPerPage()) + ((list.size() % threadsPerPage()) ? 1 : 0);
         if (!pageCount)
@@ -339,22 +394,22 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
             if (!ok)
                 return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
-            int lb = posts.size() - Tools::maxInfo(Tools::MaxLastPosts, name());
-            if (lb <= 0)
-                lb = 1;
-            foreach (int i, bRangeR(posts.size() - 1, lb)) {
-                thread.lastPosts.push_front(toController(*posts.at(i).load(), app.request(), &ok, &err));
+            unsigned int maxPosts = Tools::maxInfo(Tools::MaxLastPosts, name());
+            foreach (int i, bRangeR(posts.size() - 1, 1)) {
+                Post post = *posts.at(i).load();
+                if (post.premoderation() && hashpass != post.hashpass()
+                        && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
+                    continue;
+                }
+                thread.lastPosts.push_front(toController(post, app.request(), &ok, &err));
                 if (!ok)
                     return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+                if (thread.lastPosts.size() >= maxPosts)
+                    break;
             }
             thread.hidden = (Tools::cookieValue(app.request(), "postHidden" + name()
                                                 + QString::number(tt.number())) == "true");
             c.threads.push_back(thread);
-        }
-        c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
-        if (c.moder) {
-            QStringList boards = Database::registeredUserBoards(app.request());
-            c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
         }
         t.commit();
     }  catch (const odb::exception &e) {
@@ -376,7 +431,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
 
 void AbstractBoard::handleRules(cppcms::application &app)
 {
-    Tools::log(app, "Handling rules");
+    Tools::log(app, "Handling rules: " + name());
     Content::Rules c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
@@ -393,7 +448,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
 
 void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
 {
-    Tools::log(app, "Handling thread");
+    Tools::log(app, "Handling thread: " + name() + "/" + QString::number(threadNumber));
     if (!Controller::testBan(app, Controller::ReadAction, name()))
         return;
     TranslatorQt tq(app.request());
@@ -415,9 +470,11 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
         }
-        Database::Result<Thread> thread = Database::queryOne<Thread, Thread>(
-                    odb::query<Thread>::board == name() && odb::query<Thread>::number == threadNumber
-                    && odb::query<Thread>::archived == false);
+        odb::query<Thread> q = odb::query<Thread>::board == name() && odb::query<Thread>::number == threadNumber;
+        q = q && odb::query<Thread>::archived == false;
+        Database::Result<Thread> thread = Database::queryOne<Thread, Thread>(q);
+        QByteArray hashpass = Tools::hashpass(app.request());
+        bool modOnBoard = Database::moderOnBoard(app.request(), name());
         if (thread.error) {
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"),
                                            tq.translate("AbstractBoard", "Internal database error", "description"));
@@ -433,10 +490,20 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         c.fixed = thread->fixed();
         c.id = thread->id();
         c.number = thread->number();
-        QSharedPointer<Post> opPost = posts.first().load();
-        pageTitle = opPost->subject();
+        Post opPost = *posts.first().load();
+        int lvl = Database::registeredUserLevel(app.request());
+        if (opPost.premoderation() && hashpass != opPost.hashpass()
+                && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
+            return Controller::renderNotFound(app);
+        }
+        pageTitle = opPost.subject();
         if (pageTitle.isEmpty()) {
-            pageTitle = opPost->text().replace(QRegExp("\\r?\\n+"), " ");
+            pageTitle = opPost.text().replace(QRegExp("\\r?\\n+"), " ").replace(QRegExp("<[^<>]+>"), "");
+            pageTitle.replace("&amp;", "&");
+            pageTitle.replace("&lt;", "<");
+            pageTitle.replace("&gt;", ">");
+            pageTitle.replace("&nbsp;", " ");
+            pageTitle.replace("&quot;", "\"");
             if (pageTitle.length() > 50)
                 pageTitle = pageTitle.left(47) + "...";
         }
@@ -447,14 +514,14 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         if (!ok)
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         foreach (int j, bRangeD(1, posts.size() - 1)) {
-            c.posts.push_back(toController(*posts.at(j).load(), app.request(), &ok, &err));
+            Post post = *posts.at(j).load();
+            if (post.premoderation() && hashpass != post.hashpass()
+                    && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
+                continue;
+            }
+            c.posts.push_back(toController(post, app.request(), &ok, &err));
             if (!ok)
                 return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
-        }
-        c.moder = Database::registeredUserLevel(app.request()) >= RegisteredUser::ModerLevel;
-        if (c.moder) {
-            QStringList boards = Database::registeredUserBoards(app.request());
-            c.moder = c.moder && (boards.contains("*") || boards.contains(name()));
         }
         t.commit();
     }  catch (const odb::exception &e) {
@@ -486,8 +553,9 @@ bool AbstractBoard::isCaptchaValid(const cppcms::http::request &req, const Tools
     try {
         curlpp::Cleanup curlppCleanup;
         Q_UNUSED(curlppCleanup)
-        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2";
+        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2&remoteip=%3";
         url = url.arg(SettingsLocker()->value("Site/captcha_private_key").toString()).arg(captcha);
+        url = url.arg(Tools::userIp(req));
         curlpp::Easy request;
         request.setOpt(curlpp::options::Url(Tools::toStd(url)));
         std::ostringstream os;
@@ -544,9 +612,11 @@ unsigned int AbstractBoard::postLimit() const
     return s->value("Board/" + name() + "/post_limit", s->value("Board/post_limit", 1000)).toUInt();
 }
 
-bool AbstractBoard::processCode() const
+bool AbstractBoard::premoderationEnabled() const
 {
-    return false;
+    SettingsLocker s;
+    return s->value("Board/" + name() + "/premoderation_enabled",
+                    s->value("Board/premoderation_enabled", false)).toBool();
 }
 
 QStringList AbstractBoard::rules(const QLocale &l) const
@@ -570,37 +640,46 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
     QString sfn = path + "/" + dt + "." + suffix;
+    FileTransaction t;
+    t.addFile(sfn);
+    if (!BDirTools::writeFile(sfn, f.data) || !Database::addFileHash(f.data, name() + "/" + QFileInfo(sfn).fileName()))
+        return bRet(ok, false, QString());
+    QVariantMap m;
+    QImage img;
     if (!suffix.compare("webm", Qt::CaseInsensitive)) {
-        if (!BDirTools::writeFile(sfn, f.data))
-            return bRet(ok, false, QString());
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
-            QImage img;
+            t.addFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
                 return bRet(ok, false, QString());
-            if (img.height() > 200 || img.width() > 200)
-                img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+            scaleThumbnail(img, m);
             if (!img.save(path + "/" + dt + "s.png", "png"))
                 return bRet(ok, false, QString());
+            m.insert("thumbFileName", dt + "s.png");
+        } else {
+            m.insert("thumbFileName", "webm");
         }
     } else {
-        QImage img;
         QByteArray data = f.data;
         QBuffer buff(&data);
         buff.open(QIODevice::ReadOnly);
         if (!img.load(&buff, suffix.toLower().toLatin1().data()))
             return bRet(ok, false, QString());
-        if (img.height() > 200 || img.width() > 200)
-            img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-        if (!BDirTools::writeFile(sfn, f.data))
-            return bRet(ok, false, QString());
+        scaleThumbnail(img, m);
         if (!suffix.compare("gif", Qt::CaseInsensitive))
             suffix = "png";
+        t.addFile(path + "/" + dt + "s." + suffix);
         if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
             return bRet(ok, false, QString());
+        m.insert("thumbFileName", dt + "s." + suffix);
     }
+    QString ifn = path + "/" + dt + ".ololord-file-info";
+    t.addFile(ifn);
+    if (!BDirTools::writeFile(ifn, BeQt::serialize(m)))
+        return bRet(ok, false, QString());
+    t.commit();
     return bRet(ok, true, QFileInfo(sfn).fileName());
 }
 
@@ -645,7 +724,8 @@ unsigned int AbstractBoard::threadsPerPage() const
     return s->value("Board/" + name() + "/threads_per_page", s->value("Board/threads_per_page", 20)).toUInt();
 }
 
-QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const
+QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &thumbSizeX, int &thumbSizeY, int &sizeX,
+                                     int &sizeY) const
 {
     if (fn.isEmpty())
         return "";
@@ -653,43 +733,19 @@ QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &size
     if (storagePath.isEmpty())
         return "";
     QFileInfo fi(storagePath + "/img/" + name() + "/" + QFileInfo(fn).fileName());
-    QString suffix = fi.suffix();
-    if (!suffix.compare("gif", Qt::CaseInsensitive))
-        suffix = "png";
     size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
-    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
-        QString tfn = fi.baseName() + "s.png";
-        if (QFileInfo(fi.path() + "/" + tfn).exists()) {
-            QImage img(fi.path() + "/" + tfn);
-            sizeX = img.width();
-            sizeY = img.height();
-            return tfn;
-        } else {
-            sizeX = 200;
-            sizeY = 200;
-            return "webm";
-        }
-    }
-    QImage img(fi.filePath());
-    if (!img.isNull()) {
-        size += ", " + QString::number(img.width()) + "x" + QString::number(img.height());
-        sizeX = img.width();
-        sizeY = img.height();
-        if (sizeX > 200) {
-            double k = double(sizeX) / 200.0;
-            sizeX = 200;
-            sizeY = int(double(sizeY) / k);
-        }
-        if (sizeY > 200) {
-            double k = double(sizeY) / 200.0;
-            sizeY = 200;
-            sizeX = int(double(sizeX) / k);
-        }
-    } else {
-        sizeX = -1;
-        sizeY = -1;
-    }
-    return fi.baseName() + "s." + suffix;
+    bool ok = false;
+    QByteArray ba = BDirTools::readFile(storagePath + "/img/" + name() + "/" + QFileInfo(fn).baseName()
+                                        + ".ololord-file-info", -1, &ok);
+    if (!ok)
+        return "";
+    QVariantMap m = BeQt::deserialize(ba).toMap();
+    sizeX = m.value("width").toInt();
+    sizeY = m.value("height").toInt();
+    thumbSizeX = m.value("thumbWidth").toInt();
+    thumbSizeY = m.value("thumbHeight").toInt();
+    size += ", " + QString::number(sizeX) + "x" + QString::number(sizeY);
+    return m.value("thumbFileName").toString();
 }
 
 Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::request &req, bool *ok,
@@ -708,14 +764,18 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->bannedFor = post.bannedFor();
         p->email = Tools::toStd(post.email());
         p->number = post.number();
-        p->subject = Tools::toStd(post.subject());
+        p->rawSubject = Tools::toStd(post.subject());
+        p->subject = p->rawSubject;
         p->subjectIsRaw = false;
+        p->rawName = Tools::toStd(post.name());
+        p->premoderation = post.premoderation();
         foreach (const QString &fn, post.files()) {
             QFileInfo fi(fn);
             Content::File f;
+            f.type = fn.endsWith("webm", Qt::CaseInsensitive) ? "webm" : "image";
             f.sourceName = Tools::toStd(fi.fileName());
             QString sz;
-            f.thumbName = Tools::toStd(thumbFileName(fi.fileName(), sz, f.sizeX, f.sizeY));
+            f.thumbName = Tools::toStd(thumbFileName(fi.fileName(), sz, f.thumbSizeX, f.thumbSizeY, f.sizeX, f.sizeY));
             f.size = Tools::toStd(sz);
             p->files.push_back(f);
         }
@@ -735,7 +795,8 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         } catch (const odb::exception &e) {
             return bRet(ok, false, error, Tools::fromStd(e.what()), Content::Post());
         }
-        p->text = Controller::processPostText(post.text(), name(), threadNumber, processCode());
+        p->text = Tools::toStd(post.text());
+        p->rawPostText = Tools::toStd(post.rawText());
         p->threadNumber = threadNumber;
         p->showRegistered = false;
         p->showTripcode = post.showTripcode();
@@ -751,6 +812,10 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 p->countryName = "Unknown country";
             }
         }
+        QList<quint64> list = post.referencedBy().toList();
+        qSort(list);
+        foreach (quint64 pn, list)
+            p->referencedBy.push_back(pn);
     }
     Content::Post pp = *p;
     if (!inCache && !Cache::cachePost(name(), post.number(), p))
@@ -762,10 +827,8 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
     if (showWhois() && "Unknown country" == pp.countryName)
         pp.countryName = ts.translate("AbstractBoard", "Unknown country", "countryName");
     int regLvl = Database::registeredUserLevel(req);
-    if (regLvl >= RegisteredUser::ModerLevel) {
-        pp.rawPostText = Tools::toStd(post.text());
+    if (regLvl >= RegisteredUser::ModerLevel)
         pp.ip = Tools::toStd(post.posterIp());
-    }
     pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
     pp.hidden = (Tools::cookieValue(req, "postHidden" + name() + QString::number(post.number())) == "true");
     pp.name = Tools::toStd(Controller::toHtml(post.name()));
@@ -908,14 +971,20 @@ void AbstractBoard::initBoards(bool reinit)
     foreach (const QString &boardName, boards.keys()) {
         BSettingsNode *nn = new BSettingsNode(boardName, n);
         BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "captcha_enabled", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if captcha is enabled on this board.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Determines if captcha is enabled on this board.\n"
                                                     "The default is true."));
         nnn = new BSettingsNode(QVariant::UInt, "threads_per_page", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Number of threads per one page on this board.\n"
                                                     "The default is 20."));
         nnn = new BSettingsNode(QVariant::Bool, "posting_enabled", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if posting is enabled on this board.\n"
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Determines if posting is enabled on this board.\n"
                                                     "The default is true."));
+        nnn = new BSettingsNode(QVariant::Bool, "premoderation_enabled", nn);
+        nnn->setDescription(BTranslation::translate("initSettings",
+                                                    "Determines if pre-moderation is enabled on this board.\n"
+                                                    "The default is false."));
         nnn = new BSettingsNode(QVariant::UInt, "bump_limit", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum bump count on this board.\n"
                                                     "When a thread has reached it's bump limit, "

@@ -1,0 +1,2 @@
+* Implement proxy blocking
+* Make HTML compatible with Dollchan Extension Tools

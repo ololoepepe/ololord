@@ -6,15 +6,14 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <% include baseHead() %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/board_video.css">
+        <% include baseHead(0) %>
     </head>
     <body>
         <div class="theVideo">
             <video autoplay="on" loop="on">
                 <source src="/<%= sitePathPrefix %>video/<%= videoFileName %>" type="<%= videoType %>" />
                 <%= altVideoText %>
-            </video> 
+            </video>
         </div>
     </body>
 </html>

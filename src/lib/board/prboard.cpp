@@ -45,7 +45,7 @@ bool prBoard::isCaptchaValid(const cppcms::http::request &req, const Tools::Post
         cURLpp::Forms formParts;
         formParts.push_back(new cURLpp::FormParts::Content("challenge", challenge.toUtf8().data()));
         formParts.push_back(new cURLpp::FormParts::Content("response", response.toUtf8().data()));
-        formParts.push_back(new cURLpp::FormParts::Content("remoteip",  Tools::userIp(req).toLatin1().data()));
+        formParts.push_back(new cURLpp::FormParts::Content("remoteip", Tools::userIp(req).toLatin1().data()));
         QString privateKey = SettingsLocker()->value("Site/codecha_private_key").toString();
         formParts.push_back(new cURLpp::FormParts::Content("privatekey", privateKey.toLatin1().data()));
         request.setOpt(new cURLpp::Options::HttpPost(formParts));
@@ -66,11 +66,6 @@ bool prBoard::isCaptchaValid(const cppcms::http::request &req, const Tools::Post
 QString prBoard::name() const
 {
     return "pr";
-}
-
-bool prBoard::processCode() const
-{
-    return true;
 }
 
 QString prBoard::title(const QLocale &l) const

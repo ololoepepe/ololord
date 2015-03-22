@@ -25,6 +25,11 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
             return name == other.name;
         }
     };
+    struct Style
+    {
+        std::string name;
+        std::string title;
+    };
 public:
     AbstractBoard::BoardInfoList boards;
     std::string cancelButtonText;
@@ -45,7 +50,12 @@ public:
     std::string showPasswordText;
     std::string showSearchFormText;
     std::string showTripcodeText;
+    std::string siteDomain;
     std::string sitePathPrefix;
+    std::string siteProtocol;
+    Style style;
+    std::string styleLabelText;
+    std::list<Style> styles;
     std::string timeLabelText;
     std::string timeLocalText;
     std::string timeServerText;

@@ -14,12 +14,14 @@
 
 #include <BCoreApplication>
 #include <BeQt>
+#include <BTranslation>
 
 #include <QChar>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
 #include <QLocale>
+#include <QMap>
 #include <QMutex>
 #include <QSettings>
 #include <QString>
@@ -66,6 +68,10 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         }
         locales.push_back(toWithLocale(QLocale("en_US")));
     }
+    typedef QMap<QString, BTranslation> TranslationMap;
+    init_once(TranslationMap, styles, TranslationMap()) {
+        styles.insert("", BTranslation::translate("initBase", "Photon", "style name"));
+    }
     localeMutex.unlock();
     TranslatorStd ts(req);
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
@@ -101,7 +107,22 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showSearchFormText = ts.translate("initBase", "Search", "showSearchFormText");
     c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
+    c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
+    c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
+    if (c.siteProtocol.empty())
+        c.siteProtocol = "http";
+    c.style.name = Tools::toStd(Tools::cookieValue(req, "style"));
+    if (c.style.name.empty())
+        c.style.name = "photon";
+    c.style.title = Tools::toStd(styles.value(Tools::fromStd(c.style.name)).translate());
+    c.styleLabelText = ts.translate("initBase", "Style:", "styleLabelText");
+    foreach (const QString &s, styles.keys()) {
+        Content::Base::Style st;
+        st.name = Tools::toStd(s);
+        st.title = Tools::toStd(styles.value(s).translate());
+        c.styles.push_back(st);
+    }
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
@@ -147,6 +168,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.banReasonLabelText = ts.translate("initBaseBoard", "Reason:", "banReasonLabelText");
     c.banUserText = ts.translate("initBaseBoard", "Ban user", "banUserText");
     c.boardLabelText = ts.translate("initBaseBoard", "Board:", "boardLabelText");
+    c.bytesText = ts.translate("initBaseBoard", "Byte(s)", "bytesText");
     c.bumpLimitReachedText = ts.translate("initBaseBoard", "Bump limit reached", "bumpLimitReachedText");
     QString ip = Tools::userIp(req);
     c.captchaEnabled = Tools::captchaEnabled(board->name()) && !board->captchaQuota(ip);
@@ -155,46 +177,65 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
     c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
+    c.complainText = ts.translate("initBaseBoard", "Complain", "complainText");
+    c.complainMessage = ts.translate("initBaseBoard", "Go complain to your mum, you whiner!", "complainMessage");
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;
     c.deletePostText = ts.translate("initBaseBoard", "Delete post", "fixedText");
     c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "fixedText");
+    c.downloadThreadText = ts.translate("initBaseBoard", "Download all thread files as a .zip archive",
+                                        "downloadThreadText");
     c.editPostText = ts.translate("initBaseBoard", "Edit post", "editPostText");
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");
     c.enterPasswordTitle = ts.translate("initBaseBoard", "Enter password", "enterPasswordTitle");
+    c.findSourceWithGoogleText = ts.translate("initBaseBoard", "Find source with Google", "findSourceWithGoogleText");
+    c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
+    c.kilobytesText = ts.translate("initBaseBoard", "KB", "kilobytesText");
     c.maxEmailLength = Tools::maxInfo(Tools::MaxEmailFieldLength, board->name());
     c.maxFileCount = Tools::maxInfo(Tools::MaxFileCount, board->name());
     c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, board->name());
     c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, board->name());
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
+    c.megabytesText = ts.translate("initBaseBoard", "MB", "megabytesText");
+    c.moder = Database::registeredUserLevel(req) / 10;
+    if (c.moder > 0) {
+        QStringList boards = Database::registeredUserBoards(req);
+        if (!boards.contains("*") && !boards.contains(board->name()))
+            c.moder = 0;
+    }
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
     c.postFormInputFile = ts.translate("initBaseBoard", "File(s):", "postFormInputFile");
-    c.postFormInputText = ts.translate("initBaseBoard", "Post:", "postFormInputText");
     SettingsLocker s;
     int maxText = s->value("Board/" + board->name() + "/max_text_length",
                            s->value("Board/max_text_length", 15000)).toInt();
-    c.postFormInputTextPlaceholder = Tools::toStd(tq.translate("initBaseBoard", "Comment. Max length %1",
-                                                               "postFormInputTextPlaceholder").arg(maxText));
+    c.postFormTextPlaceholder = Tools::toStd(tq.translate("initBaseBoard", "Comment. Max length %1",
+                                                           "postFormTextPlaceholder").arg(maxText));
     c.postFormLabelCaptcha = ts.translate("initBaseBoard", "Captcha:", "postFormLabelCaptcha");
     c.postFormLabelEmail = ts.translate("initBaseBoard", "E-mail:", "postFormLabelEmail");
     c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
     c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
+    c.postFormLabelPremoderation = ts.translate("initBaseBoard", "Pre-moderation:", "postFormLabelPremoderation");
+    c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
+    c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
     c.postingDisabledText = currentThread
             ? ts.translate("initBaseBoard", "Posting is disabled for this thread", "postingDisabledText")
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
+    c.premoderationEnabled = board->premoderationEnabled();
+    c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
+    c.selectFileText = ts.translate("initBaseBoard", "Select file", "selectFileText");
     c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
     c.showHidePostText = ts.translate("initBaseBoard", "Hide/show", "showHidePostText");
@@ -291,18 +332,23 @@ void renderNotFound(cppcms::application &app)
     Tools::log(app, "Page or file not found");
 }
 
+void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const QSet<quint64> &referencedPosts)
+{
+    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
+                         << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
+                         << "value=\"" << postNumber << "\" /> ";
+    QList<quint64> list = referencedPosts.toList();
+    qSort(list);
+    foreach (quint64 pn, list)
+        app.response().out() << "<input name=\"referencedPost\" type=\"hidden\" value=\"" << pn << "\" />";
+    app.response().out() << " </body></html>";
+}
+
 void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber)
 {
     app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
                          << "<title></title></head><body><input id=\"threadNumber\" type=\"hidden\" "
                          << "value=\"" << threadNumber << "\" /></body></html>";
-}
-
-void renderSuccessfulPost(cppcms::application &app, quint64 postNumber)
-{
-    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
-                         << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
-                         << "value=\"" << postNumber << "\" /></body></html>";
 }
 
 bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board)
@@ -340,11 +386,12 @@ bool testParams(const AbstractBoard *board, cppcms::application &app, const Tool
     QString boardName = board->name();
     int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, boardName);
     QString err;
+    QStringList fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
     if (!board->testParams(params, post, tq.locale(), &err)){
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
         Tools::log(app, "Invalid field");
         return false;
-    } else if (files.size() > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {
+    } else if ((files.size() + fileHashes.size()) > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
                     tq.translate("testParams", "Too many files", "description"));
         Tools::log(app, "File is too big");

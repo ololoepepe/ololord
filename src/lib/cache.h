@@ -22,7 +22,7 @@ namespace Cache
 
 struct OLOLORD_EXPORT IpBanInfo
 {
-    unsigned int ip;
+    QString ip;
     int level;
 };
 

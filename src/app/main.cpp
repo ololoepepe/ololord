@@ -57,6 +57,7 @@ static void initSettings();
 static void initTerminal();
 static bool setDefaultThreadPassword(const BSettingsNode *node, const QVariant &value);
 static bool setLoggingMode(const BSettingsNode *, const QVariant &v);
+static bool setLoggingSkipIp(const BSettingsNode *node, const QVariant &value);
 static bool setMaxCacheSize(const BSettingsNode *node, const QVariant &value);
 static bool showDefaultThreadPassword(const BSettingsNode *node, const QVariant &value);
 static void updateLoggingMode();
@@ -70,7 +71,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-beta8");
+        app.setApplicationVersion("0.1.0-beta9");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -591,6 +592,9 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Determines if posting is enabled.\n"
                                                "If false, posting will be disabled on all boards.\n"
                                                "The default is true."));
+    nn = new BSettingsNode(QVariant::Bool, "premoderation_enabled", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines if pre-moderation is enabled.\n"
+                                               "The default is false."));
     nn = new BSettingsNode(QVariant::UInt, "bump_limit", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum bump count.\n"
                                                "When a thread has reached it's bump limit, "
@@ -646,6 +650,12 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "supported_file_types", n);
     nn->setDescription(t);
     n = new BSettingsNode("Site", root);
+    nn = new BSettingsNode(QVariant::String, "domain", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Site domain name.\n"
+                                               "Example: mysite.com"));
+    nn = new BSettingsNode(QVariant::String, "protocol", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Site protocol.\n"
+                                               "Either http or https"));
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
                                                "For example, if prefix is board/, the resulting URL will start with "
@@ -691,6 +701,18 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::String, "logging_skip_ip", n);
+    nn->setUserSetFunction(&setLoggingSkipIp);
+    nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
+                                               "IP's are separated by commas. Wildcard matching is used.\n"
+                                               "Example: 127.0.0.1,192.168.0.*"));
+    nn = new BSettingsNode("Proxy", n);
+    BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
+    nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"
+                                                "Otherwise the address may be an address of a proxy server.\n"
+                                                "Works for non-transparent proxies only (X-Forwarded-For, "
+                                                "X-Client-IP).\n"
+                                                "The default is true."));
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {
         nn = new BSettingsNode(s, n);
@@ -734,6 +756,16 @@ bool setLoggingMode(const BSettingsNode *, const QVariant &v)
         return false;
     SettingsLocker()->setValue("System/logging_mode", m);
     updateLoggingMode();
+    return true;
+}
+
+bool setLoggingSkipIp(const BSettingsNode *, const QVariant &v)
+{
+    QString s = !v.isNull() ? v.toString() : bReadLine(translate("setLoggingSkipIp", "Enter skipped IP's:") + " ");
+    if (s.isEmpty())
+        return false;
+    SettingsLocker()->setValue("System/logging_skip_ip", s);
+    Tools::resetLoggingSkipIps();
     return true;
 }
 

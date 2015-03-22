@@ -91,7 +91,7 @@ public:
     virtual QString name() const = 0;
     virtual bool postingEnabled() const;
     unsigned int postLimit() const;
-    virtual bool processCode() const;
+    bool premoderationEnabled() const;
     virtual QStringList rules(const QLocale &l) const;
     virtual QString saveFile(const Tools::File &f, bool *ok = 0);
     virtual bool showWhois() const;
@@ -100,7 +100,8 @@ public:
                             QString *error = 0) const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
-    virtual QString thumbFileName(const QString &fn, QString &size, int &sizeX, int &sizeY) const;
+    virtual QString thumbFileName(const QString &fn, QString &size, int &thumbSizeX, int &thumbSizeY, int &sizeX,
+                                  int &sizeY) const;
     virtual QString title(const QLocale &l) const = 0;
     virtual Content::Post toController(const Post &post, const cppcms::http::request &req, bool *ok = 0,
                                        QString *error = 0) const;

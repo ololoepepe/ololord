@@ -26,6 +26,7 @@
 #include <QMap>
 #include <QPair>
 #include <QRegExp>
+#include <QSet>
 #include <QSettings>
 #include <QSharedPointer>
 #include <QString>
@@ -47,10 +48,68 @@
 namespace Controller
 {
 
+struct ProcessPostTextContext;
+
 typedef QPair<int, int> SkipPair;
 typedef QList<SkipPair> SkipList;
-typedef void (*ProcessPostTextFunction)(QString &text, int start, int length, const QString &boardName,
-                                        quint64 threadNumber, bool processCode);
+typedef void (*ProcessPostTextFunction)(ProcessPostTextContext &c);
+
+static void processPostText(ProcessPostTextContext &c, const SkipList &skip, ProcessPostTextFunction next);
+
+struct ProcessPostTextContext
+{
+    QString &text;
+    const int start;
+    const int length;
+    const QString &boardName;
+    const quint64 threadNumber;
+    QSet<quint64> *referencedPosts;
+public:
+    explicit ProcessPostTextContext(QString &txt, const QString &board, quint64 thread, QSet<quint64> *refPosts = 0) :
+        text(txt), start(0), length(txt.length()), boardName(board), threadNumber(thread), referencedPosts(refPosts)
+    {
+        //
+    }
+    explicit ProcessPostTextContext(const ProcessPostTextContext &c, int s, int l) :
+        text(c.text), start(s), length(l), boardName(c.boardName), threadNumber(c.threadNumber),
+        referencedPosts(c.referencedPosts)
+    {
+        //
+    }
+    explicit ProcessPostTextContext(const ProcessPostTextContext &c, QString &txt) :
+        text(txt), start(0), length(txt.length()), boardName(c.boardName), threadNumber(c.threadNumber),
+        referencedPosts(c.referencedPosts)
+    {
+        //
+    }
+public:
+    void addReferencedPost(quint64 postNumber)
+    {
+        if (!referencedPosts || !postNumber)
+            return;
+        *referencedPosts << postNumber;
+    }
+    bool isValid() const
+    {
+        return (start >= 0 && length > 0 && (start + length) <= text.length());
+    }
+    QString mid() const
+    {
+        return isValid() ? text.mid(start, length) : QString();
+    }
+    void process(QString &txt, const SkipList &skip, ProcessPostTextFunction f = 0)
+    {
+        ProcessPostTextContext cc(*this, txt);
+        processPostText(cc, skip, f);
+        replaceWith(txt);
+    }
+    void replaceWith(const QString &s)
+    {
+        if (!isValid())
+            return;
+        text.replace(start, length, s);
+    }
+};
 
 static const QString ExternalLinkRegexpPattern =
         "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-]*)*\\/?";
@@ -78,23 +137,22 @@ static bool in(const SkipList &skip, int index)
     return false;
 }
 
-static void toHtml(QString &text, int start, int len, const QString &/*boardName*/, quint64 /*threadNumber*/,
-                   bool /*processCode*/)
+static void toHtml(ProcessPostTextContext &c)
 {
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
-    text.replace(start, len, BTextTools::toHtml(text.mid(start, len), false));
+    c.text.replace(c.start, c.length, BTextTools::toHtml(c.text.mid(c.start, c.length), false));
 }
 
-static void processPostText(QString &text, const SkipList &skip, const QString &boardName, quint64 threadNumber,
-                            bool processCode, ProcessPostTextFunction next)
+void processPostText(ProcessPostTextContext &c, const SkipList &skip, ProcessPostTextFunction next)
 {
-    if (!next)
+    if (!c.isValid() || !next)
         return;
     if (!skip.isEmpty()) {
         const SkipPair &p = skip.last();
         int start = p.first + p.second;
-        next(text, start, text.length() - start, boardName, threadNumber, processCode);
+        ProcessPostTextContext cc(c, start, c.text.length() - start);
+        next(cc);
     }
     foreach (int i, bRangeR(skip.size() - 1, 0)) {
         const SkipPair &p = skip.at(i);
@@ -103,29 +161,28 @@ static void processPostText(QString &text, const SkipList &skip, const QString &
             const SkipPair &pp = skip.at(i - 1);
             start = pp.first + pp.second;
         }
-        next(text, start, p.first - start, boardName, threadNumber, processCode);
+        ProcessPostTextContext cc(c, start, p.first - start);
+        next(cc);
     }
-    if (skip.isEmpty())
-        next(text, 0, text.length(), boardName, threadNumber, processCode);
+    if (skip.isEmpty()) {
+        ProcessPostTextContext cc(c, 0, c.text.length());
+        next(cc);
+    }
 }
 
-static void processAsimmetric(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                              bool processCode, const QString &bbTag, const QString &htmlTag,
-                              ProcessPostTextFunction next, const QString &openTag = QString(), bool quote = false)
+static void processAsimmetric(ProcessPostTextContext &c, ProcessPostTextFunction next, const QString &bbTag,
+                              const QString &htmlTag, const QString &openTag = QString(), bool quote = false)
 {
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     QString bbop = "[" + bbTag + "]";
     QString bbcl = "[/" + bbTag + "]";
     QString op = !openTag.isEmpty() ? openTag : ("<" + htmlTag + ">");
     int s = t.indexOf(bbop, 0, Qt::CaseInsensitive);
-    if (s < 0) {
-        processPostText(t, skip, boardName, threadNumber, processCode, next);
-        text.replace(start, len, t);
-        return;
-    }
+    if (s < 0)
+        return c.process(t, skip, next);
     QRegExp rx("(\\[" + bbTag + "\\])|(\\[/" + bbTag + "\\])", Qt::CaseInsensitive);
     int ind = t.indexOf(rx, s + bbop.length());
     int depth = 1;
@@ -150,30 +207,25 @@ static void processAsimmetric(QString &text, int start, int len, const QString &
                 skip << qMakePair(ind + (op.length() - bbop.length()), htmlTag.length() + 3);
                 s = t.indexOf(bbop, ind + (op.length() - bbop.length()) + htmlTag.length() + 3, Qt::CaseInsensitive);
             }
-            if (s < 0) {
-                processPostText(t, skip, boardName, threadNumber, processCode, next);
-                text.replace(start, len, t);
-                return;
-            } else {
-                depth = 1;
-                ind = t.indexOf(rx, s + bbop.length());
-            }
+            if (s < 0)
+                return c.process(t, skip, next);
+            depth = 1;
+            ind = t.indexOf(rx, s + bbop.length());
         } else {
             ind = t.indexOf(rx, ind + rx.matchedLength());
         }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, next);
-    text.replace(start, len, t);
+    c.process(t, skip, next);
 }
 
-static void processSimmetric(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                             bool processCode, const QString &wmTag1, const QString &wmTag2, const QString &htmlTag,
-                             ProcessPostTextFunction next, const QString &openTag = QString(), bool quote = false)
+static void processSimmetric(ProcessPostTextContext &c, ProcessPostTextFunction next, const QString &wmTag1,
+                             const QString &wmTag2, const QString &htmlTag, const QString &openTag = QString(),
+                             bool quote = false)
 {
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     int i = 0;
     int s = -1;
     QChar last = '\0';
@@ -207,17 +259,15 @@ static void processSimmetric(QString &text, int start, int len, const QString &b
             ++i;
         }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, next);
-    text.replace(start, len, t);
+    c.process(t, skip, next);
 }
 
-static void processWakabaMarkExternalLink(QString &text, int start, int len, const QString &boardName,
-                                          quint64 threadNumber, bool processCode)
+static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
 {
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     QRegExp rx(ExternalLinkRegexpPattern);
     int ind = rx.indexIn(t);
     while (ind >= 0) {
@@ -235,40 +285,43 @@ static void processWakabaMarkExternalLink(QString &text, int start, int len, con
         skip << qMakePair(ind + ml + cap.length() + 11, 4);
         ind = rx.indexIn(t, ind + ml + cap.length() + 15);
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, &toHtml);
-    text.replace(start, len, t);
+    c.process(t, skip, &toHtml);
 }
 
-static void processWakabaMarkLink(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                                  bool processCode)
+static void processWakabaMarkLink(ProcessPostTextContext &c)
 {
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     QRegExp rx(">>\\d+");
     int ind = rx.indexIn(t);
     while (ind >= 0) {
         QString cap = rx.cap();
         QString postNumber = cap.mid(2);
-        QString a = "<a href=\"javascript:selectPost(" + postNumber + ", " + QString::number(threadNumber)
-                + ");\" onmouseover=\"viewPost(this, '" + boardName + "', " + postNumber
-                + ");\" onmouseout=\"noViewPost();\">" + cap.replace(">", "&gt;") + "</a>";
-        t.replace(ind, rx.matchedLength(), a);
-        skip << qMakePair(ind, a.length());
-        ind = rx.indexIn(t, ind + a.length());
+        bool ok = false;
+        quint64 pn = postNumber.toULongLong(&ok);
+        if (ok && pn && Database::postExists(c.boardName, pn)) {
+            QString a = "<a href=\"javascript:selectPost(" + postNumber + ", " + QString::number(c.threadNumber)
+                    + ");\" onmouseover=\"viewPost(this, '" + c.boardName + "', " + postNumber
+                    + ");\" onmouseout=\"noViewPost();\">" + cap.replace(">", "&gt;") + "</a>";
+            t.replace(ind, rx.matchedLength(), a);
+            skip << qMakePair(ind, a.length());
+            ind = rx.indexIn(t, ind + a.length());
+            c.addReferencedPost(pn);
+        } else {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+        }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkExternalLink);
-    text.replace(start, len, t);
+    c.process(t, skip, &processWakabaMarkExternalLink);
 }
 
-static void processWakabaMarkStrikeout(QString &text, int start, int len, const QString &boardName,
-                                       quint64 threadNumber, bool processCode)
+static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
 {
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     QRegExp rx("(\\^H)+");
     int ind = rx.indexIn(t);
     while (ind >= 0) {
@@ -281,45 +334,35 @@ static void processWakabaMarkStrikeout(QString &text, int start, int len, const 
         skip << qMakePair(ind + 3, 4);
         ind = rx.indexIn(t, ind + 7);
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkLink);
-    text.replace(start, len, t);
+    c.process(t, skip, &processWakabaMarkLink);
 }
 
-static void processWakabaMarkItalic(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                                    bool processCode)
+static void processWakabaMarkItalic(ProcessPostTextContext &c)
 {
-    processSimmetric(text, start, len, boardName, threadNumber, processCode, "*", "_", "em",
-                     &processWakabaMarkStrikeout);
+    processSimmetric(c, &processWakabaMarkStrikeout, "*", "_", "em");
 }
 
-static void processWakabaMarkBold(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                                  bool processCode)
+static void processWakabaMarkBold(ProcessPostTextContext &c)
 {
-    processSimmetric(text, start, len, boardName, threadNumber, processCode, "**", "__", "strong",
-                     &processWakabaMarkItalic);
+    processSimmetric(c, &processWakabaMarkItalic, "**", "__", "strong");
 }
 
-static void processWakabaMarkUnderlined(QString &text, int start, int len, const QString &boardName,
-                                        quint64 threadNumber, bool processCode)
+static void processWakabaMarkUnderlined(ProcessPostTextContext &c)
 {
-    processSimmetric(text, start, len, boardName, threadNumber, processCode, "***", "___", "u",
-                     &processWakabaMarkBold);
+    processSimmetric(c, &processWakabaMarkBold, "***", "___", "u");
 }
 
-static void processWakabaMarkSpoiler(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                                     bool processCode)
+static void processWakabaMarkSpoiler(ProcessPostTextContext &c)
 {
-    processSimmetric(text, start, len, boardName, threadNumber, processCode, "%%", "", "span",
-                     &processWakabaMarkUnderlined, "<span class=\"spoiler\">");
+    processSimmetric(c, &processWakabaMarkUnderlined, "%%", "", "span", "<span class=\"spoiler\">");
 }
 
-static void processWakabaMarkQuote(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                                   bool processCode)
+static void processWakabaMarkQuote(ProcessPostTextContext &c)
 {
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     QRegExp rx(">[^\n]+");
     int ind = rx.indexIn(t);
     while (ind >= 0) {
@@ -333,12 +376,10 @@ static void processWakabaMarkQuote(QString &text, int start, int len, const QStr
             ind = rx.indexIn(t, ind + rx.matchedLength());
         }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkSpoiler);
-    text.replace(start, len, t);
+    c.process(t, skip, &processWakabaMarkSpoiler);
 }
 
-static void processWakabaMarkList(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                                  bool processCode)
+static void processWakabaMarkList(ProcessPostTextContext &c)
 {
     typedef QMap<int, QString> ListTypeMap;
     init_once(ListTypeMap, listTypes, ListTypeMap()) {
@@ -346,10 +387,10 @@ static void processWakabaMarkList(QString &text, int start, int len, const QStri
         listTypes.insert(2, "circle");
         listTypes.insert(3, "square");
     }
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     bool cr = t.contains('\r');
     QStringList sl = t.split(QRegExp("\r?\n"));
     int offset = 0;
@@ -421,12 +462,10 @@ static void processWakabaMarkList(QString &text, int start, int len, const QStri
         skip.last().second += 5;
     }
     t = sl.join(cr ? "\r\n" : "\n");
-    processPostText(t, skip, boardName, threadNumber, processCode, &processWakabaMarkQuote);
-    text.replace(start, len, t);
+    c.process(t, skip, &processWakabaMarkQuote);
 }
 
-static void processTags(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                        bool processCode)
+static void processTags(ProcessPostTextContext &c)
 {
     typedef QMap<QString, QString> StringMap;
     init_once(StringMap, tags, StringMap()) {
@@ -450,17 +489,14 @@ static void processTags(QString &text, int start, int len, const QString &boardN
         htmls.insert("[sup]", qMakePair(QString("<sup>"), QString("</sup>")));
     }
     ProcessPostTextFunction next = &processWakabaMarkList;
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     QRegExp rxop(QStringList(tags.keys()).join("|").replace("[", "\\[").replace("]", "\\]"), Qt::CaseInsensitive);
     int s = t.indexOf(rxop);
-    if (s < 0) {
-        processPostText(t, skip, boardName, threadNumber, processCode, next);
-        text.replace(start, len, t);
-        return;
-    }
+    if (s < 0)
+        return c.process(t, skip, next);
     QString bbop = rxop.cap();
     QString bbcl = tags.value(bbop);
     StringPair html = htmls.value(bbop);
@@ -488,8 +524,7 @@ static void processTags(QString &text, int start, int len, const QString &boardN
             ind = t.indexOf(rx, ind + rx.matchedLength());
         }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, next);
-    text.replace(start, len, t);
+    c.process(t, skip, next);
 }
 
 static QString tagName(const QRegExp &rx)
@@ -502,13 +537,12 @@ static QString tagName(const QRegExp &rx)
     return cl;
 }
 
-static void processTagCode(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                           bool processCode)
+static void processTagCode(ProcessPostTextContext &c)
 {
-    if (start < 0 || len <= 0)
+    if (!c.isValid())
         return;
     SkipList skip;
-    QString t = text.mid(start, len);
+    QString t = c.mid();
     QString srchighlightPath = BDirTools::findResource("srchilite", BDirTools::AllResources);
     if (!srchighlightPath.isEmpty()) {
         QStringList langs = Tools::supportedCodeLanguages();
@@ -556,36 +590,29 @@ static void processTagCode(QString &text, int start, int len, const QString &boa
             indEnd = t.indexOf("[/" + tag + "]", indStart + rx.matchedLength());
         }
     }
-    processPostText(t, skip, boardName, threadNumber, processCode, &processTags);
-    text.replace(start, len, t);
+    c.process(t, skip, &processTags);
 }
 
-static void processTagQuote(QString &text, int start, int len, const QString &boardName, quint64 threadNumber,
-                            bool processCode)
+static void processTagQuote(ProcessPostTextContext &c)
 {
-    ProcessPostTextFunction f = processCode ? &processTagCode : &processTags;
-    processAsimmetric(text, start, len, boardName, threadNumber, processCode, "q", "font", f,
-                      "<font face=\"monospace\">", true);
+    processAsimmetric(c, &processTagCode, "q", "font", "<font face=\"monospace\">", true);
 }
 
-static void processWakabaMarkMonospaceSingle(QString &text, int start, int len, const QString &boardName,
-                                             quint64 threadNumber, bool processCode)
+static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    processSimmetric(text, start, len, boardName, threadNumber, processCode, "`", "", "font", &processTagQuote,
-                     "<font face=\"monospace\">", true);
+    processSimmetric(c, &processTagQuote, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
-static void processWakabaMarkMonospaceDouble(QString &text, int start, int len, const QString &boardName,
-                                             quint64 threadNumber, bool processCode)
+static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)
 {
-    processSimmetric(text, start, len, boardName, threadNumber, processCode, "``", "", "font",
-                     &processWakabaMarkMonospaceSingle, "<font face=\"monospace\">", true);
+    processSimmetric(c, &processWakabaMarkMonospaceSingle, "``", "", "font", "<font face=\"monospace\">", true);
 }
 
-std::string processPostText(QString text, const QString &boardName, quint64 threadNumber, bool processCode)
+QString processPostText(QString text, const QString &boardName, quint64 threadNumber, QSet<quint64> *referencedPosts)
 {
-    processWakabaMarkMonospaceDouble(text, 0, text.length(), boardName, threadNumber, processCode);
-    return Tools::toStd(text);
+    ProcessPostTextContext c(text, boardName, threadNumber, referencedPosts);
+    processWakabaMarkMonospaceDouble(c);
+    return text;
 }
 
 QString toHtml(const QString &s)
@@ -611,7 +638,8 @@ void toHtml(QString *s)
         skip << qMakePair(ind, 11 + cap.length() + rx.matchedLength() + 4);
         ind = rx.indexIn(*s, ind + rx.matchedLength() + cap.length() + 15);
     }
-    processPostText(*s, skip, "", 0L, false, &toHtml);
+    ProcessPostTextContext c(*s, "", 0L);
+    processPostText(c, skip, &toHtml);
 }
 
 QList<Content::Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,

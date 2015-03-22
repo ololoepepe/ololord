@@ -81,24 +81,15 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
-        <% include baseHead() %>
-        <% include settingsHead() %>
-        <% include navbarHead() %>
-        <% include bannerHead() %>
-        <% include createActionHead() %>
+        <% include baseHead(1) %>
         <% include boardHead() %>
-        <% include searchActionHead() %>
-        <% include titleHead() %>
-        <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/board.css">
-        <script type="text/javascript" src="/<%= sitePathPrefix %>js/board.js"></script>
     </head>
-    <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadBoard();">
+    <body onload="javascript:lord.initializeOnLoadBaseBoard();">
         <% include baseTexts() %>
-        <% include settingsTexts() %>
         <% include boardTexts() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>
-        <iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="posted();"></iframe>
+        <iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="lord.postedOnBoard();"></iframe>
         <a id="top"></a>
         <% include settings() %>
         <br />

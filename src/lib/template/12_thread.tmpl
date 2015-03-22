@@ -5,45 +5,40 @@
 <% template threadActions(std::string position) %>
 <div class="threadActions">
     [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= backText %></a>]
-    [<a href="javascript:updateThread('<%= currentBoard.name %>', <%= number %>);"><%= updateThreadText %></a>]
+    [<a href="javascript:lord.updateThread('<%= currentBoard.name %>', <%= number %>);"><%= updateThreadText %></a>]
     <% if ( "top" == position ) %>
         [<a href="#bottom"><%= toBottomText %></a>]
     <% else %>
         [<a href="#top"><%= toTopText %></a>]
     <% end %>
     <% if ( content.autoUpdateEnabled ) %>
-        [<input onclick="setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
+        [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
             type="checkbox" checked="true"><%= autoUpdateText %></input>]
     <% else %>
-        [<input onclick="setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
+        [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
             type="checkbox"><%= autoUpdateText %></input>]
     <% end %>
 </div>
 <% end template %>
 
 <% template head() %>
-<% include baseHead() %>
-<% include settingsHead() %>
-<% include navbarHead() %>
-<% include bannerHead() %>
-<% include createActionHead() %>
+<% include baseHead(1) %>
 <% include boardHead() %>
-<% include searchActionHead() %>
-<% include titleHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/thread.css">
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/FileSaver.min.js"></script>
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip.min.js"></script>
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip-utils.min.js"></script>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
 <% end template %>
 
 <% template body() %>
 <% include baseTexts() %>
-<% include settingsTexts() %>
 <% include boardTexts() %>
 <% include navigationButton("bottom") %>
 <% include navigationButton("top") %>
 <input id="noNewPostsText" type="hidden" value="<%= noNewPostsText %>" />
 <input id="newPostsText" type="hidden" value="<%= newPostsText %>" />
 <input id="currentThreadNumber" type="hidden" value="<%= opPost.number %>" />
-<iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="posted();"></iframe>
+<iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="lord.postedInThread();"></iframe>
 <a id="top"></a>
 <% include settings() %>
 <br />
@@ -111,7 +106,7 @@
     <head>
         <% include head() %>
     </head>
-    <body onload="javascript:initializeOnLoadSettings(); initializeOnLoadThread();">
+    <body onload="javascript:lord.initializeOnLoadThread();">
         <% include body() %>
     </body>
 </html>

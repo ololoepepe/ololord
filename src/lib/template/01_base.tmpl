@@ -6,7 +6,7 @@
 <div class="settingsBar">
     <span>
         <%= localeLabelText %>
-        <select id="localeChangeSelect" class="select" onchange="javascript:changeLocale();">
+        <select id="localeChangeSelect" class="select" onchange="javascript:lord.changeLocale();">
             <% foreach locale in locales %>
                 <% item %>
                     <% if ( locale.name == content.currentLocale.name ) %>
@@ -21,8 +21,24 @@
         </select>
     </span>
     <span>
+        <%= styleLabelText %>
+        <select id="styleChangeSelect" class="select" onchange="javascript:lord.changeStyle();">
+            <% foreach st in styles %>
+                <% item %>
+                    <% if ( st.name == content.style.name ) %>
+                        <option value="<%= st.name %>" selected="true">
+                    <% else %>
+                        <option value="<%= st.name %>">
+                    <% end %>
+                        <%= st.title %>
+                    </option>
+                <% end %>
+            <% end %>
+        </select>
+    </span>
+    <span>
         <%= timeLabelText %>
-        <select id="timeChangeSelect" class="select" onchange="javascript:changeTime();">
+        <select id="timeChangeSelect" class="select" onchange="javascript:lord.changeTime();">
             <% if ( content.currentTime == "local" ) %>
                 <option value="server"><%= timeServerText %></option>
                 <option value="local" selected="true"><%= timeLocalText %></option>
@@ -35,15 +51,15 @@
     <span>
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
-            <button class="button" onclick="javascript:doLogout();"><%= loginButtonText %></button>
+            <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
             <input id="showTripcodeCheckbox" type="checkbox" class="checkbox" title="<%= showTripcodeText %>"
-                   onclick="javascript:switchShowTripcode();" name="showTripcode" />
+                   onclick="javascript:lord.switchShowTripcode();" name="showTripcode" />
         <% else %>
             <input id="loginInput" type="password" class="input" name="hashpass"
                    placeholder="<%= loginPlaceholderText %>" />
-            <input id="showLoginCheckbox" type="checkbox" class="checkbox" onclick="javascript:switchShowLogin();"
+            <input id="showLoginCheckbox" type="checkbox" class="checkbox" onclick="javascript:lord.switchShowLogin();"
                    name="showLogin" title="<%= showPasswordText %>" />
-            <button class="button" onclick="javascript:doLogin();"><%= loginButtonText %></button>
+            <button class="button" onclick="javascript:lord.doLogin();"><%= loginButtonText %></button>
         <% end %>
         <% if ( !content.loginMessageWarning.empty() ) %>
             <span class="loginMessageWarning"><%= loginMessageWarning %></span>
@@ -74,7 +90,7 @@
         <input type="hidden" id="showSearchFormText" value="<%= showSearchFormText %>" />
         <div>
             [<a id="showHideSearchFormButton<%= position %>"
-                href="javascript:showHideSearchForm('<%= position %>');">
+                href="javascript:lord.showHideSearchForm('<%= position %>');">
                 <%= showSearchFormText %>
             </a>]
         </div>
@@ -98,40 +114,24 @@
 
 <% template baseTexts() %>
 <input type="hidden" id="sitePathPrefix" value="<%= sitePathPrefix %>" />
-<% end template %>
-
-<% template settingsTexts() %>
+<input type="hidden" id="siteDomain" value="<%= siteDomain %>" />
+<input type="hidden" id="siteProtocol" value="<%= siteProtocol %>" />
 <input type="hidden" id="showPasswordText" value="<%= showPasswordText %>" />
 <input type="hidden" id="cancelButtonText" value="<%= cancelButtonText %>" />
 <input type="hidden" id="confirmButtonText" value="<%= confirmButtonText %>" />
 <% end template %>
 
-<% template baseHead() %>
+<% template baseHead(bool javascript) %>
 <title><%= pageTitle %></title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/base.css">
-<% end template %>
-
-<% template settingsHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/settings_bar.css">
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/picoModal-2.1.0.min.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/settings.js"></script>
-<% end template %>
-
-<% template navbarHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/navbar.css">
-<% end template %>
-
-<% template searchActionHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/search_action.css">
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/search_action.js"></script>
-<% end template %>
-
-<% template titleHead() %>
-<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/title.css">
+<link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
+<% if ( javascript ) %>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/picoModal-2.1.0.min.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/base.js"></script>
 <% end %>
+<% end template %>
 
 <% end view %>
 <% end skin %>
