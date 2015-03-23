@@ -3,6 +3,7 @@
 #include "database.h"
 #include "controller/controller.h"
 #include "controller/baseboard.h"
+#include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
 
@@ -13,6 +14,7 @@
 #include <QDebug>
 #include <QList>
 #include <QLocale>
+#include <QMap>
 #include <QString>
 #include <QStringList>
 
@@ -57,16 +59,20 @@ static cppcms::json::object toJson(const Content::Post &post)
     o["threadNumber"] = post.threadNumber;
     o["subject"] = post.subject;
     o["subjectIsRaw"] = post.subjectIsRaw;
-    o["premoderation"] = post.premoderation;
+    o["draft"] = post.draft;
     o["rawName"] = post.rawName;
     o["rawSubject"] = post.rawSubject;
     o["text"] = post.text;
     o["rawPostText"] = post.rawPostText;
     o["tripcode"] = post.tripcode;
     cppcms::json::array refs;
-    for (std::list<unsigned long long>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end();
-         ++i) {
-        refs.push_back(*i);
+    typedef Content::Post::Ref Ref;
+    for (std::list<Ref>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end(); ++i) {
+        cppcms::json::object ref;
+        ref["boardName"] = i->boardName;
+        ref["postNumber"] = i->postNumber;
+        ref["threadNumber"] = i->threadNumber;
+        refs.push_back(ref);
     }
     o["referencedBy"] = refs;
     return o;
@@ -125,15 +131,15 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     p.subject = Tools::fromStd(params.at("subject").str());
     p.text = Tools::fromStd(params.at("text").str());
     p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
-    p.premoderation = params.at("premoderation").boolean();
+    p.draft = params.at("draft").boolean();
     QString err;
     if (!Database::editPost(p))
         return server.return_error(Tools::toStd(err));
-    cppcms::json::array refs;
-    QList<quint64> list = p.referencedPosts.toList();
-    qSort(list);
-    foreach (quint64 pn, list)
-        refs.push_back(pn);
+    cppcms::json::object refs;
+    foreach (const Post::RefKey &key, p.referencedPosts.keys()) {
+        std::string k = Tools::toStd(key.boardName) + "/" + Tools::toStd(QString::number(key.postNumber));
+        refs[k] = Tools::toStd(QString::number(p.referencedPosts.value(key)));
+    }
     server.return_result(refs);
     Tools::log(server, "Handled AJAX edit post");
 }

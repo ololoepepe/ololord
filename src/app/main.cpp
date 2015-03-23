@@ -592,9 +592,9 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Determines if posting is enabled.\n"
                                                "If false, posting will be disabled on all boards.\n"
                                                "The default is true."));
-    nn = new BSettingsNode(QVariant::Bool, "premoderation_enabled", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Determines if pre-moderation is enabled.\n"
-                                               "The default is false."));
+    nn = new BSettingsNode(QVariant::Bool, "drafts_enabled", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines if drafts are enabled.\n"
+                                               "The default is true."));
     nn = new BSettingsNode(QVariant::UInt, "bump_limit", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum bump count.\n"
                                                "When a thread has reached it's bump limit, "

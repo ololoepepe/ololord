@@ -99,14 +99,14 @@
                             </td>
                         </tr>
                     <% end %>
-                    <% if ( content.premoderationEnabled && content.loggedIn ) %>
+                    <% if ( content.draftsEnabled && content.loggedIn ) %>
                         <tr>
                             <td class="postformLabel">
-                                <b><%= postFormLabelPremoderation %></b>
+                                <b><%= postFormLabelDraft %></b>
                             </td>
                             <td class="postformField">
-                                <input type="checkbox" id="postFormInputPremoderation<%= position %>"
-                                       name="premoderation" value="true" />
+                                <input type="checkbox" id="postFormInputDraft<%= position %>" name="draft"
+                                       value="true" />
                             </td>
                         </tr>
                     <% end %>
@@ -154,6 +154,17 @@
                             <% end %>
                         </td>
                     </tr>
+                    <tr>
+                        <td colspan="2" class="postformRules">
+                            <ul>
+                                <%foreach rule in postformRules %>
+                                    <% item %>
+                                        <li><%= rule | raw %></li>
+                                    <% end %>
+                                <% end %>
+                            </ul>
+                        </td>
+                    </tr>
                 </tbody>
             </table>
         </form>
@@ -164,7 +175,8 @@
 <% template postFile(Content::File file) %>
 <td class="postFile">
     <div class="postFileName">
-        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"><%= file.sourceName %></a>
+        <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
+           target="_blank"><%= file.sourceName %></a>
     </div>
     <div class="postFileSize">
         (<%= file.size %>)
@@ -285,7 +297,7 @@
                 <% end %>
             <% end %>
         <% end %>
-        <% if ( content.moder || post.premoderation ) %>
+        <% if ( content.moder || post.draft ) %>
             <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
                 <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
         <% end %>
@@ -364,14 +376,19 @@
                         <% include postFile(file) %>
                     <% end %>
                 <% end %>
-                <input id="post<%= post.number %>RawText" type="hidden" value="<%= post.rawPostText %>" />
+                <input name="rawText" type="hidden" value="<%= post.rawPostText %>" />
+                <% if ( post.rawHtml ) %>
+                    <input name="rawHtml" type="hidden" value="true" />
+                <% else %>
+                    <input name="rawHtml" type="hidden" value="false" />
+                <% end %>
                 <input name="email" type="hidden" value="<%= post.email %>" />
                 <input name="name" type="hidden" value="<%= post.rawName %>" />
                 <input name="subject" type="hidden" value="<%= post.rawSubject %>" />
-                <% if ( post.premoderation ) %>
-                    <input name="premoderation" type="hidden" value="true" />
+                <% if ( post.draft ) %>
+                    <input name="draft" type="hidden" value="true" />
                 <% else %>
-                    <input name="premoderation" type="hidden" value="false" />
+                    <input name="draft" type="hidden" value="false" />
                 <% end %>
                 <% if ( post.files.size() < 2 ) %>
                     <td class="postText">
@@ -407,11 +424,17 @@
                 <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
                     <span name="referencedBy" class="referencedBy">
                         <%= referencedByText %>
-                        <%foreach pn in post.referencedBy %>
+                        <%foreach ref in post.referencedBy %>
                             <% item %>
-                                <a href="javascript:void(0);"
-                                   onmouseover="lord.viewPost(this, '<%= currentBoard.name %>', <%= pn %>);"
-                                   onmouseout="lord.noViewPost();">&gt;&gt;<%= pn %></a>
+                                <% if ( ref.boardName != content.currentBoard.name ) %>
+                                    <a href="/<%= sitePathPrefix %><%= ref.boardName %>/thread/<%= ref.threadNumber %>.html#<%= ref.postNumber %>"
+                                       onmouseover="lord.viewPost(this, '<%= ref.boardName %>', <%= ref.postNumber %>);"
+                                       onmouseout="lord.noViewPost();">&gt;&gt;/<%= ref.boardName %>/<%= ref.postNumber %></a>
+                                <% else %>
+                                    <a href="/<%= sitePathPrefix %><%= ref.boardName %>/thread/<%= ref.threadNumber %>.html#<%= ref.postNumber %>"
+                                       onmouseover="lord.viewPost(this, '<%= ref.boardName %>', <%= ref.postNumber %>);"
+                                       onmouseout="lord.noViewPost();">&gt;&gt;<%= ref.postNumber %></a>
+                                <% end %>
                             <% end %>
                         <% end %>
                     </span>
@@ -513,11 +536,12 @@
                 <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
             <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '%postNumber%');">
                 <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
-            <input id="post%postNumber%RawText" name="rawText" type="hidden" value="" />
+            <input name="rawText" type="hidden" value="" />
+            <input name="rawHtml" type="hidden" value="false" />
             <input name="email" type="hidden" value="" />
             <input name="name" type="hidden" value="" />
             <input name="subject" type="hidden" value="" />
-            <input name="premoderation" type="hidden" value="false" />
+            <input name="draft" type="hidden" value="false" />
             <a href="javascript:lord.complain();">
                 <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
             <a name="deleteButton"
@@ -549,10 +573,9 @@
                     <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
                 <td>
             </tr>
-            <tr name="referencedByTr">
+            <tr name="referencedByTr" style="display: none;">
                 <td name="referencedByTd" colspan="2">
-                    <span name="referencedBy" class="referencedBy"
-                          style="display: none;"><%= referencedByText %></span>
+                    <span name="referencedBy" class="referencedBy"><%= referencedByText %></span>
                 <td>
             </tr>
         </tbody>
@@ -603,13 +626,13 @@
                 </td>
             </tr>
         <% end %>
-        <% if ( content.premoderationEnabled && content.loggedIn ) %>
+        <% if ( content.draftsEnabled && content.loggedIn ) %>
             <tr>
                 <td class="postformLabel">
-                    <b><%= postFormLabelPremoderation %></b>
+                    <b><%= postFormLabelDraft %></b>
                 </td>
                 <td class="postformField">
-                    <input type="checkbox" name="premoderation" value="true" />
+                    <input type="checkbox" name="draft" value="true" />
                 </td>
             </tr>
         <% end %>

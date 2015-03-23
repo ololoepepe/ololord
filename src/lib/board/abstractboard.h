@@ -79,6 +79,7 @@ public:
     virtual void createThread(cppcms::application &app);
     virtual QString defaultUserName(const QLocale &l) const;
     virtual void deleteFiles(const QStringList &fileNames);
+    bool draftsEnabled() const;
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
@@ -89,9 +90,9 @@ public:
     bool isFileTypeSupported(const QByteArray &data) const;
     virtual bool isHidden() const;
     virtual QString name() const = 0;
+    virtual QStringList postformRules(const QLocale &l) const;
     virtual bool postingEnabled() const;
     unsigned int postLimit() const;
-    bool premoderationEnabled() const;
     virtual QStringList rules(const QLocale &l) const;
     virtual QString saveFile(const Tools::File &f, bool *ok = 0);
     virtual bool showWhois() const;

@@ -9,6 +9,22 @@ lord.autoUpdateTimer = null;
 lord.blinkTimer = null;
 lord.pageVisible = "visible";
 
+lord.addAnchorChangeListener = function(callback) {
+    if ("onhashchange" in window) {
+        window.onhashchange = function() {
+            callback(window.location.hash);
+        };
+    } else {
+        var storedHash = window.location.hash;
+        window.setInterval(function() {
+            if (window.location.hash != storedHash) {
+                storedHash = window.location.hash;
+                callback(storedHash);
+            }
+        }, 500);
+    }
+};
+
 lord.addVisibilityChangeListener = function(callback) {
     if ("hidden" in document)
         document.addEventListener("visibilitychange", callback);
@@ -22,11 +38,17 @@ lord.addVisibilityChangeListener = function(callback) {
         document.onfocusin = document.onfocusout = callback;
     else //All others
         window.onpageshow = window.onpagehide = window.onfocus = window.onblur = callback;
-    if(document["hidden"] !== undefined) {
+    if (document["hidden"] !== undefined) {
         callback({
             "type": document["hidden"] ? "blur" : "focus"
         });
     }
+};
+
+lord.anchorChangeListener = function(hash) {
+    if (!hash || hash.length < 1)
+        return;
+    lord.selectPost(hash.substring(1));
 };
 
 lord.visibilityChangeListener = function(e) {
@@ -68,6 +90,18 @@ lord.blinkFaviconNewMessage = function() {
         link.href = link.href.replace("img/favicon_newmessage.ico", "favicon.ico");
 };
 
+lord.selectPost = function(post) {
+    if (!!lord.lastSelectedElement)
+        lord.lastSelectedElement.className = lord.lastSelectedElement.className.replace(" selectedPost", "");
+    lord.lastSelectedElement = null;
+    if (isNaN(+post))
+        return;
+    lord.lastSelectedElement = document.getElementById("post" + post);
+    if (!!lord.lastSelectedElement)
+        lord.lastSelectedElement.className += " selectedPost";
+    window.location.href = window.location.href.split("#").shift() + "#" + post;
+};
+
 lord.insertPostNumberInternal = function(postNumber, position) {
     var field = document.getElementById("postFormInputText" + position);
     var value = ">>" + postNumber + "\n";
@@ -91,17 +125,6 @@ lord.insertPostNumber = function(postNumber) {
         field = lord.insertPostNumberInternal(postNumber, "Bottom");
     if (field.offsetParent)
         field.focus();
-};
-
-lord.selectPost = function(post) {
-    if (isNaN(+post))
-        return;
-    if (!!lord.lastSelectedElement)
-        lord.lastSelectedElement.style.backgroundColor = "#DDDDDD";
-    lord.lastSelectedElement = document.getElementById("post" + post);
-    if (!!lord.lastSelectedElement)
-        lord.lastSelectedElement.style.backgroundColor = "#EEDACB";
-    window.location.href = window.location.href.split("#").shift() + "#" + post;
 };
 
 lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback) {
@@ -180,9 +203,11 @@ lord.postedInThread = function() {
             lord.selectPost(postNumber.value);
         });
         if (!!referencedPosts) {
-            var refs = [];
-            for (var i = 0; i < referencedPosts.length; ++i)
-                refs.push(+referencedPosts[i].value);
+            var refs = {};
+            for (var i = 0; i < referencedPosts.length; ++i) {
+                var vals = referencedPosts[i].value.split("/");
+                refs[vals[0] + "/" + vals[1]] = vals[2];
+            }
             lord.addReferences(postNumber.value, refs);
         }
         grecaptcha.reset();
@@ -232,6 +257,7 @@ lord.downloadThread = function() {
 lord.initializeOnLoadThread = function() {
     lord.initializeOnLoadBaseBoard();
     lord.addVisibilityChangeListener(lord.visibilityChangeListener);
+    lord.addAnchorChangeListener(lord.anchorChangeListener);
     if (lord.getCookie("auto_update") === "true") {
         var cbox = document.getElementById("autoUpdate_top");
         cbox.checked = true;

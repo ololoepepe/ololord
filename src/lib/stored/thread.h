@@ -8,7 +8,7 @@ class Post;
 #include <QByteArray>
 #include <QDateTime>
 #include <QList>
-#include <QSet>
+#include <QMap>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -35,7 +35,7 @@ private:
     bool postingEnabled_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(thread_))
     Posts posts_;
-    bool premoderation_;
+    bool draft_;
 public:
     explicit Thread(const QString &board, quint64 number, const QDateTime &dateTime);
 private:
@@ -50,13 +50,13 @@ public:
     bool postingEnabled() const;
     const Posts &posts() const;
     Posts &posts();
-    bool premoderation() const;
+    bool draft() const;
     void setArchived(bool archived);
     void setBoard(const QString &board);
     void setDateTime(const QDateTime &dateTime);
     void setFixed(bool fixed);
     void setPostingEnabled(bool enabled);
-    void setPremoderation(bool pm);
+    void setDraft(bool draft);
 private:
     friend class odb::access;
 };
@@ -80,6 +80,21 @@ struct OLOLORD_EXPORT ThreadIdDateTimeFixed
 PRAGMA_DB(object table("posts"))
 class OLOLORD_EXPORT Post
 {
+public:
+    struct RefKey
+    {
+        QString boardName;
+        quint64 postNumber;
+    public:
+        explicit RefKey();
+        explicit RefKey(const QString &board, quint64 post);
+    public:
+        bool isValid() const;
+    public:
+        bool operator <(const RefKey &other) const;
+    };
+public:
+    typedef QMap<RefKey, quint64> RefMap;
 private:
     PRAGMA_DB(id auto)
     quint64 id_;
@@ -95,10 +110,11 @@ private:
     QByteArray files_;
     QByteArray hashpass_;
     QString name_;
-    bool premoderation_;
+    bool draft_;
     PRAGMA_DB(not_null)
     QByteArray password_;
     QString posterIp_;
+    bool rawHtml_;
     QString rawText_;
     QByteArray referencedBy_;
     QString subject_;
@@ -116,27 +132,29 @@ public:
     QDateTime dateTime() const;
     bool bannedFor() const;
     bool showTripcode() const;
-    bool addReferencedBy(quint64 postNumber);
-    bool addReferencedBy(const QSet<quint64> &list);
+    bool addReferencedBy(const RefKey &key, quint64 threadNumber);
+    bool addReferencedBy(const QString &boardName, quint64 postNumber, quint64 threadNumber);
     QString email() const;
     QStringList files() const;
     QByteArray hashpass() const;
     QString name() const;
     QByteArray password() const;
-    bool premoderation() const;
+    bool draft() const;
     QString posterIp() const;
+    bool rawHtml() const;
     QString rawText() const;
-    QSet<quint64> referencedBy() const;
-    bool removeReferencedBy(quint64 postNumber);
-    bool removeReferencedBy(const QSet<quint64> &list);
+    RefMap referencedBy() const;
+    bool removeReferencedBy(const RefKey &key);
+    bool removeReferencedBy(const QString &baordName, quint64 postNumber);
     void setBannedFor(bool banned);
     void setShowTripcode(bool show);
     void setEmail(const QString &email);
     void setFiles(const QStringList &files);
     void setName(const QString &name);
-    void setPremoderation(bool pm);
+    void setDraft(bool draft);
+    void setRawHtml(bool raw);
     void setRawText(const QString &text);
-    void setReferencedBy(const QSet<quint64> &list);
+    void setReferencedBy(const RefMap &map);
     void setSubject(const QString &subject);
     void setText(const QString &text);
     QString subject() const;

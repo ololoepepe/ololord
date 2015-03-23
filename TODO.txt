@@ -1,2 +1,10 @@
+[done] Rename pre-moderation system into drafts system
+[done] Fix markup
+[done] Add ability to add links to other boards
+[done] Fix post selection by post links
+[done] Add postform rules
+[done] Render news/rules as HTML
+[done] Add markup description page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
+* Improve logging

@@ -60,12 +60,12 @@ typedef QList<File> FileList;
 
 struct Post
 {
+    bool draft;
     QString email;
     QStringList fileHashes;
     FileList files;
     QString name;
     QByteArray password;
-    bool premoderation;
     bool raw;
     QString subject;
     QString text;

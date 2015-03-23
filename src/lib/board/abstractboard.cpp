@@ -256,7 +256,7 @@ void AbstractBoard::captchaUsed(const QString &ip)
 
 void AbstractBoard::createPost(cppcms::application &app)
 {
-    Tools::log(app, "Handling post creation");
+    Tools::log(app, "Handling post creation: " + name());
     cppcms::http::request &req = app.request();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return;
@@ -338,6 +338,12 @@ void AbstractBoard::deleteFiles(const QStringList &fileNames)
     }
 }
 
+bool AbstractBoard::draftsEnabled() const
+{
+    SettingsLocker s;
+    return s->value("Board/" + name() + "/drafts_enabled", s->value("Board/drafts_enabled", true)).toBool();
+}
+
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
     Tools::log(app, "Handling board: " + name());
@@ -369,7 +375,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         int lvl = Database::registeredUserLevel(app.request());
         foreach (int i, bRangeR(list.size() - 1, 0)) {
             Post opPost = *list.at(i).posts().first().load();
-            if (opPost.premoderation() && opPost.hashpass() != hashpass
+            if (opPost.draft() && opPost.hashpass() != hashpass
                     && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
                 list.removeAt(i);
             }
@@ -397,7 +403,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             unsigned int maxPosts = Tools::maxInfo(Tools::MaxLastPosts, name());
             foreach (int i, bRangeR(posts.size() - 1, 1)) {
                 Post post = *posts.at(i).load();
-                if (post.premoderation() && hashpass != post.hashpass()
+                if (post.draft() && hashpass != post.hashpass()
                         && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
                     continue;
                 }
@@ -441,7 +447,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
     c.currentBoard.title = Tools::toStd(title(tq.locale()));
     c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");;
     foreach (const QString &r, rules(ts.locale()))
-        c.rules.push_back(Tools::toStd(Controller::toHtml(r)));
+        c.rules.push_back(Tools::toStd(r));
     app.render("rules", c);
     Tools::log(app, "Handled rules");
 }
@@ -492,7 +498,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         c.number = thread->number();
         Post opPost = *posts.first().load();
         int lvl = Database::registeredUserLevel(app.request());
-        if (opPost.premoderation() && hashpass != opPost.hashpass()
+        if (opPost.draft() && hashpass != opPost.hashpass()
                 && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
             return Controller::renderNotFound(app);
         }
@@ -515,7 +521,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
             return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         foreach (int j, bRangeD(1, posts.size() - 1)) {
             Post post = *posts.at(j).load();
-            if (post.premoderation() && hashpass != post.hashpass()
+            if (post.draft() && hashpass != post.hashpass()
                     && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
                 continue;
             }
@@ -600,6 +606,11 @@ bool AbstractBoard::isHidden() const
     return SettingsLocker()->value("Board/" + name() + "/hidden", false).toBool();
 }
 
+QStringList AbstractBoard::postformRules(const QLocale &l) const
+{
+    return Tools::rules("rules/postform", l) + Tools::rules("rules/postform/" + name(), l);
+}
+
 bool AbstractBoard::postingEnabled() const
 {
     SettingsLocker s;
@@ -612,16 +623,9 @@ unsigned int AbstractBoard::postLimit() const
     return s->value("Board/" + name() + "/post_limit", s->value("Board/post_limit", 1000)).toUInt();
 }
 
-bool AbstractBoard::premoderationEnabled() const
-{
-    SettingsLocker s;
-    return s->value("Board/" + name() + "/premoderation_enabled",
-                    s->value("Board/premoderation_enabled", false)).toBool();
-}
-
 QStringList AbstractBoard::rules(const QLocale &l) const
 {
-    return Tools::rules("rules", l) + Tools::rules("rules/" + name(), l);
+    return Tools::rules("rules/board", l) + Tools::rules("rules/board/" + name(), l);
 }
 
 QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
@@ -768,7 +772,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->subject = p->rawSubject;
         p->subjectIsRaw = false;
         p->rawName = Tools::toStd(post.name());
-        p->premoderation = post.premoderation();
+        p->draft = post.draft();
         foreach (const QString &fn, post.files()) {
             QFileInfo fi(fn);
             Content::File f;
@@ -796,6 +800,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             return bRet(ok, false, error, Tools::fromStd(e.what()), Content::Post());
         }
         p->text = Tools::toStd(post.text());
+        p->rawHtml = post.rawHtml();
         p->rawPostText = Tools::toStd(post.rawText());
         p->threadNumber = threadNumber;
         p->showRegistered = false;
@@ -812,10 +817,14 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 p->countryName = "Unknown country";
             }
         }
-        QList<quint64> list = post.referencedBy().toList();
-        qSort(list);
-        foreach (quint64 pn, list)
-            p->referencedBy.push_back(pn);
+        Post::RefMap refs = post.referencedBy();
+        foreach (const Post::RefKey &key, refs.keys()) {
+            Content::Post::Ref ref;
+            ref.boardName = Tools::toStd(key.boardName);
+            ref.postNumber = key.postNumber;
+            ref.threadNumber = refs.value(key);
+            p->referencedBy.push_back(ref);
+        }
     }
     Content::Post pp = *p;
     if (!inCache && !Cache::cachePost(name(), post.number(), p))
@@ -981,10 +990,10 @@ void AbstractBoard::initBoards(bool reinit)
         nnn->setDescription(BTranslation::translate("AbstractBoard",
                                                     "Determines if posting is enabled on this board.\n"
                                                     "The default is true."));
-        nnn = new BSettingsNode(QVariant::Bool, "premoderation_enabled", nn);
-        nnn->setDescription(BTranslation::translate("initSettings",
-                                                    "Determines if pre-moderation is enabled on this board.\n"
-                                                    "The default is false."));
+        nnn = new BSettingsNode(QVariant::Bool, "drafts_enabled", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Determines if drafts are enabled on this board.\n"
+                                                    "The default is true."));
         nnn = new BSettingsNode(QVariant::UInt, "bump_limit", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum bump count on this board.\n"
                                                     "When a thread has reached it's bump limit, "

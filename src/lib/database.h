@@ -27,6 +27,7 @@ class request;
 
 #include "global.h"
 #include "stored/registereduser.h"
+#include "stored/thread.h"
 #include "transaction.h"
 
 #include <BCoreApplication>
@@ -36,7 +37,6 @@ class request;
 #include <QDebug>
 #include <QList>
 #include <QMap>
-#include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -192,7 +192,7 @@ public:
     unsigned int postLimit;
     QString *error;
     QString *description;
-    QSet<quint64> referencedPosts;
+    Post::RefMap referencedPosts;
 public:
     explicit CreatePostParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
                                   const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale()) :
@@ -233,21 +233,21 @@ struct OLOLORD_EXPORT EditPostParameters
     const quint64 postNumber;
     const cppcms::http::request &request;
 public:
+    bool draft;
     QString email;
     QString *error;
     QString name;
     QByteArray password;
-    bool premoderation;
     bool raw;
     QString subject;
     QString text;
-    QSet<quint64> referencedPosts;
+    Post::RefMap referencedPosts;
 public:
     explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post) :
         boardName(board), postNumber(post), request(req)
     {
+        draft = false;
         error = 0;
-        premoderation = false;
         raw = false;
     }
 };
@@ -288,7 +288,7 @@ OLOLORD_EXPORT bool moderOnBoard(const cppcms::http::request &req, const QString
                                  const QString &board2 = QString());
 OLOLORD_EXPORT bool moderOnBoard(const QByteArray &hashpass, const QString &boardName,
                                  const QString &board2 = QString());
-OLOLORD_EXPORT bool postExists(const QString &boardName, quint64 postNumber);
+OLOLORD_EXPORT bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNumber = 0);
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req);
 OLOLORD_EXPORT QStringList registeredUserBoards(const QByteArray &hashpass);

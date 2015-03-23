@@ -9,6 +9,7 @@
 #include "ipban.h"
 #include "notfound.h"
 #include "settingslocker.h"
+#include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
 
@@ -186,6 +187,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "fixedText");
     c.downloadThreadText = ts.translate("initBaseBoard", "Download all thread files as a .zip archive",
                                         "downloadThreadText");
+    c.draftsEnabled = board->draftsEnabled();
     c.editPostText = ts.translate("initBaseBoard", "Edit post", "editPostText");
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");
@@ -219,10 +221,10 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormTextPlaceholder = Tools::toStd(tq.translate("initBaseBoard", "Comment. Max length %1",
                                                            "postFormTextPlaceholder").arg(maxText));
     c.postFormLabelCaptcha = ts.translate("initBaseBoard", "Captcha:", "postFormLabelCaptcha");
+    c.postFormLabelDraft = ts.translate("initBaseBoard", "Draft:", "postFormLabelDraft");
     c.postFormLabelEmail = ts.translate("initBaseBoard", "E-mail:", "postFormLabelEmail");
     c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
     c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
-    c.postFormLabelPremoderation = ts.translate("initBaseBoard", "Pre-moderation:", "postFormLabelPremoderation");
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
@@ -231,7 +233,8 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
-    c.premoderationEnabled = board->premoderationEnabled();
+    foreach (const QString &r, board->postformRules(tq.locale()))
+        c.postformRules.push_back(Tools::toStd(r));
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
@@ -286,7 +289,6 @@ void renderBan(cppcms::application &app, const Database::BanInfo &info)
 void renderError(cppcms::application &app, const QString &error, const QString &description)
 {
     TranslatorQt tq(app.request());
-    TranslatorStd ts(app.request());
     Content::Error c;
     initBase(c, app.request(), tq.translate("renderError", "Error", "pageTitle"));
     c.errorMessage = !error.isEmpty() ? Tools::toStd(error) : c.pageTitle;
@@ -332,15 +334,16 @@ void renderNotFound(cppcms::application &app)
     Tools::log(app, "Page or file not found");
 }
 
-void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const QSet<quint64> &referencedPosts)
+void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const Post::RefMap &referencedPosts)
 {
     app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
                          << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
                          << "value=\"" << postNumber << "\" /> ";
-    QList<quint64> list = referencedPosts.toList();
-    qSort(list);
-    foreach (quint64 pn, list)
-        app.response().out() << "<input name=\"referencedPost\" type=\"hidden\" value=\"" << pn << "\" />";
+    foreach (const Post::RefKey key, referencedPosts.keys()) {
+        app.response().out() << "<input name=\"referencedPost\" type=\"hidden\" value=\""
+                             << Tools::toStd(key.boardName) << "/" << Tools::toStd(QString::number(key.postNumber))
+                             << "/" << Tools::toStd(QString::number(referencedPosts.value(key))) << "\" />";
+    }
     app.response().out() << " </body></html>";
 }
 

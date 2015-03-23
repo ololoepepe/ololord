@@ -11,6 +11,7 @@ HEADERS += \
     $${PWD}/error.h \
     $${PWD}/home.h \
     $${PWD}/ipban.h \
+    $${PWD}/markup.h \
     $${PWD}/mlpboard.h \
     $${PWD}/notfound.h \
     $${PWD}/prboard.h \
