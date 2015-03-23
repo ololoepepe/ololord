@@ -374,9 +374,7 @@ lord.createPostNode = function(res, permanent, boardName) {
             var tn = ref["threadNumber"];
             var a = document.createElement("a");
             a.href = "/" + sitePathPrefix + bn + "/thread/" + tn + ".html#" + pn;
-            a.addEventListener("mouseover", function(e) {
-                lord.viewPost(this, bn, pn);
-            });
+            a.addEventListener("mouseover", lord.viewPost.bind(lord, a, bn, pn));
             a.onmouseout = function() {
                 lord.noViewPost();
             };
@@ -619,6 +617,8 @@ lord.deletePost = function(boardName, postNumber, fromThread) {
                         link.parentNode.replaceChild(document.createTextNode(text), link);
                     }
                 }
+                if (!!postPreviews[boardName + "/" + postNumber])
+                    delete postPreviews[boardName + "/" + postNumber];
             }
         });
     });

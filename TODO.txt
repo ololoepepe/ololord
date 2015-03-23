@@ -5,6 +5,7 @@
 [done] Add postform rules
 [done] Render news/rules as HTML
 [done] Add markup description page
+[done] Rerender posts with references when referenced post is deleted
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
 * Improve logging
