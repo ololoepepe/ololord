@@ -317,7 +317,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var inp = document.getElementById("currentThreadNumber");
     if (!!inp && +inp.value === res["threadNumber"]) {
         if (postingEnabled)
-            number.href = "javascript:insertPostNumber(" + res["number"] + ");";
+            number.href = "javascript:lord.insertPostNumber(" + res["number"] + ");";
         else
             number.href = "#" + res["number"];
     } else {
@@ -406,7 +406,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     anumber.title = number.title;
     anumber.appendChild(number);
     if (postingEnabled)
-        anumber.href = "javascript:insertPostNumber(" + res["number"] + ");";
+        anumber.href = "javascript:lord.insertPostNumber(" + res["number"] + ");";
     else
         anumber.href = "#" + res["number"];
     var deleteButton = post.querySelector("[name='deleteButton']");
@@ -609,6 +609,16 @@ lord.deletePost = function(boardName, postNumber, fromThread) {
             } else {
                 post.parentNode.removeChild(post);
                 lord.removeReferences(postNumber);
+                var postLinks = document.body.querySelectorAll("a");
+                if (!!postLinks) {
+                    for (var i = 0; i < postLinks.length; ++i) {
+                        var link = postLinks[i];
+                        if (("&gt;&gt;" + postNumber) !== link.innerHTML)
+                            continue;
+                        var text = link.innerHTML.replace("&gt;&gt;", ">>");
+                        link.parentNode.replaceChild(document.createTextNode(text), link);
+                    }
+                }
             }
         });
     });
@@ -802,7 +812,7 @@ lord.setThreadHidden = function(boardName, postNumber, hidden) {
     }
 };
 
-lord.viewPostStage2 = function(link, postNumber, post) {
+lord.viewPostStage2 = function(link, boardName, postNumber, post) {
     post.onmouseout = function(event) {
         var next = post;
         while (!!next) {
@@ -820,8 +830,8 @@ lord.viewPostStage2 = function(link, postNumber, post) {
     post.onmouseover = function(event) {
         post.mustHide = false;
     };
-    if (!lord.postPreviews[postNumber])
-        lord.postPreviews[postNumber] = post;
+    if (!lord.postPreviews[boardName + "/" + postNumber])
+        lord.postPreviews[boardName + "/" + postNumber] = post;
     else
         post.style.display = "";
     post.previousPostPreview = lord.lastPostPreview;
@@ -857,16 +867,19 @@ lord.viewPostStage2 = function(link, postNumber, post) {
 lord.viewPost = function(link, boardName, postNumber) {
     if (!link || !boardName || isNaN(+postNumber))
         return;
-    var post = document.getElementById("post" + postNumber);
+    var currentBoardName = document.getElementById("currentBoardName").value;
+    var post = null;
+    if (boardName === currentBoardName)
+        post = document.getElementById("post" + postNumber);
     if (!post)
-        post = lord.postPreviews[postNumber];
+        post = lord.postPreviews[boardName + "/" + postNumber];
     if (!post) {
         lord.ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
             post = lord.createPostNode(res, false, boardName);
             if (!post)
                 return;
             post["fromAjax"] = true;
-            lord.viewPostStage2(link, postNumber, post);
+            lord.viewPostStage2(link, boardName, postNumber, post);
         });
     } else {
         var fromAjax = !!post.fromAjax;
@@ -878,10 +891,17 @@ lord.viewPost = function(link, boardName, postNumber) {
                 var a = e.target;
                 if (a.tagName != "A")
                     return;
-                var pn = +a.innerHTML.replace("&gt;&gt;", "");
+                var pn = a.innerHTML.replace("&gt;&gt;", "");
+                var ind = pn.lastIndexOf("/");
+                var bn = boardName;
+                if (ind > 0) {
+                    bn = pn.substring(1, ind);
+                    pn = pn.substring(ind + 1);
+                }
+                pn = +pn;
                 if (isNaN(pn))
                     return;
-                lord.viewPost(a, boardName, pn);
+                lord.viewPost(a, bn, pn);
             });
             post.addEventListener("mouseout", function(e) {
                 var a = e.target;
@@ -924,7 +944,7 @@ lord.viewPost = function(link, boardName, postNumber) {
             }
             list[i].id = "";
         }
-        lord.viewPostStage2(link, postNumber, post);
+        lord.viewPostStage2(link, boardName, postNumber, post);
     }
 };
 

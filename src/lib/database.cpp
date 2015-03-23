@@ -446,6 +446,18 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
             board->deleteFiles(files);
         }
+        foreach (const Post::RefKey &key, post->referencedBy().keys()) {
+            Result<Post> p = queryOne<Post, Post>(odb::query<Post>::board == key.boardName
+                                                  && odb::query<Post>::number == key.postNumber
+                                                  && odb::query<Post>::rawHtml == false);
+            if (p.error)
+                return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+            if (!p)
+                return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
+            p->setText(Controller::processPostText(p->rawText(), key.boardName));
+            Cache::removePost(key.boardName, key.postNumber);
+            update(p);
+        }
         if (!removeFromReferencedPosts(postNumber, boardName, error))
             return false;
         Cache::removePost(boardName, postNumber);
