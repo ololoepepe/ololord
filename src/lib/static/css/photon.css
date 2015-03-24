@@ -133,6 +133,10 @@ span.spoiler:hover a {
 	max-width: 400px;
 }
 
+.quotation {
+    color: #789922;
+}
+
 /*
     Board image
 */

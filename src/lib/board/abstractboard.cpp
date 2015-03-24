@@ -271,6 +271,7 @@ void AbstractBoard::createPost(cppcms::application &app)
         Controller::renderError(app, err,
                                 tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
         Tools::log(app, "create_post", "fail:" + err, logTarget);
+        return;
     }
     QString desc;
     beforeStoring(params, true);
@@ -320,6 +321,7 @@ void AbstractBoard::createThread(cppcms::application &app)
     if (!threadNumber) {
         Controller::renderError(app, err, desc);
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
+        return;
     }
     Controller::renderSuccessfulThread(app, threadNumber);
     Tools::log(app, "create_thread", "success", logTarget);
@@ -569,6 +571,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
             if (!ok) {
                 Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                 Tools::log(app, "thread", "fail:" + err, logTarget);
+                return;
             }
         }
         t.commit();

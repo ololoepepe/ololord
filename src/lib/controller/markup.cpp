@@ -373,11 +373,11 @@ static void processWakabaMarkQuote(ProcessPostTextContext &c)
     int ind = rx.indexIn(t);
     while (ind >= 0) {
         if (!ind || t.at(ind - 1) == '\n') {
-            t.insert(ind + rx.matchedLength(), "</font>");
-            t.insert(ind, "<font color=\"green\">");
-            skip << qMakePair(ind, 20);
-            skip << qMakePair(ind + rx.matchedLength() + 20, 7);
-            ind = rx.indexIn(t, ind + rx.matchedLength() + 27);
+            t.insert(ind + rx.matchedLength(), "</span>");
+            t.insert(ind, "<span class=\"quotation\">");
+            skip << qMakePair(ind, 24);
+            skip << qMakePair(ind + rx.matchedLength() + 24, 7);
+            ind = rx.indexIn(t, ind + rx.matchedLength() + 31);
         } else {
             ind = rx.indexIn(t, ind + rx.matchedLength());
         }

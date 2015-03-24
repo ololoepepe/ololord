@@ -46,6 +46,7 @@ void StaticFilesRoute::handle(std::string p)
         application.response().content_type("");
         application.response().out().write(data->data(), data->size());
         Tools::log(application, logAction, "success:cache", logTarget);
+        return;
     }
     QString fn = BDirTools::findResource(Prefix + "/" + path, BDirTools::AllResources);
     if (fn.startsWith(":")) { //NOTE: No need to cache files stored in memory
@@ -59,12 +60,14 @@ void StaticFilesRoute::handle(std::string p)
         application.response().content_type("");
         application.response().out().write(ba.data(), ba.size());
         Tools::log(application, logAction, "success:in_memory", logTarget);
+        return;
     }
     bool ok = false;
     data = new QByteArray(BDirTools::readFile(fn, -1, &ok));
     if (!ok) {
         Controller::renderNotFound(application);
         Tools::log(application, logAction, "fail:not_found", logTarget);
+        return;
     }
     application.response().content_type("");
     application.response().out().write(data->data(), data->size());
