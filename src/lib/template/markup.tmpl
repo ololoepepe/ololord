@@ -47,10 +47,10 @@
             [u]<u><%= underlinedText %></u>[/u]
             <br /><br />
             `<font face="monospace"><%= singleMonospace %></font>`
+            <br />
+            [q]<font face="monospace"><%= singleMonospace %></font>[/q]
             <br /><br />
             ``<font face="monospace"><%= doubleMonospace %></font>``
-            <br />
-            [q]<font face="monospace"><%= doubleMonospace %></font>[/q]
             <br /><br />
             %%<span class="spoiler"><%= spoiler %></span>%%
             <br />
@@ -67,60 +67,6 @@
             <a href="javascript:void(0);">&gt;&gt;/h/127154</a> <%= postBoardLinkDescription %>
         </div>
         <div class="sectionHeader">
-            <h3><%= listMarkup %></h3>
-        </div>
-        <div class="rules">
-            <%= listDescription %>
-            <br /><br />
-            * <%= listItem1 %>
-            <br />
-            * <%= listItem2 %>
-            <br />
-            * <%= listItem3 %>
-            <br />
-            <ul type="disc">
-                <li><%= listItem1 %></li>
-                <li><%= listItem2 %></li>
-                <li><%= listItem3 %></li>
-            </ul>
-            <br />
-            + <%= listItem1 %>
-            <br />
-            + <%= listItem2 %>
-            <br />
-            + <%= listItem3 %>
-            <br />
-            <ul type="circle">
-                <li><%= listItem1 %></li>
-                <li><%= listItem2 %></li>
-                <li><%= listItem3 %></li>
-            </ul>
-            <br />
-            - <%= listItem1 %>
-            <br />
-            - <%= listItem2 %>
-            <br />
-            - <%= listItem3 %>
-            <br />
-            <ul type="square">
-                <li><%= listItem1 %></li>
-                <li><%= listItem2 %></li>
-                <li><%= listItem3 %></li>
-            </ul>
-            <br />
-            1. <%= listItem1 %>
-            <br />
-            2. <%= listItem2 %>
-            <br />
-            5. <%= listItem3 %>
-            <br />
-            <ol>
-                <li value="1"><%= listItem1 %></li>
-                <li value="2"><%= listItem2 %></li>
-                <li value="5"><%= listItem3 %></li>
-            </ol>
-        </div>
-        <div class="sectionHeader">
             <h3><%= codeMarkup %></h3>
         </div>
         <div class="rules">
@@ -128,6 +74,79 @@
             <br /></br />
             [c++]static const int x = 0;[/c++]
             <div class="codeBlock"><pre><tt><b><font color="#0000FF">static</font></b> <b><font color="#0000FF">const</font></b> <font color="#009900">int</font> x <font color="#990000">=</font> <font color="#993399">0</font><font color="#990000">;</font></tt></pre></div>
+        </div>
+        <div class="sectionHeader">
+            <h3><%= listMarkup %></h3>
+        </div>
+        <div class="rules">
+            <%= listDescription %>
+            <br />
+            <table>
+                <tr>
+                    <td>
+                        * <%= listItem1 %>
+                        <br />
+                        * <%= listItem2 %>
+                        <br />
+                        * <%= listItem3 %>
+                    </td>
+                    <td>
+                        <ul type="disc">
+                            <li><%= listItem1 %></li>
+                            <li><%= listItem2 %></li>
+                            <li><%= listItem3 %></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        + <%= listItem1 %>
+                        <br />
+                        + <%= listItem2 %>
+                        <br />
+                        + <%= listItem3 %>
+                    </td>
+                    <td>
+                        <ul type="circle">
+                            <li><%= listItem1 %></li>
+                            <li><%= listItem2 %></li>
+                            <li><%= listItem3 %></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        - <%= listItem1 %>
+                        <br />
+                        - <%= listItem2 %>
+                        <br />
+                        - <%= listItem3 %>
+                    </td>
+                    <td>
+                        <ul type="square">
+                            <li><%= listItem1 %></li>
+                            <li><%= listItem2 %></li>
+                            <li><%= listItem3 %></li>
+                        </ul>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        1. <%= listItem1 %>
+                        <br />
+                        2. <%= listItem2 %>
+                        <br />
+                        5. <%= listItem3 %>
+                    </td>
+                    <td>
+                        <ol>
+                            <li value="1"><%= listItem1 %></li>
+                            <li value="2"><%= listItem2 %></li>
+                            <li value="5"><%= listItem3 %></li>
+                        </ol>
+                    </td>
+                </tr>
+            </table>
         </div>
     </body>
 </html>

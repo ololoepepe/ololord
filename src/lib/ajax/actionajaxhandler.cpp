@@ -86,45 +86,54 @@ ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
 
 void ActionAjaxHandler::banUser(const cppcms::json::object &params)
 {
-    Tools::log(server, "Handling AJAX ban user");
     QString sourceBoard = Tools::fromStd(params.at("boardName").str());
     long long pn = (long long) params.at("postNumber").number();
     quint64 postNumber = pn > 0 ? quint64(pn) : 0;
     QString board = Tools::fromStd(params.at("board").str());
+    QString logTarget = sourceBoard + "/" + QString::number(postNumber);
+    Tools::log(server, "ajax_ban_user", "begin", logTarget);
     if (!testBan(sourceBoard) || !testBan(board))
-        return;
+        return Tools::log(server, "ajax_ban_user", "fail:ban", logTarget);
     QString reason = Tools::fromStd(params.at("reason").str());
     int level = (int) params.at("level").number();
     QDateTime expires = QDateTime::fromString(Tools::fromStd(params.at("expires").str()), "dd.MM.yyyy:hh");
     QString err;
-    if (!Database::banUser(server.request(), sourceBoard, postNumber, board, level, reason, expires, &err))
-        return server.return_error(Tools::toStd(err));
+    if (!Database::banUser(server.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_ban_user", "fail:" + err, logTarget);
+        return;
+    }
     server.return_result(true);
-    Tools::log(server, "Handled AJAX ban user");
+    Tools::log(server, "ajax_ban_user", "success", logTarget);
 }
 
 void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string password)
 {
-    Tools::log(server, "Handling AJAX delete post");
+    QString bn = Tools::fromStd(boardName);
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = bn + "/" + QString::number(pn);
+    Tools::log(server, "ajax_delete_post", "begin", logTarget);
     if (!testBan(Tools::fromStd(boardName)))
-        return;
+        return Tools::log(server, "ajax_delete_post", "fail:ban", logTarget);
     QString err;
-    if (!Database::deletePost(Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0, server.request(),
-                              Tools::toHashpass(Tools::fromStd(password)), &err)) {
-        return server.return_error(Tools::toStd(err));
+    if (!Database::deletePost(bn, pn, server.request(), Tools::toHashpass(Tools::fromStd(password)), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_delete_post", "fail:" + err, logTarget);
+        return;
     }
     server.return_result(true);
-    Tools::log(server, "Handled AJAX delete post");
+    Tools::log(server, "ajax_delete_post", "success", logTarget);
 }
 
 void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 {
-    Tools::log(server, "Handling AJAX edit post");
     QString boardName = Tools::fromStd(params.at("boardName").str());
-    if (!testBan(boardName))
-        return;
     long long pn = (long long) params.at("postNumber").number();
     Database::EditPostParameters p(server.request(), boardName, pn > 0 ? quint64(pn) : 0);
+    QString logTarget = boardName + "/" + QString::number(p.postNumber);
+    Tools::log(server, "ajax_edit_post", "begin", logTarget);
+    if (!testBan(boardName))
+        return Tools::log(server, "ajax_edit_post", "fail:ban", logTarget);
     p.email = Tools::fromStd(params.at("email").str());
     p.name = Tools::fromStd(params.at("name").str());
     p.raw = params.at("raw").boolean();
@@ -133,64 +142,85 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
     p.draft = params.at("draft").boolean();
     QString err;
-    if (!Database::editPost(p))
-        return server.return_error(Tools::toStd(err));
+    if (!Database::editPost(p)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_edit_post", "fail:" + err, logTarget);
+        return;
+    }
     cppcms::json::object refs;
     foreach (const Post::RefKey &key, p.referencedPosts.keys()) {
         std::string k = Tools::toStd(key.boardName) + "/" + Tools::toStd(QString::number(key.postNumber));
         refs[k] = Tools::toStd(QString::number(p.referencedPosts.value(key)));
     }
     server.return_result(refs);
-    Tools::log(server, "Handled AJAX edit post");
+    Tools::log(server, "ajax_edit_post", "success", logTarget);
 }
 
 void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash)
 {
-    Tools::log(server, "Handling AJAX get file existence");
-    if (!testBan(Tools::fromStd(boardName), true))
-        return;
+    QString bn = Tools::fromStd(boardName);
+    QString h = Tools::fromStd(hash);
+    QString logTarget = bn + "/" + h;
+    Tools::log(server, "ajax_get_file_existence", "begin", logTarget);
+    if (!testBan(bn, true))
+        return Tools::log(server, "ajax_get_file_existence", "fail:ban", logTarget);
     bool ok = false;
-    bool exists = Database::fileHashExists(Tools::fromStd(hash), &ok);
+    bool exists = Database::fileHashExists(h, &ok);
     TranslatorStd ts;
-    if (!ok)
-        return server.return_error(ts.translate("ActionAjaxHandler", "Internal database error", "error"));
+    if (!ok) {
+        std::string err = ts.translate("ActionAjaxHandler", "Internal database error", "error");
+        server.return_error(err);
+        Tools::log(server, "ajax_get_file_existence", "fail:" + Tools::fromStd(err), logTarget);
+        return;
+    }
     server.return_result(exists);
-    Tools::log(server, "Handled AJAX get file exsistence");
+    Tools::log(server, "ajax_get_file_existence", "success", logTarget);
 }
 
 void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber)
 {
-    Tools::log(server, "Handling AJAX get new posts");
-    if (!testBan(Tools::fromStd(boardName), true))
-        return;
+    QString bn = Tools::fromStd(boardName);
+    quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
+    quint64 lpn = lastPostNumber > 0 ? quint64(lastPostNumber) : 0;
+    QString logTarget = bn + "/" + QString::number(tn) + "/" + QString::number(lpn);
+    Tools::log(server, "ajax_get_new_posts", "begin", logTarget);
+    if (!testBan(bn, true))
+        return Tools::log(server, "ajax_get_new_posts", "fail:ban", logTarget);
     bool ok = false;
     QString err;
     const cppcms::http::request &req = server.request();
-    QList<Content::Post> posts = Controller::getNewPosts(req, Tools::fromStd(boardName),
-        threadNumber > 0 ? quint64(threadNumber) : 0, lastPostNumber > 0 ? quint64(lastPostNumber) : 0, &ok, &err);
-    if (!ok)
-        return server.return_error(Tools::toStd(err));
+    QList<Content::Post> posts = Controller::getNewPosts(req, bn, tn, lpn, &ok, &err);
+    if (!ok) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_new_posts", "fail:" + err, logTarget);
+        return;
+    }
     cppcms::json::array a;
     foreach (const Content::Post &p, posts)
         a.push_back(toJson(p));
     server.return_result(a);
-    Tools::log(server, "Handled AJAX get new posts");
+    Tools::log(server, "ajax_get_new_posts", "success", logTarget);
 }
 
 void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
 {
-    Tools::log(server, "Handling AJAX get post");
+    QString bn = Tools::fromStd(boardName);
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = bn + "/" + QString::number(pn);
+    Tools::log(server, "ajax_get_post", "begin", logTarget);
     if (!testBan(Tools::fromStd(boardName), true))
-        return;
+        return Tools::log(server, "ajax_get_post", "fail:ban", logTarget);
     bool ok = false;
     QString err;
     const cppcms::http::request &req = server.request();
-    Content::Post post = Controller::getPost(req, Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0,
-                                             &ok, &err);
-    if (!ok)
-        return server.return_error(Tools::toStd(err));
+    Content::Post post = Controller::getPost(req, bn, pn, &ok, &err);
+    if (!ok) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_post", "fail:" + err, logTarget);
+        return;
+    }
     server.return_result(toJson(post));
-    Tools::log(server, "Handled AJAX get post");
+    Tools::log(server, "ajax_get_post", "success", logTarget);
 }
 
 QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
@@ -213,28 +243,36 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
 
 void ActionAjaxHandler::setThreadFixed(std::string boardName, long long postNumber, bool fixed)
 {
-    Tools::log(server, "Handling AJAX set thread fixed");
+    QString bn = Tools::fromStd(boardName);
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = bn + "/" + QString::number(pn) + "/" + QString(fixed ? "true" : "false");
+    Tools::log(server, "ajax_set_thread_fixed", "begin", logTarget);
     if (!testBan(Tools::fromStd(boardName)))
-        return;
+        return Tools::log(server, "ajax_set_thread_fixed", "fail:ban", logTarget);
     QString err;
-    if (!Database::setThreadFixed(Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0, fixed,
-                                  server.request(), &err)) {
-        return server.return_error(Tools::toStd(err));
+    if (!Database::setThreadFixed(bn, pn, fixed, server.request(), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_set_thread_fixed", "fail:" + err, logTarget);
+        return;
     }
     server.return_result(true);
-    Tools::log(server, "Handled AJAX set thread fixed");
+    Tools::log(server, "ajax_set_thread_fixed", "success", logTarget);
 }
 
 void ActionAjaxHandler::setThreadOpened(std::string boardName, long long postNumber, bool opened)
 {
-    Tools::log(server, "Handling AJAX set thread opened");
+    QString bn = Tools::fromStd(boardName);
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = bn + "/" + QString::number(pn) + "/" + QString(opened ? "true" : "false");
+    Tools::log(server, "ajax_set_thread_opened", "begin", logTarget);
     if (!testBan(Tools::fromStd(boardName)))
-        return;
+        return Tools::log(server, "ajax_set_thread_opened", "fail:ban", logTarget);
     QString err;
-    if (!Database::setThreadOpened(Tools::fromStd(boardName), postNumber > 0 ? quint64(postNumber) : 0, opened,
-                                   server.request(), &err)) {
-        return server.return_error(Tools::toStd(err));
+    if (!Database::setThreadOpened(bn, pn, opened, server.request(), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_set_thread_opened", "fail:" + err, logTarget);
+        return;
     }
     server.return_result(true);
-    Tools::log(server, "Handled AJAX set thread opened");
+    Tools::log(server, "ajax_set_thread_opened", "success", logTarget);
 }

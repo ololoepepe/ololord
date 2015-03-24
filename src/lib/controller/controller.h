@@ -77,8 +77,9 @@ OLOLORD_EXPORT void renderSuccessfulPost(cppcms::application &app, quint64 postN
 OLOLORD_EXPORT void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber);
 OLOLORD_EXPORT bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board);
 OLOLORD_EXPORT bool testParams(const AbstractBoard *board, cppcms::application &app,
-                               const Tools::PostParameters &params, const Tools::FileList &files, bool post);
-OLOLORD_EXPORT bool testRequest(cppcms::application &app, int acceptedTypes);
+                               const Tools::PostParameters &params, const Tools::FileList &files, bool post,
+                               QString *error = 0);
+OLOLORD_EXPORT bool testRequest(cppcms::application &app, int acceptedTypes, QString *error = 0);
 OLOLORD_EXPORT QString toHtml(const QString &s);
 OLOLORD_EXPORT void toHtml(QString *s);
 

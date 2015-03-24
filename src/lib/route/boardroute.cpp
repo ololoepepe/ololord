@@ -25,34 +25,51 @@ bool BoardRoute::duplicateWithSlashAppended() const
 
 void BoardRoute::handle(std::string boardName)
 {
+    QString bn = Tools::fromStd(boardName);
+    QString logTarget = bn;
+    QString err;
     if (BoardMode == mode) {
-        Tools::log(application, "Handling board");
-        if (!Controller::testRequest(application, Controller::GetRequest))
+        logTarget += "/0";
+        Tools::log(application, "board", "begin", logTarget);
+        if (!Controller::testRequest(application, Controller::GetRequest, &err))
+            return Tools::log(application, "board", "fail:" + err, logTarget);
+        AbstractBoard *board = AbstractBoard::board(bn);
+        if (!board) {
+            Controller::renderNotFound(application);
+            Tools::log(application, "board", "fail:not_found", logTarget);
             return;
-        AbstractBoard *board = AbstractBoard::board(Tools::fromStd(boardName));
-        if (!board)
-            return Controller::renderNotFound(application);
+        }
         board->handleBoard(application);
     } else if (BoardRulesRoute) {
-        Tools::log(application, "Handling board rules");
-        if (!Controller::testRequest(application, Controller::GetRequest))
+        Tools::log(application, "board_rules", "begin", logTarget);
+        if (!Controller::testRequest(application, Controller::GetRequest, &err))
+            return Tools::log(application, "board", "fail:" + err, logTarget);
+        AbstractBoard *board = AbstractBoard::board(bn);
+        if (!board) {
+            Controller::renderNotFound(application);
+            Tools::log(application, "board", "fail:not_found", logTarget);
             return;
-        AbstractBoard *board = AbstractBoard::board(Tools::fromStd(boardName));
-        if (!board)
-            return Controller::renderNotFound(application);
+        }
         board->handleRules(application);
     }
 }
 
 void BoardRoute::handle(std::string boardName, std::string page)
 {
-    Tools::log(application, "Handling board page");
-    if (!Controller::testRequest(application, Controller::GetRequest))
+    QString bn = Tools::fromStd(boardName);
+    QString p = Tools::fromStd(page);
+    QString logTarget = bn + "/" + p;
+    Tools::log(application, "board", "begin", logTarget);
+    QString err;
+    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+        return Tools::log(application, "board", "fail:" + err, logTarget);
+    AbstractBoard *board = AbstractBoard::board(bn);
+    if (!board) {
+        Tools::log(application, "board", "fail:not_found", logTarget);
+        Controller::renderNotFound(application);
         return;
-    AbstractBoard *board = AbstractBoard::board(Tools::fromStd(boardName));
-    if (!board)
-        return Controller::renderNotFound(application);
-    board->handleBoard(application, Tools::fromStd(page).toUInt());
+    }
+    board->handleBoard(application, p.toUInt());
 }
 
 unsigned int BoardRoute::handlerArgumentCount() const

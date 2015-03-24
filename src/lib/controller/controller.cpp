@@ -233,8 +233,8 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
-    foreach (const QString &r, board->postformRules(tq.locale()))
-        c.postformRules.push_back(Tools::toStd(r));
+    foreach (QString r, board->postformRules(tq.locale()))
+        c.postformRules.push_back(Tools::toStd(r.replace("%currentBoard.name%", board->name())));
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
@@ -283,7 +283,6 @@ void renderBan(cppcms::application &app, const Database::BanInfo &info)
     c.banReason = Tools::toStd(info.reason);
     c.banReasonLabel = ts.translate("renderBan", "Reason", "pageTitle");
     app.render("ban", c);
-    Tools::log(app, "Banned");
 }
 
 void renderError(cppcms::application &app, const QString &error, const QString &description)
@@ -294,7 +293,6 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     c.errorMessage = !error.isEmpty() ? Tools::toStd(error) : c.pageTitle;
     c.errorDescription = Tools::toStd(description);
     app.render("error", c);
-    Tools::log(app, error + (!description.isEmpty() ? (": " + description) : QString()));
 }
 
 void renderIpBan(cppcms::application &app, int level)
@@ -312,7 +310,6 @@ void renderIpBan(cppcms::application &app, int level)
                                         "You are not allowed to make posts.", "pageTitle");
     }
     app.render("ip_ban", c);
-    Tools::log(app, "Banned (ban list)");
 }
 
 void renderNotFound(cppcms::application &app)
@@ -328,10 +325,8 @@ void renderNotFound(cppcms::application &app)
         qsrand((uint) QDateTime::currentMSecsSinceEpoch());
         c.imageFileName = Tools::toStd("not_found/" + fns.at(qrand() % fns.size()));
     }
-    //c.imageTitle = ts.translate("renderNotFound", "Page or file not found", "imageTitle");
     c.notFoundMessage = ts.translate("renderNotFound", "Page or file not found", "notFoundMessage");
     app.render("not_found", c);
-    Tools::log(app, "Page or file not found");
 }
 
 void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const Post::RefMap &referencedPosts)
@@ -378,13 +373,13 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
 }
 
 bool testParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
-                const Tools::FileList &files, bool post)
+                const Tools::FileList &files, bool post, QString *error)
 {
     TranslatorQt tq(app.request());
     if (!board) {
-        renderError(app, tq.translate("testParams", "Internal error", "error"),
-                    tq.translate("testParams", "Internal logic error", "description"));
-        return false;
+        QString err = tq.translate("testParams", "Internal logic error", "description");
+        renderError(app, tq.translate("testParams", "Internal error", "error"), err);
+        return bRet(error, err, false);
     }
     QString boardName = board->name();
     int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, boardName);
@@ -392,33 +387,29 @@ bool testParams(const AbstractBoard *board, cppcms::application &app, const Tool
     QStringList fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
     if (!board->testParams(params, post, tq.locale(), &err)){
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
-        Tools::log(app, "Invalid field");
         return false;
     } else if ((files.size() + fileHashes.size()) > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                    tq.translate("testParams", "Too many files", "description"));
-        Tools::log(app, "File is too big");
-        return false;
+        err = tq.translate("testParams", "Too many files", "description");
+        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
+        return bRet(error, err, false);
     } else {
         foreach (const Tools::File &f, files) {
             if (f.data.size() > maxFileSize) {
-                renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                            tq.translate("testParams", "File is too big", "description"));
-                Tools::log(app, "File is too big");
-                return false;
+                err = tq.translate("testParams", "File is too big", "description");
+                renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
+                return bRet(error, err, false);
             }
             if (!board->isFileTypeSupported(f.data)) {
-                renderError(app, tq.translate("testParams", "Invalid parameters", "error"),
-                            tq.translate("testParams", "File type is not supported", "description"));
-                Tools::log(app, "File type is not supported");
-                return false;
+                err = tq.translate("testParams", "File type is not supported", "description");
+                renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
+                return bRet(error, err, false);
             }
         }
     }
-    return true;
+    return bRet(error, QString(), true);
 }
 
-bool testRequest(cppcms::application &app, int acceptedTypes)
+bool testRequest(cppcms::application &app, int acceptedTypes, QString *error)
 {
     QString r = Tools::fromStd(app.request().request_method());
     bool b = acceptedTypes > 0;
@@ -427,11 +418,11 @@ bool testRequest(cppcms::application &app, int acceptedTypes)
     else if ("POST" == r)
         b = b && (acceptedTypes & PostRequest);
     if (b)
-        return true;
+        return bRet(error, QString(), true);
     TranslatorQt tq(app.request());
-    renderError(app, tq.translate("testRequest", "Unsupported request type", "error"),
-                tq.translate("testRequest", "This request type is not supported", "error"));
-    return false;
+    QString err = tq.translate("testRequest", "Unsupported request type", "error");
+    renderError(app, err, tq.translate("testRequest", "This request type is not supported", "error"));
+    return bRet(error, err, false);
 }
 
 }

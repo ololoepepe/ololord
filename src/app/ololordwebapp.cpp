@@ -136,6 +136,6 @@ void OlolordWebApp::main(std::string url)
 {
     if (dispatcher().dispatch(url))
         return;
-    Tools::log(*this, "Page not found (handled by OlolordWebApp::main)");
     Controller::renderNotFound(*this);
+    Tools::log(*this, Tools::fromStd(url), "fail:not_found:handled_by_main");
 }

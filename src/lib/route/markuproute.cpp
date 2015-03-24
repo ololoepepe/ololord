@@ -22,9 +22,10 @@ MarkupRoute::MarkupRoute(cppcms::application &app) :
 
 void MarkupRoute::handle()
 {
-    Tools::log(application, "Handling markup page");
-    if (!Controller::testRequest(application, Controller::GetRequest))
-        return;
+    Tools::log(application, "markup", "begin");
+    QString err;
+    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+        return Tools::log(application, "markup", "fail:" + err);
     Content::Markup c;
     TranslatorQt tq(application.request());
     TranslatorStd ts(application.request());
@@ -54,7 +55,7 @@ void MarkupRoute::handle()
     }
     c.underlinedText = ts.translate("MarkupRoute", "underlined text", "underlinedText");
     application.render("markup", c);
-    Tools::log(application, "Handled markup page successfully");
+    Tools::log(application, "markup", "success");
 }
 
 unsigned int MarkupRoute::handlerArgumentCount() const

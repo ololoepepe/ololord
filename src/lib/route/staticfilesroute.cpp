@@ -26,43 +26,51 @@ StaticFilesRoute::StaticFilesRoute(cppcms::application &app, Mode m) :
 void StaticFilesRoute::handle(std::string p)
 {
     QString path = Tools::fromStd(p);
-    Tools::log(application, "Handling " + QString(StaticFilesMode == mode ? "static" : "dynamic") + " file: " + path);
+    QString logAction = QString(StaticFilesMode == mode ? "static" : "dynamic") + "_file";
+    QString logTarget = path;
+    Tools::log(application, logAction, "begin", logTarget);
     typedef QByteArray *(*GetCacheFunction)(const QString &path);
     typedef bool (*SetCacheFunction)(const QString &path, QByteArray *data);
-    if (!Controller::testRequest(application, Controller::GetRequest))
+    QString err;
+    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+        return Tools::log(application, logAction, "fail:" + err, logTarget);
+    if (path.contains("../") || path.contains("/..")) { //NOTE: Are you trying to cheat me?
+        Controller::renderNotFound(application);
+        Tools::log(application, logAction, "fail:cheating", logTarget);
         return;
-    if (path.contains("../") || path.contains("/..")) //NOTE: Are you trying to cheat me?
-        return Controller::renderNotFound(application);
+    }
     GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
     SetCacheFunction setCache = (StaticFilesMode == mode) ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
     QByteArray *data = getCache(path);
     if (data) {
         application.response().content_type("");
         application.response().out().write(data->data(), data->size());
-        return Tools::log(application, "Handled " + QString(StaticFilesMode == mode ? "static" : "dynamic")
-                          + " file successfully (cached)");
+        Tools::log(application, logAction, "success:cache", logTarget);
     }
     QString fn = BDirTools::findResource(Prefix + "/" + path, BDirTools::AllResources);
     if (fn.startsWith(":")) { //NOTE: No need to cache files stored in memory
         bool ok = false;
         QByteArray ba = BDirTools::readFile(fn, -1, &ok);
-        if (!ok)
-            return Controller::renderNotFound(application);
+        if (!ok) {
+            Controller::renderNotFound(application);
+            Tools::log(application, logAction, "fail:not_found", logTarget);
+            return;
+        }
         application.response().content_type("");
         application.response().out().write(ba.data(), ba.size());
-        return Tools::log(application, "Handled " + QString(StaticFilesMode == mode ? "static" : "dynamic")
-                          + " file successfully (in-memory)");
+        Tools::log(application, logAction, "success:in_memory", logTarget);
     }
     bool ok = false;
     data = new QByteArray(BDirTools::readFile(fn, -1, &ok));
-    if (!ok)
-        return Controller::renderNotFound(application);
+    if (!ok) {
+        Controller::renderNotFound(application);
+        Tools::log(application, logAction, "fail:not_found", logTarget);
+    }
     application.response().content_type("");
     application.response().out().write(data->data(), data->size());
     if (!setCache(path, data))
         delete data;
-    Tools::log(application, "Handled " + QString(StaticFilesMode == mode ? "static" : "dynamic")
-               + " file successfully");
+    Tools::log(application, logAction, "success", logTarget);
 }
 
 void StaticFilesRoute::handle(std::string boardName, std::string path)
