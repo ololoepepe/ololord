@@ -240,11 +240,13 @@
                 <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
             <% end %>
         <% end %>
-        <% if ( post.subjectIsRaw ) %>
-            <%= post.subject | raw %>
-        <% else %>
-            <b><%= post.subject %></b>
-        <% end %>
+        <span class="postSubject">
+            <% if ( post.subjectIsRaw ) %>
+                <%= post.subject | raw %>
+            <% else %>
+                <b><%= post.subject %></b>
+            <% end %>
+        </span>
         <% if ( post.showRegistered && post.showTripcode ) %>
             <img src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>">
         <% end %>

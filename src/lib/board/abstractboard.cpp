@@ -483,7 +483,6 @@ void AbstractBoard::handleRules(cppcms::application &app)
 void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
 {
     QString logTarget = name() + "/" + QString::number(threadNumber);
-    Tools::log(app, "thread", "begin", logTarget);
     if (!Controller::testBan(app, Controller::ReadAction, name()))
         return Tools::log(app, "thread", "fail:ban", logTarget);
     TranslatorQt tq(app.request());
