@@ -358,12 +358,12 @@ QLocale locale(const cppcms::http::request &req, const QLocale &defaultLocale)
     return (QLocale::c() == l) ? defaultLocale : l;
 }
 
-void log(const cppcms::application &app, const QString &what)
+void log(const cppcms::application &app, const QString &action, const QString &state, const QString &target)
 {
-    log(const_cast<cppcms::application *>(&app)->request(), what);
+    log(const_cast<cppcms::application *>(&app)->request(), action, state, target);
 }
 
-void log(const cppcms::http::request &req, const QString &what)
+void log(const cppcms::http::request &req, const QString &action, const QString &state, const QString &target)
 {
     do_once(init)
         resetLoggingSkipIps();
@@ -374,7 +374,7 @@ void log(const cppcms::http::request &req, const QString &what)
             return;
     }
     locker.unlock();
-    bLog("[" + ip + "] " + what);
+    bLog("[" + ip + "] [" + action + "] [" + state + "]" + (!target.isEmpty() ? (" " + target) : QString()));
 }
 
 unsigned int maxInfo(MaxInfo m, const QString &boardName)
@@ -593,7 +593,7 @@ Post toPost(const PostParameters &params, const FileList &files)
     p.raw = !params.value("raw").compare("true", Qt::CaseInsensitive);
     p.subject = params.value("subject");
     p.text = params.value("text");
-    p.premoderation = !params.value("premoderation").compare("true", Qt::CaseInsensitive);
+    p.draft = !params.value("draft").compare("true", Qt::CaseInsensitive);
     return p;
 }
 

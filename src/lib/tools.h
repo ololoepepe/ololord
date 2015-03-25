@@ -60,12 +60,12 @@ typedef QList<File> FileList;
 
 struct Post
 {
+    bool draft;
     QString email;
     QStringList fileHashes;
     FileList files;
     QString name;
     QByteArray password;
-    bool premoderation;
     bool raw;
     QString subject;
     QString text;
@@ -105,8 +105,10 @@ OLOLORD_EXPORT int ipBanLevel(const cppcms::http::request &req);
 OLOLORD_EXPORT QDateTime localDateTime(const QDateTime &dt, int offsetMinutes = -1000);
 OLOLORD_EXPORT QLocale locale(const cppcms::http::request &req,
                               const QLocale &defaultLocale = BCoreApplication::locale());
-OLOLORD_EXPORT void log(const cppcms::application &app, const QString &what);
-OLOLORD_EXPORT void log(const cppcms::http::request &req, const QString &what);
+OLOLORD_EXPORT void log(const cppcms::application &app, const QString &action, const QString &state,
+                        const QString &target =  QString());
+OLOLORD_EXPORT void log(const cppcms::http::request &req, const QString &action, const QString &state,
+                        const QString &target =  QString());
 OLOLORD_EXPORT unsigned int maxInfo(MaxInfo m, const QString &boardName = QString());
 OLOLORD_EXPORT QString mimeType(const QByteArray &data, bool *ok = 0);
 OLOLORD_EXPORT QStringList news(const QLocale &l);

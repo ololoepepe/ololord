@@ -21,7 +21,7 @@ Thread::Thread(const QString &board, quint64 number, const QDateTime &dateTime)
     archived_ = false;
     fixed_ = false;
     postingEnabled_ = true;
-    premoderation_ = false;
+    draft_ = false;
 }
 
 Thread::Thread()
@@ -74,9 +74,9 @@ Thread::Posts &Thread::posts()
     return posts_;
 }
 
-bool Thread::premoderation() const
+bool Thread::draft() const
 {
-    return premoderation_;
+    return draft_;
 }
 
 void Thread::setArchived(bool archived)
@@ -104,9 +104,30 @@ void Thread::setPostingEnabled(bool enabled)
     postingEnabled_ = enabled;
 }
 
-void Thread::setPremoderation(bool pm)
+void Thread::setDraft(bool draft)
 {
-    premoderation_ = pm;
+    draft_ = draft;
+}
+
+Post::RefKey::RefKey()
+{
+    postNumber = 0;
+}
+
+Post::RefKey::RefKey(const QString &board, quint64 post)
+{
+    boardName = board;
+    postNumber = post;
+}
+
+bool Post::RefKey::isValid() const
+{
+    return !boardName.isEmpty() && postNumber;
+}
+
+bool Post::RefKey::operator <(const RefKey &other) const
+{
+    return boardName < other.boardName || (boardName == other.boardName && postNumber < other.postNumber);
 }
 
 Post::Post()
@@ -126,7 +147,8 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     showTripcode_ = false;
     thread_ = thread;
     posterIp_ = posterIp;
-    premoderation_ = false;
+    rawHtml_ = false;
+    draft_ = false;
     password_ = password;
 }
 
@@ -160,27 +182,22 @@ bool Post::showTripcode() const
     return showTripcode_;
 }
 
-bool Post::addReferencedBy(quint64 postNumber)
+bool Post::addReferencedBy(const RefKey &key, quint64 threadNumber)
 {
-    QSet<quint64> nlist = referencedBy();
-    if (!postNumber)
+    if (!key.isValid() || !threadNumber)
         return false;
-    nlist << postNumber;
-    setReferencedBy(nlist);
+    RefMap map = referencedBy();
+    int sz = map.size();
+    map.insert(key, threadNumber);
+    if (map.size() == sz)
+        return false;
+    setReferencedBy(map);
     return true;
 }
 
-bool Post::addReferencedBy(const QSet<quint64> &list)
+bool Post::addReferencedBy(const QString &boardName, quint64 postNumber, quint64 threadNumber)
 {
-    QSet<quint64> nlist = referencedBy();
-    int sz = nlist.size();
-    foreach (quint64 pn, list) {
-        if (!pn)
-            continue;
-        nlist << pn;
-    }
-    setReferencedBy(nlist);
-    return sz != nlist.size();
+    return addReferencedBy(RefKey(boardName, postNumber), threadNumber);
 }
 
 QString Post::email() const
@@ -208,9 +225,9 @@ QByteArray Post::password() const
     return password_;
 }
 
-bool Post::premoderation() const
+bool Post::draft() const
 {
-    return premoderation_;
+    return draft_;
 }
 
 QString Post::posterIp() const
@@ -218,39 +235,46 @@ QString Post::posterIp() const
     return posterIp_;
 }
 
+bool Post::rawHtml() const
+{
+    return rawHtml_;
+}
+
 QString Post::rawText() const
 {
     return rawText_;
 }
 
-QSet<quint64> Post::referencedBy() const
+Post::RefMap Post::referencedBy() const
 {
-    QSet<quint64> list;
+    RefMap map;
     foreach (const QVariant &v, BeQt::deserialize(referencedBy_).toList()) {
-        quint64 pn = v.toULongLong();
-        if (!pn)
+        QVariantMap m = v.toMap();
+        RefKey key(m.value("boardName").toString(), m.value("postNumber").toULongLong());
+        if (!key.isValid())
             continue;
-        list << pn;
+        quint64 t = m.value("threadNumber").toULongLong();
+        if (!t)
+            continue;
+        map.insert(key, t);
     }
-    return list;
+    return map;
 }
 
-bool Post::removeReferencedBy(quint64 postNumber)
+bool Post::removeReferencedBy(const RefKey &key)
 {
-    QSet<quint64> nlist = referencedBy();
-    bool b = nlist.remove(postNumber);
-    setReferencedBy(nlist);
-    return b;
+    if (!key.isValid())
+        return false;
+    RefMap map = referencedBy();
+    if (map.remove(key) < 1)
+        return false;
+    setReferencedBy(map);
+    return true;
 }
 
-bool Post::removeReferencedBy(const QSet<quint64> &list)
+bool Post::removeReferencedBy(const QString &boardName, quint64 postNumber)
 {
-    QSet<quint64> nlist = referencedBy();
-    bool b = false;
-    foreach (quint64 pn, list)
-        b = b || nlist.remove(pn);
-    setReferencedBy(nlist);
-    return b;
+    return removeReferencedBy(RefKey(boardName, postNumber));
 }
 
 void Post::setBannedFor(bool banned)
@@ -278,9 +302,14 @@ void Post::setName(const QString &name)
     name_ = name;
 }
 
-void Post::setPremoderation(bool pm)
+void Post::setDraft(bool draft)
 {
-    premoderation_ = pm;
+    draft_ = draft;
+}
+
+void Post::setRawHtml(bool raw)
+{
+    rawHtml_ = raw;
 }
 
 void Post::setRawText(const QString &text)
@@ -288,13 +317,20 @@ void Post::setRawText(const QString &text)
     rawText_ = text;
 }
 
-void Post::setReferencedBy(const QSet<quint64> &list)
+void Post::setReferencedBy(const RefMap &map)
 {
     QVariantList vl;
-    foreach (quint64 pn, list) {
-        if (!pn)
+    foreach (const RefKey &key, map.keys()) {
+        if (!key.isValid())
             continue;
-        vl << pn;
+        quint64 t = map.value(key);
+        if (!t)
+            continue;
+        QVariantMap m;
+        m.insert("boardName", key.boardName);
+        m.insert("postNumber", key.postNumber);
+        m.insert("threadNumber", t);
+        vl << m;
     }
     referencedBy_ = BeQt::serialize(vl);
 }

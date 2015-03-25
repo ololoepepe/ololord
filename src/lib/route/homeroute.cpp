@@ -21,9 +21,10 @@ HomeRoute::HomeRoute(cppcms::application &app) :
 
 void HomeRoute::handle()
 {
-    Tools::log(application, "Handling home page");
-    if (!Controller::testRequest(application, Controller::GetRequest))
-        return;
+    Tools::log(application, "home", "begin");
+    QString err;
+    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+        return Tools::log(application, "home", "fail:" + err);
     Content::Home c;
     TranslatorQt tq(application.request());
     TranslatorStd ts(application.request());
@@ -31,13 +32,13 @@ void HomeRoute::handle()
                          tq.translate("HomeRoute", "ololord - (almost) free communication", "pageTitle"));
     c.newsHeader = ts.translate("HomeRoute", "News", "newsHeader");
     foreach (const QString &s, Tools::news(tq.locale()))
-        c.news.push_back(Tools::toStd(Controller::toHtml(s)));
+        c.news.push_back(Tools::toStd(s));
     c.rulesHeader = ts.translate("HomeRoute", "Rules", "rulesHeader");
     foreach (const QString &s, Tools::rules("rules/home", tq.locale()))
-        c.rules.push_back(Tools::toStd(Controller::toHtml(s)));
+        c.rules.push_back(Tools::toStd(s));
     c.welcomeMessage = ts.translate("HomeRoute", "Welcome. Again.", "welcomeMessage");
     application.render("home", c);
-    Tools::log(application, "Handled home page successfully");
+    Tools::log(application, "home", "success");
 }
 
 unsigned int HomeRoute::handlerArgumentCount() const

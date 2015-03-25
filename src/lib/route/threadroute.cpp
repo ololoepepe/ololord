@@ -20,13 +20,20 @@ ThreadRoute::ThreadRoute(cppcms::application &app) :
 
 void ThreadRoute::handle(std::string boardName, std::string thread)
 {
-    Tools::log(application, "Handling thread");
-    if (!Controller::testRequest(application, Controller::GetRequest))
+    QString bn = Tools::fromStd(boardName);
+    QString t = Tools::fromStd(thread);
+    QString logTarget = bn + "/" + t;
+    Tools::log(application, "thread", "begin", logTarget);
+    QString err;
+    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+        return Tools::log(application, "thread", "fail:" + err, logTarget);
+    AbstractBoard *board = AbstractBoard::board(bn);
+    if (!board) {
+        Controller::renderNotFound(application);
+        Tools::log(application, "thread", "fail:not_found", logTarget);
         return;
-    AbstractBoard *board = AbstractBoard::board(Tools::fromStd(boardName));
-    if (!board)
-        return Controller::renderNotFound(application);
-    board->handleThread(application, Tools::fromStd(thread).toULongLong());
+    }
+    board->handleThread(application, t.toULongLong());
 }
 
 unsigned int ThreadRoute::handlerArgumentCount() const

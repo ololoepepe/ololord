@@ -127,6 +127,16 @@ span.spoiler:hover a {
     white-space: nowrap;
 }
 
+.postformRules {
+    text-align: left;
+	font-size: 0.7em;
+	max-width: 400px;
+}
+
+.quotation {
+    color: #789922;
+}
+
 /*
     Board image
 */
@@ -229,8 +239,11 @@ span.spoiler:hover a {
 
 .rules {
     background-color: #DDDDDD;
+    border: 1px solid #CCCCCC;
     margin-left: 80px;
     margin-right: 80px;
+    padding-top: 10px;
+    padding-left: 10px;
 }
 
 .news {
@@ -302,6 +315,10 @@ span.spoiler:hover a {
 
 .opPost.hiddenPost ~ .post {
     display: none;
+}
+
+.selectedPost {
+    background-color: #EEDACB;
 }
 
 .omittedPosts.hiddenPosts {

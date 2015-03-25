@@ -15,6 +15,43 @@ lord.searchFormVisible = {
 
 /*Functions*/
 
+lord.dtsIbEngine = { //For compatibility with Dollchan Extension Tools
+    lord: { value: true },
+    cFileInfo: "postFileSize",
+    cOPost: "opPost",
+    cReply: { value: "post" },
+    cRPost: "post",
+    cSubj: { value: "postSubject" },
+    cTrip: "tripcode",
+    qBan: { value: ".bannedFor" },
+    qClosed: { value: "img[src$=\"closed.png\"]" },
+    qDelBut: "a[name='deleteButton']",
+    qDForm: { value: null },
+    qError: { value: null },
+    qHide: { value: "a[name='hideButton']" },
+    qImgLink: { value: ".postFileName > a" },
+    qMsg: { value: "blockquote" },
+    qName: ".userName",
+    qOmitted: ".omittedPosts",
+    qPages: ".pagesItem",
+    qPostForm: "#postFormTop", //, #postFormBottom
+    qPostRedir: { value: null },
+    qTable: ".postFormTable",
+    qThumbImages: ".postFileFile > a > img",
+    qTrunc: { value: null },
+    getWrap: {
+        value: function value(el) {
+            return el.parentNode;
+        }
+    },
+    hasPicWrap: { value: false },
+    markupBB: { value: true },
+    markupTags: { value: ["B", "I", "U", "S", "SPOILER", "CODE", "SUP", "SUB", "Q"] },
+    multiFile: { value: true },
+    rLinkClick: { value: "" },
+    timePattern: { value: "dd+nn+yyyy+w+hh+ii+ss" }
+};
+
 lord.showHideSearchForm = function(position) {
     var theButton = document.getElementById("showHideSearchFormButton" + position);
     if (lord.searchFormVisible[position]) {

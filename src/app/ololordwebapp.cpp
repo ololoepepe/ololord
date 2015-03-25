@@ -8,6 +8,7 @@
 #include <route/ActionRoute>
 #include <route/BoardRoute>
 #include <route/HomeRoute>
+#include <route/MarkupRoute>
 #include <route/StaticFilesRoute>
 #include <route/ThreadRoute>
 #include <SettingsLocker>
@@ -52,6 +53,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new BoardRoute(*this, BoardRoute::BoardRulesRoute);
     routesMap.insert(r->regex(), r);
     r = new HomeRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new MarkupRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new StaticFilesRoute(*this, StaticFilesRoute::StaticFilesMode);
     routesMap.insert(r->regex(), r);
@@ -133,6 +136,6 @@ void OlolordWebApp::main(std::string url)
 {
     if (dispatcher().dispatch(url))
         return;
-    Tools::log(*this, "Page not found (handled by OlolordWebApp::main)");
     Controller::renderNotFound(*this);
+    Tools::log(*this, Tools::fromStd(url), "fail:not_found:handled_by_main");
 }

@@ -34,27 +34,39 @@ QStringList ActionRoute::availableActions()
 
 void ActionRoute::handle(std::string action)
 {
-    Tools::log(application, "Handling action");
-    if (!Controller::testRequest(application, Controller::PostRequest))
-        return;
-    TranslatorQt tq(application.request());
-    if (!availableActions().contains(Tools::fromStd(action))) {
-        return Controller::renderError(application, tq.translate("ActionRoute", "Unknown action", "error"),
-                                       tq.translate("ActionRoute", "There is no such action", "description"));
-    }
+    QString a = Tools::fromStd(action);
     QString boardName = Tools::postParameters(application.request()).value("board");
+    QString logTarget = boardName;
+    Tools::log(application, a, "begin", logTarget);
+    QString err;
+    if (!Controller::testRequest(application, Controller::PostRequest, &err))
+        return Tools::log(application, a, "fail:" + err, logTarget);
+    TranslatorQt tq(application.request());
+    if (!availableActions().contains(a)) {
+        err = tq.translate("ActionRoute", "Unknown action", "error");
+        Controller::renderError(application, err,
+                                tq.translate("ActionRoute", "There is no such action", "description"));
+        Tools::log(application, a, "fail:" + err, logTarget);
+        return;
+    }
     AbstractBoard *board = AbstractBoard::board(boardName);
     if (!board) {
-        return Controller::renderError(application, tq.translate("ActionRoute", "Unknown board", "error"),
-                                       tq.translate("ActionRoute", "There is no such board", "description"));
+        err = tq.translate("ActionRoute", "Unknown board", "error");
+        Controller::renderError(application, err,
+                                tq.translate("ActionRoute", "There is no such board", "description"));
+        Tools::log(application, a, "fail:" + err, logTarget);
+        return;
     }
     if ("create_post" == action) {
         board->createPost(application);
     } else if ("create_thread" == action) {
         board->createThread(application);
     } else {
-        Controller::renderError(application, tq.translate("ActionRoute", "Unknown action", "error"),
+        err = tq.translate("ActionRoute", "Unknown action", "error");
+        Controller::renderError(application, err,
                                 tq.translate("ActionRoute", "There is no such action", "description"));
+        Tools::log(application, a, "fail:" + err, logTarget);
+        return;
     }
 }
 

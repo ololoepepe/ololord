@@ -28,7 +28,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QScopedPointer>
-#include <QSet>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -154,11 +153,11 @@ public:
     }
 };
 
-static bool addToReferencedPosts(quint64 postNumber, const QString &boardName, const QSet<quint64> &referencedPosts,
-                                 QString *error = 0, QString *description = 0)
+static bool addToReferencedPosts(const QString &boardName, quint64 postNumber, quint64 threadNumber,
+                                 const Post::RefMap &referencedPosts, QString *error = 0, QString *description = 0)
 {
     TranslatorQt tq;
-    if (!postNumber || boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName)) {
+    if (!postNumber) {
         return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                     tq.translate("addToReferencedPosts", "Internal logic error", "description"), false);
     }
@@ -170,13 +169,13 @@ static bool addToReferencedPosts(quint64 postNumber, const QString &boardName, c
             return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                         tq.translate("addToReferencedPosts", "Internal database error", "description"), false);
         }
-        foreach (quint64 pn, referencedPosts) {
-            if (!pn) {
+        foreach (const Post::RefKey &key, referencedPosts.keys()) {
+            if (!key.isValid()) {
                 return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                             tq.translate("addToReferencedPosts", "Internal logic error", "description"), false);
             }
-            Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
-                                                     && odb::query<Post>::number == pn);
+            Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == key.boardName
+                                                     && odb::query<Post>::number == key.postNumber);
             if (post.error) {
                 return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                             tq.translate("addToReferencedPosts", "Internal database error", "description"), false);
@@ -185,9 +184,9 @@ static bool addToReferencedPosts(quint64 postNumber, const QString &boardName, c
                 return bRet(error, tq.translate("addToReferencedPosts", "No such post", "error"), description,
                             tq.translate("addToReferencedPosts", "There is no such post", "description"), false);
             }
-            post->addReferencedBy(postNumber);
+            post->addReferencedBy(Post::RefKey(boardName, postNumber), threadNumber);
             update(post);
-            Cache::removePost(boardName, pn);
+            Cache::removePost(key.boardName, key.postNumber);
         }
         t.commit();
         return bRet(error, QString(), description, QString(), true);
@@ -208,12 +207,12 @@ static bool removeFromReferencedPosts(quint64 postNumber, const QString &boardNa
             return bRet(error, tq.translate("removeFromReferencedPosts", "Internal database error", "description"),
                         false);
         }
-        QList<Post> list = query<Post, Post>(odb::query<Post>::board == boardName);
+        QList<Post> list = queryAll<Post>();
         foreach (Post post, list) {
-            if (!post.removeReferencedBy(postNumber))
+            if (!post.removeReferencedBy(boardName, postNumber))
                 continue;
             t->update(post);
-            Cache::removePost(boardName, post.number());
+            Cache::removePost(post.board(), post.number());
         }
         t.commit();
         return bRet(error, QString(), true);
@@ -288,7 +287,7 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
 static bool createPostInternal(const cppcms::http::request &req, const Tools::PostParameters &param,
                                const Tools::FileList &files, unsigned int bumpLimit, unsigned int postLimit,
                                QString *error, const QLocale &l, QString *description, QDateTime dt = QDateTime(),
-                               quint64 threadNumber = 0L, quint64 *pn = 0, QSet<quint64> *referencedPosts = 0)
+                               quint64 threadNumber = 0L, quint64 *pn = 0, Post::RefMap *referencedPosts = 0)
 {
     QString boardName = param.value("board");
     AbstractBoard *board = AbstractBoard::board(boardName);
@@ -381,16 +380,16 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         p->setName(post.name);
         p->setSubject(post.subject);
         p->setRawText(post.text);
-        if (board->premoderationEnabled() && post.premoderation)
-            p->setPremoderation(true);
+        if (board->draftsEnabled() && post.draft)
+            p->setDraft(true);
         if (post.raw && registeredUserLevel(req) >= RegisteredUser::AdminLevel) {
             p->setText(post.text);
+            p->setRawHtml(true);
         } else {
-            QSet<quint64> refs;
-            p->setText(Controller::processPostText(post.text, boardName, threadNumber,
-                                                   !p->premoderation() ? &refs : 0));
-            if (!p->premoderation()) {
-                if (!addToReferencedPosts(postNumber, boardName, refs, error, description))
+            Post::RefMap refs;
+            p->setText(Controller::processPostText(post.text, boardName, !p->draft() ? &refs : 0));
+            if (!p->draft()) {
+                if (!addToReferencedPosts(boardName, postNumber, threadNumber, refs, error, description))
                     return false;
                 bSet(referencedPosts, refs);
             }
@@ -446,6 +445,18 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             QStringList files = post->files();
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
             board->deleteFiles(files);
+        }
+        foreach (const Post::RefKey &key, post->referencedBy().keys()) {
+            Result<Post> p = queryOne<Post, Post>(odb::query<Post>::board == key.boardName
+                                                  && odb::query<Post>::number == key.postNumber
+                                                  && odb::query<Post>::rawHtml == false);
+            if (p.error)
+                return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+            if (!p)
+                return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
+            p->setText(Controller::processPostText(p->rawText(), key.boardName));
+            Cache::removePost(key.boardName, key.postNumber);
+            update(p);
         }
         if (!removeFromReferencedPosts(postNumber, boardName, error))
             return false;
@@ -733,8 +744,8 @@ quint64 createThread(CreateThreadParameters &p)
         }
         QDateTime dt = QDateTime::currentDateTimeUtc();
         QSharedPointer<Thread> thread(new Thread(p.params.value("board"), postNumber, dt));
-        if (board->premoderationEnabled() && p.params.value("final").compare("true", Qt::CaseInsensitive))
-            thread->setPremoderation(true);
+        if (board->draftsEnabled() && p.params.value("draft").compare("true", Qt::CaseInsensitive))
+            thread->setDraft(true);
         t->persist(thread);
         if (!createPostInternal(p.request, p.params, p.files, 0, 0, &err, p.locale, &desc, dt, postNumber))
             return bRet(p.error, err, p.description, desc, 0L);
@@ -812,7 +823,7 @@ bool editPost(EditPostParameters &p)
         if (!post)
             return bRet(p.error, tq.translate("editPost", "No such post", "error"), false);
         int lvl = registeredUserLevel(hashpass);
-        if (lvl < RegisteredUser::ModerLevel && !post->premoderation())
+        if (lvl < RegisteredUser::ModerLevel && !post->draft())
             return bRet(p.error, tq.translate("editPost", "Not enough rights", "error"), false);
         if (p.password.isEmpty()) {
             if (hashpass != post->hashpass()) {
@@ -833,25 +844,28 @@ bool editPost(EditPostParameters &p)
         if (p.subject.length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, p.boardName)))
             return bRet(p.error, tq.translate("editPost", "Subject is too long", "error"), false);
         post->setRawText(p.text);
-        post->setPremoderation(board->premoderationEnabled() && p.premoderation);
-        if (!post->premoderation() && !removeFromReferencedPosts(p.postNumber, p.boardName, p.error))
+        post->setDraft(board->draftsEnabled() && p.draft);
+        if (!post->draft() && !removeFromReferencedPosts(p.postNumber, p.boardName, p.error))
             return false;
         if (p.raw && lvl >= RegisteredUser::AdminLevel) {
             post->setText(p.text);
+            post->setRawHtml(true);
         } else {
-            post->setText(Controller::processPostText(p.text, p.boardName, post->thread().load()->number(),
-                                                      !post->premoderation() ? &p.referencedPosts : 0));
-            if (!post->premoderation() && !addToReferencedPosts(p.postNumber, p.boardName, p.referencedPosts, p.error))
+            post->setRawHtml(false);
+            post->setText(Controller::processPostText(p.text, p.boardName, !post->draft() ? &p.referencedPosts : 0));
+            if (!post->draft() && !addToReferencedPosts(p.boardName, p.postNumber, post->thread().load()->number(),
+                                                        p.referencedPosts, p.error)) {
                 return false;
+            }
         }
         post->setEmail(p.email);
         post->setName(p.name);
         post->setSubject(p.subject);
-        bool premodLast = post->premoderation();
-        if (post->premoderation() != premodLast) {
+        bool draftLast = post->draft();
+        if (post->draft() != draftLast) {
             Thread thread = *post->thread().load();
             if (thread.number() == post->number()) {
-                thread.setPremoderation(post->premoderation());
+                thread.setDraft(post->draft());
                 t->update(thread);
             }
         }
@@ -954,7 +968,7 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
             return bRet(ok, false, error, tq.translate("getNewPosts", "No such thread", "error"), QList<Post>());
         int lvl = registeredUserLevel(req);
         Post opPost = *thread->posts().first().load();
-        if (opPost.premoderation() && hashpass != opPost.hashpass()
+        if (opPost.draft() && hashpass != opPost.hashpass()
                 && (!modOnBoard || registeredUserLevel(opPost.hashpass()) >= lvl)) {
             return bRet(ok, false, error, tq.translate("getNewPosts", "No such thread", "error"), QList<Post>());
         }
@@ -963,7 +977,7 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
                 && odb::query<Post>::number > lastPostNumber;
         QList<Post> posts = query<Post, Post>(qq);
         foreach (int i, bRangeR(posts.size() - 1, 0)) {
-            if (posts.at(i).premoderation() && hashpass != posts.at(i).hashpass()
+            if (posts.at(i).draft() && hashpass != posts.at(i).hashpass()
                     && (!modOnBoard || registeredUserLevel(posts.at(i).hashpass()) >= lvl)) {
                 posts.removeAt(i);
             }
@@ -995,7 +1009,7 @@ Post getPost(const cppcms::http::request &req, const QString &boardName, quint64
             return bRet(ok, false, error, tq.translate("getPost", "Internal database error", "error"), Post());
         if (!post)
             return bRet(ok, false, error, tq.translate("getPost", "No such post", "error"), Post());
-        if (post->premoderation() && hashpass != post->hashpass()
+        if (post->draft() && hashpass != post->hashpass()
                 && (!modOnBoard || registeredUserLevel(post->hashpass()) >= registeredUserLevel(req))) {
             return bRet(ok, false, error, tq.translate("getPost", "No such post", "error"), Post());
         }
@@ -1076,21 +1090,22 @@ bool moderOnBoard(const QByteArray &hashpass, const QString &board1, const QStri
     return (boards.contains("*") && boards.contains(board1) && (board2.isEmpty() || boards.contains(board2)));
 }
 
-bool postExists(const QString &boardName, quint64 postNumber)
+bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNumber)
 {
     try {
         Transaction t;
         if (!t)
-            return false;
+            return bRet(threadNumber, quint64(0), false);
         Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
                                                  && odb::query<Post>::number == postNumber);
         if (post.error || !post)
-            return false;
+            return bRet(threadNumber, quint64(0), false);
+        bSet(threadNumber, post->thread().load()->number());
         t.commit();
         return true;
     }  catch (const odb::exception &e) {
         qDebug() << e.what();
-        return false;
+        return bRet(threadNumber, quint64(0), false);
     }
 }
 

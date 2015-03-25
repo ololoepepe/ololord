@@ -33,11 +33,19 @@ struct OLOLORD_EXPORT File
 
 struct OLOLORD_EXPORT Post
 {
+    struct Ref
+    {
+        std::string boardName;
+        unsigned long long postNumber;
+        unsigned long long threadNumber;
+    };
+public:
     bool bannedFor;
     std::string cityName;
     bool closed;
     std::string countryName;
     std::string dateTime;
+    bool draft;
     std::string email;
     std::list<File> files;
     bool fixed;
@@ -47,11 +55,11 @@ struct OLOLORD_EXPORT Post
     std::string name;
     std::string nameRaw;
     unsigned long long number;
-    bool premoderation;
     std::string rawName;
+    bool rawHtml;
     std::string rawPostText;
     std::string rawSubject;
-    std::list<unsigned long long> referencedBy;
+    std::list<Ref> referencedBy;
     bool showRegistered;
     std::string subject;
     bool subjectIsRaw;
@@ -90,6 +98,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string deletePostText;
     std::string deleteThreadText;
     std::string downloadThreadText;
+    bool draftsEnabled;
     std::string editPostText;
     std::string enterPasswordText;
     std::string enterPasswordTitle;
@@ -112,18 +121,18 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postFormButtonSubmit;
     std::string postFormInputFile;
     std::string postFormLabelCaptcha;
+    std::string postFormLabelDraft;
     std::string postFormLabelEmail;
     std::string postFormLabelName;
     std::string postFormLabelPassword;
-    std::string postFormLabelPremoderation;
     std::string postFormLabelRaw;
     std::string postFormLabelSubject;
     std::string postFormLabelText;
+    std::list<std::string> postformRules;
     std::string postFormTextPlaceholder;
     std::string postingDisabledText;
     bool postingEnabled;
     std::string postLimitReachedText;
-    bool premoderationEnabled;
     std::string referencedByText;
     std::string registeredText;
     std::string removeFileText;

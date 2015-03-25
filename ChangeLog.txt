@@ -1,3 +1,14 @@
+=== ololord 0.1.0-rc (25 March 2015) ===
+    * Rename pre-moderation system into drafts system
+    * Fix markup
+    * Add ability to add links to other boards
+    * Fix post selection by post links
+    * Add postform rules
+    * Render news/rules as HTML
+    * Add markup description page
+    * Rerender posts with references when referenced post is deleted
+    * Improve logging
+
 === ololord 0.1.0-beta9 (22 March 2015) ===
     * Implement movable images
     * Improve file info storage

@@ -275,6 +275,12 @@ The default is 3.</source>
         <comment>autoUpdateText</comment>
         <translation>Автообновление</translation>
     </message>
+    <message>
+        <source>Determines if drafts are enabled on this board.
+The default is true.</source>
+        <translation>Определяет, включены ли черновики на этой доске.
+По умолчанию true.</translation>
+    </message>
 </context>
 <context>
     <name>ActionAjaxHandler</name>
@@ -371,6 +377,104 @@ The default is 3.</source>
         <source>Rules</source>
         <comment>rulesHeader</comment>
         <translation>Правила</translation>
+    </message>
+</context>
+<context>
+    <name>MarkupRoute</name>
+    <message>
+        <source>Markup</source>
+        <comment>pageTitle</comment>
+        <translation>Разметка</translation>
+    </message>
+    <message>
+        <source>bold text</source>
+        <comment>boldText</comment>
+        <translation>жирный текст</translation>
+    </message>
+    <message>
+        <source>Code markup</source>
+        <comment>codeMarkup</comment>
+        <translation>Разметка кода</translation>
+    </message>
+    <message>
+        <source>combined text</source>
+        <comment>combinedText</comment>
+        <translation>комбинированный текст</translation>
+    </message>
+    <message>
+        <source>italics</source>
+        <comment>italics</comment>
+        <translation>курсив</translation>
+    </message>
+    <message>
+        <source>first list item</source>
+        <comment>listItem1</comment>
+        <translation>первый элемент списка</translation>
+    </message>
+    <message>
+        <source>second list item</source>
+        <comment>listItem2</comment>
+        <translation>первый элемент списка</translation>
+    </message>
+    <message>
+        <source>third list item</source>
+        <comment>listItem3</comment>
+        <translation>первый элемент списка</translation>
+    </message>
+    <message>
+        <source>List markup</source>
+        <comment>listMarkup</comment>
+        <translation>Разметка списков</translation>
+    </message>
+    <message>
+        <source>spoiler</source>
+        <comment>spoiler</comment>
+        <translation>спойлер</translation>
+    </message>
+    <message>
+        <source>striked out text</source>
+        <comment>strikedoutText</comment>
+        <translation>зачеркнутый текст</translation>
+    </message>
+    <message>
+        <source>underlined text</source>
+        <comment>underlinedText</comment>
+        <translation>подчеркнутый текст</translation>
+    </message>
+    <message>
+        <source>Each line starts with a special symbol and a space</source>
+        <comment>listDescription</comment>
+        <translation>Каждая строка начинается со специального символа и пробела</translation>
+    </message>
+    <message>
+        <source>monospace `font` with backtics inside</source>
+        <comment>doubleMonospace</comment>
+        <translation>моноширинный `шрифт` с кавычками</translation>
+    </message>
+    <message>
+        <source>Link to a post on another board</source>
+        <comment>postBoardLinkDescription</comment>
+        <translation>Ссылка на пост с другой доски</translation>
+    </message>
+    <message>
+        <source>Link to a post on the same board</source>
+        <comment>postLinkDescription</comment>
+        <translation>Ссылка на пост с текущей доски</translation>
+    </message>
+    <message>
+        <source>monospace font</source>
+        <comment>singleMonospace</comment>
+        <translation>моноширинный шрифт</translation>
+    </message>
+    <message>
+        <source>quotation</source>
+        <comment>quotation</comment>
+        <translation>цитирование</translation>
+    </message>
+    <message>
+        <source>Basic markup</source>
+        <comment>basicMarkup</comment>
+        <translation>Основы разметки</translation>
     </message>
 </context>
 <context>
@@ -1473,9 +1577,9 @@ Your choice:</source>
         <translation>Скачать все файлы из треда в виде .zip-архива</translation>
     </message>
     <message>
-        <source>Pre-moderation:</source>
-        <comment>postFormLabelPremoderation</comment>
-        <translation>Премодерация:</translation>
+        <source>Draft:</source>
+        <comment>postFormLabelDraft</comment>
+        <translation>Черновик:</translation>
     </message>
 </context>
 <context>
@@ -1834,16 +1938,10 @@ The default is true.</source>
 По умолчанию true.</translation>
     </message>
     <message>
-        <source>Determines if pre-moderation is enabled on this board.
-The default is false.</source>
-        <translation>Определяет, включена ли премодерация на этой доске.
-По умолчанию false.</translation>
-    </message>
-    <message>
-        <source>Determines if pre-moderation is enabled.
-The default is false.</source>
-        <translation>Определяет, включена ли премодерация.
-По умолчанию false.</translation>
+        <source>Determines if drafts are enabled.
+The default is true.</source>
+        <translation>Определяет, включены ли черновики.
+По умолчанию true.</translation>
     </message>
 </context>
 <context>

@@ -26,7 +26,6 @@
 #include <QMap>
 #include <QPair>
 #include <QRegExp>
-#include <QSet>
 #include <QSettings>
 #include <QSharedPointer>
 #include <QString>
@@ -62,32 +61,29 @@ struct ProcessPostTextContext
     const int start;
     const int length;
     const QString &boardName;
-    const quint64 threadNumber;
-    QSet<quint64> *referencedPosts;
+    Post::RefMap *referencedPosts;
 public:
-    explicit ProcessPostTextContext(QString &txt, const QString &board, quint64 thread, QSet<quint64> *refPosts = 0) :
-        text(txt), start(0), length(txt.length()), boardName(board), threadNumber(thread), referencedPosts(refPosts)
+    explicit ProcessPostTextContext(QString &txt, const QString &board, Post::RefMap *refPosts = 0) :
+        text(txt), start(0), length(txt.length()), boardName(board), referencedPosts(refPosts)
     {
         //
     }
     explicit ProcessPostTextContext(const ProcessPostTextContext &c, int s, int l) :
-        text(c.text), start(s), length(l), boardName(c.boardName), threadNumber(c.threadNumber),
-        referencedPosts(c.referencedPosts)
+        text(c.text), start(s), length(l), boardName(c.boardName), referencedPosts(c.referencedPosts)
     {
         //
     }
     explicit ProcessPostTextContext(const ProcessPostTextContext &c, QString &txt) :
-        text(txt), start(0), length(txt.length()), boardName(c.boardName), threadNumber(c.threadNumber),
-        referencedPosts(c.referencedPosts)
+        text(txt), start(0), length(txt.length()), boardName(c.boardName), referencedPosts(c.referencedPosts)
     {
         //
     }
 public:
-    void addReferencedPost(quint64 postNumber)
+    void addReferencedPost(const QString &board, quint64 postNumber, quint64 threadNumber)
     {
-        if (!referencedPosts || !postNumber)
+        if (!referencedPosts || board.isEmpty() || !postNumber || !threadNumber)
             return;
-        *referencedPosts << postNumber;
+        referencedPosts->insert(Post::RefKey(board, postNumber), threadNumber);
     }
     bool isValid() const
     {
@@ -294,21 +290,31 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
         return;
     SkipList skip;
     QString t = c.mid();
-    QRegExp rx(">>\\d+");
+    QRegExp rx(">>(/(" + AbstractBoard::boardNames().join("|") + ")/)?\\d+");
     int ind = rx.indexIn(t);
+    QString prefix = SettingsLocker()->value("Site/path_prefix").toString();
     while (ind >= 0) {
         QString cap = rx.cap();
         QString postNumber = cap.mid(2);
+        QString boardName = c.boardName;
+        if (postNumber.startsWith('/')) {
+            int secondSlash = postNumber.indexOf('/', 1);
+            boardName = postNumber.mid(1, secondSlash - 1);
+            postNumber.remove(0, secondSlash + 1);
+        }
         bool ok = false;
         quint64 pn = postNumber.toULongLong(&ok);
-        if (ok && pn && Database::postExists(c.boardName, pn)) {
-            QString a = "<a href=\"javascript:selectPost(" + postNumber + ", " + QString::number(c.threadNumber)
-                    + ");\" onmouseover=\"viewPost(this, '" + c.boardName + "', " + postNumber
-                    + ");\" onmouseout=\"noViewPost();\">" + cap.replace(">", "&gt;") + "</a>";
+        quint64 tn = 0;
+        if (ok && pn && Database::postExists(boardName, pn, &tn)) {
+            QString threadNumber = QString::number(tn);
+            QString href = "href=\"/" + prefix + boardName + "/thread/" + threadNumber + ".html#" + postNumber + "\"";
+            QString mouseover = "onmouseover=\"lord.viewPost(this, '" + boardName + "', " + postNumber + ");\"";
+            QString mouseout = "onmouseout=\"lord.noViewPost();\"";
+            QString a = "<a " + href + " " + mouseover + " " + mouseout + ">" + cap.replace(">", "&gt;") + "</a>";
             t.replace(ind, rx.matchedLength(), a);
             skip << qMakePair(ind, a.length());
             ind = rx.indexIn(t, ind + a.length());
-            c.addReferencedPost(pn);
+            c.addReferencedPost(boardName, pn, tn);
         } else {
             ind = rx.indexIn(t, ind + rx.matchedLength());
         }
@@ -363,15 +369,15 @@ static void processWakabaMarkQuote(ProcessPostTextContext &c)
         return;
     SkipList skip;
     QString t = c.mid();
-    QRegExp rx(">[^\n]+");
+    QRegExp rx(">[^\n>][^\n]+");
     int ind = rx.indexIn(t);
     while (ind >= 0) {
         if (!ind || t.at(ind - 1) == '\n') {
-            t.insert(ind + rx.matchedLength(), "</font>");
-            t.insert(ind, "<font color=\"green\">");
-            skip << qMakePair(ind, 20);
-            skip << qMakePair(ind + rx.matchedLength() + 20, 7);
-            ind = rx.indexIn(t, ind + rx.matchedLength() + 27);
+            t.insert(ind + rx.matchedLength(), "</span>");
+            t.insert(ind, "<span class=\"quotation\">");
+            skip << qMakePair(ind, 24);
+            skip << qMakePair(ind + rx.matchedLength() + 24, 7);
+            ind = rx.indexIn(t, ind + rx.matchedLength() + 31);
         } else {
             ind = rx.indexIn(t, ind + rx.matchedLength());
         }
@@ -608,9 +614,9 @@ static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)
     processSimmetric(c, &processWakabaMarkMonospaceSingle, "``", "", "font", "<font face=\"monospace\">", true);
 }
 
-QString processPostText(QString text, const QString &boardName, quint64 threadNumber, QSet<quint64> *referencedPosts)
+QString processPostText(QString text, const QString &boardName, Post::RefMap *referencedPosts)
 {
-    ProcessPostTextContext c(text, boardName, threadNumber, referencedPosts);
+    ProcessPostTextContext c(text, boardName, referencedPosts);
     processWakabaMarkMonospaceDouble(c);
     return text;
 }
