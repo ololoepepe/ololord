@@ -19,8 +19,11 @@ cgBoard::cgBoard()
     //
 }
 
-void cgBoard::handleBoard(cppcms::application &app, unsigned int /*page*/)
+void cgBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
+    QString logTarget = name() + "/" + QString::number(page);
+    if (page > 0)
+        return Tools::log(app, "board", "fail:not_found", logTarget);
     Content::BoardImage c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
@@ -28,6 +31,7 @@ void cgBoard::handleBoard(cppcms::application &app, unsigned int /*page*/)
     c.imageFileName = "drakeface.jpg";
     c.imageTitle = ts.translate("cgBoard", "No games", "imageTitle");
     app.render("board_image", c);
+    return Tools::log(app, "board", "success", logTarget);
 }
 
 QString cgBoard::name() const

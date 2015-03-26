@@ -297,6 +297,7 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
                            tq.translate("createPostInternalt", "Internal logic error", "description"), false);
     }
+    bool isThread = threadNumber;
     if (!threadNumber)
         threadNumber = param.value("thread").toULongLong();
     Tools::Post post = Tools::toPost(param, files);
@@ -399,6 +400,7 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
             thread->setDateTime(dt);
             update(thread);
         }
+        board->beforeStoring(p.data(), param, isThread);
         t->persist(p);
         bSet(pn, postNumber);
         ft.commit();

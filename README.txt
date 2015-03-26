@@ -150,7 +150,7 @@ When building ololord, you may pass some parameters to qmake:
  * "LORD_HEADERS_INSTALLS_PATH=<path>"
    Set install path for headers. See the note below
 
-Note: In Windows systems Tololord is installed to the
+Note: In Windows systems ololord is installed to the
 "C:\Program files\ololord" directory (or other similar directory,
 depending on your system) by default. Executable file and resources are
 installed to the corresponding subdirectories.

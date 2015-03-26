@@ -17,7 +17,6 @@
 #include <QString>
 #include <QStringList>
 #include <QVariant>
-#include <QVariantMap>
 
 #include <list>
 #include <string>
@@ -27,6 +26,14 @@ echoBoard::echoBoard()
     //
 }
 
+void echoBoard::beforeStoring(Post *post, const Tools::PostParameters &params, bool thread)
+{
+    if (!post)
+        return;
+    if (!thread)
+        return;
+    post->setUserData(params.value("link"));
+}
 
 QString echoBoard::name() const
 {
@@ -66,13 +73,11 @@ Content::Post echoBoard::toController(const Post &post, const cppcms::http::requ
     if (!b)
         return bRet(ok, false, p);
     if (p.number == p.threadNumber) {
-        QString subj = BTextTools::removeTrailingSpaces(post.subject().mid(0, 1000));
-        QString link = post.subject().mid(1000);
-        p.subject = Tools::toStd("<a href=\"" + link + "\">" + BTextTools::toHtml(!subj.isEmpty() ? subj : link)
-                                 + "</a>");
+        QString subj = post.subject();
+        QString link = post.userData().toString();
+        QString text = BTextTools::toHtml(!subj.isEmpty() ? subj : link);
+        p.subject = Tools::toStd("<a href=\"" + link + "\">" + text + "</a>");
         p.subjectIsRaw = true;
-        p.userData.insert("subject", subj);
-        p.userData.insert("link", link);
     }
     return bRet(ok, true, error, QString(), p);
 }
@@ -92,22 +97,7 @@ void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content
     Content::echoThread *cc = dynamic_cast<Content::echoThread *>(c);
     if (!cc)
         return;
-    QString subj = cc->opPost.userData.value("subject").toString();
-    QString link = cc->opPost.userData.value("link").toString();
-    QString q = SettingsLocker()->value("Site/ssl_proxy_query").toString();
-    if (!link.startsWith("https") && q.contains("%1"))
-        link = q.arg(link);
-    cc->threadLink = Tools::toStd(link);
-    cc->pageTitle = Tools::toStd(subj);
-}
-
-void echoBoard::beforeStoring(Tools::PostParameters &params, bool post)
-{
-    if (post)
-        return;
-    QString subject = params.value("subject");
-    QString link = params.value("link");
-    params["subject"] = BTextTools::appendTrailingSpaces(subject, 1000) + link;
+    cc->threadLink = Tools::toStd(cc->opPost.userData.toString());
 }
 
 Content::Board *echoBoard::createBoardController(const cppcms::http::request &/*req*/, QString &viewName)

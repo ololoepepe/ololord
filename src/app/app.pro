@@ -4,7 +4,7 @@ TARGET = ololord
 CONFIG += release console
 
 QT = gui
-BEQT = core network sql
+BEQT = core network
 
 include(../../prefix.pri)
 

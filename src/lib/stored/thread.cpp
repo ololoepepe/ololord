@@ -9,6 +9,7 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 
 #include <odb/qt/lazy-ptr.hxx>
 
@@ -345,6 +346,11 @@ void Post::setText(const QString &text)
     text_ = text;
 }
 
+void Post::setUserData(const QVariant &data)
+{
+    userData_ = BeQt::serialize(data);
+}
+
 QString Post::subject() const
 {
     return subject_;
@@ -358,4 +364,9 @@ QString Post::text() const
 QLazySharedPointer<Thread> Post::thread() const
 {
     return thread_;
+}
+
+QVariant Post::userData() const
+{
+    return BeQt::deserialize(userData_);
 }

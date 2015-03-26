@@ -212,6 +212,11 @@ QString AbstractBoard::bannerFileName() const
     return fns.at(qrand() % fns.size());
 }
 
+void AbstractBoard::beforeStoring(Post */*post*/, const Tools::PostParameters &/*params*/, bool /*thread*/)
+{
+    //
+}
+
 unsigned int AbstractBoard::bumpLimit() const
 {
     SettingsLocker s;
@@ -274,7 +279,6 @@ void AbstractBoard::createPost(cppcms::application &app)
         return;
     }
     QString desc;
-    beforeStoring(params, true);
     Database::CreatePostParameters p(req, params, files, tq.locale());
     p.bumpLimit = bumpLimit();
     p.postLimit = postLimit();
@@ -311,7 +315,6 @@ void AbstractBoard::createThread(cppcms::application &app)
         return;
     }
     QString desc;
-    beforeStoring(params, false);
     Database::CreateThreadParameters p(req, params, files, tq.locale());
     p.archiveLimit = archiveLimit();
     p.threadLimit = threadLimit();
@@ -931,11 +934,6 @@ void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Cont
 }
 
 void AbstractBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content::Thread */*c*/)
-{
-    //
-}
-
-void AbstractBoard::beforeStoring(Tools::PostParameters &/*params*/, bool /*post*/)
 {
     //
 }

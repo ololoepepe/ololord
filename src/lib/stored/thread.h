@@ -12,6 +12,7 @@ class Post;
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 
 #include <odb/core.hxx>
 #include <odb/qt/lazy-ptr.hxx>
@@ -119,6 +120,7 @@ private:
     QByteArray referencedBy_;
     QString subject_;
     QString text_;
+    QByteArray userData_;
     PRAGMA_DB(not_null)
     QLazySharedPointer<Thread> thread_;
 public:
@@ -157,9 +159,11 @@ public:
     void setReferencedBy(const RefMap &map);
     void setSubject(const QString &subject);
     void setText(const QString &text);
+    void setUserData(const QVariant &data);
     QString subject() const;
     QString text() const;
     QLazySharedPointer<Thread> thread() const;
+    QVariant userData() const;
 private:
     friend class odb::access;
 };

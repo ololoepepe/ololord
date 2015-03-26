@@ -22,8 +22,11 @@ mlpBoard::mlpBoard()
     //
 }
 
-void mlpBoard::handleBoard(cppcms::application &app, unsigned int /*page*/)
+void mlpBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
+    QString logTarget = name() + "/" + QString::number(page);
+    if (page > 0)
+        return Tools::log(app, "board", "fail:not_found", logTarget);
     qsrand((uint) QDateTime::currentMSecsSinceEpoch());
     Content::mlpBoard c;
     TranslatorQt tq(app.request());
@@ -35,6 +38,7 @@ void mlpBoard::handleBoard(cppcms::application &app, unsigned int /*page*/)
     c.videoFileName2 = "bombanoolow.webm";
     c.videoType = "video/webm";
     app.render("mlp_board", c);
+    Tools::log(app, "board", "success", logTarget);
 }
 
 QString mlpBoard::name() const

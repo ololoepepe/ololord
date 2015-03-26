@@ -70,6 +70,7 @@ public:
 public:
     unsigned int archiveLimit() const;
     QString bannerFileName() const;
+    virtual void beforeStoring(Post *post, const Tools::PostParameters &params, bool thread);
     unsigned int bumpLimit() const;
     unsigned int captchaQuota() const;
     unsigned int captchaQuota(const QString &ip) const;
@@ -109,7 +110,6 @@ public:
 protected:
     virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     virtual void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
-    virtual void beforeStoring(Tools::PostParameters &params, bool post);
     virtual Content::Board *createBoardController(const cppcms::http::request &req, QString &viewName);
     virtual Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 private:

@@ -1,2 +1,7 @@
+* Store files in database
+* Check file suffixes when saving
+[done] Store additional post data as QByteArray (read as QVariant)
+* Display post modification time
+* Use ranges for IP addresses
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
