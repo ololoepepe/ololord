@@ -165,7 +165,7 @@ void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash
     if (!testBan(bn, true))
         return Tools::log(server, "ajax_get_file_existence", "fail:ban", logTarget);
     bool ok = false;
-    bool exists = Database::fileHashExists(h, &ok);
+    bool exists = Database::fileExists(h, &ok);
     TranslatorStd ts;
     if (!ok) {
         std::string err = ts.translate("ActionAjaxHandler", "Internal database error", "error");

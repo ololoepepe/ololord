@@ -599,6 +599,14 @@ The default is true.</source>
     </message>
 </context>
 <context>
+    <name>copyFile</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+</context>
+<context>
     <name>copyFileHash</name>
     <message>
         <source>Internal error</source>

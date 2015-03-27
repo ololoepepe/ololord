@@ -1,4 +1,4 @@
-* Store file infos in database
+[done] Store file infos in database
 [done] Check file suffixes when saving files
 [done] Store additional post data as QByteArray (read as QVariant)
 [done] Store post references in a separate table

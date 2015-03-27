@@ -5,8 +5,6 @@
 #include "controller/controller.h"
 #include "stored/banneduser.h"
 #include "stored/banneduser-odb.hxx"
-#include "stored/filehash.h"
-#include "stored/filehash-odb.hxx"
 #include "stored/postcounter.h"
 #include "stored/postcounter-odb.hxx"
 #include "stored/registereduser.h"
@@ -238,55 +236,72 @@ static bool copyFile(const QString &hashString, AbstractBoard::FileTransaction &
         return bRet(error, tq.translate("copyFileHash", "Invalid file hash", "error"), description,
                     tq.translate("copyFileHash", "Invalid file hash provided", "description"), false);
     }
-    QStringList paths = Database::fileHashPaths(fh, &ok);
-    if (!ok) {
-        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
-                    tq.translate("copyFileHash", "Internal database error", "description"), false);
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                        tq.translate("copyFileHash", "Internal database error", "description"), false);
+        }
+        QList<FileInfo> fileInfos = query<FileInfo, FileInfo>(odb::query<FileInfo>::hash == fh);
+        if (fileInfos.isEmpty()) {
+            return bRet(error, tq.translate("copyFileHash", "No source file", "error"), description,
+                        tq.translate("copyFileHash", "No source file for this file hash", "description"), false);
+        }
+        QString storagePath = Tools::storagePath();
+        if (storagePath.isEmpty()) {
+            return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                        tq.translate("copyFileHash", "Internal file system error", "description"), false);
+        }
+        FileInfo info = fileInfos.first();
+        QString sfn = storagePath + "/img/" + info.post().load()->board() + "/" + info.name();
+        QFileInfo fi(sfn);
+        QString path = fi.path();
+        QString baseName = fi.baseName();
+        QString suffix = fi.suffix();
+        QStringList sl = BDirTools::entryList(path, QStringList() << (baseName + "s.*"), QDir::Files);
+        if (!fi.exists() || sl.size() != 1) {
+            return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                        tq.translate("copyFileHash", "Internal file system error", "description"), false);
+        }
+        QString spfn = sl.first();
+        QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+        path = QFileInfo(path).path() + "/" + ft.Board->name();
+        QString fn = path + "/" + dt + "." + suffix;
+        QString pfn = path + "/" + dt + "s." + QFileInfo(spfn).suffix();
+        ft.addInfo(fn, fh, info.mimeType(), info.size());
+        ft.setMainFileSize(info.height(), info.width());
+        ft.setThumbFile(pfn);
+        ft.setThumbFileSize(info.thumbHeight(), info.thumbWidth());
+        if (!QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn)) {
+            return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                        tq.translate("copyFileHash", "Internal file system error", "description"), false);
+        }
+        return bRet(error, QString(), description, QString(), true);
+    } catch(const odb::exception &e) {
+        return bRet(error, tq.translate("copyFile", "Internal error", "error"), description, Tools::fromStd(e.what()),
+                    false);
     }
-    if (paths.isEmpty()) {
-        return bRet(error, tq.translate("copyFileHash", "No source file", "error"), description,
-                    tq.translate("copyFileHash", "No source file for this file hash", "description"), false);
+}
+
+static QStringList deleteFileInfos(const Post &post, bool *ok = 0)
+{
+    typedef QLazyWeakPointer<FileInfo> FileInfoWP;
+    QStringList list;
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(ok, false, QStringList());
+        foreach (FileInfoWP fi, post.fileInfos()) {
+            QSharedPointer<FileInfo> fis = fi.load();
+            list << fis->name() << fis->thumbName();
+            t->erase(fis);
+        }
+        t.commit();
+    } catch (const odb::exception &e) {
+        qDebug() << Tools::fromStd(e.what());
+        return bRet(ok, false, QStringList());
     }
-    QString storagePath = Tools::storagePath();
-    if (storagePath.isEmpty()) {
-        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
-                    tq.translate("copyFileHash", "Internal file system error", "description"), false);
-    }
-    QString sfn = storagePath + "/img/" + paths.first();
-    QFileInfo fi(sfn);
-    QString path = fi.path();
-    QString baseName = fi.baseName();
-    QString suffix = fi.suffix();
-    QStringList sl = BDirTools::entryList(path, QStringList() << (baseName + "s.*"), QDir::Files);
-    QString sofn = path + "/" + baseName + ".ololord-file-info";
-    if (!fi.exists() || sl.size() != 1 || !QFileInfo(sofn).exists()) {
-        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
-                    tq.translate("copyFileHash", "Internal file system error", "description"), false);
-    }
-    QString spfn = sl.first();
-    QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
-    path = QFileInfo(path).path() + "/" + ft.Board->name();
-    QString fn = path + "/" + dt + "." + suffix;
-    QString pfn = path + "/" + dt + "s." + QFileInfo(spfn).suffix();
-    QString ofn = path + "/" + dt + ".ololord-file-info";
-    QVariantMap m = BeQt::deserialize(BDirTools::readFile(sofn, -1, &ok)).toMap();
-    if (!ok) {
-        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
-                    tq.translate("copyFileHash", "Internal file system error", "description"), false);
-    }
-    m["thumbFileName"] = QFileInfo(pfn).fileName();
-    if (!Database::addFileHash(hashString, ft.Board->name() + "/" + dt + "." + suffix)) {
-        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
-                    tq.translate("copyFileHash", "Internal database error", "description"), false);
-    }
-    ft.addInfo(fn);
-    ft.setThumbFile(pfn);
-    ft.setInfoFile(ofn);
-    if (!QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn) || !BDirTools::writeFile(ofn, BeQt::serialize(m))) {
-        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
-                    tq.translate("copyFileHash", "Internal file system error", "description"), false);
-    }
-    return bRet(error, QString(), description, QString(), true);
+    return bRet(ok, true, list);
 }
 
 static bool saveFile(const Tools::File &f, AbstractBoard::FileTransaction &ft, QString *error = 0,
@@ -297,9 +312,7 @@ static bool saveFile(const Tools::File &f, AbstractBoard::FileTransaction &ft, Q
         return bRet(error, tq.translate("saveFile", "Internal error", "error"), description,
                     tq.translate("saveFile", "Internal logic error", "description"), false);
     }
-    bool ok = false;
-    ft.Board->saveFile(f, ft, &ok);
-    if (!ok) {
+    if (!ft.Board->saveFile(f, ft)) {
         return bRet(error, tq.translate("saveFile", "Internal error", "error"), description,
                     tq.translate("saveFile", "Internal file system error", "description"), false);
     }
@@ -476,10 +489,6 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         QString ip = Tools::userIp(p.request);
         QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, post.password, hp));
         ps->setEmail(post.email);
-        QStringList fileNames;
-        foreach (const AbstractBoard::FileInfo &fi, p.fileTransaction.fileInfos())
-            fileNames << fi.name;
-        ps->setFiles(fileNames);
         ps->setName(post.name);
         ps->setSubject(post.subject);
         ps->setRawText(post.text);
@@ -501,6 +510,11 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         }
         board->beforeStoring(ps.data(), p.params, isThread);
         t->persist(ps);
+        foreach (const AbstractBoard::FileInfo &fi, p.fileTransaction.fileInfos()) {
+            FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
+                              fi.thumbHeight, fi.thumbWidth, ps);
+            t->persist(fileInfo);
+        }
         if (!raw && !ps->draft() && !addToReferencedPosts(ps, refs, p.error, p.description))
             return false;
         bSet(p.postNumber, postNumber);
@@ -544,18 +558,23 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
         foreach (PostReferenceSP ref, post->referencedBy())
             referenced << *ref.load()->sourcePost().load();
         t->erase_query<PostReference>(odb::query<PostReference>::targetPost == post.data->id());
+        QStringList list;
         if (thread) {
             QList<Post> posts = query<Post, Post>(odb::query<Post>::thread == thread->id());
-            QStringList files;
-            foreach (const Post &p, posts)
-                files += p.files();
+            foreach (const Post &p, posts) {
+                bool ok = false;
+                list << deleteFileInfos(p, &ok);
+                if (!ok)
+                    return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+            }
             t->erase_query<Post>(odb::query<Post>::thread == thread->id());
             t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
-            board->deleteFiles(files);
         } else {
-            QStringList files = post->files();
+            bool ok = false;
+            list << deleteFileInfos(*post, &ok);
+            if (!ok)
+                return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
-            board->deleteFiles(files);
         }
         foreach (Post p, referenced) {
             p.setText(Controller::processPostText(p.rawText(), p.board()));
@@ -564,6 +583,9 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
         }
         Cache::removePost(boardName, postNumber);
         t.commit();
+        QString path = Tools::storagePath() + "/img/" + boardName;
+        foreach (const QString &fn, list)
+            QFile::remove(path + "/" + fn);
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -630,47 +652,6 @@ static bool threadIdDateTimeFixedLessThan(const ThreadIdDateTimeFixed &t1, const
         return true;
     else
         return false;
-}
-
-bool addFileHash(const QByteArray &data, const QString &path)
-{
-    if (data.isEmpty() || path.isEmpty())
-        return false;
-    QByteArray hash = QCryptographicHash::hash(data, QCryptographicHash::Sha1);
-    try {
-        Transaction t;
-        if (!t)
-            return false;
-        FileHash fh(path, hash);
-        t->persist(fh);
-        t.commit();
-        return true;
-    } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
-        return false;
-    }
-}
-
-bool addFileHash(const QString &hashString, const QString &path)
-{
-    if (hashString.isEmpty())
-        return false;
-    bool ok = false;
-    QByteArray hash = Tools::toHashpass(hashString, &ok);
-    if (!ok)
-        return false;
-    try {
-        Transaction t;
-        if (!t)
-            return false;
-        FileHash fh(path, hash);
-        t->persist(fh);
-        t.commit();
-        return true;
-    } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
-        return false;
-    }
 }
 
 bool banUser(const QString &ip, const QString &board, int level, const QString &reason, const QDateTime &expires,
@@ -949,7 +930,7 @@ bool editPost(EditPostParameters &p)
         } else if (p.password != post->password()) {
             return bRet(p.error, tq.translate("editPost", "Incorrect password", "error"), false);
         }
-        if (p.text.isEmpty() && post->files().isEmpty())
+        if (p.text.isEmpty() && post->fileInfos().isEmpty())
             return bRet(p.error, tq.translate("editPost", "No text provided", "error"), false);
         if (p.text.length() > int(Tools::maxInfo(Tools::MaxTextFieldLength, p.boardName)))
             return bRet(p.error, tq.translate("editPost", "Text is too long", "error"), false);
@@ -992,7 +973,7 @@ bool editPost(EditPostParameters &p)
     }
 }
 
-bool fileHashExists(const QByteArray &hash, bool *ok)
+bool fileExists(const QByteArray &hash, bool *ok)
 {
     if (hash.isEmpty())
         return bRet(ok, false, false);
@@ -1000,7 +981,7 @@ bool fileHashExists(const QByteArray &hash, bool *ok)
         Transaction t;
         if (!t)
             return bRet(ok, false, false);
-        Result<FileHashCount> count = queryOne<FileHashCount, FileHash>(odb::query<FileHash>::hash == hash);
+        Result<FileInfoCount> count = queryOne<FileInfoCount, FileInfo>(odb::query<FileInfo>::hash == hash);
         if (count.error)
             return bRet(ok, false, false);
         t.commit();
@@ -1011,7 +992,7 @@ bool fileHashExists(const QByteArray &hash, bool *ok)
     }
 }
 
-bool fileHashExists(const QString &hashString, bool *ok)
+bool fileExists(const QString &hashString, bool *ok)
 {
     if (hashString.isEmpty())
         return bRet(ok, false, false);
@@ -1019,38 +1000,7 @@ bool fileHashExists(const QString &hashString, bool *ok)
     QByteArray hash = Tools::toHashpass(hashString, &b);
     if (!b || hash.isEmpty())
         return bRet(ok, false, false);
-    return fileHashExists(hash, ok);
-}
-
-QStringList fileHashPaths(const QByteArray &hash, bool *ok)
-{
-    if (hash.isEmpty())
-        return bRet(ok, false, QStringList());
-    try {
-        Transaction t;
-        if (!t)
-            return bRet(ok, false, QStringList());
-        QList<FileHash> list = query<FileHash, FileHash>(odb::query<FileHash>::hash == hash);
-        t.commit();
-        QStringList sl;
-        foreach (const FileHash &fh, list)
-            sl << fh.path();
-        return bRet(ok, true, sl);
-    } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
-        return bRet(ok, false, QStringList());
-    }
-}
-
-QStringList fileHashPaths(const QString &hashString, bool *ok)
-{
-    if (hashString.isEmpty())
-        return bRet(ok, false, QStringList());
-    bool b = false;
-    QByteArray hash = Tools::toHashpass(hashString, &b);
-    if (!b || hash.isEmpty())
-        return bRet(ok, false, QStringList());
-    return fileHashPaths(hash, ok);
+    return fileExists(hash, ok);
 }
 
 QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
@@ -1324,28 +1274,6 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
-    }
-}
-
-bool removeFileHash(const QString &path)
-{
-    if (path.isEmpty())
-        return false;
-    try {
-        Transaction t;
-        if (!t)
-            return false;
-        Result<FileHash> hash = queryOne<FileHash, FileHash>(odb::query<FileHash>::path == path);
-        if (hash.error)
-            return false;
-        if (!hash)
-            return true;
-        erase(hash);
-        t.commit();
-        return true;
-    } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
-        return false;
     }
 }
 

@@ -1,6 +1,7 @@
 #ifndef THREAD_H
 #define THREAD_H
 
+class FileInfo;
 class Post;
 class PostReference;
 
@@ -11,7 +12,6 @@ class PostReference;
 #include <QList>
 #include <QSharedPointer>
 #include <QString>
-#include <QStringList>
 #include <QVariant>
 
 #include <odb/core.hxx>
@@ -82,6 +82,7 @@ PRAGMA_DB(object table("posts"))
 class OLOLORD_EXPORT Post
 {
 public:
+    typedef QList< QLazyWeakPointer<FileInfo> > FileInfos;
     typedef QList< QLazyWeakPointer<PostReference> > PostReferences;
 private:
     PRAGMA_DB(id auto)
@@ -95,7 +96,8 @@ private:
     bool bannedFor_;
     bool showTripcode_;
     QString email_;
-    QByteArray files_;
+    PRAGMA_DB(value_not_null value_type("TEXT") inverse(post_))
+    FileInfos fileInfos_;
     QByteArray hashpass_;
     QString name_;
     bool draft_;
@@ -125,7 +127,8 @@ public:
     bool bannedFor() const;
     bool showTripcode() const;
     QString email() const;
-    QStringList files() const;
+    const FileInfos &fileInfos() const;
+    FileInfos &fileInfos();
     QByteArray hashpass() const;
     QString name() const;
     QByteArray password() const;
@@ -138,7 +141,6 @@ public:
     void setBannedFor(bool banned);
     void setShowTripcode(bool show);
     void setEmail(const QString &email);
-    void setFiles(const QStringList &files);
     void setName(const QString &name);
     void setDraft(bool draft);
     void setRawHtml(bool raw);
@@ -179,6 +181,56 @@ public:
     QLazySharedPointer<Post> targetPost() const;
 private:
     friend class odb::access;
+};
+
+PRAGMA_DB(object table("fileInfos"))
+class OLOLORD_EXPORT FileInfo
+{
+private:
+    PRAGMA_DB(id)
+    QString name_;
+    PRAGMA_DB(not_null)
+    QByteArray hash_;
+    PRAGMA_DB(not_null)
+    QString mimeType_;
+    PRAGMA_DB(not_null)
+    int size_;
+    PRAGMA_DB(not_null)
+    int height_;
+    PRAGMA_DB(not_null)
+    int width_;
+    PRAGMA_DB(not_null)
+    QString thumbName_;
+    PRAGMA_DB(not_null)
+    int thumbHeight_;
+    PRAGMA_DB(not_null)
+    int thumbWidth_;
+    PRAGMA_DB(not_null)
+    QLazySharedPointer<Post> post_;
+public:
+    explicit FileInfo();
+    explicit FileInfo(const QString &name, const QByteArray &hash, const QString &mimeType, int size, int height,
+                      int width, const QString &thumbName, int thumbHeight, int thumbWidth, QSharedPointer<Post> post);
+public:
+    QString name() const;
+    QByteArray hash() const;
+    QString mimeType() const;
+    int size() const;
+    int height() const;
+    int width() const;
+    QString thumbName() const;
+    int thumbHeight() const;
+    int thumbWidth() const;
+    QLazySharedPointer<Post> post() const;
+private:
+    friend class odb::access;
+};
+
+PRAGMA_DB(view object(FileInfo))
+struct OLOLORD_EXPORT FileInfoCount
+{
+    PRAGMA_DB(column("count(" + FileInfo::name_ + ")"))
+    int count;
 };
 
 #endif // THREAD_H

@@ -201,7 +201,7 @@ lord.createPostFile = function(f, boardName) {
     divFileSize.className = "postFileSize";
     divFileSize.appendChild(document.createTextNode("(" + f["size"] + ")"));
     file.appendChild(divFileSize);
-    if (f["type"] == "image") {
+    if ("image/png" === f["type"] || "image/jpeg" === f["type"] || "image/gif" === f["type"]) {
         var divFileSearch = document.createElement("div");
         divFileSearch.className = "postFileSearch";
         var siteDomain = document.getElementById("siteDomain").value;
@@ -230,7 +230,7 @@ lord.createPostFile = function(f, boardName) {
     var divImage = document.createElement("div");
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
-    if ("image" === f["type"]) {
+    if ("image/png" === f["type"] || "image/jpeg" === f["type"] || "image/gif" === f["type"]) {
         aImage.onclick = function(e) {
             return lord.showImage("/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"], f["sizeX"],
                              f["sizeY"]);
@@ -243,7 +243,7 @@ lord.createPostFile = function(f, boardName) {
         image.width = thumbSizeX;
     if (!isNaN(thumbSizeY) && thumbSizeY > 0)
         image.height = thumbSizeY;
-    if ("webm" === f["thumbName"]) {
+    if ("video/webm" === f["thumbName"]) {
         image.src = "/" + sitePrefix + "img/webm_logo.png";
     } else {
         image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
@@ -509,7 +509,7 @@ lord.getFileHashes = function(div) {
 
 lord.hideImage = function() {
     if (!!lord.img) {
-        if ("webm" === lord.img.fileType) {
+        if ("video/webm" === lord.img.fileType) {
             lord.img.pause();
             lord.img.load();
         }
@@ -985,7 +985,8 @@ lord.fileSelected = function(current) {
             if (!res)
                 return;
             var fileHashes = lord.getFileHashes(oldDiv);
-            fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
+            if (fileHashes.value.indexOf(fileHash) < 0)
+                fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
             var f = previous.onchange;
             delete previous.onchange;
             previous.value = "";
@@ -1089,7 +1090,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.resetScale(lord.img);
         lord.img.style.display = "";
         lord.toCenter(lord.img, sizeHintX, sizeHintY);
-        if ("webm" === lord.img.fileType) {
+        if ("video/webm" === lord.img.fileType) {
             setTimeout(function() {
                 lord.img.play();
             }, 500);
@@ -1098,10 +1099,10 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
         return true;
-    if ("image" === type) {
+    if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
         lord.img = document.createElement("img");
         lord.img.src = href;
-    } else if ("webm" === type) {
+    } else if ("video/webm" === type) {
         lord.img = document.createElement("video");
         lord.img.controls = "controls";
         var src = document.createElement("source");
@@ -1135,7 +1136,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     } else {
         lord.img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
     }
-    if ("image" === type) {
+    if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
         lord.img.onmousedown = function(e) {
             if (!!e.button)
                 return;
@@ -1152,7 +1153,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
             e.preventDefault();
             lord.img.moving = false;
             if (lord.img.initialCoord.x === e.clientX && lord.img.initialCoord.y === e.clientY) {
-                if ("webm" === type) {
+                if ("video/webm" === type) {
                     lord.img.pause();
                     lord.img.currentTime = 0;
                 }
@@ -1173,7 +1174,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     document.body.appendChild(lord.img);
     lord.toCenter(lord.img, sizeHintX, sizeHintY);
-    if ("webm" === lord.img.fileType) {
+    if ("video/webm" === lord.img.fileType) {
         setTimeout(function() {
             lord.img.play();
         }, 500);
