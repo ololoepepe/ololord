@@ -252,6 +252,8 @@ public:
     }
 };
 
+
+
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
                                  QString *description = 0)
 {
@@ -327,6 +329,29 @@ static bool removeFromReferencedPosts(quint64 postId, QString *error = 0)
     }  catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
     }
+}
+
+static bool testCaptcha(const cppcms::http::request &req, const QMap<QString, QString> &params, QString *error = 0,
+                        QString *description = 0, const QLocale &l = BCoreApplication::locale())
+{
+    TranslatorQt tq(l);
+    AbstractBoard *board = AbstractBoard::board(params.value("board"));
+    if (!board) {
+        return bRet(error, tq.translate("testCaptcha", "Internal error", "error"), description,
+                    tq.translate("testCaptcha", "Internal logic error", "description"), false);
+    }
+    if (!Tools::captchaEnabled(board->name()))
+        return bRet(error, QString(), description, QString(), true);
+    QString ip = Tools::userIp(req);
+    if (board->captchaQuota(ip)) {
+        board->captchaUsed(ip);
+    } else {
+        QString err;
+        if (!board->isCaptchaValid(req, params, err))
+            return bRet(error, tq.translate("testCaptcha", "Invalid captcha", "error"), description, err, false);
+        board->captchaSolved(ip);
+    }
+    return bRet(error, QString(), description, QString(), true);
 }
 
 static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, const QString &board, int level,
@@ -429,18 +454,6 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             return bRet(p.error, tq.translate("createPostInternal", "No such thread", "error"), p.description,
                         tq.translate("createPostInternal", "There is no such thread", "description"), false);
         }
-        QString ip = Tools::userIp(p.request);
-        if (Tools::captchaEnabled(boardName)) { //TODO: Check captcha outside transaction
-            if (board->captchaQuota(ip)) {
-                board->captchaUsed(ip);
-            } else {
-                if (!board->isCaptchaValid(p.request, p.params, err)) {
-                    return bRet(p.error, tq.translate("createPostInternal", "Invalid captcha", "error"), p.description,
-                                err, false);
-                }
-                board->captchaSolved(ip);
-            }
-        }
         if (p.dateTime.isValid() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
             return bRet(p.error, tq.translate("createPostInternal", "No file", "error"), p.description,
                         tq.translate("createPostInternal", "Attempt to create a thread without attaching a file",
@@ -469,6 +482,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         if (!p.dateTime.isValid())
             p.dateTime = QDateTime::currentDateTimeUtc();
         QByteArray hp = Tools::hashpass(p.request);
+        QString ip = Tools::userIp(p.request);
         QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, post.password, hp));
         ps->setEmail(post.email);
         FileTransaction ft(board);
@@ -756,6 +770,8 @@ void checkOutdatedEntries()
 bool createPost(CreatePostParameters &p, quint64 *postNumber)
 {
     bSet(postNumber, quint64(0L));
+    if (!testCaptcha(p.request, p.params, p.error, p.description, p.locale))
+        return false;
     TranslatorQt tq(p.locale);
     try {
         Transaction t;
@@ -790,6 +806,8 @@ void createSchema()
 
 quint64 createThread(CreateThreadParameters &p)
 {
+    if (!testCaptcha(p.request, p.params, p.error, p.description, p.locale))
+        return false;
     QString boardName = p.params.value("board");
     AbstractBoard *board = AbstractBoard::board(boardName);
     TranslatorQt tq(p.locale);
@@ -800,7 +818,6 @@ quint64 createThread(CreateThreadParameters &p)
     try {
         Transaction t;
         QString err;
-        QString desc;
         quint64 postNumber = incrementPostCounter(p.params.value("board"), &err, p.locale);
         if (!postNumber)
             return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description, err, 0L);

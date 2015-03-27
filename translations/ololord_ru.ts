@@ -677,11 +677,6 @@ The default is true.</source>
         <translation>Нет такого треда</translation>
     </message>
     <message>
-        <source>Invalid captcha</source>
-        <comment>error</comment>
-        <translation>Неправильная капча</translation>
-    </message>
-    <message>
         <source>No file</source>
         <comment>error</comment>
         <translation>Отсутствует файл</translation>
@@ -2361,6 +2356,24 @@ The default is true.</source>
         <source>Internal error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
+    </message>
+</context>
+<context>
+    <name>testCaptcha</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid captcha</source>
+        <comment>error</comment>
+        <translation>Неправильная капча</translation>
     </message>
 </context>
 <context>
