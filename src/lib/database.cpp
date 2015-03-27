@@ -304,6 +304,15 @@ static QStringList deleteFileInfos(const Post &post, bool *ok = 0)
     return bRet(ok, true, list);
 }
 
+static void deleteFiles(const QString &boardName, const QStringList &fileNames)
+{
+    if (boardName.isEmpty())
+        return;
+    QString path = Tools::storagePath() + "/img/" + boardName;
+    foreach (const QString &fn, fileNames)
+        QFile::remove(path + "/" + fn);
+}
+
 static bool saveFile(const Tools::File &f, AbstractBoard::FileTransaction &ft, QString *error = 0,
                      QString *description = 0, const QLocale &l = BCoreApplication::locale())
 {
@@ -527,7 +536,8 @@ static bool createPostInternal(CreatePostInternalParameters &p)
     }
 }
 
-static bool deletePostInternal(const QString &boardName, quint64 postNumber, QString *error, const QLocale &l)
+static bool deletePostInternal(const QString &boardName, quint64 postNumber, QString *error, const QLocale &l,
+                               QStringList &filesToDelete)
 {
     TranslatorQt tq(l);
     if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
@@ -558,12 +568,11 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
         foreach (PostReferenceSP ref, post->referencedBy())
             referenced << *ref.load()->sourcePost().load();
         t->erase_query<PostReference>(odb::query<PostReference>::targetPost == post.data->id());
-        QStringList list;
         if (thread) {
             QList<Post> posts = query<Post, Post>(odb::query<Post>::thread == thread->id());
             foreach (const Post &p, posts) {
                 bool ok = false;
-                list << deleteFileInfos(p, &ok);
+                filesToDelete << deleteFileInfos(p, &ok);
                 if (!ok)
                     return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
             }
@@ -571,7 +580,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
         } else {
             bool ok = false;
-            list << deleteFileInfos(*post, &ok);
+            filesToDelete << deleteFileInfos(*post, &ok);
             if (!ok)
                 return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
@@ -583,9 +592,6 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
         }
         Cache::removePost(boardName, postNumber);
         t.commit();
-        QString path = Tools::storagePath() + "/img/" + boardName;
-        foreach (const QString &fn, list)
-            QFile::remove(path + "/" + fn);
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -790,6 +796,7 @@ quint64 createThread(CreateThreadParameters &p)
     if (!saveFiles(p.params, p.files, pp.fileTransaction, true, p.error, p.description, p.locale))
         return false;
     try {
+        QStringList filesToDelete;
         Transaction t;
         QString err;
         quint64 postNumber = incrementPostCounter(p.params.value("board"), &err, p.locale);
@@ -817,8 +824,10 @@ quint64 createThread(CreateThreadParameters &p)
                         QList<ThreadIdDateTimeFixed> archivedList = query<ThreadIdDateTimeFixed, Thread>(
                                     odb::query<Thread>::board == boardName && odb::query<Thread>::archived == true);
                         qSort(archivedList.begin(), archivedList.end(), &threadIdDateTimeFixedLessThan);
-                        if (!deletePostInternal(boardName, archivedList.last().number, p.description, p.locale))
+                        if (!deletePostInternal(boardName, archivedList.last().number, p.description, p.locale,
+                                                filesToDelete)) {
                             return bRet(p.error, tq.translate("createThread", "Internal error", "error"), 0L);
+                        }
                     }
                     Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::id == list.last().id);
                     if (thread.error) {
@@ -832,7 +841,7 @@ quint64 createThread(CreateThreadParameters &p)
                     thread->setArchived(true);
                     update(thread);
                 } else {
-                    if (!deletePostInternal(boardName, list.last().number, p.description, p.locale))
+                    if (!deletePostInternal(boardName, list.last().number, p.description, p.locale, filesToDelete))
                         return bRet(p.error, tq.translate("createThread", "Internal error", "error"), 0L);
                 }
             }
@@ -847,6 +856,7 @@ quint64 createThread(CreateThreadParameters &p)
         if (!createPostInternal(pp))
             return 0L;
         t.commit();
+        deleteFiles(boardName, filesToDelete);
         return bRet(p.error, QString(), p.description, QString(), postNumber);
     } catch (const odb::exception &e) {
         return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
@@ -856,7 +866,10 @@ quint64 createThread(CreateThreadParameters &p)
 
 bool deletePost(const QString &boardName, quint64 postNumber, QString *error, const QLocale &l)
 {
-    return deletePostInternal(boardName, postNumber, error, l);
+    QStringList list;
+    bool b = deletePostInternal(boardName, postNumber, error, l, list);
+    deleteFiles(boardName, list);
+    return b;
 }
 
 bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
@@ -871,6 +884,7 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
     if (password.isEmpty() && hashpass.isEmpty())
         return bRet(error, tq.translate("deletePost", "Invalid password", "error"), false);
     try {
+        QStringList filesToDelete;
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
@@ -889,9 +903,10 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         } else if (password != post->password()) {
             return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
         }
-        if (!deletePostInternal(boardName, postNumber, error, tq.locale()))
+        if (!deletePostInternal(boardName, postNumber, error, tq.locale(), filesToDelete))
             return false;
         t.commit();
+        deleteFiles(boardName, filesToDelete);
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);

@@ -5,6 +5,7 @@
 [done] Check captcha outside database transaction
 [done] Delete temporary files if transaction fails
 [done] Save files outside database transaction
+[done] Delete files outside transaction
 * Display post modification time
 * Use ranges for IP addresses
 * Implement proxy blocking
