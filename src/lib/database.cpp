@@ -102,6 +102,7 @@ public:
     const Tools::FileList &files;
     const QLocale &locale;
 public:
+    AbstractBoard::FileTransaction fileTransaction;
     unsigned int bumpLimit;
     unsigned int postLimit;
     QString *error;
@@ -112,8 +113,9 @@ public:
     RefMap *referencedPosts;
 public:
     explicit CreatePostInternalParameters(const cppcms::http::request &req, const Tools::PostParameters &ps,
-                                          const Tools::FileList &fs, const QLocale &l = BCoreApplication::locale()) :
-        request(req), params(ps), files(fs), locale(l)
+                                          const Tools::FileList &fs, AbstractBoard *board,
+                                          const QLocale &l = BCoreApplication::locale()) :
+        request(req), params(ps), files(fs), locale(l), fileTransaction(board)
     {
         error = 0;
         description = 0;
@@ -121,8 +123,8 @@ public:
         threadNumber = 0;
         postNumber = 0;
     }
-    explicit CreatePostInternalParameters(CreatePostParameters &p) :
-        request(p.request), params(p.params), files(p.files), locale(p.locale)
+    explicit CreatePostInternalParameters(CreatePostParameters &p, AbstractBoard *board) :
+        request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
     {
         bumpLimit = p.bumpLimit;
         postLimit = p.postLimit;
@@ -132,8 +134,8 @@ public:
         threadNumber = 0;
         postNumber = 0;
     }
-    explicit CreatePostInternalParameters(CreateThreadParameters &p) :
-        request(p.request), params(p.params), files(p.files), locale(p.locale)
+    explicit CreatePostInternalParameters(CreateThreadParameters &p, AbstractBoard *board) :
+        request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
     {
         error = p.error;
         description = p.description;
@@ -144,117 +146,6 @@ public:
         referencedPosts = 0;
     }
 };
-
-class FileTransaction
-{
-private:
-    AbstractBoard * const board;
-private:
-    bool commited;
-    QStringList mfileNames;
-    Tools::FileTransaction mtransaction;
-public:
-    explicit FileTransaction(AbstractBoard *b) :
-        board(b)
-    {
-        commited = false;
-    }
-    ~FileTransaction()
-    {
-        if (commited)
-            return;
-        if (!board)
-            return;
-        board->deleteFiles(mfileNames);
-    }
-public:
-    void commit()
-    {
-        commited = true;
-        mtransaction.commit();
-    }
-    QStringList fileNames() const
-    {
-        return mfileNames;
-    }
-    bool saveFile(const Tools::File &f)
-    {
-        if (!board)
-            return false;
-        bool b = false;
-        QString fn = board->saveFile(f, mtransaction, &b);
-        if (!b)
-            return false;
-        mfileNames << fn;
-        return true;
-    }
-    bool saveFileHash(const QString &hashString, QString *error, QString *description, const QLocale &l)
-    {
-        TranslatorQt tq(l);
-        if (!board) {
-            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
-                        tq.translate("FileTransaction", "Internal logic error", "description"), false);
-        }
-        bool ok = false;
-        QByteArray fh = Tools::toHashpass(hashString, &ok);
-        if (!ok || fh.isEmpty()) {
-            return bRet(error, tq.translate("FileTransaction", "Invalid file hash", "error"), description,
-                        tq.translate("FileTransaction", "Invalid file hash provided", "description"), false);
-        }
-        QStringList paths = Database::fileHashPaths(fh, &ok);
-        if (!ok) {
-            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
-                        tq.translate("FileTransaction", "Internal database error", "description"), false);
-        }
-        if (paths.isEmpty()) {
-            return bRet(error, tq.translate("FileTransaction", "No source file", "error"), description,
-                        tq.translate("FileTransaction", "No source file for this file hash", "description"), false);
-        }
-        QString storagePath = Tools::storagePath();
-        if (storagePath.isEmpty()) {
-            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
-                        tq.translate("FileTransaction", "Internal file system error", "description"), false);
-        }
-        QString sfn = storagePath + "/img/" + paths.first();
-        QFileInfo fi(sfn);
-        QString path = fi.path();
-        QString baseName = fi.baseName();
-        QString suffix = fi.suffix();
-        QStringList sl = BDirTools::entryList(path, QStringList() << (baseName + "s.*"), QDir::Files);
-        QString sofn = path + "/" + baseName + ".ololord-file-info";
-        if (!fi.exists() || sl.size() != 1 || !QFileInfo(sofn).exists()) {
-            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
-                        tq.translate("FileTransaction", "Internal file system error", "description"), false);
-        }
-        QString spfn = sl.first();
-        QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
-        path = QFileInfo(path).path() + "/" + board->name();
-        QString fn = path + "/" + dt + "." + suffix;
-        QString pfn = path + "/" + dt + "s." + QFileInfo(spfn).suffix();
-        QString ofn = path + "/" + dt + ".ololord-file-info";
-        QVariantMap m = BeQt::deserialize(BDirTools::readFile(sofn, -1, &ok)).toMap();
-        if (!ok) {
-            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
-                        tq.translate("FileTransaction", "Internal file system error", "description"), false);
-        }
-        m["thumbFileName"] = QFileInfo(pfn).fileName();
-        if (!Database::addFileHash(hashString, board->name() + "/" + dt + "." + suffix)) {
-            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
-                        tq.translate("FileTransaction", "Internal database error", "description"), false);
-        }
-        if (!QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn) || !BDirTools::writeFile(ofn, BeQt::serialize(m))) {
-            QFile::remove(fn);
-            QFile::remove(pfn);
-            QFile::remove(ofn);
-            return bRet(error, tq.translate("FileTransaction", "Internal error", "error"), description,
-                        tq.translate("FileTransaction", "Internal file system error", "description"), false);
-        }
-        mfileNames << QFileInfo(fn).fileName();
-        return bRet(error, QString(), description, QString(), true);
-    }
-};
-
-
 
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
                                  QString *description = 0)
@@ -331,6 +222,114 @@ static bool removeFromReferencedPosts(quint64 postId, QString *error = 0)
     }  catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
     }
+}
+
+static bool copyFile(const QString &hashString, AbstractBoard::FileTransaction &ft, QString *error = 0,
+                     QString *description = 0, const QLocale &l = BCoreApplication::locale())
+{
+    TranslatorQt tq(l);
+    if (!ft.Board) {
+        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                    tq.translate("copyFileHash", "Internal logic error", "description"), false);
+    }
+    bool ok = false;
+    QByteArray fh = Tools::toHashpass(hashString, &ok);
+    if (!ok || fh.isEmpty()) {
+        return bRet(error, tq.translate("copyFileHash", "Invalid file hash", "error"), description,
+                    tq.translate("copyFileHash", "Invalid file hash provided", "description"), false);
+    }
+    QStringList paths = Database::fileHashPaths(fh, &ok);
+    if (!ok) {
+        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                    tq.translate("copyFileHash", "Internal database error", "description"), false);
+    }
+    if (paths.isEmpty()) {
+        return bRet(error, tq.translate("copyFileHash", "No source file", "error"), description,
+                    tq.translate("copyFileHash", "No source file for this file hash", "description"), false);
+    }
+    QString storagePath = Tools::storagePath();
+    if (storagePath.isEmpty()) {
+        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                    tq.translate("copyFileHash", "Internal file system error", "description"), false);
+    }
+    QString sfn = storagePath + "/img/" + paths.first();
+    QFileInfo fi(sfn);
+    QString path = fi.path();
+    QString baseName = fi.baseName();
+    QString suffix = fi.suffix();
+    QStringList sl = BDirTools::entryList(path, QStringList() << (baseName + "s.*"), QDir::Files);
+    QString sofn = path + "/" + baseName + ".ololord-file-info";
+    if (!fi.exists() || sl.size() != 1 || !QFileInfo(sofn).exists()) {
+        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                    tq.translate("copyFileHash", "Internal file system error", "description"), false);
+    }
+    QString spfn = sl.first();
+    QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
+    path = QFileInfo(path).path() + "/" + ft.Board->name();
+    QString fn = path + "/" + dt + "." + suffix;
+    QString pfn = path + "/" + dt + "s." + QFileInfo(spfn).suffix();
+    QString ofn = path + "/" + dt + ".ololord-file-info";
+    QVariantMap m = BeQt::deserialize(BDirTools::readFile(sofn, -1, &ok)).toMap();
+    if (!ok) {
+        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                    tq.translate("copyFileHash", "Internal file system error", "description"), false);
+    }
+    m["thumbFileName"] = QFileInfo(pfn).fileName();
+    if (!Database::addFileHash(hashString, ft.Board->name() + "/" + dt + "." + suffix)) {
+        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                    tq.translate("copyFileHash", "Internal database error", "description"), false);
+    }
+    ft.addInfo(fn);
+    ft.setThumbFile(pfn);
+    ft.setInfoFile(ofn);
+    if (!QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn) || !BDirTools::writeFile(ofn, BeQt::serialize(m))) {
+        return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
+                    tq.translate("copyFileHash", "Internal file system error", "description"), false);
+    }
+    return bRet(error, QString(), description, QString(), true);
+}
+
+static bool saveFile(const Tools::File &f, AbstractBoard::FileTransaction &ft, QString *error = 0,
+                     QString *description = 0, const QLocale &l = BCoreApplication::locale())
+{
+    TranslatorQt tq(l);
+    if (!ft.Board) {
+        return bRet(error, tq.translate("saveFile", "Internal error", "error"), description,
+                    tq.translate("saveFile", "Internal logic error", "description"), false);
+    }
+    bool ok = false;
+    ft.Board->saveFile(f, ft, &ok);
+    if (!ok) {
+        return bRet(error, tq.translate("saveFile", "Internal error", "error"), description,
+                    tq.translate("saveFile", "Internal file system error", "description"), false);
+    }
+    return bRet(error, QString(), description, QString(), true);
+}
+
+static bool saveFiles(const QMap<QString, QString> &params, const Tools::FileList &files,
+                      AbstractBoard::FileTransaction &ft, bool thread, QString *error = 0, QString *description = 0,
+                      const QLocale &l = BCoreApplication::locale())
+{
+    TranslatorQt tq(l);
+    Tools::Post post = Tools::toPost(params, files);
+    if (thread && post.files.isEmpty() && post.fileHashes.isEmpty()) {
+        return bRet(error, tq.translate("saveFiles", "No file", "error"), description,
+                    tq.translate("saveFiles", "Attempt to create a thread without attaching a file", "description"),
+                    false);
+    }
+    if (post.text.isEmpty() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
+        return bRet(error, tq.translate("saveFiles", "No file/text", "error"), description,
+                    tq.translate("saveFiles", "Both file and comment are missing", "description"), false);
+    }
+    foreach (const Tools::File &f, post.files) {
+        if (!saveFile(f, ft, error, description, l))
+            return false;
+    }
+    foreach (const QString &fhs, post.fileHashes) {
+        if (!copyFile(fhs, ft, error, description, l))
+            return false;
+    }
+    return bRet(error, QString(), description, QString(), true);
 }
 
 static bool testCaptcha(const cppcms::http::request &req, const QMap<QString, QString> &params, QString *error = 0,
@@ -456,16 +455,6 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             return bRet(p.error, tq.translate("createPostInternal", "No such thread", "error"), p.description,
                         tq.translate("createPostInternal", "There is no such thread", "description"), false);
         }
-        if (p.dateTime.isValid() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
-            return bRet(p.error, tq.translate("createPostInternal", "No file", "error"), p.description,
-                        tq.translate("createPostInternal", "Attempt to create a thread without attaching a file",
-                                     "description"), false);
-        }
-        if (post.text.isEmpty() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
-            return bRet(p.error, tq.translate("createPostInternal", "No file/text", "error"), p.description,
-                        tq.translate("createPostInternal", "Both file and comment are missing", "description"),
-                        false);
-        }
         bool bump = post.email.compare("sage", Qt::CaseInsensitive);
         if (p.postLimit || p.bumpLimit) {
             Result<PostCount> postCount = queryOne<PostCount, Post>(odb::query<Post>::thread == thread->id());
@@ -487,18 +476,10 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         QString ip = Tools::userIp(p.request);
         QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, post.password, hp));
         ps->setEmail(post.email);
-        FileTransaction ft(board);
-        foreach (const Tools::File &f, post.files) {
-            if (!ft.saveFile(f)) {
-                return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description,
-                            tq.translate("createPostInternal", "Internal file system error", "description"), false);
-            }
-        }
-        foreach (const QString &fhs, post.fileHashes) {
-            if (!ft.saveFileHash(fhs, p.error, p.description, p.locale))
-                return false;
-        }
-        ps->setFiles(ft.fileNames());
+        QStringList fileNames;
+        foreach (const AbstractBoard::FileInfo &fi, p.fileTransaction.fileInfos())
+            fileNames << fi.name;
+        ps->setFiles(fileNames);
         ps->setName(post.name);
         ps->setSubject(post.subject);
         ps->setRawText(post.text);
@@ -524,7 +505,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             return false;
         bSet(p.postNumber, postNumber);
         t.commit();
-        ft.commit();
+        p.fileTransaction.commit();
         return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description,
@@ -775,9 +756,16 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
     if (!testCaptcha(p.request, p.params, p.error, p.description, p.locale))
         return false;
     TranslatorQt tq(p.locale);
+    AbstractBoard *board = AbstractBoard::board(p.params.value("board"));
+    if (!board) {
+        return bRet(p.error, tq.translate("createPost", "Internal error", "error"), p.description,
+                    tq.translate("createPost", "Internal logic error", "description"), false);
+    }
+    CreatePostInternalParameters pp(p, board);
+    if (!saveFiles(p.params, p.files, pp.fileTransaction, false, p.error, p.description, p.locale))
+        return false;
     try {
         Transaction t;
-        CreatePostInternalParameters pp(p);
         pp.postNumber = postNumber;
         if (!createPostInternal(pp))
             return false;
@@ -817,6 +805,9 @@ quint64 createThread(CreateThreadParameters &p)
         return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
                     tq.translate("createThread", "Internal logic error", "description"), 0L);
     }
+    CreatePostInternalParameters pp(p, board);
+    if (!saveFiles(p.params, p.files, pp.fileTransaction, true, p.error, p.description, p.locale))
+        return false;
     try {
         Transaction t;
         QString err;
@@ -870,7 +861,6 @@ quint64 createThread(CreateThreadParameters &p)
         if (board->draftsEnabled() && p.params.value("draft").compare("true", Qt::CaseInsensitive))
             thread->setDraft(true);
         t->persist(thread);
-        CreatePostInternalParameters pp(p);
         pp.dateTime = dt;
         pp.threadNumber = postNumber;
         if (!createPostInternal(pp))

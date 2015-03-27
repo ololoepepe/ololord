@@ -100,6 +100,74 @@ static bool threadLessThan(const Thread &t1, const Thread &t2)
         return false;
 }
 
+AbstractBoard::FileTransaction::FileTransaction(AbstractBoard *board) :
+    Board(board)
+{
+    commited = false;
+}
+
+AbstractBoard::FileTransaction::~FileTransaction()
+{
+    if (commited)
+        return;
+    if (!Board)
+        return;
+    QString path = Tools::storagePath() + "/img/" + Board->name();
+    foreach (const FileInfo &fi, minfos) {
+        if (!fi.name.isEmpty())
+            QFile::remove(path + "/" + fi.name);
+        if (!fi.thumbName.isEmpty())
+            QFile::remove(path + "/" + fi.thumbName);
+        if (!fi.infoName.isEmpty())
+            QFile::remove(path + "/" + fi.infoName);
+    }
+}
+
+void AbstractBoard::FileTransaction::commit()
+{
+    commited = true;
+}
+
+QList<AbstractBoard::FileInfo> AbstractBoard::FileTransaction::fileInfos() const
+{
+    return minfos;
+}
+
+void AbstractBoard::FileTransaction::addInfo(const QString &mainFileName)
+{
+    FileInfo fi;
+    if (!mainFileName.isEmpty())
+        fi.name = QFileInfo(mainFileName).fileName();
+    minfos << fi;
+}
+
+void AbstractBoard::FileTransaction::setMainFile(const QString &fn)
+{
+    if (fn.isEmpty())
+        return;
+    if (minfos.isEmpty())
+        return;
+    minfos.last().name = QFileInfo(fn).fileName();
+}
+
+void AbstractBoard::FileTransaction::setThumbFile(const QString &fn)
+{
+    if (fn.isEmpty())
+        return;
+    if (minfos.isEmpty())
+        return;
+    minfos.last().thumbName = QFileInfo(fn).fileName();
+}
+
+void AbstractBoard::FileTransaction::setInfoFile(const QString &fn)
+{
+    if (fn.isEmpty())
+        return;
+    if (minfos.isEmpty())
+        return;
+    minfos.last().infoName = QFileInfo(fn).fileName();
+}
+
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
@@ -644,7 +712,7 @@ QStringList AbstractBoard::rules(const QLocale &l) const
     return Tools::rules("rules/board", l) + Tools::rules("rules/board/" + name(), l);
 }
 
-QString AbstractBoard::saveFile(const Tools::File &f, Tools::FileTransaction &fileTransaction, bool *ok)
+QString AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft, bool *ok)
 {
 #if defined(Q_OS_WIN)
     static const QString FfmpegDefault = "ffmpeg.exe";
@@ -675,9 +743,7 @@ QString AbstractBoard::saveFile(const Tools::File &f, Tools::FileTransaction &fi
     if (suffix.isEmpty())
         suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
-    Tools::FileTransaction t;
-    t.addFile(sfn);
-    fileTransaction.addFile(sfn);
+    ft.addInfo(sfn);
     if (!BDirTools::writeFile(sfn, f.data) || !Database::addFileHash(f.data, name() + "/" + QFileInfo(sfn).fileName()))
         return bRet(ok, false, QString());
     QVariantMap m;
@@ -687,8 +753,7 @@ QString AbstractBoard::saveFile(const Tools::File &f, Tools::FileTransaction &fi
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
-            t.addFile(path + "/" + dt + "s.png");
-            fileTransaction.addFile(path + "/" + dt + "s.png");
+            ft.setThumbFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
                 return bRet(ok, false, QString());
             scaleThumbnail(img, m);
@@ -707,18 +772,15 @@ QString AbstractBoard::saveFile(const Tools::File &f, Tools::FileTransaction &fi
         scaleThumbnail(img, m);
         if (!mimeType.compare("image/gif", Qt::CaseInsensitive))
             suffix = "png";
-        t.addFile(path + "/" + dt + "s." + suffix);
-        fileTransaction.addFile(path + "/" + dt + "s." + suffix);
+        ft.setThumbFile(path + "/" + dt + "s." + suffix);
         if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
             return bRet(ok, false, QString());
         m.insert("thumbFileName", dt + "s." + suffix);
     }
     QString ifn = path + "/" + dt + ".ololord-file-info";
-    t.addFile(ifn);
-    fileTransaction.addFile(ifn);
+    ft.setInfoFile(ifn);
     if (!BDirTools::writeFile(ifn, BeQt::serialize(m)))
         return bRet(ok, false, QString());
-    t.commit();
     return bRet(ok, true, QFileInfo(sfn).fileName());
 }
 

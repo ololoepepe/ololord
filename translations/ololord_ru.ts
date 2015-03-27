@@ -314,49 +314,6 @@ The default is true.</source>
     </message>
 </context>
 <context>
-    <name>FileTransaction</name>
-    <message>
-        <source>Internal error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка</translation>
-    </message>
-    <message>
-        <source>Internal logic error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка в логике программы</translation>
-    </message>
-    <message>
-        <source>Invalid file hash</source>
-        <comment>error</comment>
-        <translation>Недействительный хэш файла</translation>
-    </message>
-    <message>
-        <source>Invalid file hash provided</source>
-        <comment>description</comment>
-        <translation>Передан недействительный хэш файла</translation>
-    </message>
-    <message>
-        <source>Internal database error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
-    </message>
-    <message>
-        <source>No source file</source>
-        <comment>error</comment>
-        <translation>Нет исходного файла</translation>
-    </message>
-    <message>
-        <source>No source file for this file hash</source>
-        <comment>description</comment>
-        <translation>Для этого хеша файла нет исходного файла</translation>
-    </message>
-    <message>
-        <source>Internal file system error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка файловой системы</translation>
-    </message>
-</context>
-<context>
     <name>HomeRoute</name>
     <message>
         <source>Welcome. Again.</source>
@@ -642,11 +599,59 @@ The default is true.</source>
     </message>
 </context>
 <context>
+    <name>copyFileHash</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid file hash</source>
+        <comment>error</comment>
+        <translation>Недействительный хэш файла</translation>
+    </message>
+    <message>
+        <source>Invalid file hash provided</source>
+        <comment>description</comment>
+        <translation>Передан недействительный хэш файла</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No source file</source>
+        <comment>error</comment>
+        <translation>Нет исходного файла</translation>
+    </message>
+    <message>
+        <source>No source file for this file hash</source>
+        <comment>description</comment>
+        <translation>Для этого хеша файла нет исходного файла</translation>
+    </message>
+    <message>
+        <source>Internal file system error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка файловой системы</translation>
+    </message>
+</context>
+<context>
     <name>createPost</name>
     <message>
         <source>Internal error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
@@ -677,26 +682,6 @@ The default is true.</source>
         <translation>Нет такого треда</translation>
     </message>
     <message>
-        <source>No file</source>
-        <comment>error</comment>
-        <translation>Отсутствует файл</translation>
-    </message>
-    <message>
-        <source>Attempt to create a thread without attaching a file</source>
-        <comment>description</comment>
-        <translation>Попытка создать тред без прикрепления файла</translation>
-    </message>
-    <message>
-        <source>No file/text</source>
-        <comment>error</comment>
-        <translation>Нет файла/текста</translation>
-    </message>
-    <message>
-        <source>Both file and comment are missing</source>
-        <comment>description</comment>
-        <translation>Отсутствуют и файл, и комментарий</translation>
-    </message>
-    <message>
         <source>Post limit</source>
         <comment>error</comment>
         <translation>Лимит постов</translation>
@@ -705,11 +690,6 @@ The default is true.</source>
         <source>The thread has reached it&apos;s post limit</source>
         <comment>description</comment>
         <translation>Этот тред лостиг своего лимита постов</translation>
-    </message>
-    <message>
-        <source>Internal file system error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка файловой системы</translation>
     </message>
 </context>
 <context>
@@ -2173,6 +2153,47 @@ The default is true.</source>
         <source>Whiner</source>
         <comment>defaultUserName</comment>
         <translation>Нытик</translation>
+    </message>
+</context>
+<context>
+    <name>saveFile</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal file system error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка файловой системы</translation>
+    </message>
+</context>
+<context>
+    <name>saveFiles</name>
+    <message>
+        <source>No file</source>
+        <comment>error</comment>
+        <translation>Отсутствует файл</translation>
+    </message>
+    <message>
+        <source>Attempt to create a thread without attaching a file</source>
+        <comment>description</comment>
+        <translation>Попытка создать тред без прикрепления файла</translation>
+    </message>
+    <message>
+        <source>No file/text</source>
+        <comment>error</comment>
+        <translation>Нет файла/текста</translation>
+    </message>
+    <message>
+        <source>Both file and comment are missing</source>
+        <comment>description</comment>
+        <translation>Отсутствуют и файл, и комментарий</translation>
     </message>
 </context>
 <context>

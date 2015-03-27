@@ -40,6 +40,7 @@ class request;
 #include "../global.h"
 #include "tools.h"
 
+#include <QList>
 #include <QMap>
 #include <QMutex>
 #include <QString>
@@ -54,6 +55,30 @@ public:
     {
         std::string name;
         std::string title;
+    };
+    struct FileInfo
+    {
+        QString name;
+        QString thumbName;
+        QString infoName;
+    };
+    class OLOLORD_EXPORT FileTransaction
+    {
+    public:
+        AbstractBoard * const Board;
+    public:
+        bool commited;
+        QList<FileInfo> minfos;
+    public:
+        explicit FileTransaction(AbstractBoard *board);
+        ~FileTransaction();
+    public:
+        void commit();
+        QList<FileInfo> fileInfos() const;
+        void addInfo(const QString &mainFileName = QString());
+        void setMainFile(const QString &fn);
+        void setThumbFile(const QString &fn);
+        void setInfoFile(const QString &fn);
     };
 public:
     typedef std::list<BoardInfo> BoardInfoList;
@@ -102,7 +127,7 @@ public:
     virtual bool postingEnabled() const;
     unsigned int postLimit() const;
     virtual QStringList rules(const QLocale &l) const;
-    virtual QString saveFile(const Tools::File &f, Tools::FileTransaction &fileTransaction, bool *ok = 0);
+    virtual QString saveFile(const Tools::File &f, FileTransaction &ft, bool *ok = 0);
     virtual bool showWhois() const;
     virtual QString supportedFileTypes() const;
     virtual bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l,

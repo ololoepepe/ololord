@@ -50,34 +50,6 @@
 namespace Tools
 {
 
-FileTransaction::FileTransaction()
-{
-    commited = false;
-}
-
-FileTransaction::~FileTransaction()
-{
-    if (commited)
-        return;
-    foreach (const QString &fn, mfileNames)
-        QFile::remove(fn);
-}
-
-void FileTransaction::commit()
-{
-    commited = true;
-}
-
-QStringList FileTransaction::fileNames() const
-{
-    return mfileNames;
-}
-
-void FileTransaction::addFile(const QString &fn)
-{
-    mfileNames << fn;
-}
-
 struct IpRange
 {
     unsigned int start;
