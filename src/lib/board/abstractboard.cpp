@@ -683,6 +683,19 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
 #elif defined(Q_OS_UNIX)
     static const QString FfmpegDefault = "ffmpeg";
 #endif
+    typedef QMap<QString, QString> StringMap;
+    init_once(StringMap, suffixes, StringMap()) {
+        suffixes.insert("image/png", "png");
+        suffixes.insert("image/jpeg", "jpeg");
+        suffixes.insert("image/gif", "gif");
+        suffixes.insert("video/webm", "webm");
+    }
+    bool b = false;
+    QString mimeType = Tools::mimeType(f.data, &b);
+    if (!b)
+        return bRet(ok, false, QString());
+    if (!isFileTypeSupported(mimeType))
+        return bRet(ok, false, QString());
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
         return bRet(ok, false, QString());
@@ -691,6 +704,8 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         return bRet(ok, false, QString());
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
+    if (suffix.isEmpty())
+        suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
     FileTransaction t;
     t.addFile(sfn);
@@ -698,7 +713,7 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         return bRet(ok, false, QString());
     QVariantMap m;
     QImage img;
-    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+    if (!mimeType.compare("video/webm", Qt::CaseInsensitive)) {
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
@@ -720,7 +735,7 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         if (!img.load(&buff, suffix.toLower().toLatin1().data()))
             return bRet(ok, false, QString());
         scaleThumbnail(img, m);
-        if (!suffix.compare("gif", Qt::CaseInsensitive))
+        if (!mimeType.compare("image/gif", Qt::CaseInsensitive))
             suffix = "png";
         t.addFile(path + "/" + dt + "s." + suffix);
         if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
