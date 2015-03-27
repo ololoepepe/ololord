@@ -80,38 +80,6 @@
 
 #include <fstream>
 
-class FileTransaction
-{
-private:
-    bool commited;
-    QStringList mfileNames;
-public:
-    explicit FileTransaction()
-    {
-        commited = false;
-    }
-    ~FileTransaction()
-    {
-        if (commited)
-            return;
-        foreach (const QString &fn, mfileNames)
-            QFile::remove(fn);
-    }
-public:
-    void commit()
-    {
-        commited = true;
-    }
-    QStringList fileNames() const
-    {
-        return mfileNames;
-    }
-    void addFile(const QString &fn)
-    {
-        mfileNames << fn;
-    }
-};
-
 static void scaleThumbnail(QImage &img, QVariantMap &m)
 {
     m.insert("height", img.height());
@@ -676,7 +644,7 @@ QStringList AbstractBoard::rules(const QLocale &l) const
     return Tools::rules("rules/board", l) + Tools::rules("rules/board/" + name(), l);
 }
 
-QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
+QString AbstractBoard::saveFile(const Tools::File &f, Tools::FileTransaction &fileTransaction, bool *ok)
 {
 #if defined(Q_OS_WIN)
     static const QString FfmpegDefault = "ffmpeg.exe";
@@ -707,8 +675,9 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
     if (suffix.isEmpty())
         suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
-    FileTransaction t;
+    Tools::FileTransaction t;
     t.addFile(sfn);
+    fileTransaction.addFile(sfn);
     if (!BDirTools::writeFile(sfn, f.data) || !Database::addFileHash(f.data, name() + "/" + QFileInfo(sfn).fileName()))
         return bRet(ok, false, QString());
     QVariantMap m;
@@ -719,6 +688,7 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
                                          << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
             t.addFile(path + "/" + dt + "s.png");
+            fileTransaction.addFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
                 return bRet(ok, false, QString());
             scaleThumbnail(img, m);
@@ -738,12 +708,14 @@ QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
         if (!mimeType.compare("image/gif", Qt::CaseInsensitive))
             suffix = "png";
         t.addFile(path + "/" + dt + "s." + suffix);
+        fileTransaction.addFile(path + "/" + dt + "s." + suffix);
         if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
             return bRet(ok, false, QString());
         m.insert("thumbFileName", dt + "s." + suffix);
     }
     QString ifn = path + "/" + dt + ".ololord-file-info";
     t.addFile(ifn);
+    fileTransaction.addFile(ifn);
     if (!BDirTools::writeFile(ifn, BeQt::serialize(m)))
         return bRet(ok, false, QString());
     t.commit();

@@ -152,6 +152,7 @@ private:
 private:
     bool commited;
     QStringList mfileNames;
+    Tools::FileTransaction mtransaction;
 public:
     explicit FileTransaction(AbstractBoard *b) :
         board(b)
@@ -170,6 +171,7 @@ public:
     void commit()
     {
         commited = true;
+        mtransaction.commit();
     }
     QStringList fileNames() const
     {
@@ -180,7 +182,7 @@ public:
         if (!board)
             return false;
         bool b = false;
-        QString fn = board->saveFile(f, &b);
+        QString fn = board->saveFile(f, mtransaction, &b);
         if (!b)
             return false;
         mfileNames << fn;

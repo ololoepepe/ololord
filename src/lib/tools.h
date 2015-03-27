@@ -85,6 +85,20 @@ enum MaxInfo
 
 typedef QMap<QString, QString> PostParameters;
 
+class OLOLORD_EXPORT FileTransaction
+{
+private:
+    bool commited;
+    QStringList mfileNames;
+public:
+    explicit FileTransaction();
+    ~FileTransaction();
+public:
+    void commit();
+    QStringList fileNames() const;
+    void addFile(const QString &fn);
+};
+
 OLOLORD_EXPORT QStringList acceptedExternalBoards();
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
 OLOLORD_EXPORT QString cityName(const QString &ip);

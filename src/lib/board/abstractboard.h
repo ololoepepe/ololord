@@ -12,6 +12,13 @@ class Thread;
 
 class Post;
 
+namespace Tools
+{
+
+class FileTransaction;
+
+}
+
 class QLocale;
 class QString;
 class QStringList;
@@ -95,7 +102,7 @@ public:
     virtual bool postingEnabled() const;
     unsigned int postLimit() const;
     virtual QStringList rules(const QLocale &l) const;
-    virtual QString saveFile(const Tools::File &f, bool *ok = 0);
+    virtual QString saveFile(const Tools::File &f, Tools::FileTransaction &fileTransaction, bool *ok = 0);
     virtual bool showWhois() const;
     virtual QString supportedFileTypes() const;
     virtual bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l,
