@@ -141,6 +141,7 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
     p.draft = params.at("draft").boolean();
     QString err;
+    p.error = &err;
     if (!Database::editPost(p)) {
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_edit_post", "fail:" + err, logTarget);
