@@ -3,7 +3,6 @@
 #include "database.h"
 #include "controller/controller.h"
 #include "controller/baseboard.h"
-#include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
 
@@ -148,7 +147,7 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
         return;
     }
     cppcms::json::object refs;
-    foreach (const Post::RefKey &key, p.referencedPosts.keys()) {
+    foreach (const Database::RefKey &key, p.referencedPosts.keys()) {
         std::string k = Tools::toStd(key.boardName) + "/" + Tools::toStd(QString::number(key.postNumber));
         refs[k] = Tools::toStd(QString::number(p.referencedPosts.value(key)));
     }

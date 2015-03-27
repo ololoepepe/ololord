@@ -181,6 +181,24 @@ struct OLOLORD_EXPORT BanInfo
     int level;
 };
 
+struct OLOLORD_EXPORT RefKey
+{
+    QString boardName;
+    quint64 postNumber;
+public:
+    explicit RefKey();
+    explicit RefKey(const QString &board, quint64 post);
+public:
+    bool isValid() const;
+public:
+    bool operator <(const RefKey &other) const;
+};
+
+class OLOLORD_EXPORT RefMap : public QMap<RefKey, quint64>
+{
+    //
+};
+
 struct OLOLORD_EXPORT CreatePostParameters
 {
     const QList<Tools::File> &files;
@@ -192,17 +210,10 @@ public:
     unsigned int postLimit;
     QString *error;
     QString *description;
-    Post::RefMap referencedPosts;
+    RefMap referencedPosts;
 public:
     explicit CreatePostParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
-                                  const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale()) :
-        files(fs), locale(l), params(ps), request(req)
-    {
-        bumpLimit = 0;
-        postLimit = 0;
-        error = 0;
-        description = 0;
-    }
+                                  const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale());
 };
 
 struct OLOLORD_EXPORT CreateThreadParameters
@@ -218,13 +229,7 @@ public:
     QString *description;
 public:
     explicit CreateThreadParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
-                                    const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale()) :
-        files(fs), locale(l), params(ps), request(req)
-    {
-        threadLimit = 0;
-        error = 0;
-        description = 0;
-    }
+                                    const QList<Tools::File> &fs, const QLocale &l = BCoreApplication::locale());
 };
 
 struct OLOLORD_EXPORT EditPostParameters
@@ -241,15 +246,9 @@ public:
     bool raw;
     QString subject;
     QString text;
-    Post::RefMap referencedPosts;
+    RefMap referencedPosts;
 public:
-    explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post) :
-        boardName(board), postNumber(post), request(req)
-    {
-        draft = false;
-        error = 0;
-        raw = false;
-    }
+    explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post);
 };
 
 OLOLORD_EXPORT bool addFileHash(const QByteArray &data, const QString &path);

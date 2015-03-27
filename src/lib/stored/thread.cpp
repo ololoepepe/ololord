@@ -110,27 +110,6 @@ void Thread::setDraft(bool draft)
     draft_ = draft;
 }
 
-Post::RefKey::RefKey()
-{
-    postNumber = 0;
-}
-
-Post::RefKey::RefKey(const QString &board, quint64 post)
-{
-    boardName = board;
-    postNumber = post;
-}
-
-bool Post::RefKey::isValid() const
-{
-    return !boardName.isEmpty() && postNumber;
-}
-
-bool Post::RefKey::operator <(const RefKey &other) const
-{
-    return boardName < other.boardName || (boardName == other.boardName && postNumber < other.postNumber);
-}
-
 Post::Post()
 {
     //
@@ -183,24 +162,6 @@ bool Post::showTripcode() const
     return showTripcode_;
 }
 
-bool Post::addReferencedBy(const RefKey &key, quint64 threadNumber)
-{
-    if (!key.isValid() || !threadNumber)
-        return false;
-    RefMap map = referencedBy();
-    int sz = map.size();
-    map.insert(key, threadNumber);
-    if (map.size() == sz)
-        return false;
-    setReferencedBy(map);
-    return true;
-}
-
-bool Post::addReferencedBy(const QString &boardName, quint64 postNumber, quint64 threadNumber)
-{
-    return addReferencedBy(RefKey(boardName, postNumber), threadNumber);
-}
-
 QString Post::email() const
 {
     return email_;
@@ -246,36 +207,14 @@ QString Post::rawText() const
     return rawText_;
 }
 
-Post::RefMap Post::referencedBy() const
+Post::PostReferences Post::referencedBy() const
 {
-    RefMap map;
-    foreach (const QVariant &v, BeQt::deserialize(referencedBy_).toList()) {
-        QVariantMap m = v.toMap();
-        RefKey key(m.value("boardName").toString(), m.value("postNumber").toULongLong());
-        if (!key.isValid())
-            continue;
-        quint64 t = m.value("threadNumber").toULongLong();
-        if (!t)
-            continue;
-        map.insert(key, t);
-    }
-    return map;
+    return referencedBy_;
 }
 
-bool Post::removeReferencedBy(const RefKey &key)
+Post::PostReferences Post::refersTo() const
 {
-    if (!key.isValid())
-        return false;
-    RefMap map = referencedBy();
-    if (map.remove(key) < 1)
-        return false;
-    setReferencedBy(map);
-    return true;
-}
-
-bool Post::removeReferencedBy(const QString &boardName, quint64 postNumber)
-{
-    return removeReferencedBy(RefKey(boardName, postNumber));
+    return refersTo_;
 }
 
 void Post::setBannedFor(bool banned)
@@ -318,24 +257,6 @@ void Post::setRawText(const QString &text)
     rawText_ = text;
 }
 
-void Post::setReferencedBy(const RefMap &map)
-{
-    QVariantList vl;
-    foreach (const RefKey &key, map.keys()) {
-        if (!key.isValid())
-            continue;
-        quint64 t = map.value(key);
-        if (!t)
-            continue;
-        QVariantMap m;
-        m.insert("boardName", key.boardName);
-        m.insert("postNumber", key.postNumber);
-        m.insert("threadNumber", t);
-        vl << m;
-    }
-    referencedBy_ = BeQt::serialize(vl);
-}
-
 void Post::setSubject(const QString &subject)
 {
     subject_ = subject;
@@ -369,4 +290,26 @@ QLazySharedPointer<Thread> Post::thread() const
 QVariant Post::userData() const
 {
     return BeQt::deserialize(userData_);
+}
+
+PostReference::PostReference()
+{
+    //
+}
+
+PostReference::PostReference(QSharedPointer<Post> sourcePost, QSharedPointer<Post> targetPost)
+{
+    id_ = 0L;
+    sourcePost_ = sourcePost;
+    targetPost_ = targetPost;
+}
+
+QLazySharedPointer<Post> PostReference::sourcePost() const
+{
+    return sourcePost_;
+}
+
+QLazySharedPointer<Post> PostReference::targetPost() const
+{
+    return targetPost_;
 }

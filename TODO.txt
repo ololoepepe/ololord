@@ -1,6 +1,7 @@
 * Store files in database
 * Check file suffixes when saving
 [done] Store additional post data as QByteArray (read as QVariant)
+[done] Store post references in a separate table
 * Display post modification time
 * Use ranges for IP addresses
 * Implement proxy blocking

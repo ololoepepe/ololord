@@ -46,6 +46,54 @@
 namespace Database
 {
 
+RefKey::RefKey()
+{
+    postNumber = 0;
+}
+
+RefKey::RefKey(const QString &board, quint64 post)
+{
+    boardName = board;
+    postNumber = post;
+}
+
+bool RefKey::isValid() const
+{
+    return !boardName.isEmpty() && postNumber;
+}
+
+bool RefKey::operator <(const RefKey &other) const
+{
+    return boardName < other.boardName || (boardName == other.boardName && postNumber < other.postNumber);
+}
+
+CreatePostParameters::CreatePostParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
+                                           const QList<Tools::File> &fs, const QLocale &l) :
+    files(fs), locale(l), params(ps), request(req)
+{
+    bumpLimit = 0;
+    postLimit = 0;
+    error = 0;
+    description = 0;
+}
+
+CreateThreadParameters::CreateThreadParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
+                                               const QList<Tools::File> &fs, const QLocale &l) :
+    files(fs), locale(l), params(ps), request(req)
+{
+    threadLimit = 0;
+    error = 0;
+    description = 0;
+}
+
+EditPostParameters::EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post) :
+    boardName(board), postNumber(post), request(req)
+{
+    draft = false;
+    error = 0;
+    raw = false;
+}
+
 class FileTransaction
 {
 private:
@@ -153,11 +201,11 @@ public:
     }
 };
 
-static bool addToReferencedPosts(const QString &boardName, quint64 postNumber, quint64 threadNumber,
-                                 const Post::RefMap &referencedPosts, QString *error = 0, QString *description = 0)
+static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
+                                 QString *description = 0)
 {
     TranslatorQt tq;
-    if (!postNumber) {
+    if (post.isNull()) {
         return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                     tq.translate("addToReferencedPosts", "Internal logic error", "description"), false);
     }
@@ -169,24 +217,33 @@ static bool addToReferencedPosts(const QString &boardName, quint64 postNumber, q
             return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                         tq.translate("addToReferencedPosts", "Internal database error", "description"), false);
         }
-        foreach (const Post::RefKey &key, referencedPosts.keys()) {
+        foreach (const RefKey &key, referencedPosts.keys()) {
             if (!key.isValid()) {
                 return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                             tq.translate("addToReferencedPosts", "Internal logic error", "description"), false);
             }
-            Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == key.boardName
+            Result<Post> p = queryOne<Post, Post>(odb::query<Post>::board == key.boardName
                                                      && odb::query<Post>::number == key.postNumber);
-            if (post.error) {
+            if (p.error) {
                 return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                             tq.translate("addToReferencedPosts", "Internal database error", "description"), false);
             }
-            if (!post.data) {
+            if (!p.data) {
                 return bRet(error, tq.translate("addToReferencedPosts", "No such post", "error"), description,
                             tq.translate("addToReferencedPosts", "There is no such post", "description"), false);
             }
-            post->addReferencedBy(Post::RefKey(boardName, postNumber), threadNumber);
-            update(post);
-            Cache::removePost(key.boardName, key.postNumber);
+            Result<PostReference> ref = queryOne<PostReference, PostReference>(
+                        odb::query<PostReference>::sourcePost == post->id()
+                        && odb::query<PostReference>::targetPost == p.data->id());
+            if (ref.error) {
+                return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
+                            tq.translate("addToReferencedPosts", "Internal database error", "description"), false);
+            }
+            if (!ref.data) {
+                QSharedPointer<PostReference> nref(new PostReference(post, p.data));
+                t->persist(nref);
+                Cache::removePost(key.boardName, key.postNumber);
+            }
         }
         t.commit();
         return bRet(error, QString(), description, QString(), true);
@@ -196,10 +253,10 @@ static bool addToReferencedPosts(const QString &boardName, quint64 postNumber, q
     }
 }
 
-static bool removeFromReferencedPosts(quint64 postNumber, const QString &boardName, QString *error = 0)
+static bool removeFromReferencedPosts(quint64 postId, QString *error = 0)
 {
     TranslatorQt tq;
-    if (!postNumber || boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
+    if (!postId)
         return bRet(error, tq.translate("removeFromReferencedPosts", "Internal logic error", "description"), false);
     try {
         Transaction t;
@@ -207,13 +264,13 @@ static bool removeFromReferencedPosts(quint64 postNumber, const QString &boardNa
             return bRet(error, tq.translate("removeFromReferencedPosts", "Internal database error", "description"),
                         false);
         }
-        QList<Post> list = queryAll<Post>();
-        foreach (Post post, list) {
-            if (!post.removeReferencedBy(boardName, postNumber))
-                continue;
-            t->update(post);
-            Cache::removePost(post.board(), post.number());
+        QList<PostReference> posts = query<PostReference, PostReference>(
+                    odb::query<PostReference>::sourcePost == postId);
+        foreach (const PostReference &p, posts) {
+            QSharedPointer<Post> sp = p.targetPost().load();
+            Cache::removePost(sp->board(), sp->number());
         }
+        t->erase_query<PostReference>(odb::query<PostReference>::sourcePost == postId);
         t.commit();
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
@@ -287,15 +344,15 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
 static bool createPostInternal(const cppcms::http::request &req, const Tools::PostParameters &param,
                                const Tools::FileList &files, unsigned int bumpLimit, unsigned int postLimit,
                                QString *error, const QLocale &l, QString *description, QDateTime dt = QDateTime(),
-                               quint64 threadNumber = 0L, quint64 *pn = 0, Post::RefMap *referencedPosts = 0)
+                               quint64 threadNumber = 0L, quint64 *pn = 0, RefMap *referencedPosts = 0)
 {
     QString boardName = param.value("board");
     AbstractBoard *board = AbstractBoard::board(boardName);
     TranslatorQt tq(l);
     bSet(pn, quint64(0L));
     if (!board) {
-        return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
-                           tq.translate("createPostInternalt", "Internal logic error", "description"), false);
+        return bRet(error, tq.translate("createPostInternal", "Internal error", "error"), description,
+                           tq.translate("createPostInternal", "Internal logic error", "description"), false);
     }
     bool isThread = threadNumber;
     if (!threadNumber)
@@ -304,25 +361,25 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
     try {
         Transaction t;
         if (!t) {
-            return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
-                        tq.translate("createPostInternalt", "Internal database error", "description"), false);
+            return bRet(error, tq.translate("createPostInternal", "Internal error", "error"), description,
+                        tq.translate("createPostInternal", "Internal database error", "description"), false);
         }
         QString err;
         quint64 postNumber = dt.isValid() ? lastPostNumber(boardName, &err, tq.locale())
                                           : incrementPostCounter(boardName, &err, tq.locale());
         if (!postNumber) {
-            return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description, err,
+            return bRet(error, tq.translate("createPostInternal", "Internal error", "error"), description, err,
                         false);
         }
         Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::number == threadNumber
                                                          && odb::query<Thread>::board == boardName);
         if (thread.error) {
-            return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
-                        tq.translate("createPostInternalt", "Internal database error", "description"), false);
+            return bRet(error, tq.translate("createPostInternal", "Internal error", "error"), description,
+                        tq.translate("createPostInternal", "Internal database error", "description"), false);
         }
         if (!thread) {
-            return bRet(error, tq.translate("createPostInternalt", "No such thread", "error"), description,
-                        tq.translate("createPostInternalt", "There is no such thread", "description"), false);
+            return bRet(error, tq.translate("createPostInternal", "No such thread", "error"), description,
+                        tq.translate("createPostInternal", "There is no such thread", "description"), false);
         }
         QString ip = Tools::userIp(req);
         if (Tools::captchaEnabled(boardName)) {
@@ -330,32 +387,32 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
                 board->captchaUsed(ip);
             } else {
                 if (!board->isCaptchaValid(req, param, err)) {
-                    return bRet(error, tq.translate("createPostInternalt", "Invalid captcha", "error"), description,
+                    return bRet(error, tq.translate("createPostInternal", "Invalid captcha", "error"), description,
                                 err, false);
                 }
                 board->captchaSolved(ip);
             }
         }
         if (dt.isValid() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
-            return bRet(error, tq.translate("createPostInternalt", "No file", "error"), description,
-                        tq.translate("createPostInternalt", "Attempt to create a thread without attaching a file",
+            return bRet(error, tq.translate("createPostInternal", "No file", "error"), description,
+                        tq.translate("createPostInternal", "Attempt to create a thread without attaching a file",
                                      "description"), false);
         }
         if (post.text.isEmpty() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
-            return bRet(error, tq.translate("createPostInternalt", "No file/text", "error"), description,
-                        tq.translate("createPostInternalt", "Both file and comment are missing", "description"),
+            return bRet(error, tq.translate("createPostInternal", "No file/text", "error"), description,
+                        tq.translate("createPostInternal", "Both file and comment are missing", "description"),
                         false);
         }
         bool bump = post.email.compare("sage", Qt::CaseInsensitive);
         if (postLimit || bumpLimit) {
             Result<PostCount> postCount = queryOne<PostCount, Post>(odb::query<Post>::thread == thread->id());
             if (postCount.error || !postCount) {
-                return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
-                            tq.translate("createPostInternalt", "Internal database error", "description"), false);
+                return bRet(error, tq.translate("createPostInternal", "Internal error", "error"), description,
+                            tq.translate("createPostInternal", "Internal database error", "description"), false);
             }
             if (postLimit && (postCount->count >= (int) postLimit)) {
-                return bRet(error, tq.translate("createPostInternalt", "Post limit", "error"), description,
-                            tq.translate("createPostInternalt", "The thread has reached it's post limit",
+                return bRet(error, tq.translate("createPostInternal", "Post limit", "error"), description,
+                            tq.translate("createPostInternal", "The thread has reached it's post limit",
                                          "description"), false);
             }
             if (bumpLimit && (postCount->count >= (int) bumpLimit))
@@ -369,8 +426,8 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         FileTransaction ft(board);
         foreach (const Tools::File &f, post.files) {
             if (!ft.saveFile(f)) {
-                return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
-                            tq.translate("createPostInternalt", "Internal file system error", "description"), false);
+                return bRet(error, tq.translate("createPostInternal", "Internal error", "error"), description,
+                            tq.translate("createPostInternal", "Internal file system error", "description"), false);
             }
         }
         foreach (const QString &fhs, post.fileHashes) {
@@ -383,17 +440,14 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         p->setRawText(post.text);
         if (board->draftsEnabled() && post.draft)
             p->setDraft(true);
-        if (post.raw && registeredUserLevel(req) >= RegisteredUser::AdminLevel) {
+        bool raw = post.raw && registeredUserLevel(req) >= RegisteredUser::AdminLevel;
+        RefMap refs;
+        if (raw) {
             p->setText(post.text);
             p->setRawHtml(true);
         } else {
-            Post::RefMap refs;
             p->setText(Controller::processPostText(post.text, boardName, !p->draft() ? &refs : 0));
-            if (!p->draft()) {
-                if (!addToReferencedPosts(boardName, postNumber, threadNumber, refs, error, description))
-                    return false;
-                bSet(referencedPosts, refs);
-            }
+            bSet(referencedPosts, refs);
         }
         p->setShowTripcode(!Tools::cookieValue(req, "show_tripcode").compare("true", Qt::CaseInsensitive));
         if (bump) {
@@ -402,11 +456,14 @@ static bool createPostInternal(const cppcms::http::request &req, const Tools::Po
         }
         board->beforeStoring(p.data(), param, isThread);
         t->persist(p);
+        if (!raw && !p->draft() && !addToReferencedPosts(p, refs, error, description))
+            return false;
         bSet(pn, postNumber);
+        t.commit();
         ft.commit();
         return bRet(error, QString(), description, QString(), true);
     } catch (const odb::exception &e) {
-        return bRet(error, tq.translate("createPostInternalt", "Internal error", "error"), description,
+        return bRet(error, tq.translate("createPostInternal", "Internal error", "error"), description,
                     Tools::fromStd(e.what()), false);
     }
 }
@@ -435,6 +492,13 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                                                          && odb::query<Thread>::number == postNumber);
         if (thread.error)
             return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+        if (!removeFromReferencedPosts(post.data->id(), error))
+            return false;
+        typedef QLazySharedPointer<PostReference> PostReferenceSP;
+        QList<Post> referenced;
+        foreach (PostReferenceSP ref, post->referencedBy())
+            referenced << *ref.load()->sourcePost().load();
+        t->erase_query<PostReference>(odb::query<PostReference>::targetPost == post.data->id());
         if (thread) {
             QList<Post> posts = query<Post, Post>(odb::query<Post>::thread == thread->id());
             QStringList files;
@@ -448,20 +512,11 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
             board->deleteFiles(files);
         }
-        foreach (const Post::RefKey &key, post->referencedBy().keys()) {
-            Result<Post> p = queryOne<Post, Post>(odb::query<Post>::board == key.boardName
-                                                  && odb::query<Post>::number == key.postNumber
-                                                  && odb::query<Post>::rawHtml == false);
-            if (p.error)
-                return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
-            if (!p)
-                return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
-            p->setText(Controller::processPostText(p->rawText(), key.boardName));
-            Cache::removePost(key.boardName, key.postNumber);
-            update(p);
+        foreach (Post p, referenced) {
+            p.setText(Controller::processPostText(p.rawText(), p.board()));
+            Cache::removePost(p.board(), p.number());
+            t->update(p);
         }
-        if (!removeFromReferencedPosts(postNumber, boardName, error))
-            return false;
         Cache::removePost(boardName, postNumber);
         t.commit();
         return bRet(error, QString(), true);
@@ -659,8 +714,9 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
         QString err;
         QString desc;
         if (!createPostInternal(p.request, p.params, p.files, p.bumpLimit, p.postLimit, &err, p.locale, &desc,
-                                QDateTime(), 0L, postNumber, &p.referencedPosts))
+                                QDateTime(), 0L, postNumber, &p.referencedPosts)) {
             return bRet(p.error, err, p.description, desc, false);
+        }
         t.commit();
         return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
@@ -847,7 +903,7 @@ bool editPost(EditPostParameters &p)
             return bRet(p.error, tq.translate("editPost", "Subject is too long", "error"), false);
         post->setRawText(p.text);
         post->setDraft(board->draftsEnabled() && p.draft);
-        if (!post->draft() && !removeFromReferencedPosts(p.postNumber, p.boardName, p.error))
+        if (!post->draft() && !removeFromReferencedPosts(post.data->id(), p.error))
             return false;
         if (p.raw && lvl >= RegisteredUser::AdminLevel) {
             post->setText(p.text);
@@ -855,10 +911,8 @@ bool editPost(EditPostParameters &p)
         } else {
             post->setRawHtml(false);
             post->setText(Controller::processPostText(p.text, p.boardName, !post->draft() ? &p.referencedPosts : 0));
-            if (!post->draft() && !addToReferencedPosts(p.boardName, p.postNumber, post->thread().load()->number(),
-                                                        p.referencedPosts, p.error)) {
+            if (!post->draft() && !addToReferencedPosts(post.data, p.referencedPosts, p.error))
                 return false;
-            }
         }
         post->setEmail(p.email);
         post->setName(p.name);

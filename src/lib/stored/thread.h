@@ -2,13 +2,13 @@
 #define THREAD_H
 
 class Post;
+class PostReference;
 
 #include "../global.h"
 
 #include <QByteArray>
 #include <QDateTime>
 #include <QList>
-#include <QMap>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
@@ -82,20 +82,7 @@ PRAGMA_DB(object table("posts"))
 class OLOLORD_EXPORT Post
 {
 public:
-    struct RefKey
-    {
-        QString boardName;
-        quint64 postNumber;
-    public:
-        explicit RefKey();
-        explicit RefKey(const QString &board, quint64 post);
-    public:
-        bool isValid() const;
-    public:
-        bool operator <(const RefKey &other) const;
-    };
-public:
-    typedef QMap<RefKey, quint64> RefMap;
+    typedef QList< QLazyWeakPointer<PostReference> > PostReferences;
 private:
     PRAGMA_DB(id auto)
     quint64 id_;
@@ -117,7 +104,10 @@ private:
     QString posterIp_;
     bool rawHtml_;
     QString rawText_;
-    QByteArray referencedBy_;
+    PRAGMA_DB(value_not_null value_type("INTEGER") inverse(targetPost_))
+    PostReferences referencedBy_;
+    PRAGMA_DB(value_not_null value_type("INTEGER") inverse(sourcePost_))
+    PostReferences refersTo_;
     QString subject_;
     QString text_;
     QByteArray userData_;
@@ -134,8 +124,6 @@ public:
     QDateTime dateTime() const;
     bool bannedFor() const;
     bool showTripcode() const;
-    bool addReferencedBy(const RefKey &key, quint64 threadNumber);
-    bool addReferencedBy(const QString &boardName, quint64 postNumber, quint64 threadNumber);
     QString email() const;
     QStringList files() const;
     QByteArray hashpass() const;
@@ -145,9 +133,8 @@ public:
     QString posterIp() const;
     bool rawHtml() const;
     QString rawText() const;
-    RefMap referencedBy() const;
-    bool removeReferencedBy(const RefKey &key);
-    bool removeReferencedBy(const QString &baordName, quint64 postNumber);
+    PostReferences referencedBy() const;
+    PostReferences refersTo() const;
     void setBannedFor(bool banned);
     void setShowTripcode(bool show);
     void setEmail(const QString &email);
@@ -156,7 +143,6 @@ public:
     void setDraft(bool draft);
     void setRawHtml(bool raw);
     void setRawText(const QString &text);
-    void setReferencedBy(const RefMap &map);
     void setSubject(const QString &subject);
     void setText(const QString &text);
     void setUserData(const QVariant &data);
@@ -173,6 +159,26 @@ struct OLOLORD_EXPORT PostCount
 {
     PRAGMA_DB(column("count(" + Post::id_ + ")"))
     int count;
+};
+
+PRAGMA_DB(object table("postReferences"))
+class OLOLORD_EXPORT PostReference
+{
+private:
+    PRAGMA_DB(id auto)
+    quint64 id_;
+    PRAGMA_DB(not_null)
+    QLazySharedPointer<Post> sourcePost_;
+    PRAGMA_DB(not_null)
+    QLazySharedPointer<Post> targetPost_;
+public:
+    explicit PostReference();
+    explicit PostReference(QSharedPointer<Post> sourcePost, QSharedPointer<Post> targetPost);
+public:
+    QLazySharedPointer<Post> sourcePost() const;
+    QLazySharedPointer<Post> targetPost() const;
+private:
+    friend class odb::access;
 };
 
 #endif // THREAD_H

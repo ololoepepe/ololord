@@ -650,11 +650,16 @@ The default is true.</source>
     </message>
 </context>
 <context>
-    <name>createPostInternalt</name>
+    <name>createPostInternal</name>
     <message>
         <source>Internal error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal database error</source>
@@ -710,11 +715,6 @@ The default is true.</source>
         <source>Internal file system error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка файловой системы</translation>
-    </message>
-    <message>
-        <source>Internal logic error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>

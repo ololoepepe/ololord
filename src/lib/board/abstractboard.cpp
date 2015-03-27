@@ -844,6 +844,15 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             bool op = (post.number() == threadNumber);
             p->fixed = op && thread->fixed();
             p->closed = op && !thread->postingEnabled();
+            typedef QLazySharedPointer<PostReference> PostReferenceSP;
+            foreach (PostReferenceSP reference, post.referencedBy()) {
+                QSharedPointer<Post> rp = reference.load()->sourcePost().load();
+                Content::Post::Ref ref;
+                ref.boardName = Tools::toStd(rp->board());
+                ref.postNumber = rp->number();
+                ref.threadNumber = rp->thread().load()->number();
+                p->referencedBy.push_back(ref);
+            }
             t.commit();
         } catch (const odb::exception &e) {
             return bRet(ok, false, error, Tools::fromStd(e.what()), Content::Post());
@@ -865,14 +874,6 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 p->flagName = "default.png";
                 p->countryName = "Unknown country";
             }
-        }
-        Post::RefMap refs = post.referencedBy();
-        foreach (const Post::RefKey &key, refs.keys()) {
-            Content::Post::Ref ref;
-            ref.boardName = Tools::toStd(key.boardName);
-            ref.postNumber = key.postNumber;
-            ref.threadNumber = refs.value(key);
-            p->referencedBy.push_back(ref);
         }
     }
     Content::Post pp = *p;
