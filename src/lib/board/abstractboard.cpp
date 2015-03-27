@@ -298,7 +298,6 @@ void AbstractBoard::createThread(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    Tools::log(app, "create_thread", "begin", logTarget);
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_thread", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
