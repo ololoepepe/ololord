@@ -956,6 +956,7 @@ bool editPost(EditPostParameters &p)
         if (p.subject.length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, p.boardName)))
             return bRet(p.error, tq.translate("editPost", "Subject is too long", "error"), false);
         post->setRawText(p.text);
+        bool wasDraft = post->draft();
         post->setDraft(board->draftsEnabled() && p.draft);
         if (!post->draft() && !removeFromReferencedPosts(post.data->id(), p.error))
             return false;
@@ -979,7 +980,8 @@ bool editPost(EditPostParameters &p)
                 t->update(thread);
             }
         }
-        post->setModificationDateTime(QDateTime::currentDateTimeUtc());
+        if (!wasDraft)
+            post->setModificationDateTime(QDateTime::currentDateTimeUtc());
         update(post);
         Cache::removePost(p.boardName, p.postNumber);
         t.commit();
