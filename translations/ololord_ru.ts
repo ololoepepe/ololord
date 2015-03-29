@@ -1891,14 +1891,6 @@ The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
 По умолчанию ffmpeg (UNIX) или ffmpeg.exe (Windows).</translation>
     </message>
     <message>
-        <source>List of IP addresses which are not logged.
-IP&apos;s are separated by commas. Wildcard matching is used.
-Example: 127.0.0.1,192.168.0.*</source>
-        <translation>Список IP-адресов, которые не логгируются.
-IP-адреса отделяются запятыми. Используется шаблон wildcard
-Пример: 127.0.0.1,192.168.0.*</translation>
-    </message>
-    <message>
         <source>Site protocol.
 Either http or https</source>
         <translation>Протокол сайта.
@@ -1925,6 +1917,14 @@ The default is true.</source>
 The default is true.</source>
         <translation>Определяет, включены ли черновики.
 По умолчанию true.</translation>
+    </message>
+    <message>
+        <source>List of IP addresses which are not logged.
+IP&apos;s are represented as ranges and are separated by commas.
+Example: 127.0.0.1,192.168.0.1-192.168.0.255</source>
+        <translation>Список IP-адресов, которые не логгируются.
+IP-адреса записываются в виде диапазонов и отделяются запятыми.
+Пример: 127.0.0.1,192.168.0.1-192.168.0.255</translation>
     </message>
 </context>
 <context>

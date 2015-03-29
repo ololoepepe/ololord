@@ -91,11 +91,11 @@ IpRange::IpRange(const QString &text, const QChar &separator)
     if (sl.size() > 2)
         return;
     bool ok = false;
-    start = sl.first().toUInt(&ok);
+    start = ipNum(sl.first(), &ok);
     if (!ok)
         return;
     if (sl.size() == 2) {
-        end = sl.at(1).toUInt(&ok);
+        end = ipNum(sl.at(1), &ok);
         if (!ok) {
             start = 0;
             return;
@@ -112,10 +112,10 @@ IpRange::IpRange(const QStringList &sl, int startIndex, int endIndex)
     if (startIndex < 0 || endIndex < 0 || startIndex >= sl.size() || endIndex >= sl.size())
         return;
     bool ok = false;
-    start = sl.at(startIndex).toUInt(&ok);
+    start = ipNum(sl.at(startIndex), &ok);
     if (!ok)
         return;
-    end = sl.at(endIndex).toUInt(&ok);
+    end = ipNum(sl.at(endIndex), &ok);
     if (!ok) {
         start = 0;
         return;
@@ -171,7 +171,7 @@ bool IpBanInfo::isValid() const
 static QMutex cityNameMutex(QMutex::Recursive);
 static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
-static QList<QRegExp> loggingSkipIps;
+static QList<IpRange> loggingSkipIps;
 static QMutex loggingSkipIpsMutex(QMutex::Recursive);
 static QMutex storagePathMutex(QMutex::Recursive);
 static QMutex timezoneMutex(QMutex::Recursive);
@@ -424,9 +424,10 @@ void log(const cppcms::http::request &req, const QString &action, const QString 
     do_once(init)
         resetLoggingSkipIps();
     QString ip = userIp(req);
+    int n = ipNum(ip);
     QMutexLocker locker(&loggingSkipIpsMutex);
-    foreach (const QRegExp &rx, loggingSkipIps) {
-        if (rx.exactMatch(ip))
+    foreach (const IpRange &r, loggingSkipIps) {
+        if (r.in(n))
             return;
     }
     locker.unlock();
@@ -542,8 +543,12 @@ void resetLoggingSkipIps()
                                                                                           QString::SkipEmptyParts);
     QMutexLocker locker(&loggingSkipIpsMutex);
     loggingSkipIps.clear();
-    foreach (const QString &s, list)
-        loggingSkipIps << QRegExp(s, Qt::CaseSensitive, QRegExp::Wildcard);
+    foreach (const QString &s, list) {
+        IpRange r(s);
+        if (!r.isValid())
+            continue;
+        loggingSkipIps << r;
+    }
 }
 
 QStringList rules(const QString &prefix, const QLocale &l)
