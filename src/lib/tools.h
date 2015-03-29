@@ -36,6 +36,7 @@ class locale;
 #include <BCoreApplication>
 
 #include <QByteArray>
+#include <QChar>
 #include <QDateTime>
 #include <QList>
 #include <QMap>
@@ -57,6 +58,32 @@ struct File
 };
 
 typedef QList<File> FileList;
+
+struct OLOLORD_EXPORT IpRange
+{
+    unsigned int start;
+    unsigned int end;
+public:
+    explicit IpRange(const QString &text, const QChar &separator = '-');
+    explicit IpRange(const QStringList &sl, int startIndex = 0, int endIndex = 1);
+public:
+    void clear();
+    bool in(unsigned int ip) const;
+    bool in(const QString &ip) const;
+    bool isValid() const;
+public:
+    bool operator <(const IpRange &other) const;
+};
+
+struct OLOLORD_EXPORT IpBanInfo
+{
+    IpRange range;
+    int level;
+public:
+    explicit IpBanInfo(const QStringList &sl);
+public:
+    bool isValid() const;
+};
 
 struct Post
 {

@@ -8,6 +8,7 @@ class QLocale;
 
 #include "global.h"
 #include "controller/baseboard.h"
+#include "tools.h"
 
 #include <BCoreApplication>
 #include <BeQt>
@@ -20,17 +21,11 @@ class QLocale;
 namespace Cache
 {
 
-struct OLOLORD_EXPORT IpBanInfo
-{
-    QString ip;
-    int level;
-};
-
 typedef void (*ClearCacheFunction)();
 typedef void (*SetMaxCacheSizeFunction)(int size);
 typedef QMap<QString, ClearCacheFunction> ClearCacheFunctionMap;
 typedef QMap<QString, SetMaxCacheSizeFunction> SetMaxCacheSizeFunctionMap;
-typedef QList<IpBanInfo> IpBanInfoList;
+typedef QList<Tools::IpBanInfo> IpBanInfoList;
 
 const int defaultDynamicFilesCacheSize = 100 * BeQt::Megabyte;
 const int defaultIpBanInfoListCacheSize = 10 * BeQt::Megabyte;
