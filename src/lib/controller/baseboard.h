@@ -52,6 +52,7 @@ public:
     std::string flagName;
     bool hidden;
     std::string ip;
+    std::string modificationDateTime;
     std::string name;
     std::string nameRaw;
     unsigned long long number;
@@ -115,6 +116,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     unsigned int maxPasswordLength;
     std::string megabytesText;
     int moder;
+    std::string modificationDateTimeText;
     std::string noCaptchaText;
     std::string notLoggedInText;
     std::string openThreadText;

@@ -122,6 +122,7 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     board_ = board;
     number_ = number;
     dateTime_ = dateTime.toUTC();
+    modificationDateTime_ = QDateTime().toUTC();
     hashpass_ = hashpass;
     bannedFor_ = false;
     showTripcode_ = false;
@@ -150,6 +151,11 @@ quint64 Post::number() const
 QDateTime Post::dateTime() const
 {
     return QDateTime(dateTime_.date(), dateTime_.time(), Qt::UTC);
+}
+
+QDateTime Post::modificationDateTime() const
+{
+    return QDateTime(modificationDateTime_.date(), modificationDateTime_.time(), Qt::UTC);
 }
 
 bool Post::bannedFor() const
@@ -220,6 +226,11 @@ Post::PostReferences Post::referencedBy() const
 Post::PostReferences Post::refersTo() const
 {
     return refersTo_;
+}
+
+void Post::setModificationDateTime(const QDateTime &dt)
+{
+    modificationDateTime_ = dt.toUTC();
 }
 
 void Post::setBannedFor(bool banned)

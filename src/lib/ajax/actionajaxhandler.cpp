@@ -30,6 +30,7 @@ static cppcms::json::object toJson(const Content::Post &post)
     o["closed"] = post.closed;
     o["countryName"] = post.countryName;
     o["dateTime"] = post.dateTime;
+    o["modificationDateTime"] = post.modificationDateTime;
     o["email"] = post.email;
     cppcms::json::array files;
     for (std::list<Content::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {

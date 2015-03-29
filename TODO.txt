@@ -7,6 +7,7 @@
 [done] Save files outside database transaction
 [done] Delete files outside transaction
 [done] Use ranges for IP addresses
-* Display post modification time
+[done] Display post modification time
+[done] Fix tripcode displaying
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

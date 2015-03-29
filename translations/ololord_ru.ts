@@ -1564,6 +1564,11 @@ Your choice:</source>
         <comment>postFormLabelDraft</comment>
         <translation>Черновик:</translation>
     </message>
+    <message>
+        <source>Last modified:</source>
+        <comment>modificationDateTimeText</comment>
+        <translation>Последнее изменение:</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

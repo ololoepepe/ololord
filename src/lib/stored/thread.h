@@ -93,6 +93,7 @@ private:
     quint64 number_;
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
+    QDateTime modificationDateTime_;
     bool bannedFor_;
     bool showTripcode_;
     QString email_;
@@ -124,6 +125,7 @@ public:
     QString board() const;
     quint64 number() const;
     QDateTime dateTime() const;
+    QDateTime modificationDateTime() const;
     bool bannedFor() const;
     bool showTripcode() const;
     QString email() const;
@@ -138,6 +140,7 @@ public:
     QString rawText() const;
     PostReferences referencedBy() const;
     PostReferences refersTo() const;
+    void setModificationDateTime(const QDateTime &dt);
     void setBannedFor(bool banned);
     void setShowTripcode(bool show);
     void setEmail(const QString &email);

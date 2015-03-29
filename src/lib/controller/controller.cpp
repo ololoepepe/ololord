@@ -209,6 +209,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
         if (!boards.contains("*") && !boards.contains(board->name()))
             c.moder = 0;
     }
+    c.modificationDateTimeText = ts.translate("initBaseBoard", "Last modified:", "modificationDateTimeText");
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");

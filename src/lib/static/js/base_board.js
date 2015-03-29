@@ -290,7 +290,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     else
         name.innerHTML = res["name"];
     var tripcode = post.querySelector("[name='tripcode']");
-    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"]) {
+    if (!!res["showTripcode"] && "" !== res["tripcode"]) {
         tripcode.style.display = "";
         tripcode.appendChild(document.createTextNode(res["tripcode"]));
     } else {
@@ -337,6 +337,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         }
     }
     var blockquoteThread = !!document.getElementById("currentThreadNumber");
+    var modificationDateTimeTd = post.querySelector("[name='modificationDateTimeTd']");
     var bannedForTd = post.querySelector("[name='bannedForTd']");
     var referencedByTd = post.querySelector("[name='referencedByTd']");
     var oneFileTr = post.querySelector("[name='files']");
@@ -356,8 +357,16 @@ lord.createPostNode = function(res, permanent, boardName) {
         post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
         if (blockquoteThread)
             textManyFiles.className = "blockquoteThread";
+        modificationDateTimeTd.colSpan = res["files"].length + 2;
         bannedForTd.colSpan = res["files"].length + 2;
         referencedByTd.colSpan = res["files"].length + 2;
+    }
+    var modificationDateTime = post.querySelector("[name='modificationDateTime']");
+    if ("" !== res["modificationDateTime"]) {
+        modificationDateTime.style.display = "";
+        modificationDateTime.childNodes[0].nodeValue += " " + res["modificationDateTime"];
+    } else {
+        modificationDateTime.parentNode.removeChild(modificationDateTime);
     }
     var bannedFor = post.querySelector("[name='bannedFor']");
     if (!!res["bannedFor"])

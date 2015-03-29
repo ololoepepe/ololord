@@ -979,6 +979,7 @@ bool editPost(EditPostParameters &p)
                 t->update(thread);
             }
         }
+        post->setModificationDateTime(QDateTime::currentDateTimeUtc());
         update(post);
         Cache::removePost(p.boardName, p.postNumber);
         t.commit();

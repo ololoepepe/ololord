@@ -816,6 +816,7 @@ unsigned int AbstractBoard::threadsPerPage() const
 Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::request &req, bool *ok,
                                           QString *error) const
 {
+    static const QString DateTimeFormat = "dd/MM/yyyy ddd hh:mm:ss";
     TranslatorQt tq(req);
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty()) {
@@ -906,7 +907,11 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
     int regLvl = Database::registeredUserLevel(req);
     if (regLvl >= RegisteredUser::ModerLevel)
         pp.ip = Tools::toStd(post.posterIp());
-    pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
+    pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), DateTimeFormat));
+    if (!post.modificationDateTime().isNull()) {
+        pp.modificationDateTime = Tools::toStd(l.toString(Tools::dateTime(post.modificationDateTime(), req),
+                                                          DateTimeFormat));
+    }
     pp.hidden = (Tools::cookieValue(req, "postHidden" + name() + QString::number(post.number())) == "true");
     pp.name = Tools::toStd(Controller::toHtml(post.name()));
     if (pp.name.empty())

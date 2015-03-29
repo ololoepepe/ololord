@@ -255,7 +255,7 @@
         <% else %>
             <%= post.name | raw %>
         <% end %>
-        <% if ( post.showRegistered && !post.tripcode.empty() && post.showTripcode ) %>
+        <% if ( !post.tripcode.empty() && post.showTripcode ) %>
             <span class="tripcode"><%= post.tripcode %></span>
         <% end %>
         <% if ( content.showWhois && !post.flagName.empty() ) %>
@@ -418,6 +418,21 @@
                     </td>
                 </tr>
             <% end %>
+            <% if ( !post.modificationDateTime.empty() ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
+                        <span class="modificationDateTime"><%= modificationDateTimeText %>
+                            <%= post.modificationDateTime %></span>
+                    </td>
+                </tr>
+            <% end %>
+            <% if ( post.bannedFor ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
+                        <span class="bannedFor"><%= bannedForText %></span>
+                    <td>
+                </tr>
+            <% end %>
             <% if ( !post.referencedBy.empty() ) %>
                 <tr name="referencedByTr">
             <% else %>
@@ -442,13 +457,6 @@
                     </span>
                 <td>
             </tr>
-            <% if ( post.bannedFor ) %>
-                <tr>
-                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
-                        <span class="bannedFor"><%= bannedForText %></span>
-                    <td>
-                </tr>
-            <% end %>
         </tbody>
     </table>
 </div>
@@ -570,6 +578,12 @@
                     <blockquote name="textManyFiles"></blockquote>
                 </td>
             <tr>
+            <tr>
+                <td name="modificationDateTimeTd" colspan="2">
+                    <span name="modificationDateTime" class="modificationDateTime"
+                          style="display: none;"><%= modificationDateTimeText %></span>
+                <td>
+            </tr>
             <tr>
                 <td name="bannedForTd" colspan="2">
                     <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
