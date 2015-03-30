@@ -139,6 +139,28 @@ lord.showPopup = function(text, timeout, additionalClassNames) {
     }, 5000);
 };
 
+lord.resetCaptcha = function() {
+    if (!!grecaptcha)
+        grecaptcha.reset();
+    var noCaptcha = document.body.querySelectorAll(".noCaptchaText");
+    if (!noCaptcha)
+        return;
+    for (var i = 0; i < noCaptcha.length; ++i) {
+        var nc = noCaptcha[i];
+        var rx = /\d+/;
+        var val = nc.childNodes[0].nodeValue;
+        var ind = val.search(rx);
+        if (ind < 0)
+            continue;
+        var c = +val.substr(ind, ind + val.match(rx)[0].length);
+        if (isNaN(c))
+            continue;
+        var cc = (c - 1).toString();
+        nc.childNodes[0].nodeValue = val.replace(c.toString(), cc);
+    }
+    //TODO: Handle situations when there are no posts without captcha left
+};
+
 lord.traverseChildren = function(elem) {
     var children = [];
     var q = [];
@@ -1217,7 +1239,7 @@ lord.postedOnBoard = function() {
         var errmsg = iframeDocument.querySelector("#errorMessage");
         var errdesc = iframeDocument.querySelector("#errorDescription");
         lord.showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML);
-        grecaptcha.reset();
+        resetCaptcha();
     }
 };
 

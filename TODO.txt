@@ -9,5 +9,6 @@
 [done] Use ranges for IP addresses
 [done] Display post modification time
 [done] Fix tripcode displaying
+* Fix "no captcha required" message
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
