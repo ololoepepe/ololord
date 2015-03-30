@@ -1,14 +1,3 @@
-[done] Store file infos in database
-[done] Check file suffixes when saving files
-[done] Store additional post data as QByteArray (read as QVariant)
-[done] Store post references in a separate table
-[done] Check captcha outside database transaction
-[done] Delete temporary files if transaction fails
-[done] Save files outside database transaction
-[done] Delete files outside transaction
-[done] Use ranges for IP addresses
-[done] Display post modification time
-[done] Fix tripcode displaying
 * Fix "no captcha required" message
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

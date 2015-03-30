@@ -1,3 +1,16 @@
+=== ololord 0.1.0-rc2 (30 March 2015) ===
+    * Store file infos in database
+    * Check file suffixes when saving files
+    * Store additional post data as QByteArray (read as QVariant)
+    * Store post references in a separate table
+    * Check captcha outside database transaction
+    * Delete temporary files if transaction fails
+    * Save files outside database transaction
+    * Delete files outside transaction
+    * Use ranges for IP addresses
+    * Display post modification time
+    * Fix tripcode displaying
+
 === ololord 0.1.0-rc (25 March 2015) ===
     * Rename pre-moderation system into drafts system
     * Fix markup
