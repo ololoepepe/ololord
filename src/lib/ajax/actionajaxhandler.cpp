@@ -157,6 +157,25 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     Tools::log(server, "ajax_edit_post", "success", logTarget);
 }
 
+void ActionAjaxHandler::getCaptchaQuota(std::string boardName)
+{
+    QString bn = Tools::fromStd(boardName);
+    QString logTarget = bn;
+    Tools::log(server, "ajax_get_captcha_quota", "begin", logTarget);
+    if (!testBan(bn, true))
+        return Tools::log(server, "ajax_get_captcha_quota", "fail:ban", logTarget);
+    AbstractBoard *board = AbstractBoard::board(bn);
+    TranslatorStd ts;
+    if (!board) {
+        std::string err = ts.translate("ActionAjaxHandler", "No such board", "error");
+        server.return_error(err);
+        Tools::log(server, "ajax_get_captcha_quota", "fail:" + Tools::fromStd(err), logTarget);
+        return;
+    }
+    server.return_result(board->captchaQuota(server.request()));
+    Tools::log(server, "ajax_get_captcha_quota", "success", logTarget);
+}
+
 void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash)
 {
     QString bn = Tools::fromStd(boardName);
@@ -231,6 +250,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
     list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
+    list << Handler("get_captcha_quota", cppcms::rpc::json_method(&ActionAjaxHandler::getCaptchaQuota, self),
+                    method_role);
     list << Handler("get_file_existence", cppcms::rpc::json_method(&ActionAjaxHandler::getFileExistence, self),
                     method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);

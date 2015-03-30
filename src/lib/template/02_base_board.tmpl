@@ -143,14 +143,14 @@
                         </td>
                         <td id="googleCaptcha<%= position %>" class="postformField">
                             <% if ( content.captchaEnabled ) %>
-                                <% include captchaField(position) %>
-                            <% else %>
                                 <% if ( content.captchaQuota > 0 ) %>
                                     <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
                                         <%= captchaQuota %></span>
                                 <% else %>
-                                    <span class="noCaptchaText"><%= noCaptchaText %></span>
+                                    <% include captchaField(position) %>
                                 <% end %>
+                            <% else %>
+                                <span class="noCaptchaText"><%= noCaptchaText %></span>
                             <% end %>
                         </td>
                     </tr>
@@ -495,6 +495,8 @@
 <input type="hidden" id="findSourceWithIqdbText" value="<%= findSourceWithIqdbText %>" />
 <input type="hidden" id="hidePostFormText" value="<%= hidePostFormText %>" />
 <input type="hidden" id="showPostFormText" value="<%= showPostFormText %>" />
+<input type="hidden" id="noCaptchaText" value="<%= noCaptchaText %>" />
+<input type="hidden" id="captchaQuotaText" value="<%= captchaQuotaText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
         <% item %>
@@ -662,6 +664,13 @@
          </tr>
     </tbody>
 </table>
+<% if ( content.captchaEnabled ) %>
+    <div id="hiddenCaptcha" style="display: none;">
+        <% if ( content.captchaQuota > 0 ) %>
+            <% include captchaField("Top") %>
+        <% end %>
+    </div>
+<% end %>
 <% end template %>
 
 <% template boardHead() %>

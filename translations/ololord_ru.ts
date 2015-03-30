@@ -289,6 +289,11 @@ The default is true.</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>No such board</source>
+        <comment>error</comment>
+        <translation>Нет такой доски</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>

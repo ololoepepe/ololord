@@ -1,3 +1,4 @@
-* Fix "no captcha required" message
+[done] Fix "no captcha required" message
+* Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

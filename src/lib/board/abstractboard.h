@@ -115,6 +115,7 @@ public:
     unsigned int bumpLimit() const;
     unsigned int captchaQuota() const;
     unsigned int captchaQuota(const QString &ip) const;
+    unsigned int captchaQuota(const cppcms::http::request &req) const;
     void captchaSolved(const QString &ip);
     void captchaUsed(const QString &ip);
     virtual void createPost(cppcms::application &app);

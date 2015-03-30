@@ -171,7 +171,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.bytesText = ts.translate("initBaseBoard", "Byte(s)", "bytesText");
     c.bumpLimitReachedText = ts.translate("initBaseBoard", "Bump limit reached", "bumpLimitReachedText");
     QString ip = Tools::userIp(req);
-    c.captchaEnabled = Tools::captchaEnabled(board->name()) && !board->captchaQuota(ip);
+    c.captchaEnabled = Tools::captchaEnabled(board->name());
     c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
     c.captchaQuota = board->captchaQuota(ip);
     c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");

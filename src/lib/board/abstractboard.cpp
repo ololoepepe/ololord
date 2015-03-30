@@ -287,6 +287,11 @@ unsigned int AbstractBoard::captchaQuota(const QString &ip) const
     return captchaQuotaMap.value(ip);
 }
 
+unsigned int AbstractBoard::captchaQuota(const cppcms::http::request &req) const
+{
+    return captchaQuota(Tools::userIp(req));
+}
+
 void AbstractBoard::captchaSolved(const QString &ip)
 {
     if (ip.isEmpty())

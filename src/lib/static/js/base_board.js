@@ -12,8 +12,8 @@ lord.popups = [];
 lord.images = {};
 lord.img = null;
 lord.postFormVisible = {
-    "top": false,
-    "bottom": false
+    "Top": false,
+    "Bottom": false
 };
 
 /*Functions*/
@@ -139,26 +139,54 @@ lord.showPopup = function(text, timeout, additionalClassNames) {
     }, 5000);
 };
 
-lord.resetCaptcha = function() {
+lord.reloadCaptchaFunction = function() {
     if (!!grecaptcha)
         grecaptcha.reset();
-    var noCaptcha = document.body.querySelectorAll(".noCaptchaText");
-    if (!noCaptcha)
-        return;
-    for (var i = 0; i < noCaptcha.length; ++i) {
-        var nc = noCaptcha[i];
-        var rx = /\d+/;
-        var val = nc.childNodes[0].nodeValue;
-        var ind = val.search(rx);
-        if (ind < 0)
-            continue;
-        var c = +val.substr(ind, ind + val.match(rx)[0].length);
-        if (isNaN(c))
-            continue;
-        var cc = (c - 1).toString();
-        nc.childNodes[0].nodeValue = val.replace(c.toString(), cc);
+};
+
+lord.resetCaptcha = function() {
+    var captcha = document.getElementById("googleCaptcha");
+    if (!!captcha) {
+        var boardName = document.getElementById("currentBoardName").value;
+        lord.ajaxRequest("get_captcha_quota", [boardName], 8, function(res) {
+            res = +res;
+            if (isNaN(res))
+                return;
+            var hiddenCaptcha = document.getElementById("hiddenCaptcha");
+            if (res > 0) {
+                hiddenCaptcha.appendChild(captcha);
+                ["Top", "Bottom"].forEach(function (pos) {
+                    var td = document.getElementById("googleCaptcha" + pos);
+                    for (var i = 0; i < td.children.length; ++i) {
+                        var child = td.children[i];
+                        if (child == captcha)
+                            continue;
+                        td.removeChild(child);
+                    }
+                    var span = document.createElement("span");
+                    span.className = "noCaptchaText";
+                    var text = document.getElementById("noCaptchaText").value + ". "
+                        + document.getElementById("captchaQuotaText").value + " " + res;
+                    span.appendChild(document.createTextNode(text));
+                    td.appendChild(span);
+                });
+            } else {
+                ["Top", "Bottom"].forEach(function (pos) {
+                    var td = document.getElementById("googleCaptcha" + pos);
+                    for (var i = 0; i < td.children.length; ++i) {
+                        var child = td.children[i];
+                        if (child == captcha)
+                            continue;
+                        td.removeChild(child);
+                    }
+                });
+                var pos = !!lord.postFormVisible["Bottom"] ? "Bottom" : "Top";
+                document.getElementById("googleCaptcha" + pos).appendChild(captcha);
+            }
+            if (!!lord.reloadCaptchaFunction && "hiddenCaptcha" !== captcha.parentNode.id)
+                lord.reloadCaptchaFunction();
+        });
     }
-    //TODO: Handle situations when there are no posts without captcha left
 };
 
 lord.traverseChildren = function(elem) {
@@ -421,8 +449,8 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     post.className += " newPost";
     post.onmouseover = function() {
-        post.className = post.className.replace(" newPost", "");
-        post.onmouseover = null;
+        this.className = this.className.replace(" newPost", "");
+        this.onmouseover = null;
     }
     if (res["number"] === res["threadNumber"])
         post.className = post.className.replace("post", "opPost");
@@ -597,13 +625,12 @@ lord.showHidePostForm = function(position) {
     } else {
         theButton.innerHTML = document.getElementById("hidePostFormText").value;
         document.getElementById("postForm" + position).className = "postFormVisible";
+        var p = ("Top" === position) ? "Bottom" : "Top";
+        if (lord.postFormVisible[p])
+            lord.showHidePostForm(p);
         var captcha = document.getElementById("googleCaptcha");
-        if (!!captcha) {
-            var p = ("Top" === position) ? "Bottom" : "Top";
-            if (lord.postFormVisible[p])
-                lord.showHidePostForm(p);
+        if (!!captcha && "hiddenCaptcha" !== captcha.parentNode.id)
             document.getElementById("googleCaptcha" + position).appendChild(captcha);
-        }
     }
     lord.postFormVisible[position] = !lord.postFormVisible[position];
 };
@@ -648,8 +675,8 @@ lord.deletePost = function(boardName, postNumber, fromThread) {
                         link.parentNode.replaceChild(document.createTextNode(text), link);
                     }
                 }
-                if (!!postPreviews[boardName + "/" + postNumber])
-                    delete postPreviews[boardName + "/" + postNumber];
+                if (!!lord.postPreviews[boardName + "/" + postNumber])
+                    delete lord.postPreviews[boardName + "/" + postNumber];
             }
         });
     });
@@ -1133,6 +1160,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
         lord.img = document.createElement("img");
         lord.img.src = href;
+        //TODO: Set width and height
     } else if ("video/webm" === type) {
         lord.img = document.createElement("video");
         lord.img.controls = "controls";
