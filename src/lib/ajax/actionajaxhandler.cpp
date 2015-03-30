@@ -3,7 +3,6 @@
 #include "database.h"
 #include "controller/controller.h"
 #include "controller/baseboard.h"
-#include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
 
@@ -31,6 +30,7 @@ static cppcms::json::object toJson(const Content::Post &post)
     o["closed"] = post.closed;
     o["countryName"] = post.countryName;
     o["dateTime"] = post.dateTime;
+    o["modificationDateTime"] = post.modificationDateTime;
     o["email"] = post.email;
     cppcms::json::array files;
     for (std::list<Content::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {
@@ -142,13 +142,14 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
     p.draft = params.at("draft").boolean();
     QString err;
+    p.error = &err;
     if (!Database::editPost(p)) {
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_edit_post", "fail:" + err, logTarget);
         return;
     }
     cppcms::json::object refs;
-    foreach (const Post::RefKey &key, p.referencedPosts.keys()) {
+    foreach (const Database::RefKey &key, p.referencedPosts.keys()) {
         std::string k = Tools::toStd(key.boardName) + "/" + Tools::toStd(QString::number(key.postNumber));
         refs[k] = Tools::toStd(QString::number(p.referencedPosts.value(key)));
     }
@@ -165,7 +166,7 @@ void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash
     if (!testBan(bn, true))
         return Tools::log(server, "ajax_get_file_existence", "fail:ban", logTarget);
     bool ok = false;
-    bool exists = Database::fileHashExists(h, &ok);
+    bool exists = Database::fileExists(h, &ok);
     TranslatorStd ts;
     if (!ok) {
         std::string err = ts.translate("ActionAjaxHandler", "Internal database error", "error");

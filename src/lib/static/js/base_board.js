@@ -139,6 +139,28 @@ lord.showPopup = function(text, timeout, additionalClassNames) {
     }, 5000);
 };
 
+lord.resetCaptcha = function() {
+    if (!!grecaptcha)
+        grecaptcha.reset();
+    var noCaptcha = document.body.querySelectorAll(".noCaptchaText");
+    if (!noCaptcha)
+        return;
+    for (var i = 0; i < noCaptcha.length; ++i) {
+        var nc = noCaptcha[i];
+        var rx = /\d+/;
+        var val = nc.childNodes[0].nodeValue;
+        var ind = val.search(rx);
+        if (ind < 0)
+            continue;
+        var c = +val.substr(ind, ind + val.match(rx)[0].length);
+        if (isNaN(c))
+            continue;
+        var cc = (c - 1).toString();
+        nc.childNodes[0].nodeValue = val.replace(c.toString(), cc);
+    }
+    //TODO: Handle situations when there are no posts without captcha left
+};
+
 lord.traverseChildren = function(elem) {
     var children = [];
     var q = [];
@@ -201,7 +223,7 @@ lord.createPostFile = function(f, boardName) {
     divFileSize.className = "postFileSize";
     divFileSize.appendChild(document.createTextNode("(" + f["size"] + ")"));
     file.appendChild(divFileSize);
-    if (f["type"] == "image") {
+    if ("image/png" === f["type"] || "image/jpeg" === f["type"] || "image/gif" === f["type"]) {
         var divFileSearch = document.createElement("div");
         divFileSearch.className = "postFileSearch";
         var siteDomain = document.getElementById("siteDomain").value;
@@ -230,7 +252,7 @@ lord.createPostFile = function(f, boardName) {
     var divImage = document.createElement("div");
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
-    if ("image" === f["type"]) {
+    if ("image/png" === f["type"] || "image/jpeg" === f["type"] || "image/gif" === f["type"]) {
         aImage.onclick = function(e) {
             return lord.showImage("/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"], f["sizeX"],
                              f["sizeY"]);
@@ -243,7 +265,7 @@ lord.createPostFile = function(f, boardName) {
         image.width = thumbSizeX;
     if (!isNaN(thumbSizeY) && thumbSizeY > 0)
         image.height = thumbSizeY;
-    if ("webm" === f["thumbName"]) {
+    if ("video/webm" === f["thumbName"]) {
         image.src = "/" + sitePrefix + "img/webm_logo.png";
     } else {
         image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
@@ -290,7 +312,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     else
         name.innerHTML = res["name"];
     var tripcode = post.querySelector("[name='tripcode']");
-    if (!!res["showRegistered"] && !!res["showTripcode"] && !!res["tripcode"]) {
+    if (!!res["showTripcode"] && "" !== res["tripcode"]) {
         tripcode.style.display = "";
         tripcode.appendChild(document.createTextNode(res["tripcode"]));
     } else {
@@ -337,6 +359,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         }
     }
     var blockquoteThread = !!document.getElementById("currentThreadNumber");
+    var modificationDateTimeTd = post.querySelector("[name='modificationDateTimeTd']");
     var bannedForTd = post.querySelector("[name='bannedForTd']");
     var referencedByTd = post.querySelector("[name='referencedByTd']");
     var oneFileTr = post.querySelector("[name='files']");
@@ -356,8 +379,16 @@ lord.createPostNode = function(res, permanent, boardName) {
         post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
         if (blockquoteThread)
             textManyFiles.className = "blockquoteThread";
+        modificationDateTimeTd.colSpan = res["files"].length + 2;
         bannedForTd.colSpan = res["files"].length + 2;
         referencedByTd.colSpan = res["files"].length + 2;
+    }
+    var modificationDateTime = post.querySelector("[name='modificationDateTime']");
+    if ("" !== res["modificationDateTime"]) {
+        modificationDateTime.style.display = "";
+        modificationDateTime.childNodes[0].nodeValue += " " + res["modificationDateTime"];
+    } else {
+        modificationDateTime.parentNode.removeChild(modificationDateTime);
     }
     var bannedFor = post.querySelector("[name='bannedFor']");
     if (!!res["bannedFor"])
@@ -509,7 +540,7 @@ lord.getFileHashes = function(div) {
 
 lord.hideImage = function() {
     if (!!lord.img) {
-        if ("webm" === lord.img.fileType) {
+        if ("video/webm" === lord.img.fileType) {
             lord.img.pause();
             lord.img.load();
         }
@@ -985,7 +1016,8 @@ lord.fileSelected = function(current) {
             if (!res)
                 return;
             var fileHashes = lord.getFileHashes(oldDiv);
-            fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
+            if (fileHashes.value.indexOf(fileHash) < 0)
+                fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
             var f = previous.onchange;
             delete previous.onchange;
             previous.value = "";
@@ -1089,7 +1121,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.resetScale(lord.img);
         lord.img.style.display = "";
         lord.toCenter(lord.img, sizeHintX, sizeHintY);
-        if ("webm" === lord.img.fileType) {
+        if ("video/webm" === lord.img.fileType) {
             setTimeout(function() {
                 lord.img.play();
             }, 500);
@@ -1098,10 +1130,10 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
         return true;
-    if ("image" === type) {
+    if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
         lord.img = document.createElement("img");
         lord.img.src = href;
-    } else if ("webm" === type) {
+    } else if ("video/webm" === type) {
         lord.img = document.createElement("video");
         lord.img.controls = "controls";
         var src = document.createElement("source");
@@ -1135,7 +1167,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     } else {
         lord.img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
     }
-    if ("image" === type) {
+    if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
         lord.img.onmousedown = function(e) {
             if (!!e.button)
                 return;
@@ -1152,7 +1184,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
             e.preventDefault();
             lord.img.moving = false;
             if (lord.img.initialCoord.x === e.clientX && lord.img.initialCoord.y === e.clientY) {
-                if ("webm" === type) {
+                if ("video/webm" === type) {
                     lord.img.pause();
                     lord.img.currentTime = 0;
                 }
@@ -1173,7 +1205,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     document.body.appendChild(lord.img);
     lord.toCenter(lord.img, sizeHintX, sizeHintY);
-    if ("webm" === lord.img.fileType) {
+    if ("video/webm" === lord.img.fileType) {
         setTimeout(function() {
             lord.img.play();
         }, 500);
@@ -1207,7 +1239,7 @@ lord.postedOnBoard = function() {
         var errmsg = iframeDocument.querySelector("#errorMessage");
         var errdesc = iframeDocument.querySelector("#errorDescription");
         lord.showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML);
-        grecaptcha.reset();
+        resetCaptcha();
     }
 };
 

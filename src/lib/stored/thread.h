@@ -1,17 +1,18 @@
 #ifndef THREAD_H
 #define THREAD_H
 
+class FileInfo;
 class Post;
+class PostReference;
 
 #include "../global.h"
 
 #include <QByteArray>
 #include <QDateTime>
 #include <QList>
-#include <QMap>
 #include <QSharedPointer>
 #include <QString>
-#include <QStringList>
+#include <QVariant>
 
 #include <odb/core.hxx>
 #include <odb/qt/lazy-ptr.hxx>
@@ -81,20 +82,8 @@ PRAGMA_DB(object table("posts"))
 class OLOLORD_EXPORT Post
 {
 public:
-    struct RefKey
-    {
-        QString boardName;
-        quint64 postNumber;
-    public:
-        explicit RefKey();
-        explicit RefKey(const QString &board, quint64 post);
-    public:
-        bool isValid() const;
-    public:
-        bool operator <(const RefKey &other) const;
-    };
-public:
-    typedef QMap<RefKey, quint64> RefMap;
+    typedef QList< QLazyWeakPointer<FileInfo> > FileInfos;
+    typedef QList< QLazyWeakPointer<PostReference> > PostReferences;
 private:
     PRAGMA_DB(id auto)
     quint64 id_;
@@ -104,10 +93,12 @@ private:
     quint64 number_;
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
+    QDateTime modificationDateTime_;
     bool bannedFor_;
     bool showTripcode_;
     QString email_;
-    QByteArray files_;
+    PRAGMA_DB(value_not_null value_type("TEXT") inverse(post_))
+    FileInfos fileInfos_;
     QByteArray hashpass_;
     QString name_;
     bool draft_;
@@ -116,9 +107,13 @@ private:
     QString posterIp_;
     bool rawHtml_;
     QString rawText_;
-    QByteArray referencedBy_;
+    PRAGMA_DB(value_not_null value_type("INTEGER") inverse(targetPost_))
+    PostReferences referencedBy_;
+    PRAGMA_DB(value_not_null value_type("INTEGER") inverse(sourcePost_))
+    PostReferences refersTo_;
     QString subject_;
     QString text_;
+    QByteArray userData_;
     PRAGMA_DB(not_null)
     QLazySharedPointer<Thread> thread_;
 public:
@@ -130,12 +125,12 @@ public:
     QString board() const;
     quint64 number() const;
     QDateTime dateTime() const;
+    QDateTime modificationDateTime() const;
     bool bannedFor() const;
     bool showTripcode() const;
-    bool addReferencedBy(const RefKey &key, quint64 threadNumber);
-    bool addReferencedBy(const QString &boardName, quint64 postNumber, quint64 threadNumber);
     QString email() const;
-    QStringList files() const;
+    const FileInfos &fileInfos() const;
+    FileInfos &fileInfos();
     QByteArray hashpass() const;
     QString name() const;
     QByteArray password() const;
@@ -143,23 +138,23 @@ public:
     QString posterIp() const;
     bool rawHtml() const;
     QString rawText() const;
-    RefMap referencedBy() const;
-    bool removeReferencedBy(const RefKey &key);
-    bool removeReferencedBy(const QString &baordName, quint64 postNumber);
+    PostReferences referencedBy() const;
+    PostReferences refersTo() const;
+    void setModificationDateTime(const QDateTime &dt);
     void setBannedFor(bool banned);
     void setShowTripcode(bool show);
     void setEmail(const QString &email);
-    void setFiles(const QStringList &files);
     void setName(const QString &name);
     void setDraft(bool draft);
     void setRawHtml(bool raw);
     void setRawText(const QString &text);
-    void setReferencedBy(const RefMap &map);
     void setSubject(const QString &subject);
     void setText(const QString &text);
+    void setUserData(const QVariant &data);
     QString subject() const;
     QString text() const;
     QLazySharedPointer<Thread> thread() const;
+    QVariant userData() const;
 private:
     friend class odb::access;
 };
@@ -168,6 +163,76 @@ PRAGMA_DB(view object(Post))
 struct OLOLORD_EXPORT PostCount
 {
     PRAGMA_DB(column("count(" + Post::id_ + ")"))
+    int count;
+};
+
+PRAGMA_DB(object table("postReferences"))
+class OLOLORD_EXPORT PostReference
+{
+private:
+    PRAGMA_DB(id auto)
+    quint64 id_;
+    PRAGMA_DB(not_null)
+    QLazySharedPointer<Post> sourcePost_;
+    PRAGMA_DB(not_null)
+    QLazySharedPointer<Post> targetPost_;
+public:
+    explicit PostReference();
+    explicit PostReference(QSharedPointer<Post> sourcePost, QSharedPointer<Post> targetPost);
+public:
+    QLazySharedPointer<Post> sourcePost() const;
+    QLazySharedPointer<Post> targetPost() const;
+private:
+    friend class odb::access;
+};
+
+PRAGMA_DB(object table("fileInfos"))
+class OLOLORD_EXPORT FileInfo
+{
+private:
+    PRAGMA_DB(id)
+    QString name_;
+    PRAGMA_DB(not_null)
+    QByteArray hash_;
+    PRAGMA_DB(not_null)
+    QString mimeType_;
+    PRAGMA_DB(not_null)
+    int size_;
+    PRAGMA_DB(not_null)
+    int height_;
+    PRAGMA_DB(not_null)
+    int width_;
+    PRAGMA_DB(not_null)
+    QString thumbName_;
+    PRAGMA_DB(not_null)
+    int thumbHeight_;
+    PRAGMA_DB(not_null)
+    int thumbWidth_;
+    PRAGMA_DB(not_null)
+    QLazySharedPointer<Post> post_;
+public:
+    explicit FileInfo();
+    explicit FileInfo(const QString &name, const QByteArray &hash, const QString &mimeType, int size, int height,
+                      int width, const QString &thumbName, int thumbHeight, int thumbWidth, QSharedPointer<Post> post);
+public:
+    QString name() const;
+    QByteArray hash() const;
+    QString mimeType() const;
+    int size() const;
+    int height() const;
+    int width() const;
+    QString thumbName() const;
+    int thumbHeight() const;
+    int thumbWidth() const;
+    QLazySharedPointer<Post> post() const;
+private:
+    friend class odb::access;
+};
+
+PRAGMA_DB(view object(FileInfo))
+struct OLOLORD_EXPORT FileInfoCount
+{
+    PRAGMA_DB(column("count(" + FileInfo::name_ + ")"))
     int count;
 };
 

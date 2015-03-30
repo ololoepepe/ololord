@@ -368,6 +368,10 @@ span.spoiler:hover a {
     color: red;
 }
 
+.modificationDateTime {
+    font-style: italic;
+}
+
 .tripcode {
     color: green;
 }

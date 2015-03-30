@@ -181,7 +181,7 @@
     <div class="postFileSize">
         (<%= file.size %>)
     </div>
-    <% if ( "image" == file.type ) %>
+    <% if ( "image/png" == file.type || "image/jpeg" == file.type || "image/gif" == file.type ) %>
         <div class="postFileSearch">
             <a href="//www.google.com/searchbyimage?image_url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithGoogleText %>" target="_blank">
@@ -255,7 +255,7 @@
         <% else %>
             <%= post.name | raw %>
         <% end %>
-        <% if ( post.showRegistered && !post.tripcode.empty() && post.showTripcode ) %>
+        <% if ( !post.tripcode.empty() && post.showTripcode ) %>
             <span class="tripcode"><%= post.tripcode %></span>
         <% end %>
         <% if ( content.showWhois && !post.flagName.empty() ) %>
@@ -400,7 +400,7 @@
                         <% else %>
                             <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
                         <% end %>
-                        
+
                     </td>
                 <% else %>
                     <td class="shrink"></td>
@@ -416,6 +416,21 @@
                             <blockquote id="post<%= post.number %>Text"><%= post.text | raw %></blockquote>
                         <% end %>
                     </td>
+                </tr>
+            <% end %>
+            <% if ( !post.modificationDateTime.empty() ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
+                        <span class="modificationDateTime"><%= modificationDateTimeText %>
+                            <%= post.modificationDateTime %></span>
+                    </td>
+                </tr>
+            <% end %>
+            <% if ( post.bannedFor ) %>
+                <tr>
+                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
+                        <span class="bannedFor"><%= bannedForText %></span>
+                    <td>
                 </tr>
             <% end %>
             <% if ( !post.referencedBy.empty() ) %>
@@ -442,13 +457,6 @@
                     </span>
                 <td>
             </tr>
-            <% if ( post.bannedFor ) %>
-                <tr>
-                    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
-                        <span class="bannedFor"><%= bannedForText %></span>
-                    <td>
-                </tr>
-            <% end %>
         </tbody>
     </table>
 </div>
@@ -570,6 +578,12 @@
                     <blockquote name="textManyFiles"></blockquote>
                 </td>
             <tr>
+            <tr>
+                <td name="modificationDateTimeTd" colspan="2">
+                    <span name="modificationDateTime" class="modificationDateTime"
+                          style="display: none;"><%= modificationDateTimeText %></span>
+                <td>
+            </tr>
             <tr>
                 <td name="bannedForTd" colspan="2">
                     <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>

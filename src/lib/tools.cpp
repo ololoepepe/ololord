@@ -50,25 +50,6 @@
 namespace Tools
 {
 
-struct IpRange
-{
-    unsigned int start;
-    unsigned int end;
-public:
-    bool operator <(const IpRange &other) const
-    {
-        return start < other.start;
-    }
-};
-
-static QMutex cityNameMutex(QMutex::Recursive);
-static QMutex countryCodeMutex(QMutex::Recursive);
-static QMutex countryNameMutex(QMutex::Recursive);
-static QList<QRegExp> loggingSkipIps;
-static QMutex loggingSkipIpsMutex(QMutex::Recursive);
-static QMutex storagePathMutex(QMutex::Recursive);
-static QMutex timezoneMutex(QMutex::Recursive);
-
 static unsigned int ipNum(const QString &ip, bool *ok = 0)
 {
     QStringList sl = ip.split('.');
@@ -101,6 +82,99 @@ static unsigned int ipNum(const QString &ip, bool *ok = 0)
     s += QString::number(ip % 256);
     return s;
 }*/
+
+IpRange::IpRange(const QString &text, const QChar &separator)
+{
+    start = 0;
+    end = 0;
+    QStringList sl = text.split(separator);
+    if (sl.size() > 2)
+        return;
+    bool ok = false;
+    start = ipNum(sl.first(), &ok);
+    if (!ok)
+        return;
+    if (sl.size() == 2) {
+        end = ipNum(sl.at(1), &ok);
+        if (!ok) {
+            start = 0;
+            return;
+        }
+    } else {
+        end = start;
+    }
+}
+
+IpRange::IpRange(const QStringList &sl, int startIndex, int endIndex)
+{
+    start = 0;
+    end = 0;
+    if (startIndex < 0 || endIndex < 0 || startIndex >= sl.size() || endIndex >= sl.size())
+        return;
+    bool ok = false;
+    start = ipNum(sl.at(startIndex), &ok);
+    if (!ok)
+        return;
+    end = ipNum(sl.at(endIndex), &ok);
+    if (!ok) {
+        start = 0;
+        return;
+    }
+}
+
+void IpRange::clear()
+{
+    start = 0;
+    end = 0;
+}
+
+bool IpRange::in(unsigned int ip) const
+{
+    if (!ip || !isValid())
+        return false;
+    return ip >= start && ip <= end;
+}
+
+bool IpRange::in(const QString &ip) const
+{
+    return in(ipNum(ip));
+}
+
+bool IpRange::isValid() const
+{
+    return start && end;
+}
+
+bool IpRange::operator <(const IpRange &other) const
+{
+    return start < other.start;
+}
+
+IpBanInfo::IpBanInfo(const QStringList &sl) :
+    range(!sl.isEmpty() ? sl.first() : QString())
+{
+    if (sl.size() != 2) {
+        range.clear();
+        return;
+    }
+    bool ok = false;
+    level = sl.at(1).toInt(&ok);
+    if (!ok)
+        range.clear();
+}
+
+bool IpBanInfo::isValid() const
+{
+    return range.isValid();
+}
+
+static QMutex cityNameMutex(QMutex::Recursive);
+static QMutex countryCodeMutex(QMutex::Recursive);
+static QMutex countryNameMutex(QMutex::Recursive);
+static QList<IpRange> loggingSkipIps;
+static QMutex loggingSkipIpsMutex(QMutex::Recursive);
+static QMutex storagePathMutex(QMutex::Recursive);
+static QMutex timezoneMutex(QMutex::Recursive);
 
 static QTime time(int msecs)
 {
@@ -136,13 +210,8 @@ QString cityName(const QString &ip)
             QStringList sll = s.split(' ');
             if (sll.size() < 3)
                 continue;
-            IpRange r;
-            bool ok = false;
-            r.start = sll.first().toUInt(&ok);
-            if (!ok)
-                continue;
-            r.end = sll.at(1).toUInt(&ok);
-            if (!ok)
+            IpRange r(sll);
+            if (!r.isValid())
                 continue;
             QString n = QStringList(sll.mid(2)).join(" ");
             if (n.length() < sll.size() - 2)
@@ -183,13 +252,8 @@ QString countryCode(const QString &ip)
             QStringList sll = s.split(' ');
             if (sll.size() != 3)
                 continue;
-            IpRange r;
-            bool ok = false;
-            r.start = sll.first().toUInt(&ok);
-            if (!ok)
-                continue;
-            r.end = sll.at(1).toUInt(&ok);
-            if (!ok)
+            IpRange r(sll);
+            if (!r.isValid())
                 continue;
             QString c = sll.last();
             if (c.length() != 2)
@@ -283,7 +347,7 @@ QString hashpassString(const cppcms::http::request &req)
 int ipBanLevel(const QString &ip)
 {
     bool ok = false;
-    ipNum(ip, &ok);
+    int n = ipNum(ip, &ok);
     if (!ok)
         return 0;
     Cache::IpBanInfoList *list = Cache::ipBanInfoList();
@@ -295,26 +359,18 @@ int ipBanLevel(const QString &ip)
         QStringList sl = BDirTools::readTextFile(path, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
         list = new Cache::IpBanInfoList;
         foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() != 2)
+            IpBanInfo inf(s.split(' '));
+            if (!inf.isValid())
                 continue;
-            Cache::IpBanInfo inf;
-            ipNum(QString(sll.first()).replace("*", "1").replace("?", "1"), &ok);
-            if (!ok)
-                continue;
-            inf.ip = sll.first();
-            inf.level = sll.last().toUInt(&ok);
-            if (!ok || !inf.level)
-                continue;
-            if (QRegExp(inf.ip, Qt::CaseSensitive, QRegExp::Wildcard).exactMatch(ip))
+            if (inf.range.in(n))
                 level = inf.level;
             *list << inf;
         }
         if (!Cache::cacheIpBanInfoList(list))
             delete list;
     } else {
-        foreach (const Cache::IpBanInfo &inf, *list) {
-            if (QRegExp(inf.ip, Qt::CaseSensitive, QRegExp::Wildcard).exactMatch(ip)) {
+        foreach (const IpBanInfo &inf, *list) {
+            if (inf.range.in(n)) {
                 level = inf.level;
                 break;
             }
@@ -368,9 +424,10 @@ void log(const cppcms::http::request &req, const QString &action, const QString 
     do_once(init)
         resetLoggingSkipIps();
     QString ip = userIp(req);
+    int n = ipNum(ip);
     QMutexLocker locker(&loggingSkipIpsMutex);
-    foreach (const QRegExp &rx, loggingSkipIps) {
-        if (rx.exactMatch(ip))
+    foreach (const IpRange &r, loggingSkipIps) {
+        if (r.in(n))
             return;
     }
     locker.unlock();
@@ -486,8 +543,12 @@ void resetLoggingSkipIps()
                                                                                           QString::SkipEmptyParts);
     QMutexLocker locker(&loggingSkipIpsMutex);
     loggingSkipIps.clear();
-    foreach (const QString &s, list)
-        loggingSkipIps << QRegExp(s, Qt::CaseSensitive, QRegExp::Wildcard);
+    foreach (const QString &s, list) {
+        IpRange r(s);
+        if (!r.isValid())
+            continue;
+        loggingSkipIps << r;
+    }
 }
 
 QStringList rules(const QString &prefix, const QLocale &l)

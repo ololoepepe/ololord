@@ -9,7 +9,6 @@
 #include "ipban.h"
 #include "notfound.h"
 #include "settingslocker.h"
-#include "stored/thread.h"
 #include "tools.h"
 #include "translator.h"
 
@@ -210,6 +209,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
         if (!boards.contains("*") && !boards.contains(board->name()))
             c.moder = 0;
     }
+    c.modificationDateTimeText = ts.translate("initBaseBoard", "Last modified:", "modificationDateTimeText");
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
@@ -329,12 +329,12 @@ void renderNotFound(cppcms::application &app)
     app.render("not_found", c);
 }
 
-void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const Post::RefMap &referencedPosts)
+void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const Database::RefMap &referencedPosts)
 {
     app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
                          << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
                          << "value=\"" << postNumber << "\" /> ";
-    foreach (const Post::RefKey key, referencedPosts.keys()) {
+    foreach (const Database::RefKey key, referencedPosts.keys()) {
         app.response().out() << "<input name=\"referencedPost\" type=\"hidden\" value=\""
                              << Tools::toStd(key.boardName) << "/" << Tools::toStd(QString::number(key.postNumber))
                              << "/" << Tools::toStd(QString::number(referencedPosts.value(key))) << "\" />";

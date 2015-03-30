@@ -210,13 +210,13 @@ lord.postedInThread = function() {
             }
             lord.addReferences(postNumber.value, refs);
         }
-        grecaptcha.reset();
+        lord.resetCaptcha();
     } else {
         lord.formSubmitted = null;
         var errmsg = iframeDocument.querySelector("#errorMessage");
         var errdesc = iframeDocument.querySelector("#errorDescription");
         lord.showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML);
-        grecaptcha.reset();
+        lord.resetCaptcha();
     }
 };
 

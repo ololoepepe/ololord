@@ -71,7 +71,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-rc");
+        app.setApplicationVersion("0.1.0-rc2");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -704,8 +704,8 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "logging_skip_ip", n);
     nn->setUserSetFunction(&setLoggingSkipIp);
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
-                                               "IP's are separated by commas. Wildcard matching is used.\n"
-                                               "Example: 127.0.0.1,192.168.0.*"));
+                                               "IP's are represented as ranges and are separated by commas.\n"
+                                               "Example: 127.0.0.1,192.168.0.1-192.168.0.255"));
     nn = new BSettingsNode("Proxy", n);
     BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
     nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"

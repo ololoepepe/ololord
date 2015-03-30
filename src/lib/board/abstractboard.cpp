@@ -80,46 +80,12 @@
 
 #include <fstream>
 
-class FileTransaction
+static void scaleThumbnail(QImage &img, AbstractBoard::FileTransaction &ft)
 {
-private:
-    bool commited;
-    QStringList mfileNames;
-public:
-    explicit FileTransaction()
-    {
-        commited = false;
-    }
-    ~FileTransaction()
-    {
-        if (commited)
-            return;
-        foreach (const QString &fn, mfileNames)
-            QFile::remove(fn);
-    }
-public:
-    void commit()
-    {
-        commited = true;
-    }
-    QStringList fileNames() const
-    {
-        return mfileNames;
-    }
-    void addFile(const QString &fn)
-    {
-        mfileNames << fn;
-    }
-};
-
-static void scaleThumbnail(QImage &img, QVariantMap &m)
-{
-    m.insert("height", img.height());
-    m.insert("width", img.width());
+    ft.setMainFileSize(img.height(), img.width());
     if (img.height() > 200 || img.width() > 200)
         img = img.scaled(200, 200, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-    m.insert("thumbHeight", img.height());
-    m.insert("thumbWidth", img.width());
+    ft.setThumbFileSize(img.height(), img.width());
 }
 
 static bool threadLessThan(const Thread &t1, const Thread &t2)
@@ -130,6 +96,90 @@ static bool threadLessThan(const Thread &t1, const Thread &t2)
         return true;
     else
         return false;
+}
+
+AbstractBoard::FileTransaction::FileTransaction(AbstractBoard *board) :
+    Board(board)
+{
+    commited = false;
+}
+
+AbstractBoard::FileTransaction::~FileTransaction()
+{
+    if (commited)
+        return;
+    if (!Board)
+        return;
+    QString path = Tools::storagePath() + "/img/" + Board->name();
+    foreach (const FileInfo &fi, minfos) {
+        if (!fi.name.isEmpty())
+            QFile::remove(path + "/" + fi.name);
+        if (!fi.thumbName.isEmpty())
+            QFile::remove(path + "/" + fi.thumbName);
+    }
+}
+
+void AbstractBoard::FileTransaction::commit()
+{
+    commited = true;
+}
+
+QList<AbstractBoard::FileInfo> AbstractBoard::FileTransaction::fileInfos() const
+{
+    return minfos;
+}
+
+void AbstractBoard::FileTransaction::addInfo(const QString &mainFileName, const QByteArray &hash,
+                                             const QString &mimeType, int size)
+{
+    FileInfo fi;
+    if (!mainFileName.isEmpty())
+        fi.name = QFileInfo(mainFileName).fileName();
+    fi.hash = hash;
+    fi.mimeType = mimeType;
+    fi.size = size;
+    minfos << fi;
+}
+
+void AbstractBoard::FileTransaction::setMainFile(const QString &fn, const QByteArray &hash, const QString &mimeType,
+                                                 int size)
+{
+    if (fn.isEmpty())
+        return;
+    if (minfos.isEmpty())
+        return;
+    FileInfo &fi = minfos.last();
+    fi.name = QFileInfo(fn).fileName();
+    fi.hash = hash;
+    fi.mimeType = mimeType;
+    fi.size = size;
+}
+
+void AbstractBoard::FileTransaction::setMainFileSize(int height, int width)
+{
+    if (minfos.isEmpty())
+        return;
+    FileInfo &fi = minfos.last();
+    fi.height = height;
+    fi.width = width;
+}
+
+void AbstractBoard::FileTransaction::setThumbFile(const QString &fn)
+{
+    if (fn.isEmpty())
+        return;
+    if (minfos.isEmpty())
+        return;
+    minfos.last().thumbName = QFileInfo(fn).fileName();
+}
+
+void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
+{
+    if (minfos.isEmpty())
+        return;
+    FileInfo &fi = minfos.last();
+    fi.thumbHeight = height;
+    fi.thumbWidth = width;
 }
 
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
@@ -212,6 +262,11 @@ QString AbstractBoard::bannerFileName() const
     return fns.at(qrand() % fns.size());
 }
 
+void AbstractBoard::beforeStoring(Post */*post*/, const Tools::PostParameters &/*params*/, bool /*thread*/)
+{
+    //
+}
+
 unsigned int AbstractBoard::bumpLimit() const
 {
     SettingsLocker s;
@@ -274,7 +329,6 @@ void AbstractBoard::createPost(cppcms::application &app)
         return;
     }
     QString desc;
-    beforeStoring(params, true);
     Database::CreatePostParameters p(req, params, files, tq.locale());
     p.bumpLimit = bumpLimit();
     p.postLimit = postLimit();
@@ -294,7 +348,6 @@ void AbstractBoard::createThread(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    Tools::log(app, "create_thread", "begin", logTarget);
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_thread", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
@@ -311,7 +364,6 @@ void AbstractBoard::createThread(cppcms::application &app)
         return;
     }
     QString desc;
-    beforeStoring(params, false);
     Database::CreateThreadParameters p(req, params, files, tq.locale());
     p.archiveLimit = archiveLimit();
     p.threadLimit = threadLimit();
@@ -330,25 +382,6 @@ void AbstractBoard::createThread(cppcms::application &app)
 QString AbstractBoard::defaultUserName(const QLocale &l) const
 {
     return TranslatorQt(l).translate("AbstractBoard", "Anonymous", "defaultUserName");
-}
-
-void AbstractBoard::deleteFiles(const QStringList &fileNames)
-{
-    QString path = Tools::storagePath() + "/img/" + name();
-    QFileInfo fi(path);
-    if (!fi.exists() || !fi.isDir())
-        return;
-    foreach (const QString &fn, fileNames) {
-        QFile::remove(path + "/" + fn);
-        Database::removeFileHash(name() + "/" + fn);
-        QFileInfo fii(fn);
-        QString suff = !fii.suffix().compare("gif", Qt::CaseInsensitive) ? "png" : fii.suffix();
-        QFile::remove(path + "/" + fii.baseName() + ".ololord-file-info");
-        if (suff.compare("webm", Qt::CaseInsensitive))
-            QFile::remove(path + "/" + fii.baseName() + "s." + suff);
-        else
-            QFile::remove(path + "/" + fii.baseName() + "s.png");
-    }
 }
 
 bool AbstractBoard::draftsEnabled() const
@@ -674,63 +707,69 @@ QStringList AbstractBoard::rules(const QLocale &l) const
     return Tools::rules("rules/board", l) + Tools::rules("rules/board/" + name(), l);
 }
 
-QString AbstractBoard::saveFile(const Tools::File &f, bool *ok)
+bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
 {
 #if defined(Q_OS_WIN)
     static const QString FfmpegDefault = "ffmpeg.exe";
 #elif defined(Q_OS_UNIX)
     static const QString FfmpegDefault = "ffmpeg";
 #endif
+    typedef QMap<QString, QString> StringMap;
+    init_once(StringMap, suffixes, StringMap()) {
+        suffixes.insert("image/png", "png");
+        suffixes.insert("image/jpeg", "jpeg");
+        suffixes.insert("image/gif", "gif");
+        suffixes.insert("video/webm", "webm");
+    }
+    bool ok = false;
+    QString mimeType = Tools::mimeType(f.data, &ok);
+    if (!ok)
+        return false;
+    if (!isFileTypeSupported(mimeType))
+        return false;
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty())
-        return bRet(ok, false, QString());
+        return false;
     QString path = storagePath + "/img/" + name();
     if (!BDirTools::mkpath(path))
-        return bRet(ok, false, QString());
+        return false;
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
+    if (suffix.isEmpty())
+        suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
-    FileTransaction t;
-    t.addFile(sfn);
-    if (!BDirTools::writeFile(sfn, f.data) || !Database::addFileHash(f.data, name() + "/" + QFileInfo(sfn).fileName()))
-        return bRet(ok, false, QString());
-    QVariantMap m;
+    ft.addInfo(sfn, QCryptographicHash::hash(f.data, QCryptographicHash::Sha1), mimeType, f.data.size());
+    if (!BDirTools::writeFile(sfn, f.data))
+        return false;
     QImage img;
-    if (!suffix.compare("webm", Qt::CaseInsensitive)) {
+    if (!mimeType.compare("video/webm", Qt::CaseInsensitive)) {
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
-            t.addFile(path + "/" + dt + "s.png");
+            ft.setThumbFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
-                return bRet(ok, false, QString());
-            scaleThumbnail(img, m);
+                return false;
+            scaleThumbnail(img, ft);
             if (!img.save(path + "/" + dt + "s.png", "png"))
-                return bRet(ok, false, QString());
-            m.insert("thumbFileName", dt + "s.png");
+                return false;
         } else {
-            m.insert("thumbFileName", "webm");
+            ft.setThumbFile("webm");
         }
     } else {
         QByteArray data = f.data;
         QBuffer buff(&data);
         buff.open(QIODevice::ReadOnly);
         if (!img.load(&buff, suffix.toLower().toLatin1().data()))
-            return bRet(ok, false, QString());
-        scaleThumbnail(img, m);
-        if (!suffix.compare("gif", Qt::CaseInsensitive))
+            return false;
+        scaleThumbnail(img, ft);
+        if (!mimeType.compare("image/gif", Qt::CaseInsensitive))
             suffix = "png";
-        t.addFile(path + "/" + dt + "s." + suffix);
+        ft.setThumbFile(path + "/" + dt + "s." + suffix);
         if (!img.save(path + "/" + dt + "s." + suffix, suffix.toLower().toLatin1().data()))
-            return bRet(ok, false, QString());
-        m.insert("thumbFileName", dt + "s." + suffix);
+            return false;
     }
-    QString ifn = path + "/" + dt + ".ololord-file-info";
-    t.addFile(ifn);
-    if (!BDirTools::writeFile(ifn, BeQt::serialize(m)))
-        return bRet(ok, false, QString());
-    t.commit();
-    return bRet(ok, true, QFileInfo(sfn).fileName());
+    return true;
 }
 
 bool AbstractBoard::showWhois() const
@@ -774,33 +813,10 @@ unsigned int AbstractBoard::threadsPerPage() const
     return s->value("Board/" + name() + "/threads_per_page", s->value("Board/threads_per_page", 20)).toUInt();
 }
 
-QString AbstractBoard::thumbFileName(const QString &fn, QString &size, int &thumbSizeX, int &thumbSizeY, int &sizeX,
-                                     int &sizeY) const
-{
-    if (fn.isEmpty())
-        return "";
-    QString storagePath = Tools::storagePath();
-    if (storagePath.isEmpty())
-        return "";
-    QFileInfo fi(storagePath + "/img/" + name() + "/" + QFileInfo(fn).fileName());
-    size = QString::number(fi.size() / BeQt::Kilobyte) + "KB";
-    bool ok = false;
-    QByteArray ba = BDirTools::readFile(storagePath + "/img/" + name() + "/" + QFileInfo(fn).baseName()
-                                        + ".ololord-file-info", -1, &ok);
-    if (!ok)
-        return "";
-    QVariantMap m = BeQt::deserialize(ba).toMap();
-    sizeX = m.value("width").toInt();
-    sizeY = m.value("height").toInt();
-    thumbSizeX = m.value("thumbWidth").toInt();
-    thumbSizeY = m.value("thumbHeight").toInt();
-    size += ", " + QString::number(sizeX) + "x" + QString::number(sizeY);
-    return m.value("thumbFileName").toString();
-}
-
 Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::request &req, bool *ok,
                                           QString *error) const
 {
+    static const QString DateTimeFormat = "dd/MM/yyyy ddd hh:mm:ss";
     TranslatorQt tq(req);
     QString storagePath = Tools::storagePath();
     if (storagePath.isEmpty()) {
@@ -819,16 +835,6 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->subjectIsRaw = false;
         p->rawName = Tools::toStd(post.name());
         p->draft = post.draft();
-        foreach (const QString &fn, post.files()) {
-            QFileInfo fi(fn);
-            Content::File f;
-            f.type = fn.endsWith("webm", Qt::CaseInsensitive) ? "webm" : "image";
-            f.sourceName = Tools::toStd(fi.fileName());
-            QString sz;
-            f.thumbName = Tools::toStd(thumbFileName(fi.fileName(), sz, f.thumbSizeX, f.thumbSizeY, f.sizeX, f.sizeY));
-            f.size = Tools::toStd(sz);
-            p->files.push_back(f);
-        }
         quint64 threadNumber = 0;
         try {
             Transaction t;
@@ -836,11 +842,36 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 return bRet(ok, false, error, tq.translate("AbstractBoard", "Internal database error", "error"),
                             Content::Post());
             }
+            typedef QLazyWeakPointer< ::FileInfo > FileInfoWP;
+            foreach (FileInfoWP fi, post.fileInfos()) {
+                Content::File f;
+                QSharedPointer< ::FileInfo > fis = fi.load();
+                f.type = Tools::toStd(fis->mimeType());
+                f.sourceName = Tools::toStd(fis->name());
+                QString sz = QString::number(fis->size() / BeQt::Kilobyte) + "KB";
+                f.sizeX = fis->width();
+                f.sizeY = fis->height();
+                f.thumbSizeX = fis->thumbWidth();
+                f.thumbSizeY = fis->thumbHeight();
+                sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
+                f.thumbName = Tools::toStd(fis->thumbName());
+                f.size = Tools::toStd(sz);
+                p->files.push_back(f);
+            }
             QSharedPointer<Thread> thread = post.thread().load();
             threadNumber = thread->number();
             bool op = (post.number() == threadNumber);
             p->fixed = op && thread->fixed();
             p->closed = op && !thread->postingEnabled();
+            typedef QLazySharedPointer<PostReference> PostReferenceSP;
+            foreach (PostReferenceSP reference, post.referencedBy()) {
+                QSharedPointer<Post> rp = reference.load()->sourcePost().load();
+                Content::Post::Ref ref;
+                ref.boardName = Tools::toStd(rp->board());
+                ref.postNumber = rp->number();
+                ref.threadNumber = rp->thread().load()->number();
+                p->referencedBy.push_back(ref);
+            }
             t.commit();
         } catch (const odb::exception &e) {
             return bRet(ok, false, error, Tools::fromStd(e.what()), Content::Post());
@@ -863,14 +894,6 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 p->countryName = "Unknown country";
             }
         }
-        Post::RefMap refs = post.referencedBy();
-        foreach (const Post::RefKey &key, refs.keys()) {
-            Content::Post::Ref ref;
-            ref.boardName = Tools::toStd(key.boardName);
-            ref.postNumber = key.postNumber;
-            ref.threadNumber = refs.value(key);
-            p->referencedBy.push_back(ref);
-        }
     }
     Content::Post pp = *p;
     if (!inCache && !Cache::cachePost(name(), post.number(), p))
@@ -884,7 +907,11 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
     int regLvl = Database::registeredUserLevel(req);
     if (regLvl >= RegisteredUser::ModerLevel)
         pp.ip = Tools::toStd(post.posterIp());
-    pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), "dd/MM/yyyy ddd hh:mm:ss"));
+    pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), DateTimeFormat));
+    if (!post.modificationDateTime().isNull()) {
+        pp.modificationDateTime = Tools::toStd(l.toString(Tools::dateTime(post.modificationDateTime(), req),
+                                                          DateTimeFormat));
+    }
     pp.hidden = (Tools::cookieValue(req, "postHidden" + name() + QString::number(post.number())) == "true");
     pp.name = Tools::toStd(Controller::toHtml(post.name()));
     if (pp.name.empty())
@@ -931,11 +958,6 @@ void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Cont
 }
 
 void AbstractBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content::Thread */*c*/)
-{
-    //
-}
-
-void AbstractBoard::beforeStoring(Tools::PostParameters &/*params*/, bool /*post*/)
 {
     //
 }

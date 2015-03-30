@@ -4,9 +4,6 @@
 #include "cache.h"
 #include "database.h"
 #include "settingslocker.h"
-#include "stored/registereduser.h"
-#include "stored/thread.h"
-#include "stored/thread-odb.hxx"
 #include "tools.h"
 #include "translator.h"
 
@@ -61,9 +58,9 @@ struct ProcessPostTextContext
     const int start;
     const int length;
     const QString &boardName;
-    Post::RefMap *referencedPosts;
+    Database::RefMap *referencedPosts;
 public:
-    explicit ProcessPostTextContext(QString &txt, const QString &board, Post::RefMap *refPosts = 0) :
+    explicit ProcessPostTextContext(QString &txt, const QString &board, Database::RefMap *refPosts = 0) :
         text(txt), start(0), length(txt.length()), boardName(board), referencedPosts(refPosts)
     {
         //
@@ -83,7 +80,7 @@ public:
     {
         if (!referencedPosts || board.isEmpty() || !postNumber || !threadNumber)
             return;
-        referencedPosts->insert(Post::RefKey(board, postNumber), threadNumber);
+        referencedPosts->insert(Database::RefKey(board, postNumber), threadNumber);
     }
     bool isValid() const
     {
@@ -614,7 +611,7 @@ static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)
     processSimmetric(c, &processWakabaMarkMonospaceSingle, "``", "", "font", "<font face=\"monospace\">", true);
 }
 
-QString processPostText(QString text, const QString &boardName, Post::RefMap *referencedPosts)
+QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts)
 {
     ProcessPostTextContext c(text, boardName, referencedPosts);
     processWakabaMarkMonospaceDouble(c);

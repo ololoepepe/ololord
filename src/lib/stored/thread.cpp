@@ -9,6 +9,7 @@
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 
 #include <odb/qt/lazy-ptr.hxx>
 
@@ -109,27 +110,6 @@ void Thread::setDraft(bool draft)
     draft_ = draft;
 }
 
-Post::RefKey::RefKey()
-{
-    postNumber = 0;
-}
-
-Post::RefKey::RefKey(const QString &board, quint64 post)
-{
-    boardName = board;
-    postNumber = post;
-}
-
-bool Post::RefKey::isValid() const
-{
-    return !boardName.isEmpty() && postNumber;
-}
-
-bool Post::RefKey::operator <(const RefKey &other) const
-{
-    return boardName < other.boardName || (boardName == other.boardName && postNumber < other.postNumber);
-}
-
 Post::Post()
 {
     //
@@ -142,6 +122,7 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     board_ = board;
     number_ = number;
     dateTime_ = dateTime.toUTC();
+    modificationDateTime_ = QDateTime().toUTC();
     hashpass_ = hashpass;
     bannedFor_ = false;
     showTripcode_ = false;
@@ -172,6 +153,11 @@ QDateTime Post::dateTime() const
     return QDateTime(dateTime_.date(), dateTime_.time(), Qt::UTC);
 }
 
+QDateTime Post::modificationDateTime() const
+{
+    return QDateTime(modificationDateTime_.date(), modificationDateTime_.time(), Qt::UTC);
+}
+
 bool Post::bannedFor() const
 {
     return bannedFor_;
@@ -182,32 +168,19 @@ bool Post::showTripcode() const
     return showTripcode_;
 }
 
-bool Post::addReferencedBy(const RefKey &key, quint64 threadNumber)
-{
-    if (!key.isValid() || !threadNumber)
-        return false;
-    RefMap map = referencedBy();
-    int sz = map.size();
-    map.insert(key, threadNumber);
-    if (map.size() == sz)
-        return false;
-    setReferencedBy(map);
-    return true;
-}
-
-bool Post::addReferencedBy(const QString &boardName, quint64 postNumber, quint64 threadNumber)
-{
-    return addReferencedBy(RefKey(boardName, postNumber), threadNumber);
-}
-
 QString Post::email() const
 {
     return email_;
 }
 
-QStringList Post::files() const
+const Post::FileInfos &Post::fileInfos() const
 {
-    return BeQt::deserialize(files_).toStringList();
+    return fileInfos_;
+}
+
+Post::FileInfos &Post::fileInfos()
+{
+    return fileInfos_;
 }
 
 QByteArray Post::hashpass() const
@@ -245,36 +218,19 @@ QString Post::rawText() const
     return rawText_;
 }
 
-Post::RefMap Post::referencedBy() const
+Post::PostReferences Post::referencedBy() const
 {
-    RefMap map;
-    foreach (const QVariant &v, BeQt::deserialize(referencedBy_).toList()) {
-        QVariantMap m = v.toMap();
-        RefKey key(m.value("boardName").toString(), m.value("postNumber").toULongLong());
-        if (!key.isValid())
-            continue;
-        quint64 t = m.value("threadNumber").toULongLong();
-        if (!t)
-            continue;
-        map.insert(key, t);
-    }
-    return map;
+    return referencedBy_;
 }
 
-bool Post::removeReferencedBy(const RefKey &key)
+Post::PostReferences Post::refersTo() const
 {
-    if (!key.isValid())
-        return false;
-    RefMap map = referencedBy();
-    if (map.remove(key) < 1)
-        return false;
-    setReferencedBy(map);
-    return true;
+    return refersTo_;
 }
 
-bool Post::removeReferencedBy(const QString &boardName, quint64 postNumber)
+void Post::setModificationDateTime(const QDateTime &dt)
 {
-    return removeReferencedBy(RefKey(boardName, postNumber));
+    modificationDateTime_ = dt.toUTC();
 }
 
 void Post::setBannedFor(bool banned)
@@ -290,11 +246,6 @@ void Post::setShowTripcode(bool show)
 void Post::setEmail(const QString &email)
 {
     email_ = email;
-}
-
-void Post::setFiles(const QStringList &files)
-{
-    files_ = BeQt::serialize(files);
 }
 
 void Post::setName(const QString &name)
@@ -317,24 +268,6 @@ void Post::setRawText(const QString &text)
     rawText_ = text;
 }
 
-void Post::setReferencedBy(const RefMap &map)
-{
-    QVariantList vl;
-    foreach (const RefKey &key, map.keys()) {
-        if (!key.isValid())
-            continue;
-        quint64 t = map.value(key);
-        if (!t)
-            continue;
-        QVariantMap m;
-        m.insert("boardName", key.boardName);
-        m.insert("postNumber", key.postNumber);
-        m.insert("threadNumber", t);
-        vl << m;
-    }
-    referencedBy_ = BeQt::serialize(vl);
-}
-
 void Post::setSubject(const QString &subject)
 {
     subject_ = subject;
@@ -343,6 +276,11 @@ void Post::setSubject(const QString &subject)
 void Post::setText(const QString &text)
 {
     text_ = text;
+}
+
+void Post::setUserData(const QVariant &data)
+{
+    userData_ = BeQt::serialize(data);
 }
 
 QString Post::subject() const
@@ -358,4 +296,101 @@ QString Post::text() const
 QLazySharedPointer<Thread> Post::thread() const
 {
     return thread_;
+}
+
+QVariant Post::userData() const
+{
+    return BeQt::deserialize(userData_);
+}
+
+PostReference::PostReference()
+{
+    //
+}
+
+PostReference::PostReference(QSharedPointer<Post> sourcePost, QSharedPointer<Post> targetPost)
+{
+    id_ = 0L;
+    sourcePost_ = sourcePost;
+    targetPost_ = targetPost;
+}
+
+QLazySharedPointer<Post> PostReference::sourcePost() const
+{
+    return sourcePost_;
+}
+
+QLazySharedPointer<Post> PostReference::targetPost() const
+{
+    return targetPost_;
+}
+
+FileInfo::FileInfo()
+{
+    //
+}
+
+FileInfo::FileInfo(const QString &name, const QByteArray &hash, const QString &mimeType, int size, int height,
+                   int width, const QString &thumbName, int thumbHeight, int thumbWidth, QSharedPointer<Post> post)
+{
+    name_ = name;
+    hash_ = hash;
+    mimeType_ = mimeType;
+    size_ = size;
+    height_ = height;
+    width_ = width;
+    thumbName_ = thumbName;
+    thumbHeight_ = thumbHeight;
+    thumbWidth_ = thumbWidth;
+    post_ = post;
+}
+
+QString FileInfo::name() const
+{
+    return name_;
+}
+
+QByteArray FileInfo::hash() const
+{
+    return hash_;
+}
+
+QString FileInfo::mimeType() const
+{
+    return mimeType_;
+}
+
+int FileInfo::size() const
+{
+    return size_;
+}
+
+int FileInfo::height() const
+{
+    return height_;
+}
+
+int FileInfo::width() const
+{
+    return width_;
+}
+
+QString FileInfo::thumbName() const
+{
+    return thumbName_;
+}
+
+int FileInfo::thumbHeight() const
+{
+    return thumbHeight_;
+}
+
+int FileInfo::thumbWidth() const
+{
+    return thumbWidth_;
+}
+
+QLazySharedPointer<Post> FileInfo::post() const
+{
+    return post_;
 }

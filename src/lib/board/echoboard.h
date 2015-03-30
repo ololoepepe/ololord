@@ -10,6 +10,8 @@ class Post;
 
 }
 
+class Post;
+
 class QLocale;
 class QString;
 
@@ -34,6 +36,7 @@ class OLOLORD_EXPORT echoBoard : public AbstractBoard
 public:
     explicit echoBoard();
 public:
+    void beforeStoring(Post *post, const Tools::PostParameters &params, bool thread);
     QString name() const;
     bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l, QString *error) const;
     QString title(const QLocale &l) const;
@@ -42,7 +45,6 @@ public:
 protected:
     void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
-    void beforeStoring(Tools::PostParameters &params, bool post);
     Content::Board *createBoardController(const cppcms::http::request &req, QString &viewName);
     Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 };

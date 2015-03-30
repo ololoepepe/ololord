@@ -1,2 +1,3 @@
+* Fix "no captcha required" message
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
