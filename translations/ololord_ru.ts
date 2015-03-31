@@ -1128,6 +1128,21 @@ Your choice:</source>
     </message>
 </context>
 <context>
+    <name>handleRerenderPosts</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>Error:</source>
+        <translation>Ошибка:</translation>
+    </message>
+    <message>
+        <source>Rerendered posts:</source>
+        <translation>Заново отрендерено постов:</translation>
+    </message>
+</context>
+<context>
     <name>handleUnfixThread</name>
     <message>
         <source>Invalid argument count</source>
@@ -1689,6 +1704,12 @@ The following caches may be cleared:
 Могут быть очищены следующие кеши:
 %1</translation>
     </message>
+    <message>
+        <source>Rerenders all posts on all boards.
+If one or more board names are specified, rerenders only posts on those boards.</source>
+        <translation>Рендерит заново все посты на всех досках.
+Если указано одно или более названий досок, рендерит посты только на этих досках.</translation>
+    </message>
 </context>
 <context>
     <name>initSettings</name>
@@ -2158,6 +2179,14 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Error 404</source>
         <comment>pageTitle</comment>
         <translation>Ошибка 404</translation>
+    </message>
+</context>
+<context>
+    <name>rerenderPosts</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>

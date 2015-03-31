@@ -5,5 +5,6 @@
 [done] Add different logos/icons for every file type
 [done] Add ability to cancel thread files download
 [done] Save captcha quota state
+[done] Add ability to rerender all posts on specified board(s)
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

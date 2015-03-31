@@ -1295,6 +1295,37 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
     }
 }
 
+int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l)
+{
+    TranslatorQt tq(l);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
+        odb::query<Post> q;
+        foreach (const QString &board, boardNames)
+            q = q || odb::query<Post>::board == board;
+        q = odb::query<Post>::rawHtml == false && q;
+        QList<Post> posts = query<Post, Post>(q);
+        foreach (int i, bRangeD(0, posts.size() - 1)) {
+            Post &post = posts[i];
+            if (!post.draft() && !removeFromReferencedPosts(post.id(), error))
+                return -1;
+            RefMap refs;
+            post.setText(Controller::processPostText(post.rawText(), post.board(), &refs));
+            QSharedPointer<Post> sp(new Post(post));
+            if (!post.draft() && !addToReferencedPosts(sp, refs, error))
+                return -1;
+            t->update(post);
+            Cache::removePost(post.board(), post.number());
+        }
+        t.commit();
+        return bRet(error, QString(), posts.size());
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), -1);
+    }
+}
+
 bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error, const QLocale &l)
 {
     return setThreadFixedInternal(board, threadNumber, fixed, error, l);

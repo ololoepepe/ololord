@@ -49,6 +49,7 @@ static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
+static bool handleRerenderPosts(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
 static bool handleUnfixThread(const QString &cmd, const QStringList &args);
@@ -397,6 +398,23 @@ bool handleReloadBoards(const QString &, const QStringList &)
     return true;
 }
 
+bool handleRerenderPosts(const QString &, const QStringList &args)
+{
+    QString s = bReadLine(translate("handleRerenderPosts", "Are you sure?") + " [yN] ");
+    if (s.compare("y", Qt::CaseInsensitive))
+        return true;
+    QStringList boardNames = args;
+    boardNames.removeAll("");
+    boardNames.removeDuplicates();
+    QString err;
+    int count = Database::rerenderPosts(boardNames, &err);
+    if (count < 0)
+        bWriteLine(translate("handleRerenderPosts", "Error:") + " " + err);
+    else
+        bWriteLine(translate("handleRerenderPosts", "Rerendered posts:") +  " " + QString::number(count));
+    return true;
+}
+
 bool handleSet(const QString &cmd, const QStringList &args)
 {
     SettingsLocker locker;
@@ -567,6 +585,13 @@ void initCommands()
     ch.usage = "register-user";
     ch.description = BTranslation::translate("initCommands", "Registers a user.");
     BTerminal::setCommandHelp("register-user", ch);
+    //
+    BTerminal::installHandler("rerender-posts", &handleRerenderPosts);
+    ch.usage = "rerender-posts [board]...";
+    ch.description = BTranslation::translate("initCommands", "Rerenders all posts on all boards.\n"
+                                             "If one or more board names are specified, rerenders only posts on those "
+                                             "boards.");
+    BTerminal::setCommandHelp("rerender-posts", ch);
     //
     BTerminal::installHandler("delete-post", &handleDeletePost);
     ch.usage = "delete-post <board> <post-number>";
