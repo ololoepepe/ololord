@@ -245,6 +245,41 @@ void AbstractBoard::reloadBoards()
     initBoards(true);
 }
 
+void AbstractBoard::restoreCaptchaQuota(const QByteArray &data)
+{
+    QVariantMap m = BeQt::deserialize(data).toMap();
+    QMutexLocker locker(&boardsMutex);
+    foreach (const QString &boardName, m.keys()) {
+        AbstractBoard *board = boards.value(boardName);
+        if (!board)
+            continue;
+        QVariantMap mm = m.value(boardName).toMap();
+        QMutexLocker lockerQuota(&board->captchaQuotaMutex);
+        board->captchaQuotaMap.clear();
+        foreach (const QString &ip, mm.keys()) {
+            bool ok = false;
+            unsigned int q = mm.value(ip).toUInt(&ok);
+            if (!ok || !q)
+                continue;
+            board->captchaQuotaMap.insert(ip, q);
+        }
+    }
+}
+
+QByteArray AbstractBoard::saveCaptchaQuota()
+{
+    QVariantMap m;
+    QMutexLocker locker(&boardsMutex);
+    foreach (AbstractBoard *board, boards.values()) {
+        QVariantMap mm;
+        QMutexLocker lockerQuota(&board->captchaQuotaMutex);
+        foreach (const QString &ip, board->captchaQuotaMap.keys())
+            mm.insert(ip, board->captchaQuotaMap.value(ip));
+        m.insert(board->name(), mm);
+    }
+    return BeQt::serialize(m);
+}
+
 unsigned int AbstractBoard::archiveLimit() const
 {
     SettingsLocker s;

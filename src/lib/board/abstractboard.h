@@ -108,6 +108,8 @@ public:
     static BoardInfoList boardInfos(const QLocale &l, bool includeHidden = true);
     static QStringList boardNames(bool includeHidden = true);
     static void reloadBoards();
+    static void restoreCaptchaQuota(const QByteArray &data);
+    static QByteArray saveCaptchaQuota();
 public:
     unsigned int archiveLimit() const;
     QString bannerFileName() const;

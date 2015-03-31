@@ -82,6 +82,9 @@ int main(int argc, char **argv)
         BCoreApplication::installBeqtTranslator("beqt");
         BCoreApplication::installBeqtTranslator("ololord");
         initTerminal();
+        QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
+                + "/captcha-quota.dat";
+        AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
         bLogger->setDateTimeFormat("yyyy.MM.dd hh:mm:ss");
         QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
         fn += QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss") + ".txt";
@@ -105,6 +108,7 @@ int main(int argc, char **argv)
         ret = app.exec();
         owt.shutdown();
         owt.wait(10 * BeQt::Second);
+        BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
