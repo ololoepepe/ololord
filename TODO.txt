@@ -3,5 +3,6 @@
 [done] Implement video files support (mp4/ogg)
 [done] Implement audio files support
 [done] Add different logos/icons for every file type
+[done] Add ability to cancel thread files download
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
