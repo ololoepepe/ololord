@@ -194,13 +194,15 @@
     <div class="postFileFile">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
-            <% if ( "webm" == file.thumbName ) %>
-                <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
-                    <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.thumbSizeX %>"
-                         height="<%= file.thumbSizeY %>">
-                <% else %>
-                    <img src="/<%= sitePathPrefix %>img/webm_logo.png">
-                <% end %>
+            <% if ( "video/mp4" == file.thumbName ) %>
+                <img src="/<%= sitePathPrefix %>img/mp4_logo.png" width="<%= file.thumbSizeX %>"
+                     height="<%= file.thumbSizeY %>">
+            <% elif ( "video/ogg" == file.thumbName ) %>
+                <img src="/<%= sitePathPrefix %>img/ogg_logo.png" width="<%= file.thumbSizeX %>"
+                     height="<%= file.thumbSizeY %>">
+            <% elif ( "video/webm" == file.thumbName ) %>
+                <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.thumbSizeX %>"
+                     height="<%= file.thumbSizeY %>">
             <% else %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"

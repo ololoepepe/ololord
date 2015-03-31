@@ -80,6 +80,17 @@
 
 #include <fstream>
 
+static bool isVideoType(const QString &mimeType)
+{
+    typedef QSet<QString> StringSet;
+    init_once(StringSet, types, StringSet()) {
+        types.insert("video/mp4");
+        types.insert("video/ogg");
+        types.insert("video/webm");
+    }
+    return types.contains(mimeType);
+}
+
 static void scaleThumbnail(QImage &img, AbstractBoard::FileTransaction &ft)
 {
     ft.setMainFileSize(img.height(), img.width());
@@ -185,7 +196,7 @@ void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
-const QString AbstractBoard::defaultFileTypes = "image/png,image/jpeg,image/gif,video/webm";
+const QString AbstractBoard::defaultFileTypes = "image/gif,image/jpeg,image/png,video/mp4,video/ogg,video/webm";
 
 AbstractBoard::AbstractBoard() :
     captchaQuotaMutex(QMutex::Recursive)
@@ -721,9 +732,11 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
 #endif
     typedef QMap<QString, QString> StringMap;
     init_once(StringMap, suffixes, StringMap()) {
-        suffixes.insert("image/png", "png");
-        suffixes.insert("image/jpeg", "jpeg");
         suffixes.insert("image/gif", "gif");
+        suffixes.insert("image/jpeg", "jpeg");
+        suffixes.insert("image/png", "png");
+        suffixes.insert("video/mp4", "mp4");
+        suffixes.insert("video/ogg", "ogg");
         suffixes.insert("video/webm", "webm");
     }
     bool ok = false;
@@ -747,7 +760,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
-    if (!mimeType.compare("video/webm", Qt::CaseInsensitive)) {
+    if (isVideoType(mimeType)) {
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
@@ -759,7 +772,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
             if (!img.save(path + "/" + dt + "s.png", "png"))
                 return false;
         } else {
-            ft.setThumbFile("webm");
+            ft.setThumbFile(mimeType);
         }
     } else {
         QByteArray data = f.data;

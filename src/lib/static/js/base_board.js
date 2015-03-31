@@ -18,6 +18,18 @@ lord.postFormVisible = {
 
 /*Functions*/
 
+lord.isAudioType = function(type) {
+    return type in {"audio/mpeg": true, "audio/ogg": true, "audio/wav": true};
+};
+
+lord.isImageType = function(type) {
+    return type in {"image/gif": true, "image/jpeg": true, "image/png": true};
+};
+
+lord.isVideoType = function(type) {
+    return type in {"video/mp4": true, "video/ogg": true, "video/webm": true};
+};
+
 lord.toCenter = function(element, sizeHintX, sizeHintY) {
     var doc = document.documentElement;
     element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
@@ -251,7 +263,7 @@ lord.createPostFile = function(f, boardName) {
     divFileSize.className = "postFileSize";
     divFileSize.appendChild(document.createTextNode("(" + f["size"] + ")"));
     file.appendChild(divFileSize);
-    if ("image/png" === f["type"] || "image/jpeg" === f["type"] || "image/gif" === f["type"]) {
+    if (lord.isImageType(f["type"])) {
         var divFileSearch = document.createElement("div");
         divFileSearch.className = "postFileSearch";
         var siteDomain = document.getElementById("siteDomain").value;
@@ -280,7 +292,7 @@ lord.createPostFile = function(f, boardName) {
     var divImage = document.createElement("div");
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
-    if ("image/png" === f["type"] || "image/jpeg" === f["type"] || "image/gif" === f["type"]) {
+    if (lord.isImageType(f["type"])) {
         aImage.onclick = function(e) {
             return lord.showImage("/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"], f["sizeX"],
                              f["sizeY"]);
@@ -293,8 +305,9 @@ lord.createPostFile = function(f, boardName) {
         image.width = thumbSizeX;
     if (!isNaN(thumbSizeY) && thumbSizeY > 0)
         image.height = thumbSizeY;
-    if ("video/webm" === f["thumbName"]) {
-        image.src = "/" + sitePrefix + "img/webm_logo.png";
+    if (isVideoType(f["thumbName"])) {
+        var subtype = f["thumbName"].split("/").pop();
+        image.src = "/" + sitePrefix + "img/" + subtype + "_logo.png";
     } else {
         image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
     }
@@ -568,7 +581,7 @@ lord.getFileHashes = function(div) {
 
 lord.hideImage = function() {
     if (!!lord.img) {
-        if ("video/webm" === lord.img.fileType) {
+        if (lord.isVideoType(lord.img.fileType)) {
             lord.img.pause();
             lord.img.load();
         }
@@ -1058,6 +1071,10 @@ lord.fileSelected = function(current) {
         reader.onload = function(e) {
             oldDiv.querySelector("img").src = e.target.result;
         };
+    } else if (!!current.value.match(/\.(mp4)$/i)) {
+        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/mp4_file.png";
+    } else if (!!current.value.match(/\.(ogg)$/i)) {
+        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/ogg_file.png";
     } else if (!!current.value.match(/\.(webm)$/i)) {
         div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/webm_file.png";
     } else {
@@ -1148,7 +1165,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.resetScale(lord.img);
         lord.img.style.display = "";
         lord.toCenter(lord.img, sizeHintX, sizeHintY);
-        if ("video/webm" === lord.img.fileType) {
+        if (lord.isVideoType(lord.img.fileType)) {
             setTimeout(function() {
                 lord.img.play();
             }, 500);
@@ -1157,16 +1174,17 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
         return true;
-    if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
+    if (lord.isImageType(type)) {
         lord.img = document.createElement("img");
+        lord.img.width = sizeHintX;
+        lord.img.height = sizeHintY;
         lord.img.src = href;
-        //TODO: Set width and height
-    } else if ("video/webm" === type) {
+    } else if (lord.isVideoType(type)) {
         lord.img = document.createElement("video");
         lord.img.controls = "controls";
         var src = document.createElement("source");
         src.src = href;
-        src.type = "video/webm";
+        src.type = type;
         lord.img.appendChild(src);
     }
     lord.img.fileType = type;
@@ -1195,7 +1213,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     } else {
         lord.img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
     }
-    if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
+    if (lord.isImageType(type)) {
         lord.img.onmousedown = function(e) {
             if (!!e.button)
                 return;
@@ -1212,7 +1230,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
             e.preventDefault();
             lord.img.moving = false;
             if (lord.img.initialCoord.x === e.clientX && lord.img.initialCoord.y === e.clientY) {
-                if ("video/webm" === type) {
+                if (lord.isVideoType(type)) {
                     lord.img.pause();
                     lord.img.currentTime = 0;
                 }
@@ -1233,7 +1251,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     document.body.appendChild(lord.img);
     lord.toCenter(lord.img, sizeHintX, sizeHintY);
-    if ("video/webm" === lord.img.fileType) {
+    if (lord.isVideoType(lord.img.fileType)) {
         setTimeout(function() {
             lord.img.play();
         }, 500);
