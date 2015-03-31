@@ -2,5 +2,6 @@
 * Reload codecha instead of reloading a page
 [done] Implement video files support (mp4/ogg)
 [done] Implement audio files support
+[done] Add different logos/icons for every file type
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

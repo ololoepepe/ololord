@@ -195,7 +195,7 @@
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
             <% if ( content.isSpecialThumbName(file.thumbName) ) %>
-                <img src="/<%= sitePathPrefix %>img/<%= file.thumbSubtype() %>_logo.png"
+                <img src="/<%= sitePathPrefix %>img/<%= file.specialThumbName() %>_logo.png"
                      width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
             <% else %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>

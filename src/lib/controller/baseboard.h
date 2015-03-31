@@ -33,12 +33,9 @@ struct OLOLORD_EXPORT File
     int thumbSizeY;
     std::string type;
 public:
-    std::string thumbSubtype() const
+    std::string specialThumbName() const
     {
-        QStringList sl = Tools::fromStd(thumbName).split('/');
-        if (sl.size() != 2)
-            return std::string();
-        return Tools::toStd(sl.last());
+        return Tools::toStd(Tools::fromStd(thumbName).replace('/', "_"));
     }
 };
 

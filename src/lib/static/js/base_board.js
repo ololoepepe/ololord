@@ -316,8 +316,7 @@ lord.createPostFile = function(f, boardName) {
     if (!isNaN(thumbSizeY) && thumbSizeY > 0)
         image.height = thumbSizeY;
     if (lord.isSpecialThumbName(f["thumbName"])) {
-        var subtype = f["thumbName"].split("/").pop();
-        image.src = "/" + sitePrefix + "img/" + subtype + "_logo.png";
+        image.src = "/" + sitePrefix + "img/" + f["thumbName"].replace("/", "_") + "_logo.png";
     } else {
         image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
     }
@@ -1081,9 +1080,11 @@ lord.fileSelected = function(current) {
         reader.onload = function(e) {
             oldDiv.querySelector("img").src = e.target.result;
         };
-    } else if (!!current.value.match(/\.(mp3|mp4)$/i)) {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/mpeg_file.png";
-    } else if (!!current.value.match(/\.(ogg)$/i)) {
+    } else if (!!current.value.match(/\.(mp3)$/i)) {
+        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/mp3_file.png";
+    } else if (!!current.value.match(/\.(mp4)$/i)) {
+        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/mp4_file.png";
+    } else if (!!current.value.match(/\.(ogg|ogv)$/i)) {
         div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/ogg_file.png";
     } else if (!!current.value.match(/\.(webm)$/i)) {
         div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/webm_file.png";

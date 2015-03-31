@@ -243,7 +243,6 @@
         <file>static/img/flag/ZW.png</file>
         <file>static/img/ban.png</file>
         <file>static/img/hide.png</file>
-        <file>static/img/webm_logo.png</file>
         <file>static/img/edit.png</file>
         <file>static/img/down.png</file>
         <file>static/img/up.png</file>
@@ -256,10 +255,14 @@
         <file>static/img/download.png</file>
         <file>static/img/favicon_newmessage.ico</file>
         <file>static/img/ogg_file.png</file>
-        <file>static/img/ogg_logo.png</file>
         <file>static/img/wav_file.png</file>
         <file>static/img/wav_logo.png</file>
-        <file>static/img/mpeg_file.png</file>
-        <file>static/img/mpeg_logo.png</file>
+        <file>static/img/audio_mpeg_logo.png</file>
+        <file>static/img/audio_ogg_logo.png</file>
+        <file>static/img/mp3_file.png</file>
+        <file>static/img/mp4_file.png</file>
+        <file>static/img/video_mp4_logo.png</file>
+        <file>static/img/video_ogg_logo.png</file>
+        <file>static/img/video_webm_logo.png</file>
     </qresource>
 </RCC>
