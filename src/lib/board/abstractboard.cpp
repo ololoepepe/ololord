@@ -80,17 +80,6 @@
 
 #include <fstream>
 
-static bool isVideoType(const QString &mimeType)
-{
-    typedef QSet<QString> StringSet;
-    init_once(StringSet, types, StringSet()) {
-        types.insert("video/mp4");
-        types.insert("video/ogg");
-        types.insert("video/webm");
-    }
-    return types.contains(mimeType);
-}
-
 static void scaleThumbnail(QImage &img, AbstractBoard::FileTransaction &ft)
 {
     ft.setMainFileSize(img.height(), img.width());
@@ -181,7 +170,7 @@ void AbstractBoard::FileTransaction::setThumbFile(const QString &fn)
         return;
     if (minfos.isEmpty())
         return;
-    minfos.last().thumbName = QFileInfo(fn).fileName();
+    minfos.last().thumbName = Tools::isSpecialThumbName(fn) ? fn : QFileInfo(fn).fileName();
 }
 
 void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
@@ -196,7 +185,8 @@ void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
-const QString AbstractBoard::defaultFileTypes = "image/gif,image/jpeg,image/png,video/mp4,video/ogg,video/webm";
+const QString AbstractBoard::defaultFileTypes = "audio/mpeg,audio/ogg,audio/wav,image/gif,image/jpeg,image/png,"
+                                                "video/mp4,video/ogg,video/webm";
 
 AbstractBoard::AbstractBoard() :
     captchaQuotaMutex(QMutex::Recursive)
@@ -732,6 +722,9 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
 #endif
     typedef QMap<QString, QString> StringMap;
     init_once(StringMap, suffixes, StringMap()) {
+        suffixes.insert("audio/mpeg", "mpeg");
+        suffixes.insert("audio/ogg", "ogg");
+        suffixes.insert("audio/wav", "wav");
         suffixes.insert("image/gif", "gif");
         suffixes.insert("image/jpeg", "jpeg");
         suffixes.insert("image/png", "png");
@@ -760,7 +753,11 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
-    if (isVideoType(mimeType)) {
+    if (Tools::isAudioType(mimeType)) {
+        ft.setMainFileSize(0, 0);
+        ft.setThumbFile(mimeType);
+        ft.setThumbFileSize(200, 200);
+    } else if (Tools::isVideoType(mimeType)) {
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
@@ -773,6 +770,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
                 return false;
         } else {
             ft.setThumbFile(mimeType);
+            ft.setThumbFileSize(200, 200);
         }
     } else {
         QByteArray data = f.data;
@@ -871,7 +869,8 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
                 f.thumbSizeY = fis->thumbHeight();
-                sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
+                if (f.sizeX >= 0 && f.sizeY >= 0)
+                    sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);
                 p->files.push_back(f);

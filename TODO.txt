@@ -1,6 +1,6 @@
 [done] Fix "no captcha required" message
 * Reload codecha instead of reloading a page
 [done] Implement video files support (mp4/ogg)
-* Implement audio files support
+[done] Implement audio files support
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

@@ -255,9 +255,11 @@
         <file>static/img/iqdb.png</file>
         <file>static/img/download.png</file>
         <file>static/img/favicon_newmessage.ico</file>
-        <file>static/img/mp4_file.png</file>
-        <file>static/img/mp4_logo.png</file>
         <file>static/img/ogg_file.png</file>
         <file>static/img/ogg_logo.png</file>
+        <file>static/img/wav_file.png</file>
+        <file>static/img/wav_logo.png</file>
+        <file>static/img/mpeg_file.png</file>
+        <file>static/img/mpeg_logo.png</file>
     </qresource>
 </RCC>

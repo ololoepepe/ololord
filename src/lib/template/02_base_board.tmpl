@@ -181,7 +181,7 @@
     <div class="postFileSize">
         (<%= file.size %>)
     </div>
-    <% if ( "image/png" == file.type || "image/jpeg" == file.type || "image/gif" == file.type ) %>
+    <% if ( content.isImageType(file.type) ) %>
         <div class="postFileSearch">
             <a href="//www.google.com/searchbyimage?image_url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithGoogleText %>" target="_blank">
@@ -194,15 +194,9 @@
     <div class="postFileFile">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
-            <% if ( "video/mp4" == file.thumbName ) %>
-                <img src="/<%= sitePathPrefix %>img/mp4_logo.png" width="<%= file.thumbSizeX %>"
-                     height="<%= file.thumbSizeY %>">
-            <% elif ( "video/ogg" == file.thumbName ) %>
-                <img src="/<%= sitePathPrefix %>img/ogg_logo.png" width="<%= file.thumbSizeX %>"
-                     height="<%= file.thumbSizeY %>">
-            <% elif ( "video/webm" == file.thumbName ) %>
-                <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.thumbSizeX %>"
-                     height="<%= file.thumbSizeY %>">
+            <% if ( content.isSpecialThumbName(file.thumbName) ) %>
+                <img src="/<%= sitePathPrefix %>img/<%= file.thumbSubtype() %>_logo.png"
+                     width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
             <% else %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
