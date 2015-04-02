@@ -34,8 +34,12 @@
             <br />
             _<i><%= italics %></i>_
             <br />
+            //<i><%= italics %></i>//
+            <br />
             [i]<i><%= italics %></i>[/i]
             <br /><br />
+            --<s><%= strikedoutText %></s>--
+            <br />
             <s><%= strikedoutText %></s><%= strikedoutTextWakaba %>
             <br />
             [s]<s><%= strikedoutText %></s>[/s]
@@ -51,6 +55,10 @@
             [q]<font face="monospace"><%= singleMonospace %></font>[/q]
             <br /><br />
             ``<font face="monospace"><%= doubleMonospace %></font>``
+            <br /><br />
+            /--pre
+            <pre><%= preformattedText %></pre>
+            \--
             <br /><br />
             %%<span class="spoiler"><%= spoiler %></span>%%
             <br />
@@ -73,6 +81,9 @@
             [code lang=&quot;cpp&quot;]static const int x = 0;[/code]
             <br /></br />
             [c++]static const int x = 0;[/c++]
+            <br /><br />
+            /--code c++<br />static const int = 0;<br />\--
+            <br />
             <div class="codeBlock"><pre><tt><b><font color="#0000FF">static</font></b> <b><font color="#0000FF">const</font></b> <font color="#009900">int</font> x <font color="#990000">=</font> <font color="#993399">0</font><font color="#990000">;</font></tt></pre></div>
         </div>
         <div class="sectionHeader">

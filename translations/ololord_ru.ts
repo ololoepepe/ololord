@@ -438,6 +438,13 @@ The default is true.</source>
         <comment>basicMarkup</comment>
         <translation>Основы разметки</translation>
     </message>
+    <message>
+        <source>Preformatted
+text</source>
+        <comment>preformattedText</comment>
+        <translation>Преформатированный
+текст</translation>
+    </message>
 </context>
 <context>
     <name>aBoard</name>

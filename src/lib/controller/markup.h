@@ -25,6 +25,7 @@ struct OLOLORD_EXPORT Markup : public Base
     std::string listMarkup;
     std::string postBoardLinkDescription;
     std::string postLinkDescription;
+    std::string preformattedText;
     std::string quotation;
     std::string singleMonospace;
     std::string spoiler;

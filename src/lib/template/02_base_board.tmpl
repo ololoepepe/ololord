@@ -390,7 +390,7 @@
                 <% end %>
                 <% if ( post.files.size() < 2 ) %>
                     <td class="postText">
-                        <% if ( thread ) %>
+                        <% if ( !thread ) %>
                              <blockquote id="post<%= post.number %>Text"
                                          class="blockquoteThread"><%= post.text | raw %></blockquote>
                         <% else %>
@@ -405,7 +405,7 @@
             <% if ( post.files.size() >= 2 ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"postText\">"; %>
-                        <% if ( thread ) %>
+                        <% if ( !thread ) %>
                             <blockquote id="post<%= post.number %>Text"
                                         class="blockquoteThread"><%= post.text | raw %></blockquote>
                         <% else %>
