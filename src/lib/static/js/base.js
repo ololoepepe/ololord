@@ -6,13 +6,6 @@ var lord = lord || {};
 
 lord.Billion = 2 * 1000 * 1000 * 1000;
 
-/*Variables*/
-
-lord.searchFormVisible = {
-    "top": false,
-    "bottom": false
-};
-
 /*Functions*/
 
 lord.dtsIbEngine = { //For compatibility with Dollchan Extension Tools
@@ -50,18 +43,6 @@ lord.dtsIbEngine = { //For compatibility with Dollchan Extension Tools
     multiFile: { value: true },
     rLinkClick: { value: "" },
     timePattern: { value: "dd+nn+yyyy+w+hh+ii+ss" }
-};
-
-lord.showHideSearchForm = function(position) {
-    var theButton = document.getElementById("showHideSearchFormButton" + position);
-    if (lord.searchFormVisible[position]) {
-        theButton.innerHTML = document.getElementById("showSearchFormText").value;
-        document.getElementById("searchForm" + position).className = "searchFormInvisible";
-    } else {
-        theButton.innerHTML = document.getElementById("hideSearchFormText").value;
-        document.getElementById("searchForm" + position).className = "searchFormVisible";
-    }
-    lord.searchFormVisible[position] = !lord.searchFormVisible[position];
 };
 
 lord.getCookie = function(name) {
@@ -222,6 +203,26 @@ lord.switchShowTripcode = function() {
             "expires": lord.Billion, "path": "/"
         });
     }
+};
+
+lord.doSearch = function() {
+    var query = document.getElementById("searchFormInputQuery").value;
+    if ("" === query)
+        return;
+    var sel = document.getElementById("searchFormSelectBoard");
+    var board = sel.options[sel.selectedIndex].value;
+    var prefix = document.getElementById("sitePathPrefix").value;
+    var href = window.location.href.split("/").shift() + "/" + prefix + "search?query=" + encodeURIComponent(query);
+    if ("*" !== board)
+        href = href + "&board=" + board;
+    window.location.href = href;
+};
+
+lord.searchKeyPress = function(e) {
+    e = e || window.event;
+    if (e.keyCode != 13)
+        return;
+    lord.doSearch();
 };
 
 lord.initializeOnLoadSettings = function() {

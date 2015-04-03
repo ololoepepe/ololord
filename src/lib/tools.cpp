@@ -335,6 +335,15 @@ QStringList fromStd(const std::list<std::string> &sl)
     return list;
 }
 
+GetParameters getParameters(const cppcms::http::request &request)
+{
+    PostParameters m;
+    cppcms::http::request::form_type data = const_cast<cppcms::http::request *>(&request)->get();
+    for (cppcms::http::request::form_type::iterator i = data.begin(); i != data.end(); ++i)
+        m.insert(fromStd(i->first), fromStd(i->second));
+    return m;
+}
+
 QByteArray hashpass(const cppcms::http::request &req)
 {
     return toHashpass(hashpassString(req));

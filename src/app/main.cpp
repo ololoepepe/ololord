@@ -705,9 +705,6 @@ void initSettings()
                                                "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
     nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));
-    nn = new BSettingsNode(QVariant::String, "search_api_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Public key for search API service.\n"
-                                               "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "ssl_proxy_query", n);
     nn->setDescription(BTranslation::translate("initSettings", "Query used to proxy non-SSL links inside iframes.\n"
                                                "Must contain \"%1\" (without quotes) - it is replaced by URL."));

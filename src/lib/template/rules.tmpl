@@ -13,10 +13,8 @@
         <% include settings() %>
         <br />
         <% include navbar() %>
-        <% if ( !content.searchApiKey.empty() ) %>
-            <br />
-        <% end %>
-        <% include searchAction("Top") %>
+        <br />
+        <% include searchAction() %>
         <div class="theTitle">
             <h1><%= currentBoard.title %></h1>
         </div>

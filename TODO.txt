@@ -6,6 +6,7 @@
 [done] Save captcha quota state
 [done] Add ability to rerender all posts on specified board(s)
 [done] Improve markup
+[done] Reimplement search
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

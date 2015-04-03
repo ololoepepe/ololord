@@ -9,6 +9,7 @@
 #include <route/BoardRoute>
 #include <route/HomeRoute>
 #include <route/MarkupRoute>
+#include <route/SearchRoute>
 #include <route/StaticFilesRoute>
 #include <route/ThreadRoute>
 #include <SettingsLocker>
@@ -55,6 +56,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new HomeRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new MarkupRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new SearchRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new StaticFilesRoute(*this, StaticFilesRoute::StaticFilesMode);
     routesMap.insert(r->regex(), r);

@@ -1,0 +1,76 @@
+<% c++ #include "controller/search.h" %>
+<% skin my_skin %>
+<% view search uses Content::Search extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+        <script type="text/javascript">
+            /*ololord global object*/
+
+            var lord = lord || {};
+
+            /*Functions*/
+
+            lord.setSearchQuery = function() {
+                var query = document.getElementById("hiddenSearchQuery").value;
+                document.getElementById("searchFormInputQuery").value = query;
+                var board = document.getElementById("hiddenSearchQueryBoard").value;
+                var sel = document.getElementById("searchFormSelectBoard");
+                for (var opt, i = 0; opt = sel.options[i]; ++i) {
+                    if (opt.value == board) {
+                        sel.selectedIndex = i;
+                        break;
+                    }
+                }
+            };
+        </script>
+    </head>
+    <body onload="javascript:lord.setSearchQuery();">
+        <% include baseTexts() %>
+        <input type="hidden" id="hiddenSearchQuery" value="<%= query %>" />
+        <input type="hidden" id="hiddenSearchQueryBoard" value="<%= queryBoard %>" />
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <% if ( !content.error ) %>
+                <h1><%= resultsMessage %></h1>
+            <% else %>
+                <h1><%= errorMessage %></h1>
+            <% end %>
+        </div>
+        <% if ( !content.error ) %>
+            <ol>
+                <%foreach result in searchResults %>
+                    <% item %>
+                        <li>
+                            <div>
+                                <a href="/<%= sitePathPrefix %><%= result.boardName %>/thread/<%= result.threadNumber %>.html#<%= result.postNumber %>"
+                                   target="_blank"><%= result.subject %></a>
+                            </div>
+                            <div>
+                                <span class="quotation">/<%= result.boardName %>/thread/<%= result.threadNumber %>.html#<%= result.postNumber %></span>
+                            </div>
+                            <div>
+                                <%= result.text | raw %>
+                            </div>
+                        </li>
+                    <% end %>
+                <% end %>
+            </ol>
+        <% else %>
+            <div class="error">
+                <%= errorDescription %>
+            </div>
+        <% end %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

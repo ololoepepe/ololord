@@ -31,12 +31,12 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
         std::string title;
     };
 public:
+    std::string allBoardsText;
     AbstractBoard::BoardInfoList boards;
     std::string cancelButtonText;
     std::string confirmButtonText;
     Locale currentLocale;
     std::string currentTime;
-    std::string hideSearchFormText;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;
@@ -45,10 +45,11 @@ public:
     std::string loginMessageOk;
     std::string loginMessageWarning;
     std::string loginPlaceholderText;
+    unsigned int maxSearchQueryLength;
     std::string pageTitle;
-    std::string searchApiKey;
+    std::string searchButtonText;
+    std::string searchInputPlaceholder;
     std::string showPasswordText;
-    std::string showSearchFormText;
     std::string showTripcodeText;
     std::string siteDomain;
     std::string sitePathPrefix;

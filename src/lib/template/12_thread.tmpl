@@ -43,10 +43,8 @@
 <% include settings() %>
 <br />
 <% include navbar() %>
-<% if ( !content.searchApiKey.empty() ) %>
-    <br />
-<% end %>
-<% include searchAction("Top") %>
+<br />
+<% include searchAction() %>
 <% if ( !content.bannerFileName.empty() ) %>
     <br />
 <% end %>
@@ -93,10 +91,6 @@
 <% include createAction("Bottom") %>
 <hr />
 <% include navbar() %>
-<% if ( !content.searchApiKey.empty() ) %>
-    <br />
-<% end %>
-<% include searchAction("Bottom") %>
 <a id="bottom"></a>
 <% end template %>
 

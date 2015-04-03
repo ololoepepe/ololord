@@ -475,23 +475,8 @@ span.spoiler:hover a {
     display: block;
     margin-left: auto;
     margin-right: auto;
-    text-align: center;
+    text-align: right;
     white-space: nowrap;
-}
-
-.searchFormInvisible {
-    display: none;
-}
-
-.searchFormVisible {
-    /*display: block;*/
-}
-
-.searchFormTable {
-    /*display: inline;*/
-    height: 0px;
-    overflow: hidden;
-    width: 0px;
 }
 
 /*

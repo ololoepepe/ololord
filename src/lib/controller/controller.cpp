@@ -74,12 +74,12 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     }
     localeMutex.unlock();
     TranslatorStd ts(req);
+    c.allBoardsText = ts.translate("initBase", "All boards", "allBoardsText");
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
     c.cancelButtonText = ts.translate("initBase", "Cancel", "cancelButtonText");
     c.confirmButtonText = ts.translate("initBase", "Confirm", "confirmButtonText");
     c.currentLocale = toWithLocale(ts.locale());
     c.currentTime = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time").value();
-    c.hideSearchFormText = ts.translate("initBase", "Hide search form", "hideSearchFormText");
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.loggedIn = !Tools::hashpassString(req).isEmpty();
@@ -101,11 +101,13 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         }
     }
     c.loginPlaceholderText = ts.translate("initBase", "Password/hashpass", "PlaceholderText");
+    c.maxSearchQueryLength = 150;
     c.pageTitle = Tools::toStd(pageTitle);
     SettingsLocker s;
-    c.searchApiKey = Tools::toStd(s->value("Site/search_api_key").toString());
+    c.searchButtonText = ts.translate("initBase", "Search", "searchButtonText");
+    c.searchInputPlaceholder = ts.translate("initBase", "Search: possible +required -excluded",
+                                            "searchInputPlaceholder");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
-    c.showSearchFormText = ts.translate("initBase", "Search", "showSearchFormText");
     c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());

@@ -17,6 +17,7 @@ HEADERS += \
     $${PWD}/prboard.h \
     $${PWD}/prthread.h \
     $${PWD}/rules.h \
+    $${PWD}/search.h \
     $${PWD}/thread.h
 
 SOURCES += \

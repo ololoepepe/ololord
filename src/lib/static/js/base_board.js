@@ -1074,6 +1074,7 @@ lord.fileSelected = function(current) {
             oldDiv.fileHash = fileHash;
         });
     };
+    var prefix = document.getElementById("sitePathPrefix").value;
     if (!!current.value.match(/\.(jpe?g|png|gif)$/i)) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
@@ -1081,17 +1082,17 @@ lord.fileSelected = function(current) {
             oldDiv.querySelector("img").src = e.target.result;
         };
     } else if (!!current.value.match(/\.(mp3)$/i)) {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/mp3_file.png";
+        div.querySelector("img").src = "/" + prefix + "img/mp3_file.png";
     } else if (!!current.value.match(/\.(mp4)$/i)) {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/mp4_file.png";
+        div.querySelector("img").src = "/" + prefix + "img/mp4_file.png";
     } else if (!!current.value.match(/\.(ogg|ogv)$/i)) {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/ogg_file.png";
+        div.querySelector("img").src = "/" + prefix + "img/ogg_file.png";
     } else if (!!current.value.match(/\.(webm)$/i)) {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/webm_file.png";
+        div.querySelector("img").src = "/" + prefix + "img/webm_file.png";
     } else if (!!current.value.match(/\.(wav)$/i)) {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/wav_file.png";
+        div.querySelector("img").src = "/" + prefix + "img/wav_file.png";
     } else {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/file.png";
+        div.querySelector("img").src = "/" + prefix + "img/file.png";
     }
     div.querySelector("a").style.display = "inline";
     var parent = div.parentNode;

@@ -447,6 +447,39 @@ text</source>
     </message>
 </context>
 <context>
+    <name>SearchRoute</name>
+    <message>
+        <source>Search</source>
+        <comment>pageTitle</comment>
+        <translation>Поиск</translation>
+    </message>
+    <message>
+        <source>Invalid query</source>
+        <comment>error</comment>
+        <translation>Недействительный запрос</translation>
+    </message>
+    <message>
+        <source>Invalid search query</source>
+        <comment>description</comment>
+        <translation>Недействительный поисковый запрос</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Search results</source>
+        <comment>resultsMessage</comment>
+        <translation>Результаты поиска</translation>
+    </message>
+</context>
+<context>
     <name>aBoard</name>
     <message>
         <source>/a/nime</source>
@@ -888,6 +921,29 @@ text</source>
     </message>
 </context>
 <context>
+    <name>findPosts</name>
+    <message>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation>Неправильные параметры</translation>
+    </message>
+    <message>
+        <source>No phrases to search for</source>
+        <comment>description</comment>
+        <translation>Отсутствуют фразы для поиска</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>getNewPosts</name>
     <message>
         <source>Invalid board name</source>
@@ -1264,16 +1320,6 @@ Your choice:</source>
         <translation>Подтвердить</translation>
     </message>
     <message>
-        <source>Hide search form</source>
-        <comment>hideSearchFormText</comment>
-        <translation>Скрыть форму поиска</translation>
-    </message>
-    <message>
-        <source>Search</source>
-        <comment>showSearchFormText</comment>
-        <translation>Искать</translation>
-    </message>
-    <message>
         <source>I&apos;m an attention whore!</source>
         <comment>showTripcodeText</comment>
         <translation>Я - вниманиешлюха!</translation>
@@ -1292,6 +1338,21 @@ Your choice:</source>
         <source>Style:</source>
         <comment>styleLabelText</comment>
         <translation>Стиль:</translation>
+    </message>
+    <message>
+        <source>All boards</source>
+        <comment>allBoardsText</comment>
+        <translation>Все доски</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <comment>searchButtonText</comment>
+        <translation>Искать</translation>
+    </message>
+    <message>
+        <source>Search: possible +required -excluded</source>
+        <comment>searchInputPlaceholder</comment>
+        <translation>Поиск: возможно +обязательно -исключается</translation>
     </message>
 </context>
 <context>
@@ -1821,12 +1882,6 @@ The default value is %1.</source>
     <message>
         <source>A salt used to generate tripcodes from hashpasses.</source>
         <translation>Соль, используемая для генерации трипкодов из хешпассов.</translation>
-    </message>
-    <message>
-        <source>Public key for search API service.
-Apperas in the HTML pages.</source>
-        <translation>Открытый ключ API поискового сервиса.
-Появляется в HTML-страницах.</translation>
     </message>
     <message>
         <source>Maximum length of the e-mail field.
