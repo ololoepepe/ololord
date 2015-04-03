@@ -1,12 +1,3 @@
-[done] Fix "no captcha required" message
-[done] Implement video files support (mp4/ogg)
-[done] Implement audio files support
-[done] Add different logos/icons for every file type
-[done] Add ability to cancel thread files download
-[done] Save captcha quota state
-[done] Add ability to rerender all posts on specified board(s)
-[done] Improve markup
-[done] Reimplement search
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

@@ -25,6 +25,7 @@ public:
     bool error;
     std::string errorMessage;
     std::string errorDescription;
+    std::string nothingFoundMessage;
     std::string query;
     std::string queryBoard;
     std::string resultsMessage;

@@ -122,6 +122,7 @@ void SearchRoute::handle()
     c.errorMessage = Tools::toStd(err);
     c.errorDescription = Tools::toStd(desc);
     c.resultsMessage = ts.translate("SearchRoute", "Search results", "resultsMessage");
+    c.nothingFoundMessage = ts.translate("SearchRoute", "Nothing found", "nothingFoundMessage");
     application.render("search", c);
     Tools::log(application, "search", "success", logTarget);
 }

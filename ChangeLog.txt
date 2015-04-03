@@ -1,3 +1,14 @@
+=== ololord 0.1.0-rc3 (03 April 2015) ===
+    * Fix "no captcha required" message
+    * Implement video files support (mp4/ogg)
+    * Implement audio files support
+    * Add different logos/icons for every file type
+    * Add ability to cancel thread files download
+    * Save captcha quota state
+    * Add ability to rerender all posts on specified board(s)
+    * Improve markup
+    * Reimplement search
+
 === ololord 0.1.0-rc2 (30 March 2015) ===
     * Store file infos in database
     * Check file suffixes when saving files

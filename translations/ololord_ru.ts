@@ -478,6 +478,11 @@ text</source>
         <comment>resultsMessage</comment>
         <translation>Результаты поиска</translation>
     </message>
+    <message>
+        <source>Nothing found</source>
+        <comment>nothingFoundMessage</comment>
+        <translation>Ничего не найдено</translation>
+    </message>
 </context>
 <context>
     <name>aBoard</name>
