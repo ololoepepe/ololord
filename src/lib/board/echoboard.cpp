@@ -97,7 +97,13 @@ void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content
     Content::echoThread *cc = dynamic_cast<Content::echoThread *>(c);
     if (!cc)
         return;
-    cc->threadLink = Tools::toStd(cc->opPost.userData.toString());
+    QString link = cc->opPost.userData.toString();
+    if (!link.startsWith("https")) {
+        QString q = SettingsLocker()->value("Site/ssl_proxy_query").toString();
+        if (q.contains("%1"))
+            link = q.arg(link);
+    }
+    cc->threadLink = Tools::toStd(link);
 }
 
 Content::Board *echoBoard::createBoardController(const cppcms::http::request &/*req*/, QString &viewName)

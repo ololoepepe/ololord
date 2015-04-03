@@ -886,6 +886,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->subjectIsRaw = false;
         p->rawName = Tools::toStd(post.name());
         p->draft = post.draft();
+        p->userData = post.userData();
         quint64 threadNumber = 0;
         try {
             Transaction t;
