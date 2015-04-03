@@ -562,7 +562,7 @@ static void processTagCode(ProcessPostTextContext &c)
         QString tags;
         foreach (const QString &s, langs)
             tags += "|\\[" + s + "\\]";
-        QRegExp rx("\\[code\\s+lang\\=\"(" + langs.join("|").replace("+", "\\+") + ")\"\\s*\\]"
+        QRegExp rx("\\[code\\s+lang\\=\"?(" + langs.join("|").replace("+", "\\+") + ")\"?\\s*\\]"
                    + tags.replace("+", "\\+"));
         int indStart = rx.indexIn(t);
         QString tag = tagName(rx);
@@ -573,8 +573,8 @@ static void processTagCode(ProcessPostTextContext &c)
                 lang = tag;
             } else {
                 lang = rx.cap();
-                lang.remove(QRegExp("\\[code\\s+lang\\=\""));
-                lang.remove(QRegExp("\"\\s*\\]"));
+                lang.remove(QRegExp("\\[code\\s+lang\\=\"?"));
+                lang.remove(QRegExp("\"?\\s*\\]"));
             }
             lang.replace("++", "pp");
             int codeStart = indStart + rx.matchedLength();
@@ -606,9 +606,14 @@ static void processTagCode(ProcessPostTextContext &c)
     c.process(t, skip, &processTags);
 }
 
+static void processTagCodeNolang(ProcessPostTextContext &c)
+{
+    processAsimmetric(c, &processTagCode, "code", "pre");
+}
+
 static void processTagQuote(ProcessPostTextContext &c)
 {
-    processAsimmetric(c, &processTagCode, "q", "font", "<font face=\"monospace\">", true);
+    processAsimmetric(c, &processTagCodeNolang, "q", "font", "<font face=\"monospace\">", true);
 }
 
 static void processWakabaMarkCode(ProcessPostTextContext &c)

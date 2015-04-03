@@ -1354,10 +1354,13 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
-        odb::query<Post> q;
-        foreach (const QString &board, boardNames)
-            q = q || odb::query<Post>::board == board;
-        q = odb::query<Post>::rawHtml == false && q;
+        odb::query<Post> q = (odb::query<Post>::rawHtml == false);
+        if (!boardNames.isEmpty()) {
+            odb::query<Post> qq = (odb::query<Post>::board == boardNames.first());
+            foreach (const QString &board, boardNames.mid(1))
+                qq = qq || (odb::query<Post>::board == board);
+            q = q && qq;
+        }
         QList<Post> posts = query<Post, Post>(q);
         foreach (int i, bRangeD(0, posts.size() - 1)) {
             Post &post = posts[i];
