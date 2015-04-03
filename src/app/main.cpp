@@ -49,6 +49,7 @@ static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
+static bool handleRerenderPosts(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
 static bool handleUnfixThread(const QString &cmd, const QStringList &args);
@@ -71,7 +72,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-rc2");
+        app.setApplicationVersion("0.1.0-rc3");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -82,6 +83,9 @@ int main(int argc, char **argv)
         BCoreApplication::installBeqtTranslator("beqt");
         BCoreApplication::installBeqtTranslator("ololord");
         initTerminal();
+        QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
+                + "/captcha-quota.dat";
+        AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
         bLogger->setDateTimeFormat("yyyy.MM.dd hh:mm:ss");
         QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
         fn += QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss") + ".txt";
@@ -105,6 +109,7 @@ int main(int argc, char **argv)
         ret = app.exec();
         owt.shutdown();
         owt.wait(10 * BeQt::Second);
+        BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
@@ -393,6 +398,23 @@ bool handleReloadBoards(const QString &, const QStringList &)
     return true;
 }
 
+bool handleRerenderPosts(const QString &, const QStringList &args)
+{
+    QString s = bReadLine(translate("handleRerenderPosts", "Are you sure?") + " [yN] ");
+    if (s.compare("y", Qt::CaseInsensitive))
+        return true;
+    QStringList boardNames = args;
+    boardNames.removeAll("");
+    boardNames.removeDuplicates();
+    QString err;
+    int count = Database::rerenderPosts(boardNames, &err);
+    if (count < 0)
+        bWriteLine(translate("handleRerenderPosts", "Error:") + " " + err);
+    else
+        bWriteLine(translate("handleRerenderPosts", "Rerendered posts:") +  " " + QString::number(count));
+    return true;
+}
+
 bool handleSet(const QString &cmd, const QStringList &args)
 {
     SettingsLocker locker;
@@ -564,6 +586,13 @@ void initCommands()
     ch.description = BTranslation::translate("initCommands", "Registers a user.");
     BTerminal::setCommandHelp("register-user", ch);
     //
+    BTerminal::installHandler("rerender-posts", &handleRerenderPosts);
+    ch.usage = "rerender-posts [board]...";
+    ch.description = BTranslation::translate("initCommands", "Rerenders all posts on all boards.\n"
+                                             "If one or more board names are specified, rerenders only posts on those "
+                                             "boards.");
+    BTerminal::setCommandHelp("rerender-posts", ch);
+    //
     BTerminal::installHandler("delete-post", &handleDeletePost);
     ch.usage = "delete-post <board> <post-number>";
     ch.description = BTranslation::translate("initCommands", "Delete post with <post-number> at <board>.\n"
@@ -676,9 +705,6 @@ void initSettings()
                                                "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
     nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));
-    nn = new BSettingsNode(QVariant::String, "search_api_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Public key for search API service.\n"
-                                               "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "ssl_proxy_query", n);
     nn->setDescription(BTranslation::translate("initSettings", "Query used to proxy non-SSL links inside iframes.\n"
                                                "Must contain \"%1\" (without quotes) - it is replaced by URL."));

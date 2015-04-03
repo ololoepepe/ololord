@@ -12,14 +12,34 @@ lord.popups = [];
 lord.images = {};
 lord.img = null;
 lord.postFormVisible = {
-    "top": false,
-    "bottom": false
+    "Top": false,
+    "Bottom": false
 };
 
 /*Functions*/
 
+lord.isAudioType = function(type) {
+    return type in {"audio/mpeg": true, "audio/ogg": true, "audio/wav": true};
+};
+
+lord.isImageType = function(type) {
+    return type in {"image/gif": true, "image/jpeg": true, "image/png": true};
+};
+
+lord.isVideoType = function(type) {
+    return type in {"video/mp4": true, "video/ogg": true, "video/webm": true};
+};
+
+lord.isSpecialThumbName = function(thumbName) {
+    return lord.isAudioType(thumbName) || lord.isImageType(thumbName) || lord.isVideoType(thumbName);
+};
+
 lord.toCenter = function(element, sizeHintX, sizeHintY) {
     var doc = document.documentElement;
+    if (!sizeHintX || sizeHintX <= 0)
+        sizeHintX = 300;
+    if (!sizeHintY  || sizeHintY <= 0)
+        sizeHintY = 150;
     element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
     element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
 };
@@ -96,6 +116,8 @@ lord.addReferences = function(postNumber, referencedPosts) {
 };
 
 lord.setInitialScale = function(image, sizeHintX, sizeHintY) {
+    if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
+        return;
     var doc = document.documentElement;
     var maxWidth = doc.clientWidth - 10;
     var maxHeight = doc.clientHeight - 10;
@@ -139,26 +161,54 @@ lord.showPopup = function(text, timeout, additionalClassNames) {
     }, 5000);
 };
 
-lord.resetCaptcha = function() {
+lord.reloadCaptchaFunction = function() {
     if (!!grecaptcha)
         grecaptcha.reset();
-    var noCaptcha = document.body.querySelectorAll(".noCaptchaText");
-    if (!noCaptcha)
-        return;
-    for (var i = 0; i < noCaptcha.length; ++i) {
-        var nc = noCaptcha[i];
-        var rx = /\d+/;
-        var val = nc.childNodes[0].nodeValue;
-        var ind = val.search(rx);
-        if (ind < 0)
-            continue;
-        var c = +val.substr(ind, ind + val.match(rx)[0].length);
-        if (isNaN(c))
-            continue;
-        var cc = (c - 1).toString();
-        nc.childNodes[0].nodeValue = val.replace(c.toString(), cc);
+};
+
+lord.resetCaptcha = function() {
+    var captcha = document.getElementById("googleCaptcha");
+    if (!!captcha) {
+        var boardName = document.getElementById("currentBoardName").value;
+        lord.ajaxRequest("get_captcha_quota", [boardName], 8, function(res) {
+            res = +res;
+            if (isNaN(res))
+                return;
+            var hiddenCaptcha = document.getElementById("hiddenCaptcha");
+            if (res > 0) {
+                hiddenCaptcha.appendChild(captcha);
+                ["Top", "Bottom"].forEach(function (pos) {
+                    var td = document.getElementById("googleCaptcha" + pos);
+                    for (var i = 0; i < td.children.length; ++i) {
+                        var child = td.children[i];
+                        if (child == captcha)
+                            continue;
+                        td.removeChild(child);
+                    }
+                    var span = document.createElement("span");
+                    span.className = "noCaptchaText";
+                    var text = document.getElementById("noCaptchaText").value + ". "
+                        + document.getElementById("captchaQuotaText").value + " " + res;
+                    span.appendChild(document.createTextNode(text));
+                    td.appendChild(span);
+                });
+            } else {
+                ["Top", "Bottom"].forEach(function (pos) {
+                    var td = document.getElementById("googleCaptcha" + pos);
+                    for (var i = 0; i < td.children.length; ++i) {
+                        var child = td.children[i];
+                        if (child == captcha)
+                            continue;
+                        td.removeChild(child);
+                    }
+                });
+                var pos = !!lord.postFormVisible["Bottom"] ? "Bottom" : "Top";
+                document.getElementById("googleCaptcha" + pos).appendChild(captcha);
+            }
+            if (!!lord.reloadCaptchaFunction && "hiddenCaptcha" !== captcha.parentNode.id)
+                lord.reloadCaptchaFunction();
+        });
     }
-    //TODO: Handle situations when there are no posts without captcha left
 };
 
 lord.traverseChildren = function(elem) {
@@ -223,7 +273,7 @@ lord.createPostFile = function(f, boardName) {
     divFileSize.className = "postFileSize";
     divFileSize.appendChild(document.createTextNode("(" + f["size"] + ")"));
     file.appendChild(divFileSize);
-    if ("image/png" === f["type"] || "image/jpeg" === f["type"] || "image/gif" === f["type"]) {
+    if (lord.isImageType(f["type"])) {
         var divFileSearch = document.createElement("div");
         divFileSearch.className = "postFileSearch";
         var siteDomain = document.getElementById("siteDomain").value;
@@ -252,7 +302,7 @@ lord.createPostFile = function(f, boardName) {
     var divImage = document.createElement("div");
     var aImage = document.createElement("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
-    if ("image/png" === f["type"] || "image/jpeg" === f["type"] || "image/gif" === f["type"]) {
+    if (lord.isImageType(f["type"])) {
         aImage.onclick = function(e) {
             return lord.showImage("/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"], f["sizeX"],
                              f["sizeY"]);
@@ -265,8 +315,8 @@ lord.createPostFile = function(f, boardName) {
         image.width = thumbSizeX;
     if (!isNaN(thumbSizeY) && thumbSizeY > 0)
         image.height = thumbSizeY;
-    if ("video/webm" === f["thumbName"]) {
-        image.src = "/" + sitePrefix + "img/webm_logo.png";
+    if (lord.isSpecialThumbName(f["thumbName"])) {
+        image.src = "/" + sitePrefix + "img/" + f["thumbName"].replace("/", "_") + "_logo.png";
     } else {
         image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
     }
@@ -421,8 +471,8 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     post.className += " newPost";
     post.onmouseover = function() {
-        post.className = post.className.replace(" newPost", "");
-        post.onmouseover = null;
+        this.className = this.className.replace(" newPost", "");
+        this.onmouseover = null;
     }
     if (res["number"] === res["threadNumber"])
         post.className = post.className.replace("post", "opPost");
@@ -540,7 +590,7 @@ lord.getFileHashes = function(div) {
 
 lord.hideImage = function() {
     if (!!lord.img) {
-        if ("video/webm" === lord.img.fileType) {
+        if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
             lord.img.pause();
             lord.img.load();
         }
@@ -597,13 +647,12 @@ lord.showHidePostForm = function(position) {
     } else {
         theButton.innerHTML = document.getElementById("hidePostFormText").value;
         document.getElementById("postForm" + position).className = "postFormVisible";
+        var p = ("Top" === position) ? "Bottom" : "Top";
+        if (lord.postFormVisible[p])
+            lord.showHidePostForm(p);
         var captcha = document.getElementById("googleCaptcha");
-        if (!!captcha) {
-            var p = ("Top" === position) ? "Bottom" : "Top";
-            if (lord.postFormVisible[p])
-                lord.showHidePostForm(p);
+        if (!!captcha && "hiddenCaptcha" !== captcha.parentNode.id)
             document.getElementById("googleCaptcha" + position).appendChild(captcha);
-        }
     }
     lord.postFormVisible[position] = !lord.postFormVisible[position];
 };
@@ -648,8 +697,8 @@ lord.deletePost = function(boardName, postNumber, fromThread) {
                         link.parentNode.replaceChild(document.createTextNode(text), link);
                     }
                 }
-                if (!!postPreviews[boardName + "/" + postNumber])
-                    delete postPreviews[boardName + "/" + postNumber];
+                if (!!lord.postPreviews[boardName + "/" + postNumber])
+                    delete lord.postPreviews[boardName + "/" + postNumber];
             }
         });
     });
@@ -1025,16 +1074,25 @@ lord.fileSelected = function(current) {
             oldDiv.fileHash = fileHash;
         });
     };
+    var prefix = document.getElementById("sitePathPrefix").value;
     if (!!current.value.match(/\.(jpe?g|png|gif)$/i)) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function(e) {
             oldDiv.querySelector("img").src = e.target.result;
         };
+    } else if (!!current.value.match(/\.(mp3)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/mp3_file.png";
+    } else if (!!current.value.match(/\.(mp4)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/mp4_file.png";
+    } else if (!!current.value.match(/\.(ogg|ogv)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/ogg_file.png";
     } else if (!!current.value.match(/\.(webm)$/i)) {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/webm_file.png";
+        div.querySelector("img").src = "/" + prefix + "img/webm_file.png";
+    } else if (!!current.value.match(/\.(wav)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/wav_file.png";
     } else {
-        div.querySelector("img").src = "/" + document.getElementById("sitePathPrefix").value + "img/file.png";
+        div.querySelector("img").src = "/" + prefix + "img/file.png";
     }
     div.querySelector("a").style.display = "inline";
     var parent = div.parentNode;
@@ -1121,24 +1179,35 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.resetScale(lord.img);
         lord.img.style.display = "";
         lord.toCenter(lord.img, sizeHintX, sizeHintY);
-        if ("video/webm" === lord.img.fileType) {
+        if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
             setTimeout(function() {
                 lord.img.play();
             }, 500);
         }
         return false;
     }
-    if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
-        return true;
-    if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
+    if (lord.isAudioType(type)) {
+        sizeHintX = 400;
+        lord.img = document.createElement("audio");
+        lord.img.width = sizeHintX + "px";
+        lord.img.controls = "controls";
+        var src = document.createElement("source");
+        src.src = href;
+        src.type = type;
+        lord.img.appendChild(src);
+    } else if (lord.isImageType(type)) {
+        if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
+            return true;
         lord.img = document.createElement("img");
+        lord.img.width = sizeHintX;
+        lord.img.height = sizeHintY;
         lord.img.src = href;
-    } else if ("video/webm" === type) {
+    } else if (lord.isVideoType(type)) {
         lord.img = document.createElement("video");
         lord.img.controls = "controls";
         var src = document.createElement("source");
         src.src = href;
-        src.type = "video/webm";
+        src.type = type;
         lord.img.appendChild(src);
     }
     lord.img.fileType = type;
@@ -1167,7 +1236,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     } else {
         lord.img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
     }
-    if ("image/png" === type || "image/jpeg" === type || "image/gif" === type) {
+    if (lord.isImageType(type)) {
         lord.img.onmousedown = function(e) {
             if (!!e.button)
                 return;
@@ -1184,7 +1253,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
             e.preventDefault();
             lord.img.moving = false;
             if (lord.img.initialCoord.x === e.clientX && lord.img.initialCoord.y === e.clientY) {
-                if ("video/webm" === type) {
+                if (lord.isAudioType(type) || lord.isVideoType(type)) {
                     lord.img.pause();
                     lord.img.currentTime = 0;
                 }
@@ -1205,7 +1274,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     document.body.appendChild(lord.img);
     lord.toCenter(lord.img, sizeHintX, sizeHintY);
-    if ("video/webm" === lord.img.fileType) {
+    if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
         setTimeout(function() {
             lord.img.play();
         }, 500);

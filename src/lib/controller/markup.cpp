@@ -319,7 +319,7 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkExternalLink);
 }
 
-static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
+static void processWakabaMarkStrikeoutShitty(ProcessPostTextContext &c)
 {
     if (!c.isValid())
         return;
@@ -340,9 +340,19 @@ static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkLink);
 }
 
+static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
+{
+    processSimmetric(c, &processWakabaMarkStrikeoutShitty, "--", "", "s");
+}
+
+static void processWakabaMarkItalicExtra(ProcessPostTextContext &c)
+{
+    processSimmetric(c, &processWakabaMarkStrikeout, "//", "", "em");
+}
+
 static void processWakabaMarkItalic(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processWakabaMarkStrikeout, "*", "_", "em");
+    processSimmetric(c, &processWakabaMarkItalicExtra, "*", "_", "em");
 }
 
 static void processWakabaMarkBold(ProcessPostTextContext &c)
@@ -601,9 +611,78 @@ static void processTagQuote(ProcessPostTextContext &c)
     processAsimmetric(c, &processTagCode, "q", "font", "<font face=\"monospace\">", true);
 }
 
+static void processWakabaMarkCode(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QString srchighlightPath = BDirTools::findResource("srchilite", BDirTools::AllResources);
+    if (!srchighlightPath.isEmpty()) {
+        QStringList langs = Tools::supportedCodeLanguages();
+        QRegExp rx("/\\-\\-code\\s+(" + langs.join("|").replace("+", "\\+") + ")\\s+");
+        int indStart = rx.indexIn(t);
+        QRegExp rxe("\\s+\\\\\\-\\-");
+        int indEnd = t.indexOf(rxe, indStart + rx.matchedLength());
+        while (indStart >= 0 && indEnd > 0) {
+            QString lang = rx.cap();
+            lang.remove(QRegExp("/\\-\\-code\\s+"));
+            lang.remove(QRegExp("\\s+"));
+            lang.replace("++", "pp");
+            int codeStart = indStart + rx.matchedLength();
+            int codeLength = indEnd - codeStart;
+            QString code = t.mid(codeStart, codeLength);
+            std::istringstream in(Tools::toStd(code));
+            std::ostringstream out;
+            try {
+                srchilite::SourceHighlight sourceHighlight("html.outlang");
+                sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
+                sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
+            } catch (const srchilite::ParserException &e) {
+                qDebug() << e.what();
+                return;
+            } catch (const srchilite::IOException &e) {
+                qDebug() << e.what();
+                return;
+            } catch (const std::exception &e) {
+                qDebug() << e.what();
+                return;
+            }
+            QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
+            t.replace(indStart, rx.matchedLength() + code.length() + rxe.matchedLength(), result);
+            skip << qMakePair(indStart, result.length());
+            indStart = rx.indexIn(t, indStart + result.length());
+            indEnd = t.indexOf(rxe, indStart + rx.matchedLength());
+        }
+    }
+    c.process(t, skip, &processTagQuote);
+}
+
+static void processWakabaMarkPre(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("/\\-\\-pre\\s+");
+    int indStart = rx.indexIn(t);
+    QRegExp rxe("\\s+\\\\\\-\\-");
+    int indEnd = t.indexOf(rxe, indStart + rx.matchedLength());
+    while (indStart >= 0 && indEnd > 0) {
+        int codeStart = indStart + rx.matchedLength();
+        int codeLength = indEnd - codeStart;
+        t.replace(indEnd, rxe.matchedLength(), "</pre>");
+        t.replace(indStart, rx.matchedLength(), "<pre>");
+        skip << qMakePair(indStart, codeLength + 5 + 6);
+        indStart = rx.indexIn(t, indStart + codeLength + 5 + 6);
+        indEnd = t.indexOf(rxe, indStart + rx.matchedLength());
+    }
+    c.process(t, skip, &processWakabaMarkCode);
+}
+
 static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processTagQuote, "`", "", "font", "<font face=\"monospace\">", true);
+    processSimmetric(c, &processWakabaMarkPre, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
 static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)

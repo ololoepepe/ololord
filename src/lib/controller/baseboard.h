@@ -4,7 +4,10 @@
 #include "controller/base.h"
 
 #include "../global.h"
+#include "tools.h"
 
+#include <QString>
+#include <QStringList>
 #include <QVariant>
 
 #include <list>
@@ -29,6 +32,11 @@ struct OLOLORD_EXPORT File
     int thumbSizeX;
     int thumbSizeY;
     std::string type;
+public:
+    std::string specialThumbName() const
+    {
+        return Tools::toStd(Tools::fromStd(thumbName).replace('/', "_"));
+    }
 };
 
 struct OLOLORD_EXPORT Post
@@ -147,6 +155,23 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string toThread;
     std::string toTopText;
     std::string unfixThreadText;
+public:
+    static bool isAudioType(const std::string &mimeType)
+    {
+        return Tools::isAudioType(Tools::fromStd(mimeType));
+    }
+    static bool isImageType(const std::string &mimeType)
+    {
+        return Tools::isImageType(Tools::fromStd(mimeType));
+    }
+    static bool isVideoType(const std::string &mimeType)
+    {
+        return Tools::isVideoType(Tools::fromStd(mimeType));
+    }
+    static bool isSpecialThumbName(const std::string &tn)
+    {
+        return Tools::isSpecialThumbName(Tools::fromStd(tn));
+    }
 };
 
 }

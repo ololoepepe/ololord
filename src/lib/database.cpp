@@ -17,6 +17,7 @@
 
 #include <BDirTools>
 #include <BeQt>
+#include <BTextTools>
 
 #include <QByteArray>
 #include <QCryptographicHash>
@@ -90,6 +91,14 @@ EditPostParameters::EditPostParameters(const cppcms::http::request &req, const Q
     draft = false;
     error = 0;
     raw = false;
+}
+
+FindPostsParameters::FindPostsParameters(const QLocale &l) :
+    locale(l)
+{
+    ok = 0;
+    error = 0;
+    description = 0;
 }
 
 class CreatePostInternalParameters
@@ -1021,6 +1030,49 @@ bool fileExists(const QString &hashString, bool *ok)
     return fileExists(hash, ok);
 }
 
+QList<Post> findPosts(FindPostsParameters &p)
+{
+    TranslatorQt tq(p.locale);
+    if (p.possiblePhrases.isEmpty() && p.requiredPhrases.isEmpty() && p.excludedPhrases.isEmpty()) {
+        return bRet(p.ok, false, p.error, tq.translate("findPosts", "Invalid parameters", "error"), p.description,
+                    tq.translate("findPosts", "No phrases to search for", "description"), QList<Post>());
+    }
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(p.ok, false, p.error, tq.translate("findPosts", "Internal error", "error"), p.description,
+                        tq.translate("findPosts", "Internal database error", "description"), QList<Post>());
+        }
+        odb::query<Post> q;
+        QString qs;
+        if (!p.boardNames.isEmpty()) {
+            qs += "(";
+            foreach (const QString &bn, p.boardNames)
+                qs += "board = '" + bn + "' OR ";
+            qs.remove(qs.length() - 4, 4);
+            qs += ") AND ";
+        }
+        foreach (const QString &s, p.requiredPhrases)
+            qs += "rawText LIKE '%" + BTextTools::unwrapped(s, "\"").replace('%', "\\%") + "%' AND ";
+        foreach (const QString &s, p.excludedPhrases)
+            qs += "rawText NOT LIKE '%" + BTextTools::unwrapped(s, "\"").replace('%', "\\%") + "%' AND ";
+        if (!p.possiblePhrases.isEmpty()) {
+            qs += "(";
+            foreach (const QString &s, p.possiblePhrases)
+                qs += "rawText LIKE '%" + BTextTools::unwrapped(s, "\"").replace('%', "\\%") + "%' OR ";
+            qs.remove(qs.length() - 4, 4);
+            qs += ")";
+        }
+        if (qs.endsWith(" AND "))
+            qs.remove(qs.length() - 5, 5);
+        q = q + Tools::toStd(qs).data();
+        return bRet(p.ok, true, p.error, QString(), p.description, QString(), query<Post, Post>(q));
+    } catch (const odb::exception &e) {
+        return bRet(p.ok, false, p.error, tq.translate("findPosts", "Internal error", "error"), p.description,
+                    Tools::fromStd(e.what()), QList<Post>());
+    }
+}
+
 QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
                         quint64 lastPostNumber, bool *ok, QString *error)
 {
@@ -1292,6 +1344,37 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
+int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l)
+{
+    TranslatorQt tq(l);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
+        odb::query<Post> q;
+        foreach (const QString &board, boardNames)
+            q = q || odb::query<Post>::board == board;
+        q = odb::query<Post>::rawHtml == false && q;
+        QList<Post> posts = query<Post, Post>(q);
+        foreach (int i, bRangeD(0, posts.size() - 1)) {
+            Post &post = posts[i];
+            if (!post.draft() && !removeFromReferencedPosts(post.id(), error))
+                return -1;
+            RefMap refs;
+            post.setText(Controller::processPostText(post.rawText(), post.board(), &refs));
+            QSharedPointer<Post> sp(new Post(post));
+            if (!post.draft() && !addToReferencedPosts(sp, refs, error))
+                return -1;
+            t->update(post);
+            Cache::removePost(post.board(), post.number());
+        }
+        t.commit();
+        return bRet(error, QString(), posts.size());
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), -1);
     }
 }
 

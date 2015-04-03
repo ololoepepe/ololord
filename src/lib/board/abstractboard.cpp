@@ -170,7 +170,7 @@ void AbstractBoard::FileTransaction::setThumbFile(const QString &fn)
         return;
     if (minfos.isEmpty())
         return;
-    minfos.last().thumbName = QFileInfo(fn).fileName();
+    minfos.last().thumbName = Tools::isSpecialThumbName(fn) ? fn : QFileInfo(fn).fileName();
 }
 
 void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
@@ -185,7 +185,8 @@ void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
-const QString AbstractBoard::defaultFileTypes = "image/png,image/jpeg,image/gif,video/webm";
+const QString AbstractBoard::defaultFileTypes = "audio/mpeg,audio/ogg,audio/wav,image/gif,image/jpeg,image/png,"
+                                                "video/mp4,video/ogg,video/webm";
 
 AbstractBoard::AbstractBoard() :
     captchaQuotaMutex(QMutex::Recursive)
@@ -244,6 +245,41 @@ void AbstractBoard::reloadBoards()
     initBoards(true);
 }
 
+void AbstractBoard::restoreCaptchaQuota(const QByteArray &data)
+{
+    QVariantMap m = BeQt::deserialize(data).toMap();
+    QMutexLocker locker(&boardsMutex);
+    foreach (const QString &boardName, m.keys()) {
+        AbstractBoard *board = boards.value(boardName);
+        if (!board)
+            continue;
+        QVariantMap mm = m.value(boardName).toMap();
+        QMutexLocker lockerQuota(&board->captchaQuotaMutex);
+        board->captchaQuotaMap.clear();
+        foreach (const QString &ip, mm.keys()) {
+            bool ok = false;
+            unsigned int q = mm.value(ip).toUInt(&ok);
+            if (!ok || !q)
+                continue;
+            board->captchaQuotaMap.insert(ip, q);
+        }
+    }
+}
+
+QByteArray AbstractBoard::saveCaptchaQuota()
+{
+    QVariantMap m;
+    QMutexLocker locker(&boardsMutex);
+    foreach (AbstractBoard *board, boards.values()) {
+        QVariantMap mm;
+        QMutexLocker lockerQuota(&board->captchaQuotaMutex);
+        foreach (const QString &ip, board->captchaQuotaMap.keys())
+            mm.insert(ip, board->captchaQuotaMap.value(ip));
+        m.insert(board->name(), mm);
+    }
+    return BeQt::serialize(m);
+}
+
 unsigned int AbstractBoard::archiveLimit() const
 {
     SettingsLocker s;
@@ -285,6 +321,11 @@ unsigned int AbstractBoard::captchaQuota(const QString &ip) const
         return 0;
     QMutexLocker locker(&captchaQuotaMutex);
     return captchaQuotaMap.value(ip);
+}
+
+unsigned int AbstractBoard::captchaQuota(const cppcms::http::request &req) const
+{
+    return captchaQuota(Tools::userIp(req));
 }
 
 void AbstractBoard::captchaSolved(const QString &ip)
@@ -716,9 +757,14 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
 #endif
     typedef QMap<QString, QString> StringMap;
     init_once(StringMap, suffixes, StringMap()) {
-        suffixes.insert("image/png", "png");
-        suffixes.insert("image/jpeg", "jpeg");
+        suffixes.insert("audio/mpeg", "mpeg");
+        suffixes.insert("audio/ogg", "ogg");
+        suffixes.insert("audio/wav", "wav");
         suffixes.insert("image/gif", "gif");
+        suffixes.insert("image/jpeg", "jpeg");
+        suffixes.insert("image/png", "png");
+        suffixes.insert("video/mp4", "mp4");
+        suffixes.insert("video/ogg", "ogg");
         suffixes.insert("video/webm", "webm");
     }
     bool ok = false;
@@ -742,7 +788,11 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
-    if (!mimeType.compare("video/webm", Qt::CaseInsensitive)) {
+    if (Tools::isAudioType(mimeType)) {
+        ft.setMainFileSize(0, 0);
+        ft.setThumbFile(mimeType);
+        ft.setThumbFileSize(200, 200);
+    } else if (Tools::isVideoType(mimeType)) {
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
@@ -754,7 +804,8 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
             if (!img.save(path + "/" + dt + "s.png", "png"))
                 return false;
         } else {
-            ft.setThumbFile("webm");
+            ft.setThumbFile(mimeType);
+            ft.setThumbFileSize(200, 200);
         }
     } else {
         QByteArray data = f.data;
@@ -853,7 +904,8 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
                 f.thumbSizeY = fis->thumbHeight();
-                sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
+                if (f.sizeX >= 0 && f.sizeY >= 0)
+                    sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);
                 p->files.push_back(f);

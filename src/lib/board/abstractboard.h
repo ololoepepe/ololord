@@ -108,6 +108,8 @@ public:
     static BoardInfoList boardInfos(const QLocale &l, bool includeHidden = true);
     static QStringList boardNames(bool includeHidden = true);
     static void reloadBoards();
+    static void restoreCaptchaQuota(const QByteArray &data);
+    static QByteArray saveCaptchaQuota();
 public:
     unsigned int archiveLimit() const;
     QString bannerFileName() const;
@@ -115,6 +117,7 @@ public:
     unsigned int bumpLimit() const;
     unsigned int captchaQuota() const;
     unsigned int captchaQuota(const QString &ip) const;
+    unsigned int captchaQuota(const cppcms::http::request &req) const;
     void captchaSolved(const QString &ip);
     void captchaUsed(const QString &ip);
     virtual void createPost(cppcms::application &app);

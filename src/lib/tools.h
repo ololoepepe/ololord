@@ -110,6 +110,7 @@ enum MaxInfo
     MaxLastPosts
 };
 
+typedef QMap<QString, QString> GetParameters;
 typedef QMap<QString, QString> PostParameters;
 
 OLOLORD_EXPORT QStringList acceptedExternalBoards();
@@ -125,10 +126,15 @@ OLOLORD_EXPORT QString flagName(const QString &countryCode);
 OLOLORD_EXPORT QLocale fromStd(const std::locale &l);
 OLOLORD_EXPORT QString fromStd(const std::string &s);
 OLOLORD_EXPORT QStringList fromStd(const std::list<std::string> &sl);
+OLOLORD_EXPORT GetParameters getParameters(const cppcms::http::request &request);
 OLOLORD_EXPORT QByteArray hashpass(const cppcms::http::request &req);
 OLOLORD_EXPORT QString hashpassString(const cppcms::http::request &req);
 OLOLORD_EXPORT int ipBanLevel(const QString &ip);
 OLOLORD_EXPORT int ipBanLevel(const cppcms::http::request &req);
+OLOLORD_EXPORT bool isAudioType(const QString &mimeType);
+OLOLORD_EXPORT bool isImageType(const QString &mimeType);
+OLOLORD_EXPORT bool isSpecialThumbName(const QString &tn);
+OLOLORD_EXPORT bool isVideoType(const QString &mimeType);
 OLOLORD_EXPORT QDateTime localDateTime(const QDateTime &dt, int offsetMinutes = -1000);
 OLOLORD_EXPORT QLocale locale(const cppcms::http::request &req,
                               const QLocale &defaultLocale = BCoreApplication::locale());

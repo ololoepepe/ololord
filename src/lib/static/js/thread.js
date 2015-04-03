@@ -8,6 +8,7 @@ lord.lastSelectedElement = null;
 lord.autoUpdateTimer = null;
 lord.blinkTimer = null;
 lord.pageVisible = "visible";
+lord.isDownloading = false;
 
 lord.addAnchorChangeListener = function(callback) {
     if ("onhashchange" in window) {
@@ -221,23 +222,52 @@ lord.postedInThread = function() {
 };
 
 lord.downloadThread = function() {
+    if (lord.isDownloading)
+        return;
     var as = document.body.querySelectorAll(".postFile > .postFileFile > a");
     if (!as || as.length < 1)
         return;
+    var dlButton = document.body.querySelector("[name='downloadButton']");
+    if (!dlButton)
+        return;
+    lord.isDownloading = true;
+    dlButton.className += " disabled";
     var progress = document.createElement("progress");
     progress.className = "progressBlocking";
     progress.max = as.length;
     progress.value = 0;
+    var cButton = document.createElement("a");
+    cButton.className = "progressBlocking";
+    cButton.href = "javascript:void(0);";
+    var cancel = false;
+    cButton.onclick = function() {
+        cancel = true;
+        document.body.removeChild(cButton);
+        document.body.removeChild(progress);
+    };
+    cButton.appendChild(document.createTextNode(document.getElementById("cancelButtonText").value));
     document.body.appendChild(progress);
+    document.body.appendChild(cButton);
     lord.toCenter(progress, progress.offsetWidth, progress.offsetHeight);
+    lord.toCenter(cButton, cButton.offsetWidth, cButton.offsetHeight);
     var zip = new JSZip();
     var append = function(i) {
         if (i >= as.length) {
             var content = zip.generate({
                 "type": "blob"
             });
-            document.body.removeChild(progress);
+            if (!cancel) {
+                document.body.removeChild(cButton);
+                document.body.removeChild(progress);
+            }
             saveAs(content, document.title + ".zip");
+            lord.isDownloading = false;
+            dlButton.className = dlButton.className.replace(" disabled", "");
+            return;
+        }
+        if (cancel) {
+            lord.isDownloading = false;
+            dlButton.className = dlButton.className.replace(" disabled", "");
             return;
         }
         var a = as[i];

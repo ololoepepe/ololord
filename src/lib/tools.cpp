@@ -26,6 +26,7 @@
 #include <QMutex>
 #include <QPair>
 #include <QRegExp>
+#include <QSet>
 #include <QSettings>
 #include <QString>
 #include <QStringList>
@@ -334,6 +335,15 @@ QStringList fromStd(const std::list<std::string> &sl)
     return list;
 }
 
+GetParameters getParameters(const cppcms::http::request &request)
+{
+    PostParameters m;
+    cppcms::http::request::form_type data = const_cast<cppcms::http::request *>(&request)->get();
+    for (cppcms::http::request::form_type::iterator i = data.begin(); i != data.end(); ++i)
+        m.insert(fromStd(i->first), fromStd(i->second));
+    return m;
+}
+
 QByteArray hashpass(const cppcms::http::request &req)
 {
     return toHashpass(hashpassString(req));
@@ -382,6 +392,44 @@ int ipBanLevel(const QString &ip)
 int ipBanLevel(const cppcms::http::request &req)
 {
     return ipBanLevel(userIp(req));
+}
+
+bool isAudioType(const QString &mimeType)
+{
+    typedef QSet<QString> StringSet;
+    init_once(StringSet, types, StringSet()) {
+        types.insert("audio/mpeg");
+        types.insert("audio/ogg");
+        types.insert("audio/wav");
+    }
+    return types.contains(mimeType);
+}
+
+bool isImageType(const QString &mimeType)
+{
+    typedef QSet<QString> StringSet;
+    init_once(StringSet, types, StringSet()) {
+        types.insert("image/gif");
+        types.insert("image/jpeg");
+        types.insert("image/png");
+    }
+    return types.contains(mimeType);
+}
+
+bool isSpecialThumbName(const QString &tn)
+{
+    return isAudioType(tn) || isImageType(tn) || isVideoType(tn);
+}
+
+bool isVideoType(const QString &mimeType)
+{
+    typedef QSet<QString> StringSet;
+    init_once(StringSet, types, StringSet()) {
+        types.insert("video/mp4");
+        types.insert("video/ogg");
+        types.insert("video/webm");
+    }
+    return types.contains(mimeType);
 }
 
 QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)

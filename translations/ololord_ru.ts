@@ -289,6 +289,11 @@ The default is true.</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>No such board</source>
+        <comment>error</comment>
+        <translation>Нет такой доски</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>
@@ -432,6 +437,51 @@ The default is true.</source>
         <source>Basic markup</source>
         <comment>basicMarkup</comment>
         <translation>Основы разметки</translation>
+    </message>
+    <message>
+        <source>Preformatted
+text</source>
+        <comment>preformattedText</comment>
+        <translation>Преформатированный
+текст</translation>
+    </message>
+</context>
+<context>
+    <name>SearchRoute</name>
+    <message>
+        <source>Search</source>
+        <comment>pageTitle</comment>
+        <translation>Поиск</translation>
+    </message>
+    <message>
+        <source>Invalid query</source>
+        <comment>error</comment>
+        <translation>Недействительный запрос</translation>
+    </message>
+    <message>
+        <source>Invalid search query</source>
+        <comment>description</comment>
+        <translation>Недействительный поисковый запрос</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Search results</source>
+        <comment>resultsMessage</comment>
+        <translation>Результаты поиска</translation>
+    </message>
+    <message>
+        <source>Nothing found</source>
+        <comment>nothingFoundMessage</comment>
+        <translation>Ничего не найдено</translation>
     </message>
 </context>
 <context>
@@ -876,6 +926,29 @@ The default is true.</source>
     </message>
 </context>
 <context>
+    <name>findPosts</name>
+    <message>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation>Неправильные параметры</translation>
+    </message>
+    <message>
+        <source>No phrases to search for</source>
+        <comment>description</comment>
+        <translation>Отсутствуют фразы для поиска</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>getNewPosts</name>
     <message>
         <source>Invalid board name</source>
@@ -1123,6 +1196,21 @@ Your choice:</source>
     </message>
 </context>
 <context>
+    <name>handleRerenderPosts</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>Error:</source>
+        <translation>Ошибка:</translation>
+    </message>
+    <message>
+        <source>Rerendered posts:</source>
+        <translation>Заново отрендерено постов:</translation>
+    </message>
+</context>
+<context>
     <name>handleUnfixThread</name>
     <message>
         <source>Invalid argument count</source>
@@ -1237,16 +1325,6 @@ Your choice:</source>
         <translation>Подтвердить</translation>
     </message>
     <message>
-        <source>Hide search form</source>
-        <comment>hideSearchFormText</comment>
-        <translation>Скрыть форму поиска</translation>
-    </message>
-    <message>
-        <source>Search</source>
-        <comment>showSearchFormText</comment>
-        <translation>Искать</translation>
-    </message>
-    <message>
         <source>I&apos;m an attention whore!</source>
         <comment>showTripcodeText</comment>
         <translation>Я - вниманиешлюха!</translation>
@@ -1265,6 +1343,21 @@ Your choice:</source>
         <source>Style:</source>
         <comment>styleLabelText</comment>
         <translation>Стиль:</translation>
+    </message>
+    <message>
+        <source>All boards</source>
+        <comment>allBoardsText</comment>
+        <translation>Все доски</translation>
+    </message>
+    <message>
+        <source>Search</source>
+        <comment>searchButtonText</comment>
+        <translation>Искать</translation>
+    </message>
+    <message>
+        <source>Search: possible +required -excluded</source>
+        <comment>searchInputPlaceholder</comment>
+        <translation>Поиск: возможно +обязательно -исключается</translation>
     </message>
 </context>
 <context>
@@ -1684,6 +1777,12 @@ The following caches may be cleared:
 Могут быть очищены следующие кеши:
 %1</translation>
     </message>
+    <message>
+        <source>Rerenders all posts on all boards.
+If one or more board names are specified, rerenders only posts on those boards.</source>
+        <translation>Рендерит заново все посты на всех досках.
+Если указано одно или более названий досок, рендерит посты только на этих досках.</translation>
+    </message>
 </context>
 <context>
     <name>initSettings</name>
@@ -1788,12 +1887,6 @@ The default value is %1.</source>
     <message>
         <source>A salt used to generate tripcodes from hashpasses.</source>
         <translation>Соль, используемая для генерации трипкодов из хешпассов.</translation>
-    </message>
-    <message>
-        <source>Public key for search API service.
-Apperas in the HTML pages.</source>
-        <translation>Открытый ключ API поискового сервиса.
-Появляется в HTML-страницах.</translation>
     </message>
     <message>
         <source>Maximum length of the e-mail field.
@@ -2153,6 +2246,14 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Error 404</source>
         <comment>pageTitle</comment>
         <translation>Ошибка 404</translation>
+    </message>
+</context>
+<context>
+    <name>rerenderPosts</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>

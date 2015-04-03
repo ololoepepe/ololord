@@ -45,6 +45,7 @@ void MarkupRoute::handle()
     c.postBoardLinkDescription = ts.translate("MarkupRoute", "Link to a post on another board",
                                               "postBoardLinkDescription");
     c.postLinkDescription = ts.translate("MarkupRoute", "Link to a post on the same board", "postLinkDescription");
+    c.preformattedText = ts.translate("MarkupRoute", "Preformatted\ntext", "preformattedText");
     c.quotation = ts.translate("MarkupRoute", "quotation", "quotation");;
     c.singleMonospace = ts.translate("MarkupRoute", "monospace font", "singleMonospace");
     c.spoiler = ts.translate("MarkupRoute", "spoiler", "spoiler");

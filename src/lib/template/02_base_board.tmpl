@@ -143,14 +143,14 @@
                         </td>
                         <td id="googleCaptcha<%= position %>" class="postformField">
                             <% if ( content.captchaEnabled ) %>
-                                <% include captchaField(position) %>
-                            <% else %>
                                 <% if ( content.captchaQuota > 0 ) %>
                                     <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
                                         <%= captchaQuota %></span>
                                 <% else %>
-                                    <span class="noCaptchaText"><%= noCaptchaText %></span>
+                                    <% include captchaField(position) %>
                                 <% end %>
+                            <% else %>
+                                <span class="noCaptchaText"><%= noCaptchaText %></span>
                             <% end %>
                         </td>
                     </tr>
@@ -181,7 +181,7 @@
     <div class="postFileSize">
         (<%= file.size %>)
     </div>
-    <% if ( "image/png" == file.type || "image/jpeg" == file.type || "image/gif" == file.type ) %>
+    <% if ( content.isImageType(file.type) ) %>
         <div class="postFileSearch">
             <a href="//www.google.com/searchbyimage?image_url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithGoogleText %>" target="_blank">
@@ -194,13 +194,9 @@
     <div class="postFileFile">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
-            <% if ( "webm" == file.thumbName ) %>
-                <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
-                    <img src="/<%= sitePathPrefix %>img/webm_logo.png" width="<%= file.thumbSizeX %>"
-                         height="<%= file.thumbSizeY %>">
-                <% else %>
-                    <img src="/<%= sitePathPrefix %>img/webm_logo.png">
-                <% end %>
+            <% if ( content.isSpecialThumbName(file.thumbName) ) %>
+                <img src="/<%= sitePathPrefix %>img/<%= file.specialThumbName() %>_logo.png"
+                     width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
             <% else %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
@@ -394,7 +390,7 @@
                 <% end %>
                 <% if ( post.files.size() < 2 ) %>
                     <td class="postText">
-                        <% if ( thread ) %>
+                        <% if ( !thread ) %>
                              <blockquote id="post<%= post.number %>Text"
                                          class="blockquoteThread"><%= post.text | raw %></blockquote>
                         <% else %>
@@ -409,7 +405,7 @@
             <% if ( post.files.size() >= 2 ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"postText\">"; %>
-                        <% if ( thread ) %>
+                        <% if ( !thread ) %>
                             <blockquote id="post<%= post.number %>Text"
                                         class="blockquoteThread"><%= post.text | raw %></blockquote>
                         <% else %>
@@ -495,6 +491,8 @@
 <input type="hidden" id="findSourceWithIqdbText" value="<%= findSourceWithIqdbText %>" />
 <input type="hidden" id="hidePostFormText" value="<%= hidePostFormText %>" />
 <input type="hidden" id="showPostFormText" value="<%= showPostFormText %>" />
+<input type="hidden" id="noCaptchaText" value="<%= noCaptchaText %>" />
+<input type="hidden" id="captchaQuotaText" value="<%= captchaQuotaText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
         <% item %>
@@ -662,6 +660,13 @@
          </tr>
     </tbody>
 </table>
+<% if ( content.captchaEnabled ) %>
+    <div id="hiddenCaptcha" style="display: none;">
+        <% if ( content.captchaQuota > 0 ) %>
+            <% include captchaField("Top") %>
+        <% end %>
+    </div>
+<% end %>
 <% end template %>
 
 <% template boardHead() %>
