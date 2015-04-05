@@ -76,7 +76,7 @@ Content::Post echoBoard::toController(const Post &post, const cppcms::http::requ
         QString subj = post.subject();
         QString link = post.userData().toString();
         QString text = BTextTools::toHtml(!subj.isEmpty() ? subj : link);
-        p.subject = Tools::toStd("<a href=\"" + link + "\">" + text + "</a>");
+        p.subject = Tools::toStd("<a href=\"" + link + "\" target=\"_blank\">" + text + "</a>");
         p.subjectIsRaw = true;
     }
     return bRet(ok, true, error, QString(), p);

@@ -107,6 +107,16 @@ public:
 static const QString ExternalLinkRegexpPattern =
         "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-]*)*\\/?";
 
+static QString tagName(const QRegExp &rx)
+{
+    QString cl = rx.cap();
+    cl = cl.mid(1, cl.length() - 2);
+    int ind = cl.indexOf(' ');
+    if (ind >= 0)
+        cl = cl.left(ind);
+    return cl;
+}
+
 static SkipList externalLinks(const QString &s)
 {
     QRegExp rx(ExternalLinkRegexpPattern);
@@ -163,7 +173,7 @@ void processPostText(ProcessPostTextContext &c, const SkipList &skip, ProcessPos
     }
 }
 
-static void processAsimmetric(ProcessPostTextContext &c, ProcessPostTextFunction next, const QString &bbTag,
+static void processAsymmetric(ProcessPostTextContext &c, ProcessPostTextFunction next, const QString &bbTag,
                               const QString &htmlTag, const QString &openTag = QString(), bool quote = false)
 {
     if (!c.isValid())
@@ -540,14 +550,9 @@ static void processTags(ProcessPostTextContext &c)
     c.process(t, skip, next);
 }
 
-static QString tagName(const QRegExp &rx)
+static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    QString cl = rx.cap();
-    cl = cl.mid(1, cl.length() - 2);
-    int ind = cl.indexOf(' ');
-    if (ind >= 0)
-        cl = cl.left(ind);
-    return cl;
+    processSimmetric(c, &processTags, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
 static void processTagCode(ProcessPostTextContext &c)
@@ -603,17 +608,17 @@ static void processTagCode(ProcessPostTextContext &c)
             indEnd = t.indexOf("[/" + tag + "]", indStart + rx.matchedLength());
         }
     }
-    c.process(t, skip, &processTags);
+    c.process(t, skip, &processWakabaMarkMonospaceSingle);
 }
 
 static void processTagCodeNolang(ProcessPostTextContext &c)
 {
-    processAsimmetric(c, &processTagCode, "code", "pre");
+    processAsymmetric(c, &processTagCode, "code", "pre");
 }
 
 static void processTagQuote(ProcessPostTextContext &c)
 {
-    processAsimmetric(c, &processTagCodeNolang, "q", "font", "<font face=\"monospace\">", true);
+    processAsymmetric(c, &processTagCodeNolang, "q", "font", "<font face=\"monospace\">", true);
 }
 
 static void processWakabaMarkCode(ProcessPostTextContext &c)
@@ -685,14 +690,9 @@ static void processWakabaMarkPre(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkCode);
 }
 
-static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
-{
-    processSimmetric(c, &processWakabaMarkPre, "`", "", "font", "<font face=\"monospace\">", true);
-}
-
 static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processWakabaMarkMonospaceSingle, "``", "", "font", "<font face=\"monospace\">", true);
+    processSimmetric(c, &processWakabaMarkPre, "``", "", "font", "<font face=\"monospace\">", true);
 }
 
 QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts)
