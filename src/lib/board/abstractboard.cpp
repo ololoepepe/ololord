@@ -1,17 +1,10 @@
 #include "abstractboard.h"
 
-#include "board/aboard.h"
-#include "board/bboard.h"
 #include "board/cgboard.h"
+#include "board/configurableboard.h"
 #include "board/echoboard.h"
-#include "board/hboard.h"
-#include "board/intboard.h"
 #include "board/mlpboard.h"
 #include "board/prboard.h"
-#include "board/rfboard.h"
-#include "board/socboard.h"
-#include "board/threedpdboard.h"
-#include "board/vgboard.h"
 #include "cache.h"
 #include "controller/baseboard.h"
 #include "controller/board.h"
@@ -1051,30 +1044,36 @@ void AbstractBoard::initBoards(bool reinit)
             delete b;
         boards.clear();
     }
-    AbstractBoard *b = new aBoard;
-    boards.insert(b->name(), b);
-    b = new bBoard;
-    boards.insert(b->name(), b);
-    b = new cgBoard;
+    ConfigurableBoard *cb = new ConfigurableBoard("a", BTranslation::translate("AbstractBoard", "/a/nime", "title"),
+        BTranslation::translate("AbstractBoard", "Kamina", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("b", BTranslation::translate("AbstractBoard", "/b/rotherhood", "title"));
+    boards.insert(cb->name(), cb);
+    AbstractBoard *b = new cgBoard;
     boards.insert(b->name(), b);
     b = new echoBoard;
     boards.insert(b->name(), b);
-    b = new hBoard;
-    boards.insert(b->name(), b);
-    b = new intBoard;
-    boards.insert(b->name(), b);
+    cb = new ConfigurableBoard("h", BTranslation::translate("AbstractBoard", "/h/entai", "title"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("int", BTranslation::translate("AbstractBoard", "/int/ernational", "title"),
+                               BTranslation::translate("AbstractBoard", "Vladimir Putin", "defaultUserName"));
+    cb->setShowWhois(true);
+    boards.insert(cb->name(), cb);
     b = new mlpBoard;
     boards.insert(b->name(), b);
     b = new prBoard;
     boards.insert(b->name(), b);
-    b = new rfBoard;
-    boards.insert(b->name(), b);
-    b = new socBoard;
-    boards.insert(b->name(), b);
-    b = new threedpdBoard;
-    boards.insert(b->name(), b);
-    b = new vgBoard;
-    boards.insert(b->name(), b);
+    cb = new ConfigurableBoard("rf", BTranslation::translate("AbstractBoard", "Refuge", "title"),
+                               BTranslation::translate("AbstractBoard", "Whiner", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("soc", BTranslation::translate("AbstractBoard", "Social life", "title"),
+                               BTranslation::translate("AbstractBoard", "Life of the party", "defaultUserName"));
+    boards.insert(cb->name(), b);
+    cb = new ConfigurableBoard("3dpd", BTranslation::translate("AbstractBoard", "3D pron", "title"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("vg", BTranslation::translate("AbstractBoard", "Video games", "title"),
+                               BTranslation::translate("AbstractBoard", "PC Nobleman", "defaultUserName"));
+    boards.insert(cb->name(), cb);
     foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
         pw->unload();
         BCoreApplication::removePlugin(pw);

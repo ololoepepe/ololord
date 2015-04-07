@@ -1,3 +1,5 @@
+[done] Implement configurable board
+[done] Remove some board classes
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

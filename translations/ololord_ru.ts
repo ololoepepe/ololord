@@ -281,6 +281,71 @@ The default is true.</source>
         <translation>Определяет, включены ли черновики на этой доске.
 По умолчанию true.</translation>
     </message>
+    <message>
+        <source>/a/nime</source>
+        <comment>title</comment>
+        <translation>/a/ниме</translation>
+    </message>
+    <message>
+        <source>Kamina</source>
+        <comment>defaultUserName</comment>
+        <translation>Камина</translation>
+    </message>
+    <message>
+        <source>/b/rotherhood</source>
+        <comment>title</comment>
+        <translation>/b/ратство</translation>
+    </message>
+    <message>
+        <source>/h/entai</source>
+        <comment>title</comment>
+        <translation>Хентай</translation>
+    </message>
+    <message>
+        <source>/int/ernational</source>
+        <comment>title</comment>
+        <translation>/int/ernational</translation>
+    </message>
+    <message>
+        <source>Vladimir Putin</source>
+        <comment>defaultUserName</comment>
+        <translation>Владимир Путин</translation>
+    </message>
+    <message>
+        <source>Refuge</source>
+        <comment>title</comment>
+        <translation>Убежище</translation>
+    </message>
+    <message>
+        <source>Whiner</source>
+        <comment>defaultUserName</comment>
+        <translation>Нытик</translation>
+    </message>
+    <message>
+        <source>Social life</source>
+        <comment>title</comment>
+        <translation>Жизнь в обществе</translation>
+    </message>
+    <message>
+        <source>Life of the party</source>
+        <comment>defaultUserName</comment>
+        <translation>Душа компании</translation>
+    </message>
+    <message>
+        <source>3D pron</source>
+        <comment>title</comment>
+        <translation>3D прон</translation>
+    </message>
+    <message>
+        <source>Video games</source>
+        <comment>title</comment>
+        <translation>Видеоигры</translation>
+    </message>
+    <message>
+        <source>PC Nobleman</source>
+        <comment>defaultUserName</comment>
+        <translation>Пекабоярин</translation>
+    </message>
 </context>
 <context>
     <name>ActionAjaxHandler</name>
@@ -485,19 +550,6 @@ text</source>
     </message>
 </context>
 <context>
-    <name>aBoard</name>
-    <message>
-        <source>/a/nime</source>
-        <comment>board title</comment>
-        <translation>/a/ниме</translation>
-    </message>
-    <message>
-        <source>Kamina</source>
-        <comment>defaultUserName</comment>
-        <translation>Камина</translation>
-    </message>
-</context>
-<context>
     <name>addToReferencedPosts</name>
     <message>
         <source>Internal error</source>
@@ -523,14 +575,6 @@ text</source>
         <source>There is no such post</source>
         <comment>description</comment>
         <translation>Нет такого поста</translation>
-    </message>
-</context>
-<context>
-    <name>bBoard</name>
-    <message>
-        <source>/b/rotherhood</source>
-        <comment>board title</comment>
-        <translation>/b/ратство</translation>
     </message>
 </context>
 <context>
@@ -1007,14 +1051,6 @@ text</source>
         <source>Internal logic error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
-    </message>
-</context>
-<context>
-    <name>hBoard</name>
-    <message>
-        <source>/h/entai</source>
-        <comment>board title</comment>
-        <translation>Хентай</translation>
     </message>
 </context>
 <context>
@@ -2026,19 +2062,6 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>intBoard</name>
-    <message>
-        <source>/int/ernational</source>
-        <comment>board title</comment>
-        <translation>/int/ernational</translation>
-    </message>
-    <message>
-        <source>Vladimir Putin</source>
-        <comment>defaultUserName</comment>
-        <translation>Владимир Путин</translation>
-    </message>
-</context>
-<context>
     <name>lastPostNumber</name>
     <message>
         <source>Invalid database connection</source>
@@ -2257,19 +2280,6 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>rfBoard</name>
-    <message>
-        <source>Refuge</source>
-        <comment>board title</comment>
-        <translation>Убежище</translation>
-    </message>
-    <message>
-        <source>Whiner</source>
-        <comment>defaultUserName</comment>
-        <translation>Нытик</translation>
-    </message>
-</context>
-<context>
     <name>saveFile</name>
     <message>
         <source>Internal error</source>
@@ -2473,19 +2483,6 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>socBoard</name>
-    <message>
-        <source>Life of the party</source>
-        <comment>defaultUserName</comment>
-        <translation>Душа компании</translation>
-    </message>
-    <message>
-        <source>Social life</source>
-        <comment>board title</comment>
-        <translation>Жизнь в обществе</translation>
-    </message>
-</context>
-<context>
     <name>testBan</name>
     <message>
         <source>Internal error</source>
@@ -2558,14 +2555,6 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>threedpdBoard</name>
-    <message>
-        <source>3D pron</source>
-        <comment>board title</comment>
-        <translation>3D прон</translation>
-    </message>
-</context>
-<context>
     <name>userBanInfo</name>
     <message>
         <source>Internal logic error</source>
@@ -2576,19 +2565,6 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Internal database error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка базы данных</translation>
-    </message>
-</context>
-<context>
-    <name>vgBoard</name>
-    <message>
-        <source>Video games</source>
-        <comment>board title</comment>
-        <translation>Видеоигры</translation>
-    </message>
-    <message>
-        <source>PC Nobleman</source>
-        <comment>defaultUserName</comment>
-        <translation>Пекабоярин</translation>
     </message>
 </context>
 </TS>
