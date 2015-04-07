@@ -65,7 +65,7 @@ struct OLOLORD_EXPORT IpRange
     unsigned int end;
 public:
     explicit IpRange(const QString &text, const QChar &separator = '-');
-    explicit IpRange(const QStringList &sl, int startIndex = 0, int endIndex = 1);
+    explicit IpRange(const QStringList &sl, int startIndex = 0, int endIndex = 1, bool num = false);
 public:
     void clear();
     bool in(unsigned int ip) const;

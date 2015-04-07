@@ -106,17 +106,24 @@ IpRange::IpRange(const QString &text, const QChar &separator)
     }
 }
 
-IpRange::IpRange(const QStringList &sl, int startIndex, int endIndex)
+IpRange::IpRange(const QStringList &sl, int startIndex, int endIndex, bool num)
 {
     start = 0;
     end = 0;
     if (startIndex < 0 || endIndex < 0 || startIndex >= sl.size() || endIndex >= sl.size())
         return;
     bool ok = false;
-    start = ipNum(sl.at(startIndex), &ok);
-    if (!ok)
-        return;
-    end = ipNum(sl.at(endIndex), &ok);
+    if (num) {
+        start = sl.at(startIndex).toUInt(&ok);
+        if (!ok)
+            return;
+        end = sl.at(endIndex).toUInt(&ok);
+    } else {
+        start = ipNum(sl.at(startIndex), &ok);
+        if (!ok)
+            return;
+        end = ipNum(sl.at(endIndex), &ok);
+    }
     if (!ok) {
         start = 0;
         return;
@@ -211,7 +218,7 @@ QString cityName(const QString &ip)
             QStringList sll = s.split(' ');
             if (sll.size() < 3)
                 continue;
-            IpRange r(sll);
+            IpRange r(sll, 0, 1, true);
             if (!r.isValid())
                 continue;
             QString n = QStringList(sll.mid(2)).join(" ");
@@ -253,7 +260,7 @@ QString countryCode(const QString &ip)
             QStringList sll = s.split(' ');
             if (sll.size() != 3)
                 continue;
-            IpRange r(sll);
+            IpRange r(sll, 0, 1, true);
             if (!r.isValid())
                 continue;
             QString c = sll.last();
