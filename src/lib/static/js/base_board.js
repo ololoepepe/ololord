@@ -969,7 +969,7 @@ lord.viewPost = function(link, boardName, postNumber) {
         if (fromAjax) {
             post.addEventListener("mouseover", function(e) {
                 var a = e.target;
-                if (a.tagName != "A")
+                if (a.tagName != "A" || a.innerHTML == a.innerHTML.replace("&gt;&gt;", ""))
                     return;
                 var pn = a.innerHTML.replace("&gt;&gt;", "");
                 var ind = pn.lastIndexOf("/");
@@ -985,7 +985,7 @@ lord.viewPost = function(link, boardName, postNumber) {
             });
             post.addEventListener("mouseout", function(e) {
                 var a = e.target;
-                if (a.tagName != "A")
+                if (a.tagName != "A" || a.innerHTML == a.innerHTML.replace("&gt;&gt;", ""))
                     return;
                 var pn = +a.innerHTML.replace("&gt;&gt;", "");
                 if (isNaN(pn))

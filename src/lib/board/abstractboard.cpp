@@ -1068,7 +1068,7 @@ void AbstractBoard::initBoards(bool reinit)
     boards.insert(cb->name(), cb);
     cb = new ConfigurableBoard("soc", BTranslation::translate("AbstractBoard", "Social life", "title"),
                                BTranslation::translate("AbstractBoard", "Life of the party", "defaultUserName"));
-    boards.insert(cb->name(), b);
+    boards.insert(cb->name(), cb);
     cb = new ConfigurableBoard("3dpd", BTranslation::translate("AbstractBoard", "3D pron", "title"));
     boards.insert(cb->name(), cb);
     cb = new ConfigurableBoard("vg", BTranslation::translate("AbstractBoard", "Video games", "title"),
