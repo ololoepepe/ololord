@@ -209,6 +209,7 @@ lord.postedInThread = function() {
                 var vals = referencedPosts[i].value.split("/");
                 refs[vals[0] + "/" + vals[1]] = vals[2];
             }
+            lord.removeReferences(postNumber.value);
             lord.addReferences(postNumber.value, refs);
         }
         lord.resetCaptcha();

@@ -75,6 +75,15 @@ static cppcms::json::object toJson(const Content::Post &post)
         refs.push_back(ref);
     }
     o["referencedBy"] = refs;
+    refs.clear();
+    for (std::list<Ref>::const_iterator i = post.refersTo.begin(); i != post.refersTo.end(); ++i) {
+        cppcms::json::object ref;
+        ref["boardName"] = i->boardName;
+        ref["postNumber"] = i->postNumber;
+        ref["threadNumber"] = i->threadNumber;
+        refs.push_back(ref);
+    }
+    o["refersTo"] = refs;
     return o;
 }
 

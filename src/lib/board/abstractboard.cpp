@@ -918,6 +918,14 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 ref.threadNumber = rp->thread().load()->number();
                 p->referencedBy.push_back(ref);
             }
+            foreach (PostReferenceSP reference, post.refersTo()) {
+                QSharedPointer<Post> rp = reference.load()->targetPost().load();
+                Content::Post::Ref ref;
+                ref.boardName = Tools::toStd(rp->board());
+                ref.postNumber = rp->number();
+                ref.threadNumber = rp->thread().load()->number();
+                p->refersTo.push_back(ref);
+            }
             t.commit();
         } catch (const odb::exception &e) {
             return bRet(ok, false, error, Tools::fromStd(e.what()), Content::Post());

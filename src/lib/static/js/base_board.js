@@ -464,6 +464,15 @@ lord.createPostNode = function(res, permanent, boardName) {
             referencedBy.appendChild(a);
         }
     }
+    lord.removeReferences(res["number"]);
+    if (!!res["refersTo"]) {
+        var refersTo = {};
+        for (var i = 0; i < res["refersTo"].length; ++i) {
+            var v = res["refersTo"][i];
+            refersTo[v["boardName"] + "/" + v["postNumber"]] = v["threadNumber"];
+        }
+        lord.addReferences(res["number"], refersTo);
+    }
     var perm = post.querySelector("[name='permanent']");
     if (!permanent) {
         perm.parentNode.removeChild(perm);

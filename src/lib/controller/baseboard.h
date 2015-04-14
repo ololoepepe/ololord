@@ -69,6 +69,7 @@ public:
     std::string rawPostText;
     std::string rawSubject;
     std::list<Ref> referencedBy;
+    std::list<Ref> refersTo;
     bool showRegistered;
     std::string subject;
     bool subjectIsRaw;
