@@ -8,7 +8,6 @@ lord.postPreviews = {};
 lord.lastPostPreview = null;
 lord.lastPostPreviewTimer = null;
 lord.formSubmitted = null;
-lord.popups = [];
 lord.images = {};
 lord.img = null;
 lord.postFormVisible = {
@@ -59,12 +58,12 @@ lord.removeReferences = function(postNumber) {
     postNumber = +postNumber;
     if (isNaN(postNumber))
         return;
-    var referencedByTrs = document.querySelectorAll("[name='referencedByTr']");
+    var referencedByTrs = lord.name("referencedByTr");
     if (!referencedByTrs)
         return;
     for (var i = 0; i < referencedByTrs.length; ++i) {
         var referencedByTr = referencedByTrs[i];
-        var as = referencedByTr.querySelectorAll("a");
+        var as = lord.query("a", referencedByTr);
         if (!as)
             continue;
         for (var j = 0; j < as.length; ++j) {
@@ -85,8 +84,8 @@ lord.addReferences = function(postNumber, referencedPosts) {
         return;
     if (!referencedPosts)
         return;
-    var prefix = document.getElementById("sitePathPrefix").value;
-    var currentBoardName = document.getElementById("currentBoardName").value;
+    var prefix = lord.id("sitePathPrefix").value;
+    var currentBoardName = lord.id("currentBoardName").value;
     for (key in referencedPosts) {
         if (!referencedPosts.hasOwnProperty(key))
             continue;
@@ -95,13 +94,13 @@ lord.addReferences = function(postNumber, referencedPosts) {
             continue;
         var pn = key.split("/").pop();
         var tn = referencedPosts[key];
-        var post = document.getElementById("post" + pn);
+        var post = lord.id("post" + pn);
         if (!post)
             continue;
-        var referencedByTr = post.querySelector("[name='referencedByTr']");
+        var referencedByTr = lord.nameOne("referencedByTr", post);
         referencedByTr.style.display = "";
-        var referencedBy = post.querySelector("[name='referencedBy']");
-        var a = document.createElement("a");
+        var referencedBy = lord.nameOne("referencedBy", post);
+        var a = lord.node("a");
         a.href = "/" + prefix + bn + "/thread/" + tn + ".html#" + pn + "";
         a.addEventListener("mouseover", function(e) {
             lord.viewPost(this, bn, postNumber);
@@ -109,8 +108,8 @@ lord.addReferences = function(postNumber, referencedPosts) {
         a.onmouseout = function() {
             lord.noViewPost();
         };
-        referencedBy.appendChild(document.createTextNode(" "));
-        a.appendChild(document.createTextNode(">>" + postNumber));
+        referencedBy.appendChild(lord.node("text", " "));
+        a.appendChild(lord.node("text", ">>" + postNumber));
         referencedBy.appendChild(a);
     }
 };
@@ -130,71 +129,40 @@ lord.setInitialScale = function(image, sizeHintX, sizeHintY) {
     image.scale = ((kw < kh) ? kw : kh) * 100;
 };
 
-lord.showPopup = function(text, timeout, additionalClassNames) {
-    if (!text)
-        return;
-    if (isNaN(+timeout))
-        timeout = 5000;
-    var msg = document.createElement("div");
-    msg.className = "popup";
-    if (!!additionalClassNames)
-        msg.className += " " + additionalClassNames;
-    if (lord.popups.length > 0) {
-        var prev = lord.popups[lord.popups.length - 1];
-        msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
-    }
-    msg.appendChild(document.createTextNode(text));
-    document.body.appendChild(msg);
-    lord.popups.push(msg);
-    setTimeout(function() {
-        var offsH = msg.offsetHeight + 5;
-        document.body.removeChild(msg);
-        var ind = lord.popups.indexOf(msg);
-        if (ind < 0)
-            return;
-        lord.popups.splice(ind, 1);
-        for (var i = 0; i < lord.popups.length; ++i) {
-            var top = +lord.popups[i].style.top.replace("px", "");
-            top -= offsH;
-            lord.popups[i].style.top = top + "px";
-        }
-    }, 5000);
-};
-
 lord.reloadCaptchaFunction = function() {
     if (!!grecaptcha)
         grecaptcha.reset();
 };
 
 lord.resetCaptcha = function() {
-    var captcha = document.getElementById("googleCaptcha");
+    var captcha = lord.id("googleCaptcha");
     if (!!captcha) {
-        var boardName = document.getElementById("currentBoardName").value;
+        var boardName = lord.id("currentBoardName").value;
         lord.ajaxRequest("get_captcha_quota", [boardName], 8, function(res) {
             res = +res;
             if (isNaN(res))
                 return;
-            var hiddenCaptcha = document.getElementById("hiddenCaptcha");
+            var hiddenCaptcha = lord.id("hiddenCaptcha");
             if (res > 0) {
                 hiddenCaptcha.appendChild(captcha);
                 ["Top", "Bottom"].forEach(function (pos) {
-                    var td = document.getElementById("googleCaptcha" + pos);
+                    var td = lord.id("googleCaptcha" + pos);
                     for (var i = 0; i < td.children.length; ++i) {
                         var child = td.children[i];
                         if (child == captcha)
                             continue;
                         td.removeChild(child);
                     }
-                    var span = document.createElement("span");
+                    var span = lord.node("span");
                     span.className = "noCaptchaText";
-                    var text = document.getElementById("noCaptchaText").value + ". "
-                        + document.getElementById("captchaQuotaText").value + " " + res;
-                    span.appendChild(document.createTextNode(text));
+                    var text = lord.id("noCaptchaText").value + ". "
+                        + lord.id("captchaQuotaText").value + " " + res;
+                    span.appendChild(lord.node("text", text));
                     td.appendChild(span);
                 });
             } else {
                 ["Top", "Bottom"].forEach(function (pos) {
-                    var td = document.getElementById("googleCaptcha" + pos);
+                    var td = lord.id("googleCaptcha" + pos);
                     for (var i = 0; i < td.children.length; ++i) {
                         var child = td.children[i];
                         if (child == captcha)
@@ -203,7 +171,7 @@ lord.resetCaptcha = function() {
                     }
                 });
                 var pos = !!lord.postFormVisible["Bottom"] ? "Bottom" : "Top";
-                document.getElementById("googleCaptcha" + pos).appendChild(captcha);
+                lord.id("googleCaptcha" + pos).appendChild(captcha);
             }
             if (!!lord.reloadCaptchaFunction && "hiddenCaptcha" !== captcha.parentNode.id)
                 lord.reloadCaptchaFunction();
@@ -230,7 +198,7 @@ lord.traverseChildren = function(elem) {
 lord.ajaxRequest = function(method, params, id, callback) {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
-    var prefix = document.getElementById("sitePathPrefix").value;
+    var prefix = lord.id("sitePathPrefix").value;
     xhr.open("post", "/" + prefix + "api");
     xhr.setRequestHeader("Content-Type", "application/json");
     var request = {
@@ -244,10 +212,10 @@ lord.ajaxRequest = function(method, params, id, callback) {
                 var response = JSON.parse(xhr.responseText);
                 var err = response.error;
                 if (!!err)
-                    return alert(err);
+                    return lord.showPopup(err, {type: "critical"});
                 callback(response.result);
             } else {
-                alert(document.getElementById("ajaxErrorText").value + " " + xhr.status);
+                lord.showPopup(lord.id("ajaxErrorText").value + " " + xhr.status, {type: "critical"});
             }
         }
     };
@@ -257,50 +225,50 @@ lord.ajaxRequest = function(method, params, id, callback) {
 lord.createPostFile = function(f, boardName) {
     if (!f)
         return null;
-    var sitePrefix = document.getElementById("sitePathPrefix").value;
+    var sitePrefix = lord.id("sitePathPrefix").value;
     if (!boardName)
-        boardName = document.getElementById("currentBoardName").value;
-    var file = document.createElement("td");
+        boardName = lord.id("currentBoardName").value;
+    var file = lord.node("td");
     file.className = "postFile";
-    var divFileName = document.createElement("div");
+    var divFileName = lord.node("div");
     divFileName.className = "postFileName";
-    var aFileName = document.createElement("a");
+    var aFileName = lord.node("a");
     aFileName.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
-    aFileName.appendChild(document.createTextNode(f["sourceName"]));
+    aFileName.appendChild(lord.node("text", f["sourceName"]));
     divFileName.appendChild(aFileName);
     file.appendChild(divFileName);
-    var divFileSize = document.createElement("div");
+    var divFileSize = lord.node("div");
     divFileSize.className = "postFileSize";
-    divFileSize.appendChild(document.createTextNode("(" + f["size"] + ")"));
+    divFileSize.appendChild(lord.node("text", "(" + f["size"] + ")"));
     file.appendChild(divFileSize);
     if (lord.isImageType(f["type"])) {
-        var divFileSearch = document.createElement("div");
+        var divFileSearch = lord.node("div");
         divFileSearch.className = "postFileSearch";
-        var siteDomain = document.getElementById("siteDomain").value;
-        var siteProtocol = document.getElementById("siteProtocol").value;
+        var siteDomain = lord.id("siteDomain").value;
+        var siteProtocol = lord.id("siteProtocol").value;
         [{
             "link": "//www.google.com/searchbyimage?image_url=",
-            "text": document.getElementById("findSourceWithGoogleText").value,
+            "text": lord.id("findSourceWithGoogleText").value,
             "img": "google.png"
         }, {
             "link": "http://iqdb.org/?url=",
-            "text": document.getElementById("findSourceWithIqdbText").value,
+            "text": lord.id("findSourceWithIqdbText").value,
             "img": "iqdb.png"
         }].forEach(function(el) {
-            var a = document.createElement("a");
+            var a = lord.node("a");
             a.href = el.link + siteProtocol + "://" + siteDomain + "/" + sitePrefix + boardName + "/" + f["sourceName"];
             a.title = el.text;
             a.target = "_blank";
-            var logo = document.createElement("img");
+            var logo = lord.node("img");
             logo.src = "/" + sitePrefix + "img/" + el.img;
             a.appendChild(logo);
             divFileSearch.appendChild(a);
-            divFileSearch.appendChild(document.createTextNode(" "));
+            divFileSearch.appendChild(lord.node("text", " "));
         });
         file.appendChild(divFileSearch);
     }
-    var divImage = document.createElement("div");
-    var aImage = document.createElement("a");
+    var divImage = lord.node("div");
+    var aImage = lord.node("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
     if (lord.isImageType(f["type"])) {
         aImage.onclick = function(e) {
@@ -308,7 +276,7 @@ lord.createPostFile = function(f, boardName) {
                              f["sizeY"]);
         };
     }
-    var image = document.createElement("img");
+    var image = lord.node("img");
     var thumbSizeX = +f["thumbSizeX"];
     var thumbSizeY = +f["thumbSizeY"];
     if (!isNaN(thumbSizeX) && thumbSizeX > 0)
@@ -329,47 +297,47 @@ lord.createPostFile = function(f, boardName) {
 lord.createPostNode = function(res, permanent, boardName) {
     if (!res)
         return null;
-    post = document.getElementById("postTemplate");
+    post = lord.id("postTemplate");
     if (!post)
         return null;
     post = post.cloneNode(true);
     post.id = !!permanent ? ("post" + res["number"]) : "";
     post.style.display = "";
     if (!boardName)
-        boardName = document.getElementById("currentBoardName").value;
+        boardName = lord.id("currentBoardName").value;
     var hidden = (lord.getCookie("postHidden" + boardName + res["number"]) === "true");
     if (hidden)
         post.className += " hiddenPost";
-    var fixed = post.querySelector("[name='fixed']");
+    var fixed = lord.nameOne("fixed", post);
     if (!!res["fixed"])
         fixed.style.display = "";
     else
         fixed.parentNode.removeChild(fixed);
-    var closed = post.querySelector("[name='closed']");
+    var closed = lord.nameOne("closed", post);
     if (!!res["closed"])
         closed.style.display = "";
     else
         closed.parentNode.removeChild(closed);
-    post.querySelector("[name='subject']").appendChild(document.createTextNode(res["subject"]));
-    var registered = post.querySelector("[name='registered']");
+    lord.nameOne("subject", post).appendChild(lord.node("text", res["subject"]));
+    var registered = lord.nameOne("registered", post);
     if (!!res["showRegistered"] && !!res["showTripcode"])
         registered.style.display = "";
     else
         registered.parentNode.removeChild(registered);
-    var name = post.querySelector("[name='name']");
+    var name = lord.nameOne("name", post);
     if (!!res["email"])
         name.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
     else
         name.innerHTML = res["name"];
-    var tripcode = post.querySelector("[name='tripcode']");
+    var tripcode = lord.nameOne("tripcode", post);
     if (!!res["showTripcode"] && "" !== res["tripcode"]) {
         tripcode.style.display = "";
-        tripcode.appendChild(document.createTextNode(res["tripcode"]));
+        tripcode.appendChild(lord.node("text", res["tripcode"]));
     } else {
         tripcode.parentNode.removeChild(tripcode);
     }
-    var whois = post.querySelector("[name='whois']");
-    var sitePathPrefix = document.getElementById("sitePathPrefix").value;
+    var whois = lord.nameOne("whois", post);
+    var sitePathPrefix = lord.id("sitePathPrefix").value;
     if (!!res["flagName"]) {
         whois.style.display = "";
         whois.src = whois.src.replace("%flagName%", res["flagName"]);
@@ -379,14 +347,14 @@ lord.createPostNode = function(res, permanent, boardName) {
     } else {
         whois.parentNode.removeChild(whois);
     }
-    post.querySelector("[name='dateTime']").appendChild(document.createTextNode(res["dateTime"]));
-    var moder = (document.getElementById("moder").value === "true");
-    var number = post.querySelector("[name='number']");
-    number.appendChild(document.createTextNode(res["number"]));
+    lord.nameOne("dateTime", post).appendChild(lord.node("text", res["dateTime"]));
+    var moder = (lord.id("moder").value === "true");
+    var number = lord.nameOne("number", post);
+    number.appendChild(lord.node("text", res["number"]));
     if (moder)
         number.title = res["ip"];
-    var postingEnabled = (document.getElementById("postingEnabled").value === "true");
-    var inp = document.getElementById("currentThreadNumber");
+    var postingEnabled = (lord.id("postingEnabled").value === "true");
+    var inp = lord.id("currentThreadNumber");
     if (!!inp && +inp.value === res["threadNumber"]) {
         if (postingEnabled)
             number.href = "javascript:lord.insertPostNumber(" + res["number"] + ");";
@@ -398,7 +366,7 @@ lord.createPostNode = function(res, permanent, boardName) {
             number.href += "i";
         number.href += res["number"];
     }
-    var files = post.querySelector("[name='files']");
+    var files = lord.nameOne("files", post);
     if (!!res["files"]) {
         post.ajaxFiles = {};
         for (var i = 0; i < res["files"].length; ++i) {
@@ -408,63 +376,63 @@ lord.createPostNode = function(res, permanent, boardName) {
             post.ajaxFiles[res["files"][i]["thumbName"]] = res["files"][i];
         }
     }
-    var blockquoteThread = !!document.getElementById("currentThreadNumber");
-    var modificationDateTimeTd = post.querySelector("[name='modificationDateTimeTd']");
-    var bannedForTd = post.querySelector("[name='bannedForTd']");
-    var referencedByTd = post.querySelector("[name='referencedByTd']");
-    var oneFileTr = post.querySelector("[name='files']");
-    var manyFilesTr = post.querySelector("[name='manyFilesTr']");
-    var textOneFile = post.querySelector("[name='textOneFile']");
-    var textManyFiles = post.querySelector("[name='textManyFiles']");
+    var blockquoteThread = !!lord.id("currentThreadNumber");
+    var modificationDateTimeTd = lord.nameOne("modificationDateTimeTd", post);
+    var bannedForTd = lord.nameOne("bannedForTd", post);
+    var referencedByTd = lord.nameOne("referencedByTd", post);
+    var oneFileTr = lord.nameOne("files", post);
+    var manyFilesTr = lord.nameOne("manyFilesTr", post);
+    var textOneFile = lord.nameOne("textOneFile", post);
+    var textManyFiles = lord.nameOne("textManyFiles", post);
     if (res["files"].length < 2) {
         manyFilesTr.parentNode.removeChild(manyFilesTr);
         textOneFile.innerHTML = res["text"];
         if (blockquoteThread)
             textOneFile.className = "blockquoteThread";
     } else {
-        var oneFileTd = post.querySelector("[name='oneFileTd']");
+        var oneFileTd = lord.nameOne("oneFileTd", post);
         oneFileTd.removeChild(textOneFile);
         oneFileTd.className = "shrink";
-        post.querySelector("[name='manyFilesTd']").colSpan = res["files"].length + 2;
-        post.querySelector("[name='textManyFiles']").innerHTML = res["text"];
+        lord.nameOne("manyFilesTd", post).colSpan = res["files"].length + 2;
+        lord.nameOne("textManyFiles", post).innerHTML = res["text"];
         if (blockquoteThread)
             textManyFiles.className = "blockquoteThread";
         modificationDateTimeTd.colSpan = res["files"].length + 2;
         bannedForTd.colSpan = res["files"].length + 2;
         referencedByTd.colSpan = res["files"].length + 2;
     }
-    var modificationDateTime = post.querySelector("[name='modificationDateTime']");
+    var modificationDateTime = lord.nameOne("modificationDateTime", post);
     if ("" !== res["modificationDateTime"]) {
         modificationDateTime.style.display = "";
         modificationDateTime.childNodes[0].nodeValue += " " + res["modificationDateTime"];
     } else {
         modificationDateTime.parentNode.removeChild(modificationDateTime);
     }
-    var bannedFor = post.querySelector("[name='bannedFor']");
+    var bannedFor = lord.nameOne("bannedFor", post);
     if (!!res["bannedFor"])
         bannedFor.style.display = "";
     else
         bannedFor.parentNode.removeChild(bannedFor);
-    var referencedBy = post.querySelector("[name='referencedBy']");
+    var referencedBy = lord.nameOne("referencedBy", post);
     if (!!res["referencedBy"] && res["referencedBy"].length > 0) {
-        post.querySelector("[name='referencedByTr']").style.display = "";
+        lord.nameOne("referencedByTr", post).style.display = "";
         for (var i = 0; i < res["referencedBy"].length; ++i) {
             var ref = res["referencedBy"][i];
             var bn = ref["boardName"]
             var pn = ref["postNumber"];
             var tn = ref["threadNumber"];
-            var a = document.createElement("a");
+            var a = lord.node("a");
             a.href = "/" + sitePathPrefix + bn + "/thread/" + tn + ".html#" + pn;
             a.addEventListener("mouseover", lord.viewPost.bind(lord, a, bn, pn));
             a.onmouseout = function() {
                 lord.noViewPost();
             };
-            referencedBy.appendChild(document.createTextNode(" "));
-            a.appendChild(document.createTextNode(">>" + (bn !== boardName ? ("/" + bn + "/") : "") + pn));
+            referencedBy.appendChild(lord.node("text", " "));
+            a.appendChild(lord.node("text", ">>" + (bn !== boardName ? ("/" + bn + "/") : "") + pn));
             referencedBy.appendChild(a);
         }
     }
-    var perm = post.querySelector("[name='permanent']");
+    var perm = lord.nameOne("permanent", post);
     if (!permanent) {
         perm.parentNode.removeChild(perm);
         return post;
@@ -488,7 +456,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     if (hidden)
         post.className += " hiddenPost";
     perm.style.display = "";
-    var anumber = document.createElement("a");
+    var anumber = lord.node("a");
     number.parentNode.insertBefore(anumber, number);
     number.parentNode.removeChild(number);
     anumber.title = number.title;
@@ -497,27 +465,27 @@ lord.createPostNode = function(res, permanent, boardName) {
         anumber.href = "javascript:lord.insertPostNumber(" + res["number"] + ");";
     else
         anumber.href = "#" + res["number"];
-    var deleteButton = post.querySelector("[name='deleteButton']");
+    var deleteButton = lord.nameOne("deleteButton", post);
     deleteButton.href = deleteButton.href.replace("%postNumber%", res["number"]);
-    var hideButton = post.querySelector("[name='hideButton']");
+    var hideButton = lord.nameOne("hideButton", post);
     hideButton.id = hideButton.id.replace("%postNumber%", res["number"]);
     hideButton.href = hideButton.href.replace("%postNumber%", res["number"]);
     
     hideButton.href = hideButton.href.replace("%hide%", !hidden);
-    var editButton = post.querySelector("[name='editButton']");
-    var fixButton = post.querySelector("[name='fixButton']");
-    var unfixButton = post.querySelector("[name='unfixButton']");
-    var openButton = post.querySelector("[name='openButton']");
-    var closeButton = post.querySelector("[name='closeButton']");
-    var banButton = post.querySelector("[name='banButton']");
-    var rawText = post.querySelector("[name='rawText']");
-    post.querySelector("[name='draft']").value = !!res["draft"];
+    var editButton = lord.nameOne("editButton", post);
+    var fixButton = lord.nameOne("fixButton", post);
+    var unfixButton = lord.nameOne("unfixButton", post);
+    var openButton = lord.nameOne("openButton", post);
+    var closeButton = lord.nameOne("closeButton", post);
+    var banButton = lord.nameOne("banButton", post);
+    var rawText = lord.nameOne("rawText", post);
+    lord.nameOne("draft", post).value = !!res["draft"];
     if (moder || !!res["draft"]) {
         editButton.href = editButton.href.replace("%postNumber%", res["number"]);
         rawText.value = res["rawPostText"];
-        post.querySelector("[name='email']").value = res["email"];
-        post.querySelector("[name='name']").value = res["rawName"];
-        post.querySelector("[name='subject']").value = res["rawSubject"];
+        lord.nameOne("email", post).value = res["email"];
+        lord.nameOne("name", post).value = res["rawName"];
+        lord.nameOne("subject", post).value = res["rawSubject"];
     } else {
         editButton.parentNode.removeChild(editButton);
     }
@@ -529,7 +497,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         banButton.parentNode.removeChild(banButton);
         return post;
     }
-    var toThread = post.querySelector("[name='toThread']");
+    var toThread = lord.nameOne("toThread", post);
     if (res["number"] === res["threadNumber"]) {
         if (!!res["fixed"]) {
             unfixButton.style.display = "";
@@ -550,7 +518,7 @@ lord.createPostNode = function(res, permanent, boardName) {
             openButton.parentNode.removeChild(openButton);
         }
         toThread.style.display = "";
-        var toThreadLink = post.querySelector("[name='toThreadLink']");
+        var toThreadLink = lord.nameOne("toThreadLink", post);
         toThreadLink.href = toThreadLink.href.replace("%postNumber%", res["number"]);
     } else {
         fixButton.parentNode.removeChild(fixButton);
@@ -566,7 +534,7 @@ lord.createPostNode = function(res, permanent, boardName) {
 lord.clearFileInput = function(div) {
     var preview = div.querySelector("img");
     if (!!preview && div == preview.parentNode)
-        preview.src = "/" + document.getElementById("sitePathPrefix").value + "img/addfile.png";
+        preview.src = "/" + lord.id("sitePathPrefix").value + "img/addfile.png";
     var span = div.querySelector("span");
     if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
         span.removeChild(span.childNodes[0]);
@@ -581,14 +549,14 @@ lord.readableSize = function(sz) {
         sz /= 1024;
         if (sz / 1024 >= 1) {
             sz = (sz / 1024).toFixed(1);
-            sz += " " + document.getElementById("megabytesText").value;
+            sz += " " + lord.id("megabytesText").value;
         } else {
             sz = sz.toFixed(1);
-            sz += " " + document.getElementById("kilobytesText").value;
+            sz += " " + lord.id("kilobytesText").value;
         }
     } else {
         sz = sz.toString();
-        sz += " " + document.getElementById("bytesText").value;
+        sz += " " + lord.id("bytesText").value;
     }
     return sz;
 };
@@ -623,17 +591,17 @@ lord.globalOnclick = function(e) {
 };
 
 lord.showPasswordDialog = function(title, label, callback) {
-    var div = document.createElement("div");
-    var input = document.createElement("input");
+    var div = lord.node("div");
+    var input = lord.node("input");
     input.type = "password";
     input.className = "input";
     input.maxlength = 150;
     input.size = 30;
     div.appendChild(input);
-    var sw = document.createElement("input");
+    var sw = lord.node("input");
     sw.type = "checkbox";
     sw.className = "checkbox";
-    sw.title = document.getElementById("showPasswordText").value;
+    sw.title = lord.id("showPasswordText").value;
     sw.onclick = function() {
         if (input.type === "password")
             input.type = "text";
@@ -649,19 +617,19 @@ lord.showPasswordDialog = function(title, label, callback) {
 };
 
 lord.showHidePostForm = function(position) {
-    var theButton = document.getElementById("showHidePostFormButton" + position);
+    var theButton = lord.id("showHidePostFormButton" + position);
     if (lord.postFormVisible[position]) {
-        theButton.innerHTML = document.getElementById("showPostFormText").value;
-        document.getElementById("postForm" + position).className = "postFormInvisible";
+        theButton.innerHTML = lord.id("showPostFormText").value;
+        lord.id("postForm" + position).className = "postFormInvisible";
     } else {
-        theButton.innerHTML = document.getElementById("hidePostFormText").value;
-        document.getElementById("postForm" + position).className = "postFormVisible";
+        theButton.innerHTML = lord.id("hidePostFormText").value;
+        lord.id("postForm" + position).className = "postFormVisible";
         var p = ("Top" === position) ? "Bottom" : "Top";
         if (lord.postFormVisible[p])
             lord.showHidePostForm(p);
-        var captcha = document.getElementById("googleCaptcha");
+        var captcha = lord.id("googleCaptcha");
         if (!!captcha && "hiddenCaptcha" !== captcha.parentNode.id)
-            document.getElementById("googleCaptcha" + position).appendChild(captcha);
+            lord.id("googleCaptcha" + position).appendChild(captcha);
     }
     lord.postFormVisible[position] = !lord.postFormVisible[position];
 };
@@ -669,19 +637,19 @@ lord.showHidePostForm = function(position) {
 lord.deletePost = function(boardName, postNumber, fromThread) {
     if (!boardName || isNaN(+postNumber))
         return;
-    var title = document.getElementById("enterPasswordTitle").value;
-    var label = document.getElementById("enterPasswordText").value;
+    var title = lord.id("enterPasswordTitle").value;
+    var label = lord.id("enterPasswordText").value;
     lord.showPasswordDialog(title, label, function(pwd) {
         if (null === pwd)
             return;
         if (pwd.length < 1) {
             if (!lord.getCookie("hashpass"))
-                return alert(document.getElementById("notLoggedInText").value);
+                return lord.showPopup(lord.id("notLoggedInText").value, {type: "critical"});
         } else if (!lord.isHashpass(pwd)) {
             pwd = lord.toHashpass(pwd);
         }
         lord.ajaxRequest("delete_post", [boardName, +postNumber, pwd], 1, function(res) {
-            var post = document.getElementById("post" + postNumber);
+            var post = lord.id("post" + postNumber);
             if (!post) {
                 if (!!fromThread) {
                     var suffix = "thread/" + postNumber + ".html";
@@ -696,14 +664,14 @@ lord.deletePost = function(boardName, postNumber, fromThread) {
             } else {
                 post.parentNode.removeChild(post);
                 lord.removeReferences(postNumber);
-                var postLinks = document.body.querySelectorAll("a");
+                var postLinks = lord.query("a");
                 if (!!postLinks) {
                     for (var i = 0; i < postLinks.length; ++i) {
                         var link = postLinks[i];
                         if (("&gt;&gt;" + postNumber) !== link.innerHTML)
                             continue;
                         var text = link.innerHTML.replace("&gt;&gt;", ">>");
-                        link.parentNode.replaceChild(document.createTextNode(text), link);
+                        link.parentNode.replaceChild(lord.node("text", text), link);
                     }
                 }
                 if (!!lord.postPreviews[boardName + "/" + postNumber])
@@ -717,7 +685,7 @@ lord.setThreadFixed = function(boardName, postNumber, fixed) {
     if (!boardName || isNaN(+postNumber))
         return;
     if (!lord.getCookie("hashpass"))
-        return alert(document.getElementById("notLoggedInText").value);
+        return lord.showPopup(lord.id("notLoggedInText").value, {type: "critical"});
     lord.ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, lord.reloadPage);
 };
 
@@ -725,37 +693,37 @@ lord.setThreadOpened = function(boardName, postNumber, opened) {
     if (!boardName || isNaN(+postNumber))
         return;
     if (!lord.getCookie("hashpass"))
-        return alert(document.getElementById("notLoggedInText").value);
+        return lord.showPopup(lord.id("notLoggedInText").value, {type: "critical"});
     lord.ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, lord.reloadPage);
 };
 
 lord.banUser = function(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
-    var title = document.getElementById("banUserText").value;
-    var div = document.createElement("div");
-    var div1 = document.createElement("div");
-    div1.appendChild(document.createTextNode(document.getElementById("boardLabelText").value));
-    var selBoard = document.getElementById("availableBoardsSelect").cloneNode(true);
+    var title = lord.id("banUserText").value;
+    var div = lord.node("div");
+    var div1 = lord.node("div");
+    div1.appendChild(lord.node("text", lord.id("boardLabelText").value));
+    var selBoard = lord.id("availableBoardsSelect").cloneNode(true);
     selBoard.style.display = "block";
     div1.appendChild(selBoard);
     div.appendChild(div1);
-    var div2 = document.createElement("div");
-    div2.appendChild(document.createTextNode(document.getElementById("banLevelLabelText").value));
-    var selLevel = document.getElementById("banLevelsSelect").cloneNode(true);
+    var div2 = lord.node("div");
+    div2.appendChild(lord.node("text", lord.id("banLevelLabelText").value));
+    var selLevel = lord.id("banLevelsSelect").cloneNode(true);
     selLevel.style.display = "block";
     div2.appendChild(selLevel);
     div.appendChild(div2);
-    var div3 = document.createElement("div");
-    div3.appendChild(document.createTextNode(document.getElementById("banReasonLabelText").value));
-    var inputReason = document.createElement("input");
+    var div3 = lord.node("div");
+    div3.appendChild(lord.node("text", lord.id("banReasonLabelText").value));
+    var inputReason = lord.node("input");
     inputReason.type = "text";
     inputReason.className = "input";
     div3.appendChild(inputReason);
     div.appendChild(div3);
-    var div4 = document.createElement("div");
-    div4.appendChild(document.createTextNode(document.getElementById("banExpiresLabelText").value));
-    var inputExpires = document.createElement("input");
+    var div4 = lord.node("div");
+    div4.appendChild(lord.node("text", lord.id("banExpiresLabelText").value));
+    var inputExpires = lord.node("input");
     inputExpires.type = "text";
     inputExpires.placeholder = "dd.MM.yyyy:hh";
     inputExpires.className = "input";
@@ -779,37 +747,37 @@ lord.banUser = function(boardName, postNumber) {
 lord.editPost = function(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
-    var post = document.getElementById("post" + postNumber);
+    var post = lord.id("post" + postNumber);
     if (!post)
         return;
-    var title = document.getElementById("editPostText").value;
-    var form = document.getElementById("editPostTemplate").cloneNode(true);
+    var title = lord.id("editPostText").value;
+    var form = lord.id("editPostTemplate").cloneNode(true);
     form.id = "";
     form.style.display = "";
     var email = form.querySelector("[name='email']");
     var name = form.querySelector("[name='name']");
     var subject = form.querySelector("[name='subject']");
     var text = form.querySelector("[name='text']");
-    email.value = post.querySelector("[name='email']").value;
-    name.value = post.querySelector("[name='name']").value;
-    subject.value = post.querySelector("[name='subject']").value;
-    text.appendChild(document.createTextNode(post.querySelector("[name='rawText']").value));
-    var moder = (document.getElementById("moder").value === "true");
+    email.value = lord.nameOne("email", post).value;
+    name.value = lord.nameOne("name", post).value;
+    subject.value = lord.nameOne("subject", post).value;
+    text.appendChild(lord.node("text", lord.nameOne("rawText", post).value));
+    var moder = (lord.id("moder").value === "true");
     var draftField = form.querySelector("[name='draft']");
     var rawField = form.querySelector("[name='raw']");
     if (!!draftField) {
-        if (post.querySelector("[name='draft']").value == "true")
+        if (lord.nameOne("draft", post).value == "true")
             draftField.checked = true;
         else
             draftField.parentNode.parentNode.style.display = "none";
     }
-    if (!!rawField && post.querySelector("[name='rawHtml']").value == "true")
+    if (!!rawField && lord.nameOne("rawHtml", post).value == "true")
         rawField.checked = true;
     lord.showDialog(title, null, form, function() {
         var pwd = form.querySelector("[name='password']").value;
         if (pwd.length < 1) {
             if (!lord.getCookie("hashpass"))
-                return alert(document.getElementById("notLoggedInText").value);
+                return lord.showPopup(lord.id("notLoggedInText").value, {type: "critical"});
         } else if (!lord.isHashpass(pwd)) {
             pwd = lord.toHashpass(pwd);
         }
@@ -829,10 +797,10 @@ lord.editPost = function(boardName, postNumber) {
                 var newPost = lord.createPostNode(res, true);
                 if (!newPost)
                     return;
-                var postLimit = post.querySelector("[name='postLimit']");
-                var bumpLimit = post.querySelector("[name='bumpLimit']");
+                var postLimit = lord.nameOne("postLimit", post);
+                var bumpLimit = lord.nameOne("bumpLimit", post);
                 if (!!postLimit || !!bumpLimit) {
-                    var postHeader = newPost.querySelector(".postHeader");
+                    var postHeader = lord.queryOne(".postHeader", newPost);
                     if (!!postLimit)
                         postHeader.appendChild(postLimit.cloneNode(true));
                     if (!!bumpLimit)
@@ -847,8 +815,8 @@ lord.editPost = function(boardName, postNumber) {
 lord.setPostHidden = function(boardName, postNumber, hidden) {
     if (!boardName || isNaN(+postNumber))
         return;
-    var post = document.getElementById("post" + postNumber);
-    var sw = document.getElementById("hidePost" + postNumber);
+    var post = lord.id("post" + postNumber);
+    var sw = lord.id("hidePost" + postNumber);
     if (!!hidden) {
         post.className += " hiddenPost";
         sw.href = sw.href.replace("true", "false");
@@ -867,11 +835,11 @@ lord.setPostHidden = function(boardName, postNumber, hidden) {
 lord.setThreadHidden = function(boardName, postNumber, hidden) {
     if (!boardName || isNaN(+postNumber))
         return;
-    var post = document.getElementById("post" + postNumber);
-    var sw = document.getElementById("hidePost" + postNumber);
-    var thread = document.getElementById("thread" + postNumber);
-    var omitted = document.getElementById("threadOmitted" + postNumber);
-    var posts = document.getElementById("threadPosts" + postNumber);
+    var post = lord.id("post" + postNumber);
+    var sw = lord.id("hidePost" + postNumber);
+    var thread = lord.id("thread" + postNumber);
+    var omitted = lord.id("threadOmitted" + postNumber);
+    var posts = lord.id("threadPosts" + postNumber);
     if (!!hidden) {
         post.className += " hiddenPost";
         if (!!thread)
@@ -954,10 +922,10 @@ lord.viewPostStage2 = function(link, boardName, postNumber, post) {
 lord.viewPost = function(link, boardName, postNumber) {
     if (!link || !boardName || isNaN(+postNumber))
         return;
-    var currentBoardName = document.getElementById("currentBoardName").value;
+    var currentBoardName = lord.id("currentBoardName").value;
     var post = null;
     if (boardName === currentBoardName)
-        post = document.getElementById("post" + postNumber);
+        post = lord.id("post" + postNumber);
     if (!post)
         post = lord.postPreviews[boardName + "/" + postNumber];
     if (!post) {
@@ -1047,7 +1015,7 @@ lord.noViewPost = function() {
 lord.fileSelected = function(current) {
     if (!current)
         return;
-    var inp = document.getElementById("maxFileCount");
+    var inp = lord.id("maxFileCount");
     if (!inp)
         return;
     var maxCount = +inp.value;
@@ -1058,15 +1026,14 @@ lord.fileSelected = function(current) {
         return lord.removeFile(div.querySelector("a"));
     lord.clearFileInput(div);
     var file = current.files[0];
-    div.querySelector("span").appendChild(document.createTextNode(file.name
-        + " (" + lord.readableSize(file.size) + ")"));
+    div.querySelector("span").appendChild(lord.node("text", file.name + " (" + lord.readableSize(file.size) + ")"));
     var binaryReader = new FileReader();
     binaryReader.readAsArrayBuffer(file);
     var oldDiv = div;
     var previous = current;
     binaryReader.onload = function(e) {
         var wordArray = CryptoJS.lib.WordArray.create(e.target.result);
-        var currentBoardName = document.getElementById("currentBoardName").value;
+        var currentBoardName = lord.id("currentBoardName").value;
         var fileHash = lord.toHashpass(wordArray);
         lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], 8, function(res) {
             if (!res)
@@ -1081,7 +1048,7 @@ lord.fileSelected = function(current) {
             oldDiv.fileHash = fileHash;
         });
     };
-    var prefix = document.getElementById("sitePathPrefix").value;
+    var prefix = lord.id("sitePathPrefix").value;
     if (!!current.value.match(/\.(jpe?g|png|gif)$/i)) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
@@ -1138,7 +1105,7 @@ lord.removeFile = function(current) {
             if (!parent.children[i].fileHash && parent.children[i].querySelector("input").value === "")
                 return;
         }
-        var inp = document.getElementById("maxFileCount");
+        var inp = lord.id("maxFileCount");
         if (!inp)
             return;
         var maxCount = +inp.value;
@@ -1195,24 +1162,24 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     if (lord.isAudioType(type)) {
         sizeHintX = 400;
-        lord.img = document.createElement("audio");
+        lord.img = lord.node("audio");
         lord.img.width = sizeHintX + "px";
         lord.img.controls = "controls";
-        var src = document.createElement("source");
+        var src = lord.node("source");
         src.src = href;
         src.type = type;
         lord.img.appendChild(src);
     } else if (lord.isImageType(type)) {
         if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
             return true;
-        lord.img = document.createElement("img");
+        lord.img = lord.node("img");
         lord.img.width = sizeHintX;
         lord.img.height = sizeHintY;
         lord.img.src = href;
     } else if (lord.isVideoType(type)) {
-        lord.img = document.createElement("video");
+        lord.img = lord.node("video");
         lord.img.controls = "controls";
-        var src = document.createElement("source");
+        var src = lord.node("source");
         src.src = href;
         src.type = type;
         lord.img.appendChild(src);
@@ -1291,7 +1258,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
 };
 
 lord.complain = function() {
-    alert(document.getElementById("complainMessage").value);
+    lord.showPopup(lord.id("complainMessage").value, {type: "critical"});
 };
 
 lord.submitted = function(form) {
@@ -1302,9 +1269,9 @@ lord.submitted = function(form) {
 lord.postedOnBoard = function() {
     if (!lord.formSubmitted)
         return;
-    var iframe = document.getElementById("kostyleeque");
+    var iframe = lord.id("kostyleeque");
     var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-    var threadNumber = iframeDocument.querySelector("#threadNumber");
+    var threadNumber = lord.queryOne("#threadNumber", iframeDocument);
     lord.formSubmitted.querySelector("[name='submit']").disabled = false;
     if (!!threadNumber) {
         var href = window.location.href.split("#").shift();
@@ -1312,9 +1279,9 @@ lord.postedOnBoard = function() {
             + threadNumber.value + ".html";
     } else {
         lord.formSubmitted = null;
-        var errmsg = iframeDocument.querySelector("#errorMessage");
-        var errdesc = iframeDocument.querySelector("#errorDescription");
-        lord.showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML);
+        var errmsg = lord.queryOne("#errorMessage", iframeDocument);
+        var errdesc = lord.queryOne("#errorDescription", iframeDocument);
+        lord.showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML, {type: "critical"});
         resetCaptcha();
     }
 };

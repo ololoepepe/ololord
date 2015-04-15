@@ -62,6 +62,16 @@ hr {
     padding: 5px 5px 5px 5px;
 }
 
+.critical {
+    color: red;
+    border: 1px dotted red;
+}
+
+.warning {
+    color: orange;
+    border: 1px dotted orange;
+}
+
 /*
     Ban
 */

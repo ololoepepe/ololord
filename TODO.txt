@@ -1,5 +1,8 @@
 [done] Implement configurable board
 [done] Remove some board classes
+[done] Fix post reference creation when using AJAX
+[done] Refactor JS
+[done] Replace alerts with popups
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
