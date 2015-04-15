@@ -464,6 +464,11 @@ lord.createPostNode = function(res, permanent, boardName) {
             referencedBy.appendChild(a);
         }
     }
+    var perm = post.querySelector("[name='permanent']");
+    if (!permanent) {
+        perm.parentNode.removeChild(perm);
+        return post;
+    }
     lord.removeReferences(res["number"]);
     if (!!res["refersTo"]) {
         var refersTo = {};
@@ -472,11 +477,6 @@ lord.createPostNode = function(res, permanent, boardName) {
             refersTo[v["boardName"] + "/" + v["postNumber"]] = v["threadNumber"];
         }
         lord.addReferences(res["number"], refersTo);
-    }
-    var perm = post.querySelector("[name='permanent']");
-    if (!permanent) {
-        perm.parentNode.removeChild(perm);
-        return post;
     }
     post.className += " newPost";
     post.onmouseover = function() {
@@ -829,8 +829,6 @@ lord.editPost = function(boardName, postNumber) {
                 var newPost = lord.createPostNode(res, true);
                 if (!newPost)
                     return;
-                lord.removeReferences(postNumber);
-                lord.addReferences(postNumber, rese);
                 var postLimit = post.querySelector("[name='postLimit']");
                 var bumpLimit = post.querySelector("[name='bumpLimit']");
                 if (!!postLimit || !!bumpLimit) {

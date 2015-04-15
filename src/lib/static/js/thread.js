@@ -203,15 +203,6 @@ lord.postedInThread = function() {
         lord.updateThread(boardName, threadNumber, true, function() {
             lord.selectPost(postNumber.value);
         });
-        if (!!referencedPosts) {
-            var refs = {};
-            for (var i = 0; i < referencedPosts.length; ++i) {
-                var vals = referencedPosts[i].value.split("/");
-                refs[vals[0] + "/" + vals[1]] = vals[2];
-            }
-            lord.removeReferences(postNumber.value);
-            lord.addReferences(postNumber.value, refs);
-        }
         lord.resetCaptcha();
     } else {
         lord.formSubmitted = null;
