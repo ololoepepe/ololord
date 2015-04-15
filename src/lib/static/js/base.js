@@ -130,13 +130,7 @@ lord.node = function(type, text) {
     if (typeof type != "string")
         return null;
     type = type.toUpperCase();
-    if ("TEXT" == type) {
-        if (!text)
-            return null;
-        return document.createTextNode(text);
-    } else {
-        return document.createElement(type);
-    }
+    return ("TEXT" == type) ? document.createTextNode(text ? text : "") : document.createElement(type);
 };
 
 lord.reloadPage = function() {
