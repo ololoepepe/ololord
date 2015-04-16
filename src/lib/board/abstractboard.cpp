@@ -5,6 +5,7 @@
 #include "board/echoboard.h"
 #include "board/mlpboard.h"
 #include "board/prboard.h"
+#include "board/rpgboard.h"
 #include "cache.h"
 #include "controller/baseboard.h"
 #include "controller/board.h"
@@ -1153,6 +1154,8 @@ void AbstractBoard::initBoards(bool reinit)
     cb = new ConfigurableBoard("vg", BTranslation::translate("AbstractBoard", "Video games", "title"),
                                BTranslation::translate("AbstractBoard", "PC Nobleman", "defaultUserName"));
     boards.insert(cb->name(), cb);
+    b = new rpgBoard;
+    boards.insert(b->name(), b);
     foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
         pw->unload();
         BCoreApplication::removePlugin(pw);

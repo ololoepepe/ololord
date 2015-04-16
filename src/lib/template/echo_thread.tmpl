@@ -28,10 +28,10 @@
 
     /*Functions*/
 
-    lord.customEditFormSet = function(form, post, draftField, rawField) {
+    lord.customEditFormSet = function(form, post) {
         var a = lord.queryOne(".postSubject > a", post);
         var link = lord.nameOne("link", form);
-        if (!a || !draftField) {
+        if (!a) {
             var tr = link.parentNode.parentNode;
             tr.parentNode.removeChild(tr);
             return;
@@ -39,9 +39,9 @@
         link.value = a.href;
     };
 
-    lord.customEditFormGet = function(form, params, draftField, rawField) {
+    lord.customEditFormGet = function(form, params) {
         var link = lord.nameOne("link", form);
-        if (!link || !draftField)
+        if (!link)
             return null;
         return link.value;
     };

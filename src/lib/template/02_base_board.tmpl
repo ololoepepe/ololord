@@ -76,6 +76,42 @@
 <% template customPostFormFieldEdit6() %>
 <% end template %>
 
+<% template customPostBody0(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody1(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody2(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody3(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody4(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody5(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBodyTemplate0() %>
+<% end template %>
+
+<% template customPostBodyTemplate1() %>
+<% end template %>
+
+<% template customPostBodyTemplate2() %>
+<% end template %>
+
+<% template customPostBodyTemplate3() %>
+<% end template %>
+
+<% template customPostBodyTemplate4() %>
+<% end template %>
+
+<% template customPostBodyTemplate5() %>
+<% end template %>
+
 <% template createAction(std::string position) %>
 <% if ( content.postingEnabled ) %>
     <div class="createAction">
@@ -424,6 +460,7 @@
     </div>
     <table class="threadPost">
         <tbody>
+            <% include customPostBody0(post, thread) %>
             <tr>
                 <%foreach file in post.files %>
                     <% item %>
@@ -458,6 +495,7 @@
                     <td class="shrink"></td>
                 <% end %>
             </tr>
+            <% include customPostBody1(post, thread) %>
             <% if ( post.files.size() >= 2 ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"postText\">"; %>
@@ -470,6 +508,7 @@
                     </td>
                 </tr>
             <% end %>
+            <% include customPostBody2(post, thread) %>
             <% if ( !post.modificationDateTime.empty() ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
@@ -478,6 +517,7 @@
                     </td>
                 </tr>
             <% end %>
+            <% include customPostBody3(post, thread) %>
             <% if ( post.bannedFor ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
@@ -485,6 +525,7 @@
                     <td>
                 </tr>
             <% end %>
+            <% include customPostBody4(post, thread) %>
             <% if ( !post.referencedBy.empty() ) %>
                 <tr name="referencedByTr">
             <% else %>
@@ -509,6 +550,7 @@
                     </span>
                 <td>
             </tr>
+            <% include customPostBody5(post, thread) %>
         </tbody>
     </table>
 </div>
@@ -623,32 +665,38 @@
     </div>
     <table class="threadPost">
         <tbody>
+            <% include customPostBodyTemplate0() %>
             <tr name="files">
                 <td name="oneFileTd" class="postText">
                     <blockquote name="textOneFile"></blockquote>
                 </td>
             </tr>
+            <% include customPostBodyTemplate1() %>
             <tr name="manyFilesTr">
                 <td name="manyFilesTd" class="postText">
                     <blockquote name="textManyFiles"></blockquote>
                 </td>
             <tr>
+            <% include customPostBodyTemplate2() %>
             <tr>
                 <td name="modificationDateTimeTd" colspan="2">
                     <span name="modificationDateTime" class="modificationDateTime"
                           style="display: none;"><%= modificationDateTimeText %></span>
                 <td>
             </tr>
+            <% include customPostBodyTemplate3() %>
             <tr>
                 <td name="bannedForTd" colspan="2">
                     <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
                 <td>
             </tr>
+            <% include customPostBodyTemplate4() %>
             <tr name="referencedByTr" style="display: none;">
                 <td name="referencedByTd" colspan="2">
                     <span name="referencedBy" class="referencedBy"><%= referencedByText %></span>
                 <td>
             </tr>
+            <% include customPostBodyTemplate5() %>
         </tbody>
     </table>
 </div>

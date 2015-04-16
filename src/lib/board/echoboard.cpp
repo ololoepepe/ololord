@@ -91,8 +91,7 @@ bool echoBoard::testParams(const Tools::PostParameters &params, bool post, const
 
 QString echoBoard::title(const QLocale &l) const
 {
-    TranslatorQt tq(l);
-    return tq.translate("echoBoard", "Boardsphere echo", "board title");
+    return TranslatorQt(l).translate("echoBoard", "Boardsphere echo", "board title");
 }
 
 Content::Post echoBoard::toController(const Post &post, const cppcms::http::request &req, bool *ok,

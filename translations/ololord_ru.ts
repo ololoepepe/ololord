@@ -2338,6 +2338,14 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
+    <name>rpgBoard</name>
+    <message>
+        <source>Role-playing games</source>
+        <comment>board title</comment>
+        <translation>Ролевые игры</translation>
+    </message>
+</context>
+<context>
     <name>saveFile</name>
     <message>
         <source>Internal error</source>
