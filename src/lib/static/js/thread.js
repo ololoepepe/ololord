@@ -131,7 +131,7 @@ lord.insertPostNumber = function(postNumber) {
 lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback) {
     if (!boardName || isNaN(+threadNumber))
         return;
-    var posts = lord.query(".opPost, .post");
+    var posts = lord.query(".opPost:not(.temporary), .post:not(.temporary)");
     if (!posts)
         return;
     var lastPostN = posts[posts.length - 1].id.replace("post", "");

@@ -315,9 +315,7 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
         if (ok && pn && Database::postExists(boardName, pn, &tn)) {
             QString threadNumber = QString::number(tn);
             QString href = "href=\"/" + prefix + boardName + "/thread/" + threadNumber + ".html#" + postNumber + "\"";
-            QString mouseover = "onmouseover=\"lord.viewPost(this, '" + boardName + "', " + postNumber + ");\"";
-            QString mouseout = "onmouseout=\"lord.noViewPost();\"";
-            QString a = "<a " + href + " " + mouseover + " " + mouseout + ">" + cap.replace(">", "&gt;") + "</a>";
+            QString a = "<a " + href + /*" " + mouseover + " " + mouseout*/ + ">" + cap.replace(">", "&gt;") + "</a>";
             t.replace(ind, rx.matchedLength(), a);
             skip << qMakePair(ind, a.length());
             ind = rx.indexIn(t, ind + a.length());

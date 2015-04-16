@@ -3,6 +3,11 @@
 [done] Fix post reference creation when using AJAX
 [done] Refactor JS
 [done] Replace alerts with popups
+[done] Fix post preview
+* Add ability to set limits for each thread
+* Implement RPG board
+* Add ability to delete/change/add files
+* Update edited posts when updating thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
