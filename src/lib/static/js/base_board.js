@@ -1260,17 +1260,10 @@ lord.globalOnmouseover = function(e) {
     var a = e.target;
     if (a.tagName != "A" || a.innerHTML == a.innerHTML.replace("&gt;&gt;", ""))
         return;
-    var currentBoardName = lord.id("currentBoardName").value;
-    var pn = a.innerHTML.replace("&gt;&gt;", "");
-    var ind = pn.lastIndexOf("/");
-    var bn = currentBoardName;
-    if (ind > 0) {
-        bn = pn.substring(1, ind);
-        pn = pn.substring(ind + 1);
-    }
-    pn = +pn;
+    var pn = +a.href.split("#").pop();
     if (isNaN(pn) || pn <= 0)
         return;
+    var bn = a.href.replace(/\/thread\/\d+\.html#\d+$/, "").split("/").pop();
     lord.viewPost(a, bn, pn);
 };
 
@@ -1278,7 +1271,7 @@ lord.globalOnmouseout = function(e) {
     var a = e.target;
     if (a.tagName != "A" || a.innerHTML == a.innerHTML.replace("&gt;&gt;", ""))
         return;
-    var pn = +a.innerHTML.replace("&gt;&gt;", "");
+    var pn = +a.href.split("#").pop();
     if (isNaN(pn) || pn <= 0)
         return;
     lord.noViewPost();
