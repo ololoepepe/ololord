@@ -55,6 +55,7 @@
 
 #include <cppcms/application.h>
 #include <cppcms/http_request.h>
+#include <cppcms/json.h>
 
 #include <odb/database.hxx>
 #include <odb/connection.hxx>
@@ -422,6 +423,11 @@ bool AbstractBoard::draftsEnabled() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/drafts_enabled", s->value("Board/drafts_enabled", true)).toBool();
+}
+
+bool AbstractBoard::editPost(const cppcms::http::request &, cppcms::json::value &, Post &, Thread &, QString *)
+{
+    return true;
 }
 
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
@@ -1004,6 +1010,71 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.tripcode = Tools::toStd(s);
     }
     return bRet(ok, true, error, QString(), pp);
+}
+
+cppcms::json::object AbstractBoard::toJson(const Content::Post &post) const
+{
+    cppcms::json::object o;
+    o["bannedFor"] = post.bannedFor;
+    o["cityName"] = post.cityName;
+    o["closed"] = post.closed;
+    o["countryName"] = post.countryName;
+    o["dateTime"] = post.dateTime;
+    o["modificationDateTime"] = post.modificationDateTime;
+    o["email"] = post.email;
+    cppcms::json::array files;
+    for (std::list<Content::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {
+        const Content::File &file = *i;
+        cppcms::json::object f;
+        f["type"] = file.type;
+        f["size"] = file.size;
+        f["thumbSizeX"] = file.thumbSizeX;
+        f["thumbSizeY"] = file.thumbSizeY;
+        f["sizeX"] = file.sizeX;
+        f["sizeY"] = file.sizeY;
+        f["sourceName"] = file.sourceName;
+        f["thumbName"] = file.thumbName;
+        files.push_back(f);
+    }
+    o["files"] = files;
+    o["fixed"] = post.fixed;
+    o["flagName"] = post.flagName;
+    o["hidden"] = post.hidden;
+    o["ip"] = post.ip;
+    o["name"] = post.name;
+    o["nameRaw"] = post.nameRaw;
+    o["number"] = post.number;
+    o["showRegistered"] = post.showRegistered;
+    o["showTripcode"] = post.showTripcode;
+    o["threadNumber"] = post.threadNumber;
+    o["subject"] = post.subject;
+    o["subjectIsRaw"] = post.subjectIsRaw;
+    o["draft"] = post.draft;
+    o["rawName"] = post.rawName;
+    o["rawSubject"] = post.rawSubject;
+    o["text"] = post.text;
+    o["rawPostText"] = post.rawPostText;
+    o["tripcode"] = post.tripcode;
+    cppcms::json::array refs;
+    typedef Content::Post::Ref Ref;
+    for (std::list<Ref>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end(); ++i) {
+        cppcms::json::object ref;
+        ref["boardName"] = i->boardName;
+        ref["postNumber"] = i->postNumber;
+        ref["threadNumber"] = i->threadNumber;
+        refs.push_back(ref);
+    }
+    o["referencedBy"] = refs;
+    refs.clear();
+    for (std::list<Ref>::const_iterator i = post.refersTo.begin(); i != post.refersTo.end(); ++i) {
+        cppcms::json::object ref;
+        ref["boardName"] = i->boardName;
+        ref["postNumber"] = i->postNumber;
+        ref["threadNumber"] = i->threadNumber;
+        refs.push_back(ref);
+    }
+    o["refersTo"] = refs;
+    return o;
 }
 
 void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Content::Board */*c*/)

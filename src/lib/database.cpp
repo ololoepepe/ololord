@@ -1024,15 +1024,16 @@ bool editPost(EditPostParameters &p)
         post->setName(p.name);
         post->setSubject(p.subject);
         bool draftLast = post->draft();
+        Thread thread = *post->thread().load();
         if (post->draft() != draftLast) {
-            Thread thread = *post->thread().load();
-            if (thread.number() == post->number()) {
+            if (thread.number() == post->number())
                 thread.setDraft(post->draft());
-                t->update(thread);
-            }
         }
         if (!wasDraft)
             post->setModificationDateTime(QDateTime::currentDateTimeUtc());
+        if (!board->editPost(p.request, p.userData, *post, thread, p.error))
+            return false;
+        t->update(thread);
         update(post);
         Cache::removePost(p.boardName, p.postNumber);
         t.commit();

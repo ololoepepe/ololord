@@ -12,6 +12,8 @@ namespace Content
 
 struct OLOLORD_EXPORT echoThread : public Thread
 {
+    unsigned int maxLinkLength;
+    std::string postFormLabelLink;
     std::string threadLink;
 };
 

@@ -948,6 +948,16 @@ text</source>
         <comment>postFormLabelLink</comment>
         <translation>Ссылка на тред:</translation>
     </message>
+    <message>
+        <source>Attempt to edit link of non-OP post</source>
+        <comment>error</comment>
+        <translation>Попытка редактирования ссылки в не-ОП-посте</translation>
+    </message>
+    <message>
+        <source>This board/thread may not be accepted</source>
+        <comment>error</comment>
+        <translation>Эта доска/тред не может быть принята</translation>
+    </message>
 </context>
 <context>
     <name>editPost</name>

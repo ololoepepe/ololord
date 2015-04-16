@@ -428,6 +428,8 @@ lord.createPostNode = function(res, permanent, boardName) {
             referencedBy.appendChild(a);
         }
     }
+    if (lord.createPostNodeCustom)
+        lord.createPostNodeCustom(post, res, permanent, boardName);
     var perm = lord.nameOne("permanent", post);
     if (!permanent) {
         perm.parentNode.removeChild(perm);
@@ -770,6 +772,8 @@ lord.editPost = function(boardName, postNumber) {
     }
     if (!!rawField && lord.nameOne("rawHtml", post).value == "true")
         rawField.checked = true;
+    if (lord.customEditFormSet)
+        lord.customEditFormSet(form, post, !!draftField, !!rawField);
     lord.showDialog(title, null, form, function() {
         var pwd = lord.nameOne("password", form).value;
         if (pwd.length < 1) {
@@ -787,8 +791,11 @@ lord.editPost = function(boardName, postNumber) {
             "subject": subject.value,
             "raw": !!rawField ? form.querySelector("[name='raw']").checked : false,
             "draft": !!draftField ? draftField.checked : false,
-            "password": pwd
+            "password": pwd,
+            "userData": null
         };
+        if (lord.customEditFormGet)
+            params["userData"] = lord.customEditFormGet(form, params, !!draftField, !!rawField);
         lord.ajaxRequest("edit_post", [params], 5, function() {
             lord.ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
                 var newPost = lord.createPostNode(res, true);

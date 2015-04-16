@@ -41,6 +41,8 @@ class request;
 #include <QString>
 #include <QStringList>
 
+#include <cppcms/json.h>
+
 #ifndef OLOLORD_NO_ODB
 #include <odb/database.hxx>
 #include <odb/query.hxx>
@@ -246,6 +248,7 @@ public:
     bool raw;
     QString subject;
     QString text;
+    cppcms::json::value userData;
     RefMap referencedPosts;
 public:
     explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post);

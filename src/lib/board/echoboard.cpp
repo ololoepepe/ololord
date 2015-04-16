@@ -18,6 +18,9 @@
 #include <QStringList>
 #include <QVariant>
 
+#include <cppcms/http_request.h>
+#include <cppcms/json.h>
+
 #include <list>
 #include <string>
 
@@ -32,7 +35,34 @@ void echoBoard::beforeStoring(Post *post, const Tools::PostParameters &params, b
         return;
     if (!thread)
         return;
-    post->setUserData(params.value("link"));
+    QString link = params.value("link");
+    if (!link.startsWith("http"))
+        link.prepend("http://");
+    post->setUserData(link);
+}
+
+bool echoBoard::editPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p, Thread &thread,
+                         QString *error)
+{
+    if (userData.is_null() || userData.is_undefined())
+        return bRet(error, QString(), true);
+    TranslatorQt tq(req);
+    if (p.number() != thread.number())
+        return bRet(error, tq.translate("echoBoard", "Attempt to edit link of non-OP post", "error"), false);
+    QString link = Tools::fromStd(userData.str());
+    bool ok = false;
+    foreach (const QString &s, Tools::acceptedExternalBoards()) {
+        if (QRegExp(s).exactMatch(link)) {
+            ok = true;
+            break;
+        }
+    }
+    if (!ok)
+        return bRet(error, tq.translate("echoBoard", "This board/thread may not be accepted", "error"), false);
+    if (!link.startsWith("http"))
+        link.prepend("http://");
+    p.setUserData(link);
+    return bRet(error, QString(), true);
 }
 
 QString echoBoard::name() const
@@ -82,6 +112,13 @@ Content::Post echoBoard::toController(const Post &post, const cppcms::http::requ
     return bRet(ok, true, error, QString(), p);
 }
 
+cppcms::json::object echoBoard::toJson(const Content::Post &post) const
+{
+    cppcms::json::object o = AbstractBoard::toJson(post);
+    o["link"] = Tools::toStd(post.userData.toString());
+    return o;
+}
+
 void echoBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Board *c)
 {
     Content::echoBoard *cc = dynamic_cast<Content::echoBoard *>(c);
@@ -92,11 +129,14 @@ void echoBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Boa
     cc->postFormLabelLink = ts.translate("echoBoard", "Thread link:", "postFormLabelLink");
 }
 
-void echoBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content::Thread *c)
+void echoBoard::beforeRenderThread(const cppcms::http::request &req, Content::Thread *c)
 {
     Content::echoThread *cc = dynamic_cast<Content::echoThread *>(c);
     if (!cc)
         return;
+    TranslatorStd ts(req);
+    cc->maxLinkLength = 150;
+    cc->postFormLabelLink = ts.translate("echoBoard", "Thread link:", "postFormLabelLink");
     QString link = cc->opPost.userData.toString();
     if (!link.startsWith("https")) {
         QString q = SettingsLocker()->value("Site/ssl_proxy_query").toString();

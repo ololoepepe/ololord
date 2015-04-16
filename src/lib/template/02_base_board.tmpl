@@ -28,7 +28,52 @@
 <% end %>
 <% end template %>
 
-<% template customPostFormField(std::string) %>
+<% template customPostFormField0(std::string) %>
+<% end template %>
+
+<% template customPostFormField1(std::string) %>
+<% end template %>
+
+<% template customPostFormField2(std::string) %>
+<% end template %>
+
+<% template customPostFormField3(std::string) %>
+<% end template %>
+
+<% template customPostFormField4(std::string) %>
+<% end template %>
+
+<% template customPostFormField5(std::string) %>
+<% end template %>
+
+<% template customPostFormField6(std::string) %>
+<% end template %>
+
+<% template customPostFormField7(std::string) %>
+<% end template %>
+
+<% template customPostFormField8(std::string) %>
+<% end template %>
+
+<% template customPostFormFieldEdit0() %>
+<% end template %>
+
+<% template customPostFormFieldEdit1() %>
+<% end template %>
+
+<% template customPostFormFieldEdit2() %>
+<% end template %>
+
+<% template customPostFormFieldEdit3() %>
+<% end template %>
+
+<% template customPostFormFieldEdit4() %>
+<% end template %>
+
+<% template customPostFormFieldEdit5() %>
+<% end template %>
+
+<% template customPostFormFieldEdit6() %>
 <% end template %>
 
 <% template createAction(std::string position) %>
@@ -51,6 +96,7 @@
             <input type="hidden" id="postFormInput<%= position %>" value="" name="fileHashes" />
             <table class="postFormTable">
                 <tbody>
+                    <% include customPostFormField0(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelEmail %></b>
@@ -61,6 +107,7 @@
                             <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
                         </td>
                     </tr>
+                    <% include customPostFormField1(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelName %></b>
@@ -70,6 +117,7 @@
                                    name="name" size="43" />
                         </td>
                     </tr>
+                    <% include customPostFormField2(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelSubject %></b>
@@ -79,7 +127,7 @@
                                    id="postFormInputSubject<%= position %>" name="subject" size="43" />
                         </td>
                     </tr>
-                    <% include customPostFormField(position) %>
+                    <% include customPostFormField3(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelText %></b>
@@ -89,6 +137,7 @@
                                       placeholder="<%= postFormTextPlaceholder %>" class="postFormTextarea"></textarea>
                         </td>
                     </tr>
+                    <% include customPostFormField4(position) %>
                     <% if ( content.moder >= 10 ) %>
                         <tr>
                             <td class="postformLabel">
@@ -110,6 +159,7 @@
                             </td>
                         </tr>
                     <% end %>
+                    <% include customPostFormField5(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormInputFile %></b>
@@ -128,6 +178,7 @@
                             </div>
                         </td>
                     </tr>
+                    <% include customPostFormField6(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelPassword %></b>
@@ -137,6 +188,7 @@
                                    id="postFormInputPassword<%= position %>" name="password" size="43" />
                         </td>
                     </tr>
+                    <% include customPostFormField7(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelCaptcha %></b>
@@ -154,6 +206,7 @@
                             <% end %>
                         </td>
                     </tr>
+                    <% include customPostFormField8(position) %>
                     <tr>
                         <td colspan="2" class="postformRules">
                             <ul>
@@ -601,6 +654,7 @@
 </div>
 <table id="editPostTemplate" class="postFormTable" style="display: none;">
     <tbody>
+        <% include customPostFormFieldEdit0() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelEmail %></b>
@@ -609,6 +663,7 @@
                 <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="43" />
             </td>
         </tr>
+        <% include customPostFormFieldEdit1() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelName %></b>
@@ -617,6 +672,7 @@
                 <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
             </td>
         </tr>
+        <% include customPostFormFieldEdit2() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelSubject %></b>
@@ -625,6 +681,7 @@
                 <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
             </td>
         </tr>
+        <% include customPostFormFieldEdit3() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelText %></b>
@@ -634,6 +691,7 @@
                           class="postFormTextarea"></textarea>
             </td>
         </tr>
+        <% include customPostFormFieldEdit4() %>
         <% if ( content.moder >= 10 ) %>
             <tr>
                 <td class="postformLabel">
@@ -654,6 +712,7 @@
                 </td>
             </tr>
         <% end %>
+        <% include customPostFormFieldEdit5() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelPassword %></b>
@@ -662,6 +721,7 @@
                 <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
              </td>
          </tr>
+         <% include customPostFormFieldEdit6() %>
     </tbody>
 </table>
 <% if ( content.captchaEnabled ) %>

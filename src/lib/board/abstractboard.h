@@ -11,6 +11,7 @@ class Thread;
 }
 
 class Post;
+class Thread;
 
 namespace Tools
 {
@@ -45,6 +46,8 @@ class request;
 #include <QMap>
 #include <QMutex>
 #include <QString>
+
+#include <cppcms/json.h>
 
 #include <list>
 #include <string>
@@ -124,6 +127,8 @@ public:
     virtual void createThread(cppcms::application &app);
     virtual QString defaultUserName(const QLocale &l) const;
     bool draftsEnabled() const;
+    virtual bool editPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p, Thread &thread,
+                          QString *error = 0);
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
@@ -148,6 +153,7 @@ public:
     virtual QString title(const QLocale &l) const = 0;
     virtual Content::Post toController(const Post &post, const cppcms::http::request &req, bool *ok = 0,
                                        QString *error = 0) const;
+    virtual cppcms::json::object toJson(const Content::Post &post) const;
 protected:
     virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     virtual void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
