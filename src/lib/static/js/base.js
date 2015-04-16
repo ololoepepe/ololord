@@ -90,6 +90,15 @@ lord.in = function(arr, obj, strict) {
     return false;
 };
 
+lord.arr = function(obj) {
+    var arr = [];
+    if (!obj || !obj.length)
+        return arr;
+    for (var i = 0; i < obj.length; ++i)
+        arr.push(obj[i]);
+    return arr;
+};
+
 lord.last = function(arr) {
     if (!arr || !arr.length)
         return null;

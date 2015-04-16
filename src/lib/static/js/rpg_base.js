@@ -11,6 +11,7 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
         var enabled = !!res["voteEnabled"];
         var multiple = !!res["voteMultiple"];
         var div = lord.nameOne("voteVariants", post);
+        lord.nameOne("voteText", post).appendChild(lord.node("text", res["voteText"]));
         lord.queryOne("input", div).value = multiple ? "true" : "false";
         var i = 0;
         variants.forEach(function(v) {
@@ -26,7 +27,7 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
             if (!enabled)
                 inp.disabled = "true";
             div.appendChild(inp);
-            div.appendChild(lord.node("text", " " + v.text + " (" + v.voteCount + ")"));
+            div.appendChild(lord.node("text", " " + v.text + " (" + lord.text("votedText") + " " + v.voteCount + ")"));
             div.appendChild(lord.node("br"));
             ++i;
         });
@@ -38,6 +39,17 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
     } else {
         tr.parentNode.removeChild(tr);
     }
+};
+
+lord.customResetForm = function(form) {
+    var pos = form.id.replace("postForm", "");
+    var parent = lord.id("voteVariants" + pos);
+    lord.arr(parent.children).forEach(function(el) {
+        parent.removeChild(el);
+    });
+    lord.id("voteVariantCount" + pos).value = 0;
+    var text = lord.id("voteText" + pos);
+    text.parentNode.replaceChild(text.cloneNode(false), text);
 };
 
 lord.addVoteVariant = function(pos) {

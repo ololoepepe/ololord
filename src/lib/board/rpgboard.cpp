@@ -45,6 +45,7 @@ void rpgBoard::beforeStoring(Post *post, const Tools::PostParameters &params, bo
         return;
     m.insert("variants", list);
     m.insert("multiple", params.value("multipleVoteVariants") == "true");
+    m.insert("text", params.value("voteText"));
     post->setUserData(m);
 }
 
@@ -81,6 +82,7 @@ cppcms::json::object rpgBoard::toJson(const Content::Post &post, const cppcms::h
     }
     o["voteVariants"] = arr;
     o["voteMultiple"] = m.value("multiple").toBool();
+    o["voteText"] = Tools::toStd(m.value("text").toString());
     return o;
 }
 
@@ -95,7 +97,9 @@ void rpgBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Boar
     cc->removeVoteVariantText = ts.translate("rpgBoard", "Remove variant", "removeVoteVariantText");
     cc->postFormLabelVote = ts.translate("rpgBoard", "Vote:", "postFormLabelVote");
     cc->userIp = Tools::ipNum(Tools::userIp(req));
-    cc->voteText = ts.translate("rpgBoard", "Vote", "voteText");
+    cc->voteActionText = ts.translate("rpgBoard", "Vote", "voteActionText");
+    cc->votedText = ts.translate("rpgBoard", "voted:", "votedText");
+    cc->voteTextText = ts.translate("rpgBoard", "Text:", "voteTextText");
 }
 
 void rpgBoard::beforeRenderThread(const cppcms::http::request &req, Content::Thread *c)
@@ -110,7 +114,9 @@ void rpgBoard::beforeRenderThread(const cppcms::http::request &req, Content::Thr
     cc->postFormLabelVote = ts.translate("rpgBoard", "Vote:", "postFormLabelVote");
     cc->userIp = Tools::ipNum(Tools::userIp(req));
     cc->voteEnabled = Database::isOp("rpg", quint64(cc->number), Tools::userIp(req), Tools::hashpass(req));
-    cc->voteText = ts.translate("rpgBoard", "Vote", "voteText");
+    cc->voteActionText = ts.translate("rpgBoard", "Vote", "voteActionText");
+    cc->votedText = ts.translate("rpgBoard", "voted:", "votedText");
+    cc->voteTextText = ts.translate("rpgBoard", "Text:", "voteTextText");
 }
 
 Content::Board *rpgBoard::createBoardController(const cppcms::http::request &/*req*/, QString &viewName)

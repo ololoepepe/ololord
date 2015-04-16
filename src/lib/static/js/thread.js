@@ -197,6 +197,8 @@ lord.postedInThread = function() {
         var divs = lord.query(".postformFile", lord.formSubmitted);
         for (var i = divs.length - 1; i >= 0; --i)
             lord.removeFile(lord.queryOne("a", divs[i]));
+        if (lord.customResetForm)
+            lord.customResetForm(lord.formSubmitted);
         lord.formSubmitted = null;
         var boardName = lord.text("currentBoardName");
         var threadNumber = lord.text("currentThreadNumber");

@@ -1729,7 +1729,7 @@ Your choice:</source>
     <message>
         <source>Download all thread files as a .zip archive</source>
         <comment>downloadThreadText</comment>
-        <translation>Скачать все файлы из треда в виде .zip-архива</translation>
+        <translation>Скачoать все файлы из треда в виде .zip-архива</translation>
     </message>
     <message>
         <source>Draft:</source>
@@ -2366,8 +2366,18 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
     <message>
         <source>Vote</source>
-        <comment>voteText</comment>
+        <comment>voteActionText</comment>
         <translation>Проголосовать</translation>
+    </message>
+    <message>
+        <source>Text:</source>
+        <comment>voteTextText</comment>
+        <translation>Текст:</translation>
+    </message>
+    <message>
+        <source>voted:</source>
+        <comment>votedText</comment>
+        <translation>проголосовало:</translation>
     </message>
 </context>
 <context>

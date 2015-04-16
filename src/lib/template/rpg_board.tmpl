@@ -13,7 +13,8 @@
         <b><%= postFormLabelVote %></b>
     </td>
     <td class="postformField">
-        <span><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></span>
+        <div><%= voteTextText %> <input id="voteText<%= position %>" type="text" name="voteText" size="43" /></div>
+        <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
         <div id="voteVariants<%= position %>"></div>
         <a href="javascript:lord.addVoteVariant('<%= position %>');">
             <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
@@ -26,6 +27,7 @@
 <% c++ QVariantMap m = post.userData.toMap(); %>
 <% c++ QVariantList list = m.value("variants").toList(); %>
 <% c++ if (list.isEmpty()) return; %>
+<% c++ std::string voteText = Tools::toStd(m.value("text").toString()); %>
 <% c++ bool multiple = m.value("multiple").toBool(); %>
 <% c++ bool enabled = true; %>
 <% c++ QVariantList users = m.value("users").toList(); %>
@@ -37,6 +39,7 @@
 <% c++ } %>
 <tr>
     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
+        <% c++ out() << "<div name=\"voteText\">" << voteText << "</div>"; %>
         <div name="voteVariants">
             <% c++ out() << "<input type=\"hidden\" value=\"" << (multiple ? "true" : "false") << "\" />"; %> 
             <% c++ for (int i = 0; i < list.size(); ++i) { %>
@@ -46,18 +49,18 @@
             <% c++     if (multiple) { %>
             <% c++         out() << "<input type=\"checkbox\" name=\"voteVariant" << i << "\" "; %>
             <% c++         if (!enabled) out() << "disabled=\"true\" "; %>
-            <% c++         out() << "/> " << text << " (" << voteCount << ")<br>"; %>
+            <% c++         out() << "/> " << text << " (" << content.votedText << " " << voteCount << ")<br>"; %>
             <% c++     } else { %>
             <% c++         out() << "<input type=\"radio\" name=\"voteGroup\" value=\"" << i << "\" "; %>
             <% c++         if (!enabled) out() << "disabled=\"true\" "; %>
-            <% c++         out() << "/> " << text << " (" << voteCount << ")<br>"; %>
+            <% c++         out() << "/> " << text << " (" << content.votedText << " " << voteCount << ")<br>"; %>
             <% c++     } %>
             <% c++ } %>
         </div>
         <% if ( enabled ) %>
-            <button onclick="lord.vote(<%= post.number %>);"><%= voteText %></button>
+            <button onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
         <% else %>
-            <button disabled="true"><%= voteText %></button>
+            <button disabled="true"><%= voteActionText %></button>
         <% end %>
     </td>
 </tr>
@@ -66,10 +69,11 @@
 <% template customPostBodyTemplate2() %>
 <tr name="voteTr">
     <td name="voteTd" colspan="2">
+        <div name="voteText"></div>
         <div name="voteVariants">
             <input type="hidden" value="false" />
         </div>
-        <button><%= voteText %></button>
+        <button><%= voteActionText %></button>
     </td>
 <tr>
 <% end template %>
@@ -82,6 +86,7 @@
 <% template boardTexts() %>
 <%include board::boardTexts() %>
 <input type="hidden" id="removeVoteVariantText" value="<%= removeVoteVariantText %>" />
+<input type="hidden" id="votedText" value="<%= votedText %>" />
 <% end template %>
 
 <% end view %>
