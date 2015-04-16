@@ -172,7 +172,7 @@
 <% end %>
 <% end template %>
 
-<% template postFile(Content::File file) %>
+<% template postFile(Content::File file, Content::Post post) %>
 <td class="postFile">
     <div class="postFileName">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
@@ -181,16 +181,19 @@
     <div class="postFileSize">
         (<%= file.size %>)
     </div>
-    <% if ( content.isImageType(file.type) ) %>
-        <div class="postFileSearch">
+    <div class="postFileSearch">
+        <a name="deleteFileButton"
+           href="javascript:lord.deleteFile('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');">
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteFileText %>" /></a>
+        <% if ( content.isImageType(file.type) ) %>
             <a href="//www.google.com/searchbyimage?image_url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithGoogleText %>" target="_blank">
                 <img src="/<%= sitePathPrefix %>img/google.png"></a>
             <a href="http://iqdb.org/?url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithIqdbText %>" target="_blank">
                 <img src="/<%= sitePathPrefix %>img/iqdb.png"></a>
-        </div>
-    <% end %>
+        <% end %>
+    </div>
     <div class="postFileFile">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
@@ -371,7 +374,7 @@
             <tr>
                 <%foreach file in post.files %>
                     <% item %>
-                        <% include postFile(file) %>
+                        <% include postFile(file, post) %>
                     <% end %>
                 <% end %>
                 <input name="rawText" type="hidden" value="<%= post.rawPostText %>" />
@@ -475,6 +478,7 @@
 <input type="hidden" id="editPostText" value="<%= editPostText %>" />
 <input type="hidden" id="showHidePostText" value="<%= showHidePostText %>" />
 <input type="hidden" id="banUserText" value="<%= banUserText %>" />
+<input type="hidden" id="deleteFileText" value="<%= deleteFileText %>" />
 <input type="hidden" id="boardLabelText" value="<%= boardLabelText %>" />
 <input type="hidden" id="banLevelLabelText" value="<%= banLevelLabelText %>" />
 <input type="hidden" id="banReasonLabelText" value="<%= banReasonLabelText %>" />

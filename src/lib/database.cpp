@@ -873,6 +873,48 @@ quint64 createThread(CreateThreadParameters &p)
     }
 }
 
+bool deleteFile(const QString &boardName, const QString &fileName,  const cppcms::http::request &req,
+                const QByteArray &password, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("deleteFile", "Invalid board name", "error"), false);
+    if (fileName.isEmpty())
+        return bRet(error, tq.translate("deleteFile", "Invalid file name", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (password.isEmpty() && hashpass.isEmpty())
+        return bRet(error, tq.translate("deleteFile", "Invalid password", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("deleteFile", "Internal database error", "error"), false);
+        Result<FileInfo> fileInfo = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
+        if (fileInfo.error)
+            return bRet(error, tq.translate("deleteFile", "Internal database error", "error"), false);
+        if (!fileInfo)
+            return bRet(error, tq.translate("deleteFile", "No such file", "error"), false);
+        QSharedPointer<Post> post = fileInfo->post().load();
+        if (post->board() != boardName)
+            return bRet(error, tq.translate("deleteFile", "Board name mismatch", "error"), false);
+        if (password.isEmpty()) {
+            if (hashpass != post->hashpass()) {
+                int lvl = registeredUserLevel(req);
+                if (!moderOnBoard(req, boardName) || registeredUserLevel(post->hashpass()) >= lvl)
+                    return bRet(error, tq.translate("deleteFile", "Not enough rights", "error"), false);
+            }
+        } else if (password != post->password()) {
+            return bRet(error, tq.translate("deleteFile", "Incorrect password", "error"), false);
+        }
+        erase(fileInfo);
+        t.commit();
+        Cache::removePost(boardName, post->number());
+        deleteFiles(boardName, QStringList() << fileName);
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
 bool deletePost(const QString &boardName, quint64 postNumber, QString *error, const QLocale &l)
 {
     QStringList list;

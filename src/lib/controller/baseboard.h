@@ -105,6 +105,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string complainText;
     AbstractBoard::BoardInfo currentBoard;
     unsigned long long currentThread;
+    std::string deleteFileText;
     std::string deletePostText;
     std::string deleteThreadText;
     std::string downloadThreadText;

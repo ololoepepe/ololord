@@ -813,6 +813,49 @@ text</source>
     </message>
 </context>
 <context>
+    <name>deleteFile</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid file name</source>
+        <comment>error</comment>
+        <translation>Неправильное имя файла</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such file</source>
+        <comment>error</comment>
+        <translation>Нет такого файла</translation>
+    </message>
+    <message>
+        <source>Board name mismatch</source>
+        <comment>error</comment>
+        <translation>Несоответствие имени доски</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+</context>
+<context>
     <name>deletePost</name>
     <message>
         <source>Invalid board name</source>
@@ -1424,16 +1467,6 @@ Your choice:</source>
         <translation>Закрыть тред</translation>
     </message>
     <message>
-        <source>Delete post</source>
-        <comment>fixedText</comment>
-        <translation>Удалить пост</translation>
-    </message>
-    <message>
-        <source>Delete thread</source>
-        <comment>fixedText</comment>
-        <translation>Удалить тред</translation>
-    </message>
-    <message>
         <source>If password is empty, current hashpass will be used</source>
         <comment>enterPasswordText</comment>
         <translation>Если пароль пуст, будет использован текущий хешпасс</translation>
@@ -1697,6 +1730,21 @@ Your choice:</source>
         <source>Last modified:</source>
         <comment>modificationDateTimeText</comment>
         <translation>Последнее изменение:</translation>
+    </message>
+    <message>
+        <source>Delete post</source>
+        <comment>deletePostText</comment>
+        <translation>Удалить пост</translation>
+    </message>
+    <message>
+        <source>Delete thread</source>
+        <comment>deleteThreadText</comment>
+        <translation>Удалить тред</translation>
+    </message>
+    <message>
+        <source>Delete file</source>
+        <comment>deleteFileText</comment>
+        <translation>Удалить файл</translation>
     </message>
 </context>
 <context>

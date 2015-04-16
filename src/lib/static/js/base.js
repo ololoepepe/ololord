@@ -96,6 +96,11 @@ lord.id = function(id) {
     return document.getElementById(id);
 };
 
+lord.text = function(id) {
+    var input = lord.id(id);
+    return input ? input.value : "";
+};
+
 lord.query = function(query, parent) {
     if (typeof query != "string")
         return null;
@@ -197,7 +202,7 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
     cancel.onclick = function() {
         dialog.close();
     };
-    cancel.innerHTML = lord.id("cancelButtonText").value;
+    cancel.innerHTML = lord.text("cancelButtonText");
     div2.appendChild(cancel);
     var ok = lord.node("button");
     ok.onclick = function() {
@@ -205,7 +210,7 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
             callback();
         dialog.close();
     };
-    ok.innerHTML = lord.id("confirmButtonText").value;
+    ok.innerHTML = lord.text("confirmButtonText");
     div2.appendChild(ok);
     root.appendChild(div2);
     dialog = picoModal({
@@ -259,7 +264,7 @@ lord.toHashpass = function(s) {
 };
 
 lord.doLogin = function() {
-    var pwd = lord.id("loginInput").value;
+    var pwd = lord.text("loginInput");
     hashpass = lord.isHashpass(pwd) ? pwd : lord.toHashpass(pwd);
     lord.setCookie("hashpass", hashpass, {
         "expires": lord.Billion, "path": "/"
@@ -296,12 +301,12 @@ lord.switchShowTripcode = function() {
 };
 
 lord.doSearch = function() {
-    var query = lord.id("searchFormInputQuery").value;
+    var query = lord.text("searchFormInputQuery");
     if ("" === query)
         return;
     var sel = lord.id("searchFormSelectBoard");
     var board = sel.options[sel.selectedIndex].value;
-    var prefix = lord.id("sitePathPrefix").value;
+    var prefix = lord.text("sitePathPrefix");
     var href = window.location.href.split("/").shift() + "/" + prefix + "search?query=" + encodeURIComponent(query);
     if ("*" !== board)
         href = href + "&board=" + board;

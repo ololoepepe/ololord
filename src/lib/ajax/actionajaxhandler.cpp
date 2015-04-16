@@ -134,6 +134,24 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
     Tools::log(server, "ajax_delete_post", "success", logTarget);
 }
 
+void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, std::string password)
+{
+    QString bn = Tools::fromStd(boardName);
+    QString fn = Tools::fromStd(fileName);
+    QString logTarget = bn + "/" + fn;
+    Tools::log(server, "ajax_delete_file", "begin", logTarget);
+    if (!testBan(Tools::fromStd(boardName)))
+        return Tools::log(server, "ajax_delete_file", "fail:ban", logTarget);
+    QString err;
+    if (!Database::deleteFile(bn, fn, server.request(), Tools::toHashpass(Tools::fromStd(password)), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_delete_file", "fail:" + err, logTarget);
+        return;
+    }
+    server.return_result(true);
+    Tools::log(server, "ajax_delete_file", "success", logTarget);
+}
+
 void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 {
     QString boardName = Tools::fromStd(params.at("boardName").str());
@@ -257,6 +275,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     QList<ActionAjaxHandler::Handler> list;
     ActionAjaxHandler *self = const_cast<ActionAjaxHandler *>(this);
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
+    list << Handler("delete_file", cppcms::rpc::json_method(&ActionAjaxHandler::deleteFile, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
     list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
     list << Handler("get_captcha_quota", cppcms::rpc::json_method(&ActionAjaxHandler::getCaptchaQuota, self),

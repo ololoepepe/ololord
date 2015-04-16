@@ -28,6 +28,7 @@ public:
     explicit ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv);
 public:
     void banUser(const cppcms::json::object &params);
+    void deleteFile(std::string boardName, std::string fileName, std::string password);
     void deletePost(std::string boardName, long long postNumber, std::string password);
     void editPost(const cppcms::json::object &params);
     void getCaptchaQuota(std::string boardName);

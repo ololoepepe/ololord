@@ -138,7 +138,7 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
     lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], 7, function(res) {
         if (!res)
             return;
-        var txt = lord.id((res.length >= 1) ? "newPostsText" : "noNewPostsText").value;
+        var txt = lord.text((res.length >= 1) ? "newPostsText" : "noNewPostsText");
         if (res.length >= 1)
             txt += " " + res.length;
         if (!autoUpdate)
@@ -169,8 +169,8 @@ lord.setAutoUpdateEnabled = function(cbox) {
     lord.id("autoUpdate_bottom").checked = enabled;
     if (enabled) {
         lord.autoUpdateTimer = setInterval(function() {
-            var boardName = lord.id("currentBoardName").value;
-            var threadNumber = lord.id("currentThreadNumber").value;
+            var boardName = lord.text("currentBoardName");
+            var threadNumber = lord.text("currentThreadNumber");
             lord.updateThread(boardName, threadNumber, true);
         }, 15000);
     } else {
@@ -198,8 +198,8 @@ lord.postedInThread = function() {
         for (var i = divs.length - 1; i >= 0; --i)
             lord.removeFile(lord.queryOne("a", divs[i]));
         lord.formSubmitted = null;
-        var boardName = lord.id("currentBoardName").value;
-        var threadNumber = lord.id("currentThreadNumber").value;
+        var boardName = lord.text("currentBoardName");
+        var threadNumber = lord.text("currentThreadNumber");
         lord.updateThread(boardName, threadNumber, true, function() {
             lord.selectPost(postNumber.value);
         });
@@ -237,7 +237,7 @@ lord.downloadThread = function() {
         document.body.removeChild(cButton);
         document.body.removeChild(progress);
     };
-    cButton.appendChild(lord.node("text", lord.id("cancelButtonText").value));
+    cButton.appendChild(lord.node("text", lord.text("cancelButtonText")));
     document.body.appendChild(progress);
     document.body.appendChild(cButton);
     lord.toCenter(progress, progress.offsetWidth, progress.offsetHeight);

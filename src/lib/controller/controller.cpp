@@ -184,8 +184,9 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;
-    c.deletePostText = ts.translate("initBaseBoard", "Delete post", "fixedText");
-    c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "fixedText");
+    c.deleteFileText = ts.translate("initBaseBoard", "Delete file", "deleteFileText");
+    c.deletePostText = ts.translate("initBaseBoard", "Delete post", "deletePostText");
+    c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "deleteThreadText");
     c.downloadThreadText = ts.translate("initBaseBoard", "Download all thread files as a .zip archive",
                                         "downloadThreadText");
     c.draftsEnabled = board->draftsEnabled();
