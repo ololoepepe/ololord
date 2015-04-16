@@ -6,8 +6,8 @@
 [done] Fix post preview
 [done] Add ability to delete files
 [done] Add ability to edit /echo/ board thread links
+[done] Implement /rpg/ board
 * Add ability to set limits for each thread
-* Implement RPG board
 * Add ability to change/add files
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

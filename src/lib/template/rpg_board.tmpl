@@ -1,18 +1,87 @@
 <% c++ #include "controller/rpgboard.h" %>
+<% c++ #include "tools.h" %>
+<% c++ #include <QString> %>
+<% c++ #include <QVariant> %>
+<% c++ #include <QVariantList> %>
+<% c++ #include <QVariantMap> %>
 <% skin my_skin %>
 <% view rpg_board uses Content::rpgBoard extends board %>
 
+<% template customPostFormField4(std::string position) %>
+<tr>
+    <td class="postformLabel">
+        <b><%= postFormLabelVote %></b>
+    </td>
+    <td class="postformField">
+        <span><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></span>
+        <div id="voteVariants<%= position %>"></div>
+        <a href="javascript:lord.addVoteVariant('<%= position %>');">
+            <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
+        <input id="voteVariantCount<%= position %>" type="hidden" name="voteVariantCount" value="0" />
+     </td>
+</tr>
+<% end template %>
+
+<% template customPostBody2(Content::Post post, Content::Board::ThreadPointer) %>
+<% c++ QVariantMap m = post.userData.toMap(); %>
+<% c++ QVariantList list = m.value("variants").toList(); %>
+<% c++ if (list.isEmpty()) return; %>
+<% c++ bool multiple = m.value("multiple").toBool(); %>
+<% c++ bool enabled = true; %>
+<% c++ QVariantList users = m.value("users").toList(); %>
+<% c++ for (int i = 0; i < users.size(); ++i) { %>
+<% c++     if (users.at(i).toUInt() == content.userIp) { %>
+<% c++         enabled = false; %>
+<% c++         break; %>
+<% c++     } %>
+<% c++ } %>
+<tr>
+    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
+        <div name="voteVariants">
+            <% c++ out() << "<input type=\"hidden\" value=\"" << (multiple ? "true" : "false") << "\" />"; %> 
+            <% c++ for (int i = 0; i < list.size(); ++i) { %>
+            <% c++     QVariantMap mm = list.at(i).toMap(); %>
+            <% c++     std::string text = Tools::toStd(mm.value("text").toString()); %>
+            <% c++     unsigned int voteCount = mm.value("voteCount").toUInt(); %>
+            <% c++     if (multiple) { %>
+            <% c++         out() << "<input type=\"checkbox\" name=\"voteVariant" << i << "\" "; %>
+            <% c++         if (!enabled) out() << "disabled=\"true\" "; %>
+            <% c++         out() << "/> " << text << " (" << voteCount << ")<br>"; %>
+            <% c++     } else { %>
+            <% c++         out() << "<input type=\"radio\" name=\"voteGroup\" value=\"" << i << "\" "; %>
+            <% c++         if (!enabled) out() << "disabled=\"true\" "; %>
+            <% c++         out() << "/> " << text << " (" << voteCount << ")<br>"; %>
+            <% c++     } %>
+            <% c++ } %>
+        </div>
+        <% if ( enabled ) %>
+            <button onclick="lord.vote(<%= post.number %>);"><%= voteText %></button>
+        <% else %>
+            <button disabled="true"><%= voteText %></button>
+        <% end %>
+    </td>
+</tr>
+<% end template %>
+
+<% template customPostBodyTemplate2() %>
+<tr name="voteTr">
+    <td name="voteTd" colspan="2">
+        <div name="voteVariants">
+            <input type="hidden" value="false" />
+        </div>
+        <button><%= voteText %></button>
+    </td>
+<tr>
+<% end template %>
+
 <% template boardHead() %>
 <%include board::boardHead() %>
-<script type="text/javascript">
-    /*ololord global object*/
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/rpg_base.js"></script>
+<% end template %>
 
-    var lord = lord || {};
-
-    /*Functions*/
-
-    //
-</script>
+<% template boardTexts() %>
+<%include board::boardTexts() %>
+<input type="hidden" id="removeVoteVariantText" value="<%= removeVoteVariantText %>" />
 <% end template %>
 
 <% end view %>

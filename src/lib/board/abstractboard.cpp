@@ -1013,7 +1013,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
     return bRet(ok, true, error, QString(), pp);
 }
 
-cppcms::json::object AbstractBoard::toJson(const Content::Post &post) const
+cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppcms::http::request &/*req*/) const
 {
     cppcms::json::object o;
     o["bannedFor"] = post.bannedFor;

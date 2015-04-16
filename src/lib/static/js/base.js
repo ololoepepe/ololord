@@ -90,6 +90,12 @@ lord.in = function(arr, obj, strict) {
     return false;
 };
 
+lord.last = function(arr) {
+    if (!arr || !arr.length)
+        return null;
+    return arr[arr.length - 1];
+};
+
 lord.id = function(id) {
     if (typeof id != "string")
         return null;

@@ -1224,6 +1224,30 @@ quint64 incrementPostCounter(const QString &boardName, QString *error, const QLo
     return bRet(error, QString(), incremented);
 }
 
+bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp, const QByteArray &hashpass)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return false;
+    bool ok = false;
+    if (!Tools::ipNum(userIp, &ok) || !ok)
+        return false;
+    try {
+        Transaction t;
+        if (!t)
+            return false;
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == threadNumber);
+        if (post.error || !post)
+            return false;
+        bool b = (post->posterIp() == userIp) || (!hashpass.isEmpty() && post->hashpass() == hashpass);
+        t.commit();
+        return b;
+    } catch (const odb::exception &e) {
+        qDebug() << Tools::fromStd(e.what());
+        return false;
+    }
+}
+
 quint64 lastPostNumber(const QString &boardName, QString *error, const QLocale &l)
 {
     TranslatorQt tq(l);
@@ -1530,6 +1554,55 @@ BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QStri
         return bRet(ok, true, error, QString(), inf);
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), inf);
+    }
+}
+
+bool vote(quint64 postNumber, const QList<uint> votes, const cppcms::http::request &req, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!postNumber)
+        return bRet(error, tq.translate("vote", "Invalid post number", "error"), false);
+    if (votes.isEmpty())
+        return bRet(error, tq.translate("vote", "No votes", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("vote", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
+                                                 && odb::query<Post>::board == "rpg");
+        if (post.error)
+            return bRet(error, tq.translate("vote", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("vote", "No such post", "error"), false);
+        QVariantMap m = post->userData().toMap();
+        unsigned int ip = Tools::ipNum(Tools::userIp(req));
+        QVariantList users = m.value("users").toList();
+        foreach (const QVariant &v, users) {
+            if (v.toUInt() == ip)
+                return bRet(error, tq.translate("vote", "Repeated voting", "error"), false);
+        }
+        users << ip;
+        m["users"] = users;
+        QVariantList variants = m.value("variants").toList();
+        if (!m.value("multiple").toBool() && votes.size() > 1)
+            return bRet(error, tq.translate("vote", "Too many votes", "error"), false);
+        foreach (uint n, votes) {
+            if (votes.count(n) > 1)
+                return bRet(error, tq.translate("vote", "Multiple vote occurance", "error"), false);
+            if (n >= uint(variants.size()))
+                return bRet(error, tq.translate("vote", "Invalid vote", "error"), false);
+            QVariantMap mm = variants.at(n).toMap();
+            mm["voteCount"] = mm.value("voteCount").toUInt() + 1;
+            variants[n] = mm;
+        }
+        m["variants"] = variants;
+        post->setUserData(m);
+        update(post);
+        Cache::removePost("rpg", postNumber);
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
     }
 }
 

@@ -51,27 +51,6 @@
 namespace Tools
 {
 
-static unsigned int ipNum(const QString &ip, bool *ok = 0)
-{
-    QStringList sl = ip.split('.');
-    if (sl.size() != 4)
-        return bRet(ok, false, 0);
-    bool b = false;
-    unsigned int n = sl.last().toUInt(&b);
-    if (!b)
-        return bRet(ok, false, 0);
-    n += 256 * sl.at(2).toUInt(&b);
-    if (!b)
-        return bRet(ok, false, 0);
-    n += 256 * 256 * sl.at(1).toUInt(&b);
-    if (!b)
-        return bRet(ok, false, 0);
-    n += 256 * 256 * 256 * sl.first().toUInt(&b);
-    if (!b || !n)
-        return bRet(ok, false, 0);
-    return bRet(ok, true, n);
-}
-
 /*static QString ipStr(unsigned int ip)
 {
     QString s;
@@ -92,11 +71,11 @@ IpRange::IpRange(const QString &text, const QChar &separator)
     if (sl.size() > 2)
         return;
     bool ok = false;
-    start = ipNum(sl.first(), &ok);
+    start = Tools::ipNum(sl.first(), &ok);
     if (!ok)
         return;
     if (sl.size() == 2) {
-        end = ipNum(sl.at(1), &ok);
+        end = Tools::ipNum(sl.at(1), &ok);
         if (!ok) {
             start = 0;
             return;
@@ -119,10 +98,10 @@ IpRange::IpRange(const QStringList &sl, int startIndex, int endIndex, bool num)
             return;
         end = sl.at(endIndex).toUInt(&ok);
     } else {
-        start = ipNum(sl.at(startIndex), &ok);
+        start = Tools::ipNum(sl.at(startIndex), &ok);
         if (!ok)
             return;
-        end = ipNum(sl.at(endIndex), &ok);
+        end = Tools::ipNum(sl.at(endIndex), &ok);
     }
     if (!ok) {
         start = 0;
@@ -145,7 +124,7 @@ bool IpRange::in(unsigned int ip) const
 
 bool IpRange::in(const QString &ip) const
 {
-    return in(ipNum(ip));
+    return in(Tools::ipNum(ip));
 }
 
 bool IpRange::isValid() const
@@ -421,6 +400,27 @@ bool isImageType(const QString &mimeType)
         types.insert("image/png");
     }
     return types.contains(mimeType);
+}
+
+unsigned int ipNum(const QString &ip, bool *ok)
+{
+    QStringList sl = ip.split('.');
+    if (sl.size() != 4)
+        return bRet(ok, false, 0);
+    bool b = false;
+    unsigned int n = sl.last().toUInt(&b);
+    if (!b)
+        return bRet(ok, false, 0);
+    n += 256 * sl.at(2).toUInt(&b);
+    if (!b)
+        return bRet(ok, false, 0);
+    n += 256 * 256 * sl.at(1).toUInt(&b);
+    if (!b)
+        return bRet(ok, false, 0);
+    n += 256 * 256 * 256 * sl.first().toUInt(&b);
+    if (!b || !n)
+        return bRet(ok, false, 0);
+    return bRet(ok, true, n);
 }
 
 bool isSpecialThumbName(const QString &tn)

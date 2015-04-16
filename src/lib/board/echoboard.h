@@ -46,7 +46,7 @@ public:
     QString title(const QLocale &l) const;
     Content::Post toController(const Post &post, const cppcms::http::request &req, bool *ok = 0,
                                QString *error = 0) const;
-    cppcms::json::object toJson(const Content::Post &post) const;
+    cppcms::json::object toJson(const Content::Post &post, const cppcms::http::request &req) const;
 protected:
     void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);

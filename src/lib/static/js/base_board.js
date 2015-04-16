@@ -530,6 +530,27 @@ lord.createPostNode = function(res, permanent, boardName) {
     return post;
 };
 
+lord.updatePost = function(boardName, postNumber, post) {
+    postNumber = +postNumber;
+    if (!boardName || !post || isNaN(postNumber) || postNumber <= 0)
+        return;
+    lord.ajaxRequest("get_post", [boardName, postNumber], 6, function(res) {
+        var newPost = lord.createPostNode(res, true);
+        if (!newPost)
+            return;
+        var postLimit = lord.nameOne("postLimit", post);
+        var bumpLimit = lord.nameOne("bumpLimit", post);
+        if (!!postLimit || !!bumpLimit) {
+            var postHeader = lord.queryOne(".postHeader", newPost);
+            if (!!postLimit)
+                postHeader.appendChild(postLimit.cloneNode(true));
+            if (!!bumpLimit)
+                postHeader.appendChild(bumpLimit.cloneNode(true));
+        }
+        post.parentNode.replaceChild(newPost, post);
+    });
+};
+
 lord.clearFileInput = function(div) {
     var preview = div.querySelector("img");
     if (!!preview && div == preview.parentNode)
@@ -797,21 +818,7 @@ lord.editPost = function(boardName, postNumber) {
         if (lord.customEditFormGet)
             params["userData"] = lord.customEditFormGet(form, params, !!draftField, !!rawField);
         lord.ajaxRequest("edit_post", [params], 5, function() {
-            lord.ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
-                var newPost = lord.createPostNode(res, true);
-                if (!newPost)
-                    return;
-                var postLimit = lord.nameOne("postLimit", post);
-                var bumpLimit = lord.nameOne("bumpLimit", post);
-                if (!!postLimit || !!bumpLimit) {
-                    var postHeader = lord.queryOne(".postHeader", newPost);
-                    if (!!postLimit)
-                        postHeader.appendChild(postLimit.cloneNode(true));
-                    if (!!bumpLimit)
-                        postHeader.appendChild(bumpLimit.cloneNode(true));
-                }
-                post.parentNode.replaceChild(newPost, post);
-            });
+            lord.updatePost(boardName, postNumber, post);
         });
     });
 };
@@ -889,21 +896,7 @@ lord.deleteFile = function(boardName, postNumber, fileName) {
             pwd = lord.toHashpass(pwd);
         }
         lord.ajaxRequest("delete_file", [boardName, fileName, pwd], 10, function() {
-            lord.ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
-                var newPost = lord.createPostNode(res, true);
-                if (!newPost)
-                    return;
-                var postLimit = lord.nameOne("postLimit", post);
-                var bumpLimit = lord.nameOne("bumpLimit", post);
-                if (!!postLimit || !!bumpLimit) {
-                    var postHeader = lord.queryOne(".postHeader", newPost);
-                    if (!!postLimit)
-                        postHeader.appendChild(postLimit.cloneNode(true));
-                    if (!!bumpLimit)
-                        postHeader.appendChild(bumpLimit.cloneNode(true));
-                }
-                post.parentNode.replaceChild(newPost, post);
-            });
+            lord.updatePost(boardName, postNumber, post);
         });
     });
 };

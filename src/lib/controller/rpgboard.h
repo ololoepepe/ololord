@@ -5,12 +5,19 @@
 
 #include "../global.h"
 
+#include <string>
+
 namespace Content
 {
 
 struct OLOLORD_EXPORT rpgBoard : public Board
 {
-    //
+    std::string addVoteVariantText;
+    std::string multipleVoteVariantsText;
+    std::string removeVoteVariantText;
+    std::string postFormLabelVote;
+    unsigned long long userIp;
+    std::string voteText;
 };
 
 }

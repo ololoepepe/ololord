@@ -38,6 +38,7 @@ public:
     QList<Handler> handlers() const;
     void setThreadFixed(std::string boardName, long long postNumber, bool fixed);
     void setThreadOpened(std::string boardName, long long postNumber, bool opened);
+    void vote(long long postNumber, const cppcms::json::array &votes);
 };
 
 #endif // ACTIONAJAXHANDLER_H

@@ -187,7 +187,7 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
     }
     cppcms::json::array a;
     foreach (const Content::Post &p, posts)
-        a.push_back(board->toJson(p));
+        a.push_back(board->toJson(p, server.request()));
     server.return_result(a);
     Tools::log(server, "ajax_get_new_posts", "success", logTarget);
 }
@@ -216,7 +216,7 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
         Tools::log(server, "ajax_get_post", "fail:" + err, logTarget);
         return;
     }
-    server.return_result(board->toJson(post));
+    server.return_result(board->toJson(post, server.request()));
     Tools::log(server, "ajax_get_post", "success", logTarget);
 }
 
@@ -238,6 +238,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
                     method_role);
     list << Handler("set_thread_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadOpened, self),
                     method_role);
+    list << Handler("vote", cppcms::rpc::json_method(&ActionAjaxHandler::vote, self), method_role);
     return list;
 }
 
@@ -275,4 +276,24 @@ void ActionAjaxHandler::setThreadOpened(std::string boardName, long long postNum
     }
     server.return_result(true);
     Tools::log(server, "ajax_set_thread_opened", "success", logTarget);
+}
+
+void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &votes)
+{
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = QString::number(pn);
+    Tools::log(server, "ajax_vote", "begin", logTarget);
+    if (!testBan("rpg"))
+        return Tools::log(server, "ajax_vote", "fail:ban", logTarget);
+    QString err;
+    QList<uint> list;
+    foreach (int i, bRangeD(0, votes.size() - 1))
+        list << uint(votes.at(i).number());
+    if (!Database::vote(pn, list, server.request(), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_vote", "fail:" + err, logTarget);
+        return;
+    }
+    server.return_result(true);
+    Tools::log(server, "ajax_vote", "success", logTarget);
 }

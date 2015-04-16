@@ -111,9 +111,9 @@ Content::Post echoBoard::toController(const Post &post, const cppcms::http::requ
     return bRet(ok, true, error, QString(), p);
 }
 
-cppcms::json::object echoBoard::toJson(const Content::Post &post) const
+cppcms::json::object echoBoard::toJson(const Content::Post &post, const cppcms::http::request &req) const
 {
-    cppcms::json::object o = AbstractBoard::toJson(post);
+    cppcms::json::object o = AbstractBoard::toJson(post, req);
     o["link"] = Tools::toStd(post.userData.toString());
     return o;
 }

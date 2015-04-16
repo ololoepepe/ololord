@@ -2344,6 +2344,31 @@ IP-адреса записываются в виде диапазонов и о�
         <comment>board title</comment>
         <translation>Ролевые игры</translation>
     </message>
+    <message>
+        <source>Add variant</source>
+        <comment>addVoteVariantText</comment>
+        <translation>Добавить вариант</translation>
+    </message>
+    <message>
+        <source>Multiple variants allowed:</source>
+        <comment>multipleVoteVariantsText</comment>
+        <translation>Разрешено несколько вариантов:</translation>
+    </message>
+    <message>
+        <source>Remove variant</source>
+        <comment>removeVoteVariantText</comment>
+        <translation>Убрать вариант</translation>
+    </message>
+    <message>
+        <source>Vote:</source>
+        <comment>postFormLabelVote</comment>
+        <translation>Голосование:</translation>
+    </message>
+    <message>
+        <source>Vote</source>
+        <comment>voteText</comment>
+        <translation>Проголосовать</translation>
+    </message>
 </context>
 <context>
     <name>saveFile</name>
@@ -2631,6 +2656,49 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Internal database error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
+    <name>vote</name>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>No votes</source>
+        <comment>error</comment>
+        <translation>Отсутствуют голоса</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Repeated voting</source>
+        <comment>error</comment>
+        <translation>Повторное голосование</translation>
+    </message>
+    <message>
+        <source>Too many votes</source>
+        <comment>error</comment>
+        <translation>Слишком много голосов</translation>
+    </message>
+    <message>
+        <source>Multiple vote occurance</source>
+        <comment>error</comment>
+        <translation>Множественное повторение голоса</translation>
+    </message>
+    <message>
+        <source>Invalid vote</source>
+        <comment>error</comment>
+        <translation>Некорректный голос</translation>
     </message>
 </context>
 </TS>

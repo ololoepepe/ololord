@@ -153,7 +153,7 @@ public:
     virtual QString title(const QLocale &l) const = 0;
     virtual Content::Post toController(const Post &post, const cppcms::http::request &req, bool *ok = 0,
                                        QString *error = 0) const;
-    virtual cppcms::json::object toJson(const Content::Post &post) const;
+    virtual cppcms::json::object toJson(const Content::Post &post, const cppcms::http::request &req) const;
 protected:
     virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     virtual void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
