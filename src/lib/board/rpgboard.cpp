@@ -6,6 +6,8 @@
 #include "stored/thread.h"
 #include "translator.h"
 
+#include <BUuid>
+
 #include <QDebug>
 #include <QLocale>
 #include <QString>
@@ -32,18 +34,19 @@ void rpgBoard::beforeStoring(Post *post, const Tools::PostParameters &params, bo
     if (!ok || count <= 0)
         return;
     QVariantMap m;
-    QVariantList list;
+    QVariantList variants;
     foreach (int i, bRangeD(1, count)) {
         QVariantMap mm;
         QString text = params.value("voteVariant" + QString::number(i));
         if (text.isEmpty())
             continue;
         mm.insert("text", text);
-        list << mm;
+        mm.insert("id", BUuid::createUuid().toString(true));
+        variants << mm;
     }
-    if (list.isEmpty())
+    if (variants.isEmpty())
         return;
-    m.insert("variants", list);
+    m.insert("variants", variants);
     m.insert("multiple", params.value("multipleVoteVariants") == "true");
     m.insert("text", params.value("voteText"));
     post->setUserData(m);
@@ -63,24 +66,28 @@ cppcms::json::object rpgBoard::toJson(const Content::Post &post, const cppcms::h
 {
     cppcms::json::object o = AbstractBoard::toJson(post, req);
     QVariantMap m = post.userData.toMap();
-    bool en = true;
+    bool voted = false;
     unsigned int ip = Tools::ipNum(Tools::userIp(req));
-    foreach (const QVariant &v, m.value("users").toList()) {
-        if (v.toUInt() == ip) {
-            en = false;
-            break;
-        }
-    }
-    o["voteEnabled"] = en;
     cppcms::json::array arr;
-    foreach (const QVariant &v, m.value("variants").toList()) {
+    QVariantList variants = m.value("variants").toList();
+    foreach (const QVariant &v, variants) {
         QVariantMap mm = v.toMap();
         cppcms::json::object oo;
+        oo["id"] = Tools::toStd(mm.value("id").toString());
         oo["text"] = Tools::toStd(mm.value("text").toString());
         oo["voteCount"] = mm.value("voteCount").toUInt();
+        foreach (const QVariant &v, mm.value("users").toList()) {
+            if (v.toUInt() == ip) {
+                oo["selected"] = true;
+                voted = true;
+                break;
+            }
+        }
         arr.push_back(oo);
     }
+    o["voteVoted"] = voted;
     o["voteVariants"] = arr;
+    o["voteDisabled"] = m.value("disabled").toBool();
     o["voteMultiple"] = m.value("multiple").toBool();
     o["voteText"] = Tools::toStd(m.value("text").toString());
     return o;
@@ -96,6 +103,7 @@ void rpgBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Boar
     cc->multipleVoteVariantsText = ts.translate("rpgBoard", "Multiple variants allowed:", "multipleVoteVariantsText");
     cc->removeVoteVariantText = ts.translate("rpgBoard", "Remove variant", "removeVoteVariantText");
     cc->postFormLabelVote = ts.translate("rpgBoard", "Vote:", "postFormLabelVote");
+    cc->unvoteActionText = ts.translate("rpgBoard", "Take vote back", "unvoteActionText");
     cc->userIp = Tools::ipNum(Tools::userIp(req));
     cc->voteActionText = ts.translate("rpgBoard", "Vote", "voteActionText");
     cc->votedText = ts.translate("rpgBoard", "voted:", "votedText");
@@ -112,6 +120,7 @@ void rpgBoard::beforeRenderThread(const cppcms::http::request &req, Content::Thr
     cc->multipleVoteVariantsText = ts.translate("rpgBoard", "Multiple variants allowed:", "multipleVoteVariantsText");
     cc->removeVoteVariantText = ts.translate("rpgBoard", "Remove variant", "removeVoteVariantText");
     cc->postFormLabelVote = ts.translate("rpgBoard", "Vote:", "postFormLabelVote");
+    cc->unvoteActionText = ts.translate("rpgBoard", "Take vote back", "unvoteActionText");
     cc->userIp = Tools::ipNum(Tools::userIp(req));
     cc->voteEnabled = Database::isOp("rpg", quint64(cc->number), Tools::userIp(req), Tools::hashpass(req));
     cc->voteActionText = ts.translate("rpgBoard", "Vote", "voteActionText");

@@ -1510,6 +1510,62 @@ bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened
     }
 }
 
+bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!postNumber)
+        return bRet(error, tq.translate("unvote", "Invalid post number", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("unvote", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
+                                                 && odb::query<Post>::board == "rpg");
+        if (post.error)
+            return bRet(error, tq.translate("unvote", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("unvote", "No such post", "error"), false);
+        QVariantMap m = post->userData().toMap();
+        if (m.value("disabled").toBool())
+            return bRet(error, tq.translate("unvote", "Voting disabled", "error"), false);
+        unsigned int ip = Tools::ipNum(Tools::userIp(req));
+        QVariantList users = m.value("users").toList();
+        bool voted = false;
+        foreach (int i, bRangeR(users.size() - 1, 0)) {
+            if (users.at(i).toUInt() == ip) {
+                users.removeAt(i);
+                voted = true;
+                break;
+            }
+        }
+        if (!voted)
+            return bRet(error, tq.translate("unvote", "Not voted yet", "error"), false);
+        m["users"] = users;
+        QVariantList variants = m.value("variants").toList();
+        foreach (int i, bRangeD(0, variants.size() - 1)) {
+            QVariantMap mm = variants.at(i).toMap();
+            QVariantList list = mm["users"].toList();
+            foreach (int i, bRangeR(list.size() - 1, 0)) {
+                if (list.at(i).toUInt() == ip) {
+                    list.removeAt(i);
+                    mm["voteCount"] = mm.value("voteCount").toUInt() - 1;
+                    break;
+                }
+            }
+            mm["users"] = list;
+            variants[i] = mm;
+        }
+        m["variants"] = variants;
+        post->setUserData(m);
+        update(post);
+        Cache::removePost("rpg", postNumber);
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
 BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QString *error, const QLocale &l)
 {
     BanInfo inf;
@@ -1557,7 +1613,7 @@ BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QStri
     }
 }
 
-bool vote(quint64 postNumber, const QList<uint> votes, const cppcms::http::request &req, QString *error)
+bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::request &req, QString *error)
 {
     TranslatorQt tq(req);
     if (!postNumber)
@@ -1575,6 +1631,10 @@ bool vote(quint64 postNumber, const QList<uint> votes, const cppcms::http::reque
         if (!post)
             return bRet(error, tq.translate("vote", "No such post", "error"), false);
         QVariantMap m = post->userData().toMap();
+        if (m.value("disabled").toBool())
+            return bRet(error, tq.translate("vote", "Voting disabled", "error"), false);
+        if (!m.value("multiple").toBool() && votes.size() > 1)
+            return bRet(error, tq.translate("vote", "Too many votes", "error"), false);
         unsigned int ip = Tools::ipNum(Tools::userIp(req));
         QVariantList users = m.value("users").toList();
         foreach (const QVariant &v, users) {
@@ -1584,16 +1644,23 @@ bool vote(quint64 postNumber, const QList<uint> votes, const cppcms::http::reque
         users << ip;
         m["users"] = users;
         QVariantList variants = m.value("variants").toList();
-        if (!m.value("multiple").toBool() && votes.size() > 1)
-            return bRet(error, tq.translate("vote", "Too many votes", "error"), false);
-        foreach (uint n, votes) {
-            if (votes.count(n) > 1)
+        foreach (const QString &id, votes) {
+            if (votes.count(id) > 1)
                 return bRet(error, tq.translate("vote", "Multiple vote occurance", "error"), false);
-            if (n >= uint(variants.size()))
+            bool found = false;
+            for (int i = 0; i < variants.size(); ++i) {
+                QVariantMap mm = variants.at(i).toMap();
+                if (mm.value("id").toString() != id)
+                    continue;
+                mm["voteCount"] = mm.value("voteCount").toUInt() + 1;
+                QVariantList list = mm["users"].toList();
+                list << ip;
+                mm["users"] = list;
+                variants[i] = mm;
+                found = true;
+            }
+            if (!found)
                 return bRet(error, tq.translate("vote", "Invalid vote", "error"), false);
-            QVariantMap mm = variants.at(n).toMap();
-            mm["voteCount"] = mm.value("voteCount").toUInt() + 1;
-            variants[n] = mm;
         }
         m["variants"] = variants;
         post->setUserData(m);

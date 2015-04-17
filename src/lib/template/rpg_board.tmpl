@@ -25,42 +25,51 @@
 
 <% template customPostBody2(Content::Post post, Content::Board::ThreadPointer) %>
 <% c++ QVariantMap m = post.userData.toMap(); %>
-<% c++ QVariantList list = m.value("variants").toList(); %>
-<% c++ if (list.isEmpty()) return; %>
+<% c++ QVariantList variants = m.value("variants").toList(); %>
+<% c++ if (variants.isEmpty()) return; %>
 <% c++ std::string voteText = Tools::toStd(m.value("text").toString()); %>
 <% c++ bool multiple = m.value("multiple").toBool(); %>
-<% c++ bool enabled = true; %>
+<% c++ bool disabled = m.value("disabled").toBool(); %>
+<% c++ bool voted = false; %>
 <% c++ QVariantList users = m.value("users").toList(); %>
 <% c++ for (int i = 0; i < users.size(); ++i) { %>
 <% c++     if (users.at(i).toUInt() == content.userIp) { %>
-<% c++         enabled = false; %>
+<% c++         voted = true; %>
 <% c++         break; %>
 <% c++     } %>
 <% c++ } %>
 <tr>
-    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
-        <% c++ out() << "<div name=\"voteText\">" << voteText << "</div>"; %>
+    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"vote\">"; %>
+        <% c++ out() << "<div name=\"voteText\" class=\"voteText\">" << voteText << "</div>"; %>
         <div name="voteVariants">
             <% c++ out() << "<input type=\"hidden\" value=\"" << (multiple ? "true" : "false") << "\" />"; %> 
-            <% c++ for (int i = 0; i < list.size(); ++i) { %>
-            <% c++     QVariantMap mm = list.at(i).toMap(); %>
+            <% c++ for (int i = 0; i < variants.size(); ++i) { %>
+            <% c++     QVariantMap mm = variants.at(i).toMap(); %>
+            <% c++     std::string id = Tools::toStd(mm.value("id").toString()); %>
             <% c++     std::string text = Tools::toStd(mm.value("text").toString()); %>
             <% c++     unsigned int voteCount = mm.value("voteCount").toUInt(); %>
-            <% c++     if (multiple) { %>
-            <% c++         out() << "<input type=\"checkbox\" name=\"voteVariant" << i << "\" "; %>
-            <% c++         if (!enabled) out() << "disabled=\"true\" "; %>
-            <% c++         out() << "/> " << text << " (" << content.votedText << " " << voteCount << ")<br>"; %>
+            <% c++     if (multiple) {%>
+            <% c++         out() << "<input type=\"checkbox\" name=\"voteVariant" << id << "\" "; %>
             <% c++     } else { %>
-            <% c++         out() << "<input type=\"radio\" name=\"voteGroup\" value=\"" << i << "\" "; %>
-            <% c++         if (!enabled) out() << "disabled=\"true\" "; %>
-            <% c++         out() << "/> " << text << " (" << content.votedText << " " << voteCount << ")<br>"; %>
+            <% c++         out() << "<input type=\"radio\" name=\"voteGroup\" value=\"" << id << "\" "; %>
             <% c++     } %>
+            <% c++     if (disabled || voted) out() << "disabled=\"true\" "; %>
+            <% c++     foreach (const QVariant &v, mm.value("users").toList()) { %>
+            <% c++         if (v.toUInt() == content.userIp) { out() << "checked=\"true\" "; break; } %>
+            <% c++     } %>
+            <% c++     out() << "/> " << text << " <span class=\"voteCount\">(" << content.votedText << " "; %>
+            <% c++     out() << voteCount << ")</span><br>"; %>
             <% c++ } %>
         </div>
-        <% if ( enabled ) %>
-            <button onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
+        <% if ( !disabled && !voted ) %>
+            <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
         <% else %>
-            <button disabled="true"><%= voteActionText %></button>
+            <button name="buttonVote" disabled="true"><%= voteActionText %></button>
+        <% end %>
+        <% if ( !disabled && voted ) %>
+            <button name="buttonUnvote" onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
+        <% else %>
+            <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
         <% end %>
     </td>
 </tr>
@@ -68,12 +77,13 @@
 
 <% template customPostBodyTemplate2() %>
 <tr name="voteTr">
-    <td name="voteTd" colspan="2">
-        <div name="voteText"></div>
+    <td name="voteTd" colspan="2" class="vote">
+        <div name="voteText" class="voteText"></div>
         <div name="voteVariants">
             <input type="hidden" value="false" />
         </div>
-        <button><%= voteActionText %></button>
+        <button name="buttonVote"><%= voteActionText %></button>
+        <button name="buttonUnvote"><%= unvoteActionText %></button>
     </td>
 <tr>
 <% end template %>

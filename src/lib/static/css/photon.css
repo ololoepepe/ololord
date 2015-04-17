@@ -605,3 +605,18 @@ a.progressBlocking {
     text-align: center;
     white-space: nowrap;
 }
+
+/* Vote */
+
+.vote {
+    background-color: #CCCCCC;
+    border: 1px solid #BBBBBB;
+}
+
+.voteText {
+    font-weight: bold;
+}
+
+.voteCount {
+    font-style: italic;
+}

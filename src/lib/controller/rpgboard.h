@@ -16,6 +16,7 @@ struct OLOLORD_EXPORT rpgBoard : public Board
     std::string multipleVoteVariantsText;
     std::string removeVoteVariantText;
     std::string postFormLabelVote;
+    std::string unvoteActionText;
     unsigned long long userIp;
     std::string voteActionText;
     std::string votedText;

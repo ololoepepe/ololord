@@ -238,6 +238,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
                     method_role);
     list << Handler("set_thread_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadOpened, self),
                     method_role);
+    list << Handler("unvote", cppcms::rpc::json_method(&ActionAjaxHandler::unvote, self), method_role);
     list << Handler("vote", cppcms::rpc::json_method(&ActionAjaxHandler::vote, self), method_role);
     return list;
 }
@@ -278,6 +279,23 @@ void ActionAjaxHandler::setThreadOpened(std::string boardName, long long postNum
     Tools::log(server, "ajax_set_thread_opened", "success", logTarget);
 }
 
+void ActionAjaxHandler::unvote(long long postNumber)
+{
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = QString::number(pn);
+    Tools::log(server, "ajax_unvote", "begin", logTarget);
+    if (!testBan("rpg"))
+        return Tools::log(server, "ajax_unvote", "fail:ban", logTarget);
+    QString err;
+    if (!Database::unvote(pn, server.request(), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_unvote", "fail:" + err, logTarget);
+        return;
+    }
+    server.return_result(true);
+    Tools::log(server, "ajax_unvote", "success", logTarget);
+}
+
 void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &votes)
 {
     quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
@@ -286,9 +304,9 @@ void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &vo
     if (!testBan("rpg"))
         return Tools::log(server, "ajax_vote", "fail:ban", logTarget);
     QString err;
-    QList<uint> list;
+    QStringList list;
     foreach (int i, bRangeD(0, votes.size() - 1))
-        list << uint(votes.at(i).number());
+        list << Tools::fromStd(votes.at(i).str());
     if (!Database::vote(pn, list, server.request(), &err)) {
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_vote", "fail:" + err, logTarget);

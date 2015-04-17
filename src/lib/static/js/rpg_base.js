@@ -8,34 +8,43 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
     var variants = res["voteVariants"];
     var tr = lord.nameOne("voteTr", post);
     if (variants && variants.length) {
-        var enabled = !!res["voteEnabled"];
+        var disabled = !!res["voteDisabled"];
+        var voted = !!res["voteVoted"];
         var multiple = !!res["voteMultiple"];
         var div = lord.nameOne("voteVariants", post);
         lord.nameOne("voteText", post).appendChild(lord.node("text", res["voteText"]));
         lord.queryOne("input", div).value = multiple ? "true" : "false";
-        var i = 0;
         variants.forEach(function(v) {
             var inp = lord.node("input");
             if (multiple) {
                 inp.type = "checkbox";
-                inp.name = "voteVariant" + i;
+                inp.name = "voteVariant" + v.id;
             } else {
                 inp.type = "radio";
                 inp.name = "voteGroup";
-                inp.value = i;
+                inp.value = v.id;
             }
-            if (!enabled)
+            if (disabled || voted)
                 inp.disabled = "true";
+            inp.checked = !!v.selected;
             div.appendChild(inp);
             div.appendChild(lord.node("text", " " + v.text + " (" + lord.text("votedText") + " " + v.voteCount + ")"));
             div.appendChild(lord.node("br"));
-            ++i;
         });
-        var btn = lord.queryOne("button", tr);
-        if (enabled)
-            btn.onclick = lord.vote.bind(lord, +res["number"]);
-        else
-            btn.disabled = "true";
+        var btnVote = lord.nameOne("buttonVote", tr);
+        var btnUnvote = lord.nameOne("buttonUnvote", tr);
+        if (disabled) {
+            btnVote.disabled = "true";
+            btnUnvote.disabled = "true";
+        } else {
+            if (voted) {
+                btnUnvote.onclick = lord.unvote.bind(lord, +res["number"]);
+                btnVote.disabled = "true";
+            } else {
+                btnVote.onclick = lord.vote.bind(lord, +res["number"]);
+                btnUnvote.disabled = "true";
+            }
+        }   
     } else {
         tr.parentNode.removeChild(tr);
     }
@@ -98,15 +107,27 @@ lord.vote = function(postNumber) {
     if (multiple) {
         lord.query("input[type='checkbox']").forEach(function(inp) {
             if (!!inp.checked)
-                votes.push(+inp.name.replace("voteVariant", ""));
+                votes.push(inp.name.replace("voteVariant", ""));
         });
     } else {
         lord.query("input[type='radio']").forEach(function(inp) {
             if (!!inp.checked)
-                votes.push(+inp.value);
+                votes.push(inp.value);
         });
     }
     lord.ajaxRequest("vote", [postNumber, votes], 11, function() {
+        lord.updatePost("rpg", postNumber, post);
+    });
+};
+
+lord.unvote = function(postNumber) {
+    postNumber = +postNumber;
+    if (isNaN(postNumber) || postNumber <= 0)
+        return;
+    var post = lord.id("post" + postNumber);
+    if (!post)
+        return;
+    lord.ajaxRequest("unvote", [postNumber], 12, function() {
         lord.updatePost("rpg", postNumber, post);
     });
 };

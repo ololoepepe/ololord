@@ -2379,6 +2379,11 @@ IP-адреса записываются в виде диапазонов и о�
         <comment>votedText</comment>
         <translation>проголосовало:</translation>
     </message>
+    <message>
+        <source>Take vote back</source>
+        <comment>unvoteActionText</comment>
+        <translation>Забрать голос</translation>
+    </message>
 </context>
 <context>
     <name>saveFile</name>
@@ -2656,6 +2661,34 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
+    <name>unvote</name>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Voting disabled</source>
+        <comment>error</comment>
+        <translation>Голосование отключено</translation>
+    </message>
+    <message>
+        <source>Not voted yet</source>
+        <comment>error</comment>
+        <translation>Еще не голосовал</translation>
+    </message>
+</context>
+<context>
     <name>userBanInfo</name>
     <message>
         <source>Internal logic error</source>
@@ -2709,6 +2742,11 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Invalid vote</source>
         <comment>error</comment>
         <translation>Некорректный голос</translation>
+    </message>
+    <message>
+        <source>Voting disabled</source>
+        <comment>error</comment>
+        <translation>Голосование отключено</translation>
     </message>
 </context>
 </TS>

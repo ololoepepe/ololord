@@ -16,6 +16,7 @@ struct OLOLORD_EXPORT rpgThread : public Thread
     std::string multipleVoteVariantsText;
     std::string removeVoteVariantText;
     std::string postFormLabelVote;
+    std::string unvoteActionText;
     unsigned long long userIp;
     bool voteEnabled;
     std::string voteActionText;

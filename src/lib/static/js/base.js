@@ -99,6 +99,25 @@ lord.arr = function(obj) {
     return arr;
 };
 
+lord.hasOwnProperties = function(obj) {
+    if (!obj)
+        return false;
+    for (x in obj) {
+        if (obj.hasOwnProperty(x))
+            return true;
+    }
+    return false;
+};
+
+lord.forIn = function(obj, f) {
+    if (!obj || typeof f != "function")
+        return;
+    for (x in obj) {
+        if (obj.hasOwnProperty(x))
+            f(obj[x], x);
+    }
+};
+
 lord.last = function(arr) {
     if (!arr || !arr.length)
         return null;
