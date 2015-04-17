@@ -72,7 +72,7 @@ lord.addVoteVariant = function(pos) {
     inp.size = "43";
     div.appendChild(inp);
     var a = lord.node("a");
-    a.href = "javascript:lord.removeVoteVariant('" + pos + "', " + (lastN + 1) + ");";
+    a.onclick = lord.removeVoteVariant.bind(lord, div);
     var img = lord.node("img");
     img.src = "/" + lord.text("sitePathPrefix") + "img/delete.png";
     img.title = lord.text("removeVoteVariantText");
@@ -82,13 +82,13 @@ lord.addVoteVariant = function(pos) {
     lord.id("voteVariantCount" + pos).value = (lastN + 1);
 };
 
-lord.removeVoteVariant = function(pos, n) {
-    var parent = lord.id("voteVariants" + pos);
-    parent.removeChild(lord.nameOne("voteVariant" + n, parent).parentNode);
-    var count = lord.id("voteVariantCount" + pos);
+lord.removeVoteVariant = function(div) {
+    var parent = div.parentNode;
+    parent.removeChild(div);
+    var count = lord.nameOne("voteVariantCount", parent.parentNode);
     var i = 0;
     count.value = i;
-    lord.query("div > input", parent).forEach(function(inp) {
+    lord.query("div > input", div).forEach(function(inp) {
         ++i;
         inp.name = "voteVariant" + i;
         count.value = i;
