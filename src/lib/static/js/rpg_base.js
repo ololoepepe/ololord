@@ -69,6 +69,7 @@ lord.addVoteVariant = function(pos) {
     var inp = lord.node("input");
     inp.type = "text";
     inp.name = "voteVariant" + (lastN + 1);
+    inp.size = "43";
     div.appendChild(inp);
     var a = lord.node("a");
     a.href = "javascript:lord.removeVoteVariant('" + pos + "', " + (lastN + 1) + ");";
