@@ -43,7 +43,8 @@ public:
     bool beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,
                               bool thread, QString *error = 0, QString *description = 0);
     QString name() const;
-    bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l, QString *error) const;
+    bool testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post, const QLocale &l,
+                    QString *error) const;
     QString title(const QLocale &l) const;
     Content::Post toController(const Post &post, const cppcms::http::request &req, bool *ok = 0,
                                QString *error = 0) const;

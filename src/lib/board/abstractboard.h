@@ -148,8 +148,8 @@ public:
     virtual bool saveFile(const Tools::File &f, FileTransaction &ft);
     virtual bool showWhois() const;
     virtual QString supportedFileTypes() const;
-    virtual bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l,
-                            QString *error = 0) const;
+    virtual bool testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
+                            const QLocale &l, QString *error = 0) const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
     virtual QString title(const QLocale &l) const = 0;

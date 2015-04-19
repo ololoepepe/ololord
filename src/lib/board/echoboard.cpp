@@ -75,9 +75,10 @@ QString echoBoard::name() const
     return "echo";
 }
 
-bool echoBoard::testParams(const Tools::PostParameters &params, bool post, const QLocale &l, QString *error) const
+bool echoBoard::testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
+                           const QLocale &l, QString *error) const
 {
-    if (!AbstractBoard::testParams(params, post, l, error))
+    if (!AbstractBoard::testParams(params, files, post, l, error))
         return false;
     if (post)
         return true;

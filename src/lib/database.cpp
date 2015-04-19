@@ -338,20 +338,10 @@ static bool saveFile(const Tools::File &f, AbstractBoard::FileTransaction &ft, Q
 }
 
 static bool saveFiles(const QMap<QString, QString> &params, const Tools::FileList &files,
-                      AbstractBoard::FileTransaction &ft, bool thread, QString *error = 0, QString *description = 0,
+                      AbstractBoard::FileTransaction &ft, QString *error = 0, QString *description = 0,
                       const QLocale &l = BCoreApplication::locale())
 {
-    TranslatorQt tq(l);
     Tools::Post post = Tools::toPost(params, files);
-    if (thread && post.files.isEmpty() && post.fileHashes.isEmpty()) {
-        return bRet(error, tq.translate("saveFiles", "No file", "error"), description,
-                    tq.translate("saveFiles", "Attempt to create a thread without attaching a file", "description"),
-                    false);
-    }
-    if (post.text.isEmpty() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
-        return bRet(error, tq.translate("saveFiles", "No file/text", "error"), description,
-                    tq.translate("saveFiles", "Both file and comment are missing", "description"), false);
-    }
     foreach (const Tools::File &f, post.files) {
         if (!saveFile(f, ft, error, description, l))
             return false;
@@ -759,7 +749,7 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
                     tq.translate("createPost", "Internal logic error", "description"), false);
     }
     CreatePostInternalParameters pp(p, board);
-    if (!saveFiles(p.params, p.files, pp.fileTransaction, false, p.error, p.description, p.locale))
+    if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     try {
         Transaction t;
@@ -803,7 +793,7 @@ quint64 createThread(CreateThreadParameters &p)
                     tq.translate("createThread", "Internal logic error", "description"), 0L);
     }
     CreatePostInternalParameters pp(p, board);
-    if (!saveFiles(p.params, p.files, pp.fileTransaction, true, p.error, p.description, p.locale))
+    if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     try {
         QStringList filesToDelete;

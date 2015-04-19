@@ -346,6 +346,31 @@ The default is true.</source>
         <comment>defaultUserName</comment>
         <translation>Пекабоярин</translation>
     </message>
+    <message>
+        <source>Attempt to create a thread without attaching a file</source>
+        <comment>error</comment>
+        <translation>Попытка создать тред без прикрепления файла</translation>
+    </message>
+    <message>
+        <source>Both file and comment are missing</source>
+        <comment>error</comment>
+        <translation>Отсутствуют и файл, и комментарий</translation>
+    </message>
+    <message>
+        <source>Too many files</source>
+        <comment>error</comment>
+        <translation>Слишком много файлов</translation>
+    </message>
+    <message>
+        <source>File is too big</source>
+        <comment>error</comment>
+        <translation>Файл слишком большой</translation>
+    </message>
+    <message>
+        <source>File type is not supported</source>
+        <comment>error</comment>
+        <translation>Тип файла не поддерживается</translation>
+    </message>
 </context>
 <context>
     <name>ActionAjaxHandler</name>
@@ -2434,29 +2459,6 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>saveFiles</name>
-    <message>
-        <source>No file</source>
-        <comment>error</comment>
-        <translation>Отсутствует файл</translation>
-    </message>
-    <message>
-        <source>Attempt to create a thread without attaching a file</source>
-        <comment>description</comment>
-        <translation>Попытка создать тред без прикрепления файла</translation>
-    </message>
-    <message>
-        <source>No file/text</source>
-        <comment>error</comment>
-        <translation>Нет файла/текста</translation>
-    </message>
-    <message>
-        <source>Both file and comment are missing</source>
-        <comment>description</comment>
-        <translation>Отсутствуют и файл, и комментарий</translation>
-    </message>
-</context>
-<context>
     <name>setDefaultThreadPassword</name>
     <message>
         <source>Enter password:</source>
@@ -2652,16 +2654,6 @@ IP-адреса записываются в виде диапазонов и о�
         <translation>Неправильные параметры</translation>
     </message>
     <message>
-        <source>Too many files</source>
-        <comment>description</comment>
-        <translation>Слишком много файлов</translation>
-    </message>
-    <message>
-        <source>File is too big</source>
-        <comment>description</comment>
-        <translation>Файл слишком большой</translation>
-    </message>
-    <message>
         <source>Internal error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
@@ -2670,11 +2662,6 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Internal logic error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
-    </message>
-    <message>
-        <source>File type is not supported</source>
-        <comment>description</comment>
-        <translation>Тип файла не поддерживается</translation>
     </message>
 </context>
 <context>

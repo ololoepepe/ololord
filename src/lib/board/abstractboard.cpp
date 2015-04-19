@@ -837,8 +837,8 @@ QString AbstractBoard::supportedFileTypes() const
                     s->value("Board/supported_file_types", defaultFileTypes)).toString();
 }
 
-bool AbstractBoard::testParams(const Tools::PostParameters &params, bool /*post*/, const QLocale &l,
-                               QString *error) const
+bool AbstractBoard::testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
+                               const QLocale &l, QString *error) const
 {
     TranslatorQt tq(l);
     if (params.value("email").length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, name())))
@@ -851,6 +851,26 @@ bool AbstractBoard::testParams(const Tools::PostParameters &params, bool /*post*
         return bRet(error, tq.translate("AbstractBoard", "Comment is too long", "description"), false);
     else if (params.value("password").length() > int(Tools::maxInfo(Tools::MaxPasswordFieldLength, name())))
         return bRet(error, tq.translate("AbstractBoard", "Password is too long", "description"), false);
+    QStringList fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
+    int fileCount = files.size() + fileHashes.size();
+    int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, name());
+    int maxFileCount = int(Tools::maxInfo(Tools::MaxFileCount, name()));
+    if (!post && maxFileCount && !fileCount) {
+        return bRet(error, tq.translate("AbstractBoard", "Attempt to create a thread without attaching a file",
+                                        "error"), false);
+    }
+    if (params.value("text").isEmpty() && !fileCount)
+        return bRet(error, tq.translate("AbstractBoard", "Both file and comment are missing", "error"), false);
+    if (maxFileCount && (fileCount > maxFileCount)) {
+        return bRet(error, tq.translate("AbstractBoard", "Too many files", "error"), false);
+    } else {
+        foreach (const Tools::File &f, files) {
+            if (f.data.size() > maxFileSize)
+                return bRet(error, tq.translate("AbstractBoard", "File is too big", "error"), false);
+            if (!isFileTypeSupported(f.data))
+                return bRet(error, tq.translate("AbstractBoard", "File type is not supported", "error"), false);
+        }
+    }
     return bRet(error, QString(), true);
 }
 
