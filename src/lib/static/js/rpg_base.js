@@ -43,10 +43,13 @@ lord.customEditFormSet = function(form, post) {
     variants.nextSibling.nextSibling.onclick = function() {
         createInp();
     };
-    if (!lord.nameOne("voteText", post))
-        return;
     var text = lord.nameOne("voteText", form);
     var multiple = lord.nameOne("multipleVoteVariants", form);
+    if (!lord.nameOne("voteText", post)) {
+        var toRemove = variants.parentNode.parentNode;
+        toRemove.parentNode.removeChild(toRemove);
+        return;
+    }
     text.value = lord.nameOne("voteText", post).innerHTML;
     var vv = lord.nameOne("voteVariants", post);
     multiple.checked = ("true" == lord.queryOne("input[type='hidden']", vv).value);
@@ -61,6 +64,8 @@ lord.customEditFormSet = function(form, post) {
 
 lord.customEditFormGet = function(form, params) {
     var text = lord.nameOne("voteText", form);
+    if (!text)
+        return null;
     var multiple = lord.nameOne("multipleVoteVariants", form);
     var variants = lord.nameOne("voteVariants", form);
     var data = {};

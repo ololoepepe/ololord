@@ -2454,6 +2454,11 @@ IP-адреса записываются в виде диапазонов и о�
         <comment>voteClosedText</comment>
         <translation>Голосование закрыто</translation>
     </message>
+    <message>
+        <source>Attempt to edit voting while not being the OP</source>
+        <comment>error</comment>
+        <translation>Попытка редактировать голосование не будучи ОПом</translation>
+    </message>
 </context>
 <context>
     <name>saveFile</name>

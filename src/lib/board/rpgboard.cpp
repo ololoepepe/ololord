@@ -23,14 +23,14 @@ rpgBoard::rpgBoard()
     //
 }
 
-bool rpgBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
-                                       Thread &/*thread*/, QString *error)
+bool rpgBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &post,
+                                       Thread &thread, QString *error)
 {
     if (userData.is_null() || userData.is_undefined())
         return bRet(error, QString(), true);
     TranslatorQt tq(req);
     cppcms::json::object o = userData.object();
-    QVariantMap m = p.userData().toMap();
+    QVariantMap m = post.userData().toMap();
     cppcms::json::array arr = o["variants"].array();
     QVariantList variants = m.value("variants").toList();
     QStringList ids;
@@ -66,13 +66,19 @@ bool rpgBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms:
             variants.removeAt(i);
     }
     if (variants.isEmpty()) {
-        p.setUserData(QVariant());
+        post.setUserData(QVariant());
         return bRet(error, QString(), true);
+    }
+    QString text = Tools::fromStd(o["text"].str());
+    if ((!thread.number() == post.number()
+         && !Database::isOp(post.board(), thread.number(), post.posterIp(), post.hashpass()))
+            && (m["variants"] != variants || m["multiple"] != o["multiple"].boolean() || m["text"] != text)) {
+        return bRet(error, tq.translate("rpgBoard", "Attempt to edit voting while not being the OP", "error"), false);
     }
     m["variants"] = variants;
     m["multiple"] = o["multiple"].boolean();
-    m["text"] = Tools::fromStd(o["text"].str());
-    p.setUserData(m);
+    m["text"] = text;
+    post.setUserData(m);
     return bRet(error, QString(), true);
 }
 
