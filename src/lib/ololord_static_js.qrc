@@ -9,5 +9,6 @@
         <file>static/js/3rdparty/lib-typedarrays-min.js</file>
         <file>static/js/base.js</file>
         <file>static/js/base_board.js</file>
+        <file>static/js/rpg_base.js</file>
     </qresource>
 </RCC>

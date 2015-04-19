@@ -28,6 +28,7 @@ public:
     explicit ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv);
 public:
     void banUser(const cppcms::json::object &params);
+    void deleteFile(std::string boardName, std::string fileName, std::string password);
     void deletePost(std::string boardName, long long postNumber, std::string password);
     void editPost(const cppcms::json::object &params);
     void getCaptchaQuota(std::string boardName);
@@ -35,8 +36,11 @@ public:
     void getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber);
     void getPost(std::string boardName, long long postNumber);
     QList<Handler> handlers() const;
-    void setThreadFixed(std::string boardName, long long postNumber, bool fixed);
-    void setThreadOpened(std::string boardName, long long postNumber, bool opened);
+    void setThreadFixed(std::string boardName, long long threadNumber, bool fixed);
+    void setThreadOpened(std::string boardName, long long threadNumber, bool opened);
+    void setVoteOpened(long long postNumber, bool opened);
+    void unvote(long long postNumber);
+    void vote(long long postNumber, const cppcms::json::array &votes);
 };
 
 #endif // ACTIONAJAXHANDLER_H

@@ -16,6 +16,8 @@ HEADERS += \
     $${PWD}/notfound.h \
     $${PWD}/prboard.h \
     $${PWD}/prthread.h \
+    $${PWD}/rpgboard.h \
+    $${PWD}/rpgthread.h \
     $${PWD}/rules.h \
     $${PWD}/search.h \
     $${PWD}/thread.h

@@ -22,62 +22,6 @@
 
 #include <string>
 
-static cppcms::json::object toJson(const Content::Post &post)
-{
-    cppcms::json::object o;
-    o["bannedFor"] = post.bannedFor;
-    o["cityName"] = post.cityName;
-    o["closed"] = post.closed;
-    o["countryName"] = post.countryName;
-    o["dateTime"] = post.dateTime;
-    o["modificationDateTime"] = post.modificationDateTime;
-    o["email"] = post.email;
-    cppcms::json::array files;
-    for (std::list<Content::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {
-        const Content::File &file = *i;
-        cppcms::json::object f;
-        f["type"] = file.type;
-        f["size"] = file.size;
-        f["thumbSizeX"] = file.thumbSizeX;
-        f["thumbSizeY"] = file.thumbSizeY;
-        f["sizeX"] = file.sizeX;
-        f["sizeY"] = file.sizeY;
-        f["sourceName"] = file.sourceName;
-        f["thumbName"] = file.thumbName;
-        files.push_back(f);
-    }
-    o["files"] = files;
-    o["fixed"] = post.fixed;
-    o["flagName"] = post.flagName;
-    o["hidden"] = post.hidden;
-    o["ip"] = post.ip;
-    o["name"] = post.name;
-    o["nameRaw"] = post.nameRaw;
-    o["number"] = post.number;
-    o["showRegistered"] = post.showRegistered;
-    o["showTripcode"] = post.showTripcode;
-    o["threadNumber"] = post.threadNumber;
-    o["subject"] = post.subject;
-    o["subjectIsRaw"] = post.subjectIsRaw;
-    o["draft"] = post.draft;
-    o["rawName"] = post.rawName;
-    o["rawSubject"] = post.rawSubject;
-    o["text"] = post.text;
-    o["rawPostText"] = post.rawPostText;
-    o["tripcode"] = post.tripcode;
-    cppcms::json::array refs;
-    typedef Content::Post::Ref Ref;
-    for (std::list<Ref>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end(); ++i) {
-        cppcms::json::object ref;
-        ref["boardName"] = i->boardName;
-        ref["postNumber"] = i->postNumber;
-        ref["threadNumber"] = i->threadNumber;
-        refs.push_back(ref);
-    }
-    o["referencedBy"] = refs;
-    return o;
-}
-
 ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
     AbstractAjaxHandler(srv)
 {
@@ -125,6 +69,24 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
     Tools::log(server, "ajax_delete_post", "success", logTarget);
 }
 
+void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, std::string password)
+{
+    QString bn = Tools::fromStd(boardName);
+    QString fn = Tools::fromStd(fileName);
+    QString logTarget = bn + "/" + fn;
+    Tools::log(server, "ajax_delete_file", "begin", logTarget);
+    if (!testBan(Tools::fromStd(boardName)))
+        return Tools::log(server, "ajax_delete_file", "fail:ban", logTarget);
+    QString err;
+    if (!Database::deleteFile(bn, fn, server.request(), Tools::toHashpass(Tools::fromStd(password)), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_delete_file", "fail:" + err, logTarget);
+        return;
+    }
+    server.return_result(true);
+    Tools::log(server, "ajax_delete_file", "success", logTarget);
+}
+
 void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 {
     QString boardName = Tools::fromStd(params.at("boardName").str());
@@ -141,6 +103,7 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
     p.text = Tools::fromStd(params.at("text").str());
     p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
     p.draft = params.at("draft").boolean();
+    p.userData = params.at("userData");
     QString err;
     p.error = &err;
     if (!Database::editPost(p)) {
@@ -204,6 +167,13 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
     quint64 lpn = lastPostNumber > 0 ? quint64(lastPostNumber) : 0;
     QString logTarget = bn + "/" + QString::number(tn) + "/" + QString::number(lpn);
     Tools::log(server, "ajax_get_new_posts", "begin", logTarget);
+    AbstractBoard *board = AbstractBoard::board(bn);
+    if (!board) {
+        TranslatorQt tq(server.request());
+        QString err = tq.translate("ActionAjaxHandler", "No such board", "error");
+        Tools::log(server, "ajax_get_new_posts", "fail:" + err, logTarget);
+        server.return_error(Tools::toStd(err));
+    }
     if (!testBan(bn, true))
         return Tools::log(server, "ajax_get_new_posts", "fail:ban", logTarget);
     bool ok = false;
@@ -217,7 +187,7 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
     }
     cppcms::json::array a;
     foreach (const Content::Post &p, posts)
-        a.push_back(toJson(p));
+        a.push_back(board->toJson(p, server.request()));
     server.return_result(a);
     Tools::log(server, "ajax_get_new_posts", "success", logTarget);
 }
@@ -228,6 +198,13 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
     quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
     QString logTarget = bn + "/" + QString::number(pn);
     Tools::log(server, "ajax_get_post", "begin", logTarget);
+    AbstractBoard *board = AbstractBoard::board(bn);
+    if (!board) {
+        TranslatorQt tq(server.request());
+        QString err = tq.translate("ActionAjaxHandler", "No such board", "error");
+        Tools::log(server, "ajax_post", "fail:" + err, logTarget);
+        server.return_error(Tools::toStd(err));
+    }
     if (!testBan(Tools::fromStd(boardName), true))
         return Tools::log(server, "ajax_get_post", "fail:ban", logTarget);
     bool ok = false;
@@ -239,7 +216,7 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
         Tools::log(server, "ajax_get_post", "fail:" + err, logTarget);
         return;
     }
-    server.return_result(toJson(post));
+    server.return_result(board->toJson(post, server.request()));
     Tools::log(server, "ajax_get_post", "success", logTarget);
 }
 
@@ -248,6 +225,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     QList<ActionAjaxHandler::Handler> list;
     ActionAjaxHandler *self = const_cast<ActionAjaxHandler *>(this);
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
+    list << Handler("delete_file", cppcms::rpc::json_method(&ActionAjaxHandler::deleteFile, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
     list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
     list << Handler("get_captcha_quota", cppcms::rpc::json_method(&ActionAjaxHandler::getCaptchaQuota, self),
@@ -260,19 +238,22 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
                     method_role);
     list << Handler("set_thread_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadOpened, self),
                     method_role);
+    list << Handler("set_vote_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setVoteOpened, self), method_role);
+    list << Handler("unvote", cppcms::rpc::json_method(&ActionAjaxHandler::unvote, self), method_role);
+    list << Handler("vote", cppcms::rpc::json_method(&ActionAjaxHandler::vote, self), method_role);
     return list;
 }
 
-void ActionAjaxHandler::setThreadFixed(std::string boardName, long long postNumber, bool fixed)
+void ActionAjaxHandler::setThreadFixed(std::string boardName, long long threadNumber, bool fixed)
 {
     QString bn = Tools::fromStd(boardName);
-    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
-    QString logTarget = bn + "/" + QString::number(pn) + "/" + QString(fixed ? "true" : "false");
+    quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
+    QString logTarget = bn + "/" + QString::number(tn) + "/" + QString(fixed ? "true" : "false");
     Tools::log(server, "ajax_set_thread_fixed", "begin", logTarget);
     if (!testBan(Tools::fromStd(boardName)))
         return Tools::log(server, "ajax_set_thread_fixed", "fail:ban", logTarget);
     QString err;
-    if (!Database::setThreadFixed(bn, pn, fixed, server.request(), &err)) {
+    if (!Database::setThreadFixed(bn, tn, fixed, server.request(), &err)) {
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_set_thread_fixed", "fail:" + err, logTarget);
         return;
@@ -281,20 +262,74 @@ void ActionAjaxHandler::setThreadFixed(std::string boardName, long long postNumb
     Tools::log(server, "ajax_set_thread_fixed", "success", logTarget);
 }
 
-void ActionAjaxHandler::setThreadOpened(std::string boardName, long long postNumber, bool opened)
+void ActionAjaxHandler::setThreadOpened(std::string boardName, long long threadNumber, bool opened)
 {
     QString bn = Tools::fromStd(boardName);
-    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
-    QString logTarget = bn + "/" + QString::number(pn) + "/" + QString(opened ? "true" : "false");
+    quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
+    QString logTarget = bn + "/" + QString::number(tn) + "/" + QString(opened ? "true" : "false");
     Tools::log(server, "ajax_set_thread_opened", "begin", logTarget);
     if (!testBan(Tools::fromStd(boardName)))
         return Tools::log(server, "ajax_set_thread_opened", "fail:ban", logTarget);
     QString err;
-    if (!Database::setThreadOpened(bn, pn, opened, server.request(), &err)) {
+    if (!Database::setThreadOpened(bn, tn, opened, server.request(), &err)) {
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_set_thread_opened", "fail:" + err, logTarget);
         return;
     }
     server.return_result(true);
     Tools::log(server, "ajax_set_thread_opened", "success", logTarget);
+}
+
+void ActionAjaxHandler::setVoteOpened(long long postNumber, bool opened)
+{
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = QString::number(pn) + "/" + QString(opened ? "true" : "false");
+    Tools::log(server, "ajax_set_vote_opened", "begin", logTarget);
+    if (!testBan("rpg"))
+        return Tools::log(server, "ajax_set_vote_opened", "fail:ban", logTarget);
+    QString err;
+    if (!Database::setVoteOpened(pn, opened, server.request(), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_set_vote_opened", "fail:" + err, logTarget);
+        return;
+    }
+    server.return_result(true);
+    Tools::log(server, "ajax_set_vote_opened", "success", logTarget);
+}
+
+void ActionAjaxHandler::unvote(long long postNumber)
+{
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = QString::number(pn);
+    Tools::log(server, "ajax_unvote", "begin", logTarget);
+    if (!testBan("rpg"))
+        return Tools::log(server, "ajax_unvote", "fail:ban", logTarget);
+    QString err;
+    if (!Database::unvote(pn, server.request(), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_unvote", "fail:" + err, logTarget);
+        return;
+    }
+    server.return_result(true);
+    Tools::log(server, "ajax_unvote", "success", logTarget);
+}
+
+void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &votes)
+{
+    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+    QString logTarget = QString::number(pn);
+    Tools::log(server, "ajax_vote", "begin", logTarget);
+    if (!testBan("rpg"))
+        return Tools::log(server, "ajax_vote", "fail:ban", logTarget);
+    QString err;
+    QStringList list;
+    foreach (int i, bRangeD(0, votes.size() - 1))
+        list << Tools::fromStd(votes.at(i).str());
+    if (!Database::vote(pn, list, server.request(), &err)) {
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_vote", "fail:" + err, logTarget);
+        return;
+    }
+    server.return_result(true);
+    Tools::log(server, "ajax_vote", "success", logTarget);
 }

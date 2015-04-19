@@ -28,7 +28,88 @@
 <% end %>
 <% end template %>
 
-<% template customPostFormField(std::string) %>
+<% template customPostFormField0(std::string) %>
+<% end template %>
+
+<% template customPostFormField1(std::string) %>
+<% end template %>
+
+<% template customPostFormField2(std::string) %>
+<% end template %>
+
+<% template customPostFormField3(std::string) %>
+<% end template %>
+
+<% template customPostFormField4(std::string) %>
+<% end template %>
+
+<% template customPostFormField5(std::string) %>
+<% end template %>
+
+<% template customPostFormField6(std::string) %>
+<% end template %>
+
+<% template customPostFormField7(std::string) %>
+<% end template %>
+
+<% template customPostFormField8(std::string) %>
+<% end template %>
+
+<% template customPostFormFieldEdit0() %>
+<% end template %>
+
+<% template customPostFormFieldEdit1() %>
+<% end template %>
+
+<% template customPostFormFieldEdit2() %>
+<% end template %>
+
+<% template customPostFormFieldEdit3() %>
+<% end template %>
+
+<% template customPostFormFieldEdit4() %>
+<% end template %>
+
+<% template customPostFormFieldEdit5() %>
+<% end template %>
+
+<% template customPostFormFieldEdit6() %>
+<% end template %>
+
+<% template customPostBody0(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody1(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody2(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody3(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody4(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBody5(Content::Post, Content::Board::ThreadPointer) %>
+<% end template %>
+
+<% template customPostBodyTemplate0() %>
+<% end template %>
+
+<% template customPostBodyTemplate1() %>
+<% end template %>
+
+<% template customPostBodyTemplate2() %>
+<% end template %>
+
+<% template customPostBodyTemplate3() %>
+<% end template %>
+
+<% template customPostBodyTemplate4() %>
+<% end template %>
+
+<% template customPostBodyTemplate5() %>
 <% end template %>
 
 <% template createAction(std::string position) %>
@@ -51,6 +132,7 @@
             <input type="hidden" id="postFormInput<%= position %>" value="" name="fileHashes" />
             <table class="postFormTable">
                 <tbody>
+                    <% include customPostFormField0(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelEmail %></b>
@@ -61,6 +143,7 @@
                             <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
                         </td>
                     </tr>
+                    <% include customPostFormField1(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelName %></b>
@@ -70,6 +153,7 @@
                                    name="name" size="43" />
                         </td>
                     </tr>
+                    <% include customPostFormField2(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelSubject %></b>
@@ -79,7 +163,7 @@
                                    id="postFormInputSubject<%= position %>" name="subject" size="43" />
                         </td>
                     </tr>
-                    <% include customPostFormField(position) %>
+                    <% include customPostFormField3(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelText %></b>
@@ -89,6 +173,7 @@
                                       placeholder="<%= postFormTextPlaceholder %>" class="postFormTextarea"></textarea>
                         </td>
                     </tr>
+                    <% include customPostFormField4(position) %>
                     <% if ( content.moder >= 10 ) %>
                         <tr>
                             <td class="postformLabel">
@@ -110,6 +195,7 @@
                             </td>
                         </tr>
                     <% end %>
+                    <% include customPostFormField5(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormInputFile %></b>
@@ -128,6 +214,7 @@
                             </div>
                         </td>
                     </tr>
+                    <% include customPostFormField6(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelPassword %></b>
@@ -137,6 +224,7 @@
                                    id="postFormInputPassword<%= position %>" name="password" size="43" />
                         </td>
                     </tr>
+                    <% include customPostFormField7(position) %>
                     <tr>
                         <td class="postformLabel">
                             <b><%= postFormLabelCaptcha %></b>
@@ -154,6 +242,7 @@
                             <% end %>
                         </td>
                     </tr>
+                    <% include customPostFormField8(position) %>
                     <tr>
                         <td colspan="2" class="postformRules">
                             <ul>
@@ -172,7 +261,7 @@
 <% end %>
 <% end template %>
 
-<% template postFile(Content::File file) %>
+<% template postFile(Content::File file, Content::Post post) %>
 <td class="postFile">
     <div class="postFileName">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
@@ -181,16 +270,19 @@
     <div class="postFileSize">
         (<%= file.size %>)
     </div>
-    <% if ( content.isImageType(file.type) ) %>
-        <div class="postFileSearch">
+    <div class="postFileSearch">
+        <a name="deleteFileButton"
+           href="javascript:lord.deleteFile('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');">
+            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteFileText %>" /></a>
+        <% if ( content.isImageType(file.type) ) %>
             <a href="//www.google.com/searchbyimage?image_url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithGoogleText %>" target="_blank">
                 <img src="/<%= sitePathPrefix %>img/google.png"></a>
             <a href="http://iqdb.org/?url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithIqdbText %>" target="_blank">
                 <img src="/<%= sitePathPrefix %>img/iqdb.png"></a>
-        </div>
-    <% end %>
+        <% end %>
+    </div>
     <div class="postFileFile">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
@@ -368,10 +460,11 @@
     </div>
     <table class="threadPost">
         <tbody>
+            <% include customPostBody0(post, thread) %>
             <tr>
                 <%foreach file in post.files %>
                     <% item %>
-                        <% include postFile(file) %>
+                        <% include postFile(file, post) %>
                     <% end %>
                 <% end %>
                 <input name="rawText" type="hidden" value="<%= post.rawPostText %>" />
@@ -402,6 +495,7 @@
                     <td class="shrink"></td>
                 <% end %>
             </tr>
+            <% include customPostBody1(post, thread) %>
             <% if ( post.files.size() >= 2 ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"postText\">"; %>
@@ -414,6 +508,7 @@
                     </td>
                 </tr>
             <% end %>
+            <% include customPostBody2(post, thread) %>
             <% if ( !post.modificationDateTime.empty() ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
@@ -422,6 +517,7 @@
                     </td>
                 </tr>
             <% end %>
+            <% include customPostBody3(post, thread) %>
             <% if ( post.bannedFor ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
@@ -429,6 +525,7 @@
                     <td>
                 </tr>
             <% end %>
+            <% include customPostBody4(post, thread) %>
             <% if ( !post.referencedBy.empty() ) %>
                 <tr name="referencedByTr">
             <% else %>
@@ -453,6 +550,7 @@
                     </span>
                 <td>
             </tr>
+            <% include customPostBody5(post, thread) %>
         </tbody>
     </table>
 </div>
@@ -475,6 +573,7 @@
 <input type="hidden" id="editPostText" value="<%= editPostText %>" />
 <input type="hidden" id="showHidePostText" value="<%= showHidePostText %>" />
 <input type="hidden" id="banUserText" value="<%= banUserText %>" />
+<input type="hidden" id="deleteFileText" value="<%= deleteFileText %>" />
 <input type="hidden" id="boardLabelText" value="<%= boardLabelText %>" />
 <input type="hidden" id="banLevelLabelText" value="<%= banLevelLabelText %>" />
 <input type="hidden" id="banReasonLabelText" value="<%= banReasonLabelText %>" />
@@ -550,6 +649,8 @@
             <input name="name" type="hidden" value="" />
             <input name="subject" type="hidden" value="" />
             <input name="draft" type="hidden" value="false" />
+            <a name="downloadButton" href="javascript:lord.downloadThread();">
+                <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
             <a href="javascript:lord.complain();">
                 <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
             <a name="deleteButton"
@@ -566,37 +667,44 @@
     </div>
     <table class="threadPost">
         <tbody>
+            <% include customPostBodyTemplate0() %>
             <tr name="files">
                 <td name="oneFileTd" class="postText">
                     <blockquote name="textOneFile"></blockquote>
                 </td>
             </tr>
+            <% include customPostBodyTemplate1() %>
             <tr name="manyFilesTr">
                 <td name="manyFilesTd" class="postText">
                     <blockquote name="textManyFiles"></blockquote>
                 </td>
             <tr>
+            <% include customPostBodyTemplate2() %>
             <tr>
                 <td name="modificationDateTimeTd" colspan="2">
                     <span name="modificationDateTime" class="modificationDateTime"
                           style="display: none;"><%= modificationDateTimeText %></span>
                 <td>
             </tr>
+            <% include customPostBodyTemplate3() %>
             <tr>
                 <td name="bannedForTd" colspan="2">
                     <span name="bannedFor" class="bannedFor" style="display: none;"><%= bannedForText %></span>
                 <td>
             </tr>
+            <% include customPostBodyTemplate4() %>
             <tr name="referencedByTr" style="display: none;">
                 <td name="referencedByTd" colspan="2">
                     <span name="referencedBy" class="referencedBy"><%= referencedByText %></span>
                 <td>
             </tr>
+            <% include customPostBodyTemplate5() %>
         </tbody>
     </table>
 </div>
 <table id="editPostTemplate" class="postFormTable" style="display: none;">
     <tbody>
+        <% include customPostFormFieldEdit0() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelEmail %></b>
@@ -605,6 +713,7 @@
                 <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="43" />
             </td>
         </tr>
+        <% include customPostFormFieldEdit1() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelName %></b>
@@ -613,6 +722,7 @@
                 <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
             </td>
         </tr>
+        <% include customPostFormFieldEdit2() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelSubject %></b>
@@ -621,6 +731,7 @@
                 <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
             </td>
         </tr>
+        <% include customPostFormFieldEdit3() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelText %></b>
@@ -630,6 +741,7 @@
                           class="postFormTextarea"></textarea>
             </td>
         </tr>
+        <% include customPostFormFieldEdit4() %>
         <% if ( content.moder >= 10 ) %>
             <tr>
                 <td class="postformLabel">
@@ -650,6 +762,7 @@
                 </td>
             </tr>
         <% end %>
+        <% include customPostFormFieldEdit5() %>
         <tr>
             <td class="postformLabel">
                 <b><%= postFormLabelPassword %></b>
@@ -658,6 +771,7 @@
                 <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
              </td>
          </tr>
+         <% include customPostFormFieldEdit6() %>
     </tbody>
 </table>
 <% if ( content.captchaEnabled ) %>

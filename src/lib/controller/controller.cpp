@@ -184,8 +184,9 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
     c.currentThread = currentThread;
-    c.deletePostText = ts.translate("initBaseBoard", "Delete post", "fixedText");
-    c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "fixedText");
+    c.deleteFileText = ts.translate("initBaseBoard", "Delete file", "deleteFileText");
+    c.deletePostText = ts.translate("initBaseBoard", "Delete post", "deletePostText");
+    c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "deleteThreadText");
     c.downloadThreadText = ts.translate("initBaseBoard", "Download all thread files as a .zip archive",
                                         "downloadThreadText");
     c.draftsEnabled = board->draftsEnabled();
@@ -383,30 +384,10 @@ bool testParams(const AbstractBoard *board, cppcms::application &app, const Tool
         renderError(app, tq.translate("testParams", "Internal error", "error"), err);
         return bRet(error, err, false);
     }
-    QString boardName = board->name();
-    int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, boardName);
     QString err;
-    QStringList fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
-    if (!board->testParams(params, post, tq.locale(), &err)){
+    if (!board->testParams(params, files, post, tq.locale(), &err)){
         renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
         return false;
-    } else if ((files.size() + fileHashes.size()) > int(Tools::maxInfo(Tools::MaxFileCount, boardName))) {
-        err = tq.translate("testParams", "Too many files", "description");
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
-        return bRet(error, err, false);
-    } else {
-        foreach (const Tools::File &f, files) {
-            if (f.data.size() > maxFileSize) {
-                err = tq.translate("testParams", "File is too big", "description");
-                renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
-                return bRet(error, err, false);
-            }
-            if (!board->isFileTypeSupported(f.data)) {
-                err = tq.translate("testParams", "File type is not supported", "description");
-                renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
-                return bRet(error, err, false);
-            }
-        }
     }
     return bRet(error, QString(), true);
 }

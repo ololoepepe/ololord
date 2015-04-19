@@ -1,3 +1,16 @@
+=== ololord 0.1.0-rc4 (19 April 2015) ===
+    * Implement configurable board
+    * Remove some board classes
+    * Fix post reference creation when using AJAX
+    * Refactor JS
+    * Improve templates flexibility
+    * Replace alerts with popups
+    * Fix post preview
+    * Add ability to delete files
+    * Add ability to edit /echo/ board thread links
+    * Implement /rpg/ board
+    * Add ability to make boards where images are restricted
+
 === ololord 0.1.0-rc3 (03 April 2015) ===
     * Fix "no captcha required" message
     * Implement video files support (mp4/ogg)

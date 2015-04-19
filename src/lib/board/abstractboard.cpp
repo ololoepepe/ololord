@@ -1,17 +1,11 @@
 #include "abstractboard.h"
 
-#include "board/aboard.h"
-#include "board/bboard.h"
 #include "board/cgboard.h"
+#include "board/configurableboard.h"
 #include "board/echoboard.h"
-#include "board/hboard.h"
-#include "board/intboard.h"
 #include "board/mlpboard.h"
 #include "board/prboard.h"
-#include "board/rfboard.h"
-#include "board/socboard.h"
-#include "board/threedpdboard.h"
-#include "board/vgboard.h"
+#include "board/rpgboard.h"
 #include "cache.h"
 #include "controller/baseboard.h"
 #include "controller/board.h"
@@ -62,6 +56,7 @@
 
 #include <cppcms/application.h>
 #include <cppcms/http_request.h>
+#include <cppcms/json.h>
 
 #include <odb/database.hxx>
 #include <odb/connection.hxx>
@@ -298,9 +293,16 @@ QString AbstractBoard::bannerFileName() const
     return fns.at(qrand() % fns.size());
 }
 
-void AbstractBoard::beforeStoring(Post */*post*/, const Tools::PostParameters &/*params*/, bool /*thread*/)
+bool AbstractBoard::beforeStoringEditedPost(const cppcms::http::request &, cppcms::json::value &, Post &, Thread &,
+                                            QString *)
 {
-    //
+    return true;
+}
+
+bool AbstractBoard::beforeStoringNewPost(const cppcms::http::request &, Post *, const Tools::PostParameters &, bool,
+                                         QString *, QString *)
+{
+    return true;
 }
 
 unsigned int AbstractBoard::bumpLimit() const
@@ -835,8 +837,8 @@ QString AbstractBoard::supportedFileTypes() const
                     s->value("Board/supported_file_types", defaultFileTypes)).toString();
 }
 
-bool AbstractBoard::testParams(const Tools::PostParameters &params, bool /*post*/, const QLocale &l,
-                               QString *error) const
+bool AbstractBoard::testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
+                               const QLocale &l, QString *error) const
 {
     TranslatorQt tq(l);
     if (params.value("email").length() > int(Tools::maxInfo(Tools::MaxEmailFieldLength, name())))
@@ -849,6 +851,26 @@ bool AbstractBoard::testParams(const Tools::PostParameters &params, bool /*post*
         return bRet(error, tq.translate("AbstractBoard", "Comment is too long", "description"), false);
     else if (params.value("password").length() > int(Tools::maxInfo(Tools::MaxPasswordFieldLength, name())))
         return bRet(error, tq.translate("AbstractBoard", "Password is too long", "description"), false);
+    QStringList fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
+    int fileCount = files.size() + fileHashes.size();
+    int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, name());
+    int maxFileCount = int(Tools::maxInfo(Tools::MaxFileCount, name()));
+    if (!post && maxFileCount && !fileCount) {
+        return bRet(error, tq.translate("AbstractBoard", "Attempt to create a thread without attaching a file",
+                                        "error"), false);
+    }
+    if (params.value("text").isEmpty() && !fileCount)
+        return bRet(error, tq.translate("AbstractBoard", "Both file and comment are missing", "error"), false);
+    if (maxFileCount && (fileCount > maxFileCount)) {
+        return bRet(error, tq.translate("AbstractBoard", "Too many files", "error"), false);
+    } else {
+        foreach (const Tools::File &f, files) {
+            if (f.data.size() > maxFileSize)
+                return bRet(error, tq.translate("AbstractBoard", "File is too big", "error"), false);
+            if (!isFileTypeSupported(f.data))
+                return bRet(error, tq.translate("AbstractBoard", "File type is not supported", "error"), false);
+        }
+    }
     return bRet(error, QString(), true);
 }
 
@@ -886,6 +908,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->subjectIsRaw = false;
         p->rawName = Tools::toStd(post.name());
         p->draft = post.draft();
+        p->userData = post.userData();
         quint64 threadNumber = 0;
         try {
             Transaction t;
@@ -924,6 +947,14 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 ref.threadNumber = rp->thread().load()->number();
                 p->referencedBy.push_back(ref);
             }
+            foreach (PostReferenceSP reference, post.refersTo()) {
+                QSharedPointer<Post> rp = reference.load()->targetPost().load();
+                Content::Post::Ref ref;
+                ref.boardName = Tools::toStd(rp->board());
+                ref.postNumber = rp->number();
+                ref.threadNumber = rp->thread().load()->number();
+                p->refersTo.push_back(ref);
+            }
             t.commit();
         } catch (const odb::exception &e) {
             return bRet(ok, false, error, Tools::fromStd(e.what()), Content::Post());
@@ -959,6 +990,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
     int regLvl = Database::registeredUserLevel(req);
     if (regLvl >= RegisteredUser::ModerLevel)
         pp.ip = Tools::toStd(post.posterIp());
+    pp.ownPost = (post.posterIp() == Tools::userIp(req));
     pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), DateTimeFormat));
     if (!post.modificationDateTime().isNull()) {
         pp.modificationDateTime = Tools::toStd(l.toString(Tools::dateTime(post.modificationDateTime(), req),
@@ -1002,6 +1034,72 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.tripcode = Tools::toStd(s);
     }
     return bRet(ok, true, error, QString(), pp);
+}
+
+cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppcms::http::request &/*req*/) const
+{
+    cppcms::json::object o;
+    o["bannedFor"] = post.bannedFor;
+    o["cityName"] = post.cityName;
+    o["closed"] = post.closed;
+    o["countryName"] = post.countryName;
+    o["dateTime"] = post.dateTime;
+    o["modificationDateTime"] = post.modificationDateTime;
+    o["email"] = post.email;
+    cppcms::json::array files;
+    for (std::list<Content::File>::const_iterator i = post.files.begin(); i != post.files.end(); ++i) {
+        const Content::File &file = *i;
+        cppcms::json::object f;
+        f["type"] = file.type;
+        f["size"] = file.size;
+        f["thumbSizeX"] = file.thumbSizeX;
+        f["thumbSizeY"] = file.thumbSizeY;
+        f["sizeX"] = file.sizeX;
+        f["sizeY"] = file.sizeY;
+        f["sourceName"] = file.sourceName;
+        f["thumbName"] = file.thumbName;
+        files.push_back(f);
+    }
+    o["files"] = files;
+    o["fixed"] = post.fixed;
+    o["flagName"] = post.flagName;
+    o["hidden"] = post.hidden;
+    o["ip"] = post.ip;
+    o["name"] = post.name;
+    o["nameRaw"] = post.nameRaw;
+    o["number"] = post.number;
+    o["showRegistered"] = post.showRegistered;
+    o["showTripcode"] = post.showTripcode;
+    o["threadNumber"] = post.threadNumber;
+    o["subject"] = post.subject;
+    o["subjectIsRaw"] = post.subjectIsRaw;
+    o["draft"] = post.draft;
+    o["rawName"] = post.rawName;
+    o["rawSubject"] = post.rawSubject;
+    o["text"] = post.text;
+    o["rawPostText"] = post.rawPostText;
+    o["tripcode"] = post.tripcode;
+    o["ownPost"] = post.ownPost;
+    cppcms::json::array refs;
+    typedef Content::Post::Ref Ref;
+    for (std::list<Ref>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end(); ++i) {
+        cppcms::json::object ref;
+        ref["boardName"] = i->boardName;
+        ref["postNumber"] = i->postNumber;
+        ref["threadNumber"] = i->threadNumber;
+        refs.push_back(ref);
+    }
+    o["referencedBy"] = refs;
+    refs.clear();
+    for (std::list<Ref>::const_iterator i = post.refersTo.begin(); i != post.refersTo.end(); ++i) {
+        cppcms::json::object ref;
+        ref["boardName"] = i->boardName;
+        ref["postNumber"] = i->postNumber;
+        ref["threadNumber"] = i->threadNumber;
+        refs.push_back(ref);
+    }
+    o["refersTo"] = refs;
+    return o;
 }
 
 void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Content::Board */*c*/)
@@ -1050,29 +1148,37 @@ void AbstractBoard::initBoards(bool reinit)
             delete b;
         boards.clear();
     }
-    AbstractBoard *b = new aBoard;
-    boards.insert(b->name(), b);
-    b = new bBoard;
-    boards.insert(b->name(), b);
-    b = new cgBoard;
+    ConfigurableBoard *cb = new ConfigurableBoard("a", BTranslation::translate("AbstractBoard", "/a/nime", "title"),
+        BTranslation::translate("AbstractBoard", "Kamina", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("b", BTranslation::translate("AbstractBoard", "/b/rotherhood", "title"));
+    boards.insert(cb->name(), cb);
+    AbstractBoard *b = new cgBoard;
     boards.insert(b->name(), b);
     b = new echoBoard;
     boards.insert(b->name(), b);
-    b = new hBoard;
-    boards.insert(b->name(), b);
-    b = new intBoard;
-    boards.insert(b->name(), b);
+    cb = new ConfigurableBoard("h", BTranslation::translate("AbstractBoard", "/h/entai", "title"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("int", BTranslation::translate("AbstractBoard", "/int/ernational", "title"),
+                               BTranslation::translate("AbstractBoard", "Vladimir Putin", "defaultUserName"));
+    cb->setShowWhois(true);
+    boards.insert(cb->name(), cb);
     b = new mlpBoard;
     boards.insert(b->name(), b);
     b = new prBoard;
     boards.insert(b->name(), b);
-    b = new rfBoard;
-    boards.insert(b->name(), b);
-    b = new socBoard;
-    boards.insert(b->name(), b);
-    b = new threedpdBoard;
-    boards.insert(b->name(), b);
-    b = new vgBoard;
+    cb = new ConfigurableBoard("rf", BTranslation::translate("AbstractBoard", "Refuge", "title"),
+                               BTranslation::translate("AbstractBoard", "Whiner", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("soc", BTranslation::translate("AbstractBoard", "Social life", "title"),
+                               BTranslation::translate("AbstractBoard", "Life of the party", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("3dpd", BTranslation::translate("AbstractBoard", "3D pron", "title"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("vg", BTranslation::translate("AbstractBoard", "Video games", "title"),
+                               BTranslation::translate("AbstractBoard", "PC Nobleman", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    b = new rpgBoard;
     boards.insert(b->name(), b);
     foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
         pw->unload();

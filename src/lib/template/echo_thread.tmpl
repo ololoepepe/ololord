@@ -8,5 +8,63 @@
         frameborder="yes"></iframe>
 <% end template %>
 
+<% template customPostFormFieldEdit3() %>
+<tr>
+    <td class="postformLabel">
+        <b><%= postFormLabelLink %></b>
+    </td>
+    <td class="postformField">
+        <input type="text" maxlength="<%= maxLinkLength %>" name="link" size="43" />
+     </td>
+</tr>
+<% end template %>
+
+<% template boardHead() %>
+<%include thread::boardHead() %>
+<script type="text/javascript">
+    /*ololord global object*/
+
+    var lord = lord || {};
+
+    /*Functions*/
+
+    lord.customEditFormSet = function(form, post) {
+        var a = lord.queryOne(".postSubject > a", post);
+        var link = lord.nameOne("link", form);
+        if (!a) {
+            var tr = link.parentNode.parentNode;
+            tr.parentNode.removeChild(tr);
+            return;
+        }
+        link.value = a.href;
+    };
+
+    lord.customEditFormGet = function(form, params) {
+        var link = lord.nameOne("link", form);
+        if (!link)
+            return null;
+        return link.value;
+    };
+
+    lord.createPostNodeCustom = function(post, res, permanent, boardName) {
+        if (!res["link"])
+            return;
+        var oldSubject = lord.nameOne("subject", post);
+        var subject = lord.node("span");
+        subject.className = "postSubject";
+        var a = lord.node("a");
+        a.href = res["link"];
+        a.target = "_blank";
+        var text = !!res["subject"] ? res["subject"].replace(/<a.+?>/, "").replace("</a>", "") : res["link"];
+        a.appendChild(lord.node("text", text));
+        subject.appendChild(a);
+        oldSubject.parentNode.replaceChild(subject, oldSubject);
+        //NOTE: This is dirty!
+        var iframe = lord.nameOne("externalThreadFrame");
+        iframe.src = res["link"];
+    };
+</script>
+<% end template %>
+
 <% end view %>
 <% end skin %>

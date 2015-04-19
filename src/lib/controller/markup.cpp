@@ -107,6 +107,16 @@ public:
 static const QString ExternalLinkRegexpPattern =
         "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-]*)*\\/?";
 
+static QString tagName(const QRegExp &rx)
+{
+    QString cl = rx.cap();
+    cl = cl.mid(1, cl.length() - 2);
+    int ind = cl.indexOf(' ');
+    if (ind >= 0)
+        cl = cl.left(ind);
+    return cl;
+}
+
 static SkipList externalLinks(const QString &s)
 {
     QRegExp rx(ExternalLinkRegexpPattern);
@@ -163,7 +173,7 @@ void processPostText(ProcessPostTextContext &c, const SkipList &skip, ProcessPos
     }
 }
 
-static void processAsimmetric(ProcessPostTextContext &c, ProcessPostTextFunction next, const QString &bbTag,
+static void processAsymmetric(ProcessPostTextContext &c, ProcessPostTextFunction next, const QString &bbTag,
                               const QString &htmlTag, const QString &openTag = QString(), bool quote = false)
 {
     if (!c.isValid())
@@ -305,9 +315,7 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
         if (ok && pn && Database::postExists(boardName, pn, &tn)) {
             QString threadNumber = QString::number(tn);
             QString href = "href=\"/" + prefix + boardName + "/thread/" + threadNumber + ".html#" + postNumber + "\"";
-            QString mouseover = "onmouseover=\"lord.viewPost(this, '" + boardName + "', " + postNumber + ");\"";
-            QString mouseout = "onmouseout=\"lord.noViewPost();\"";
-            QString a = "<a " + href + " " + mouseover + " " + mouseout + ">" + cap.replace(">", "&gt;") + "</a>";
+            QString a = "<a " + href + /*" " + mouseover + " " + mouseout*/ + ">" + cap.replace(">", "&gt;") + "</a>";
             t.replace(ind, rx.matchedLength(), a);
             skip << qMakePair(ind, a.length());
             ind = rx.indexIn(t, ind + a.length());
@@ -347,7 +355,7 @@ static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
 
 static void processWakabaMarkItalicExtra(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processWakabaMarkStrikeout, "//", "", "em");
+    processSimmetric(c, &processWakabaMarkStrikeout, "///", "", "em");
 }
 
 static void processWakabaMarkItalic(ProcessPostTextContext &c)
@@ -540,14 +548,9 @@ static void processTags(ProcessPostTextContext &c)
     c.process(t, skip, next);
 }
 
-static QString tagName(const QRegExp &rx)
+static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    QString cl = rx.cap();
-    cl = cl.mid(1, cl.length() - 2);
-    int ind = cl.indexOf(' ');
-    if (ind >= 0)
-        cl = cl.left(ind);
-    return cl;
+    processSimmetric(c, &processTags, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
 static void processTagCode(ProcessPostTextContext &c)
@@ -562,7 +565,7 @@ static void processTagCode(ProcessPostTextContext &c)
         QString tags;
         foreach (const QString &s, langs)
             tags += "|\\[" + s + "\\]";
-        QRegExp rx("\\[code\\s+lang\\=\"(" + langs.join("|").replace("+", "\\+") + ")\"\\s*\\]"
+        QRegExp rx("\\[code\\s+lang\\=\"?(" + langs.join("|").replace("+", "\\+") + ")\"?\\s*\\]"
                    + tags.replace("+", "\\+"));
         int indStart = rx.indexIn(t);
         QString tag = tagName(rx);
@@ -573,8 +576,8 @@ static void processTagCode(ProcessPostTextContext &c)
                 lang = tag;
             } else {
                 lang = rx.cap();
-                lang.remove(QRegExp("\\[code\\s+lang\\=\""));
-                lang.remove(QRegExp("\"\\s*\\]"));
+                lang.remove(QRegExp("\\[code\\s+lang\\=\"?"));
+                lang.remove(QRegExp("\"?\\s*\\]"));
             }
             lang.replace("++", "pp");
             int codeStart = indStart + rx.matchedLength();
@@ -587,13 +590,13 @@ static void processTagCode(ProcessPostTextContext &c)
                 sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
                 sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
             } catch (const srchilite::ParserException &e) {
-                qDebug() << e.what();
+                qDebug() << "processTagCode" << "ParserException" << e.what();
                 return;
             } catch (const srchilite::IOException &e) {
-                qDebug() << e.what();
+                qDebug() << "processTagCode" << "IOException" << e.what();
                 return;
             } catch (const std::exception &e) {
-                qDebug() << e.what();
+                qDebug() << "processTagCode" << "exception" << e.what();
                 return;
             }
             QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
@@ -603,12 +606,17 @@ static void processTagCode(ProcessPostTextContext &c)
             indEnd = t.indexOf("[/" + tag + "]", indStart + rx.matchedLength());
         }
     }
-    c.process(t, skip, &processTags);
+    c.process(t, skip, &processWakabaMarkMonospaceSingle);
+}
+
+static void processTagCodeNolang(ProcessPostTextContext &c)
+{
+    processAsymmetric(c, &processTagCode, "code", "pre");
 }
 
 static void processTagQuote(ProcessPostTextContext &c)
 {
-    processAsimmetric(c, &processTagCode, "q", "font", "<font face=\"monospace\">", true);
+    processAsymmetric(c, &processTagCodeNolang, "q", "font", "<font face=\"monospace\">", true);
 }
 
 static void processWakabaMarkCode(ProcessPostTextContext &c)
@@ -639,13 +647,13 @@ static void processWakabaMarkCode(ProcessPostTextContext &c)
                 sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
                 sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
             } catch (const srchilite::ParserException &e) {
-                qDebug() << e.what();
+                qDebug() << "processWakabaMarkCode" << "ParserException" << e.what();
                 return;
             } catch (const srchilite::IOException &e) {
-                qDebug() << e.what();
+                qDebug() << "processWakabaMarkCode" << "IOException" << e.what();
                 return;
             } catch (const std::exception &e) {
-                qDebug() << e.what();
+                qDebug() << "processWakabaMarkCode" << "exception" << e.what();
                 return;
             }
             QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
@@ -680,14 +688,9 @@ static void processWakabaMarkPre(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkCode);
 }
 
-static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
-{
-    processSimmetric(c, &processWakabaMarkPre, "`", "", "font", "<font face=\"monospace\">", true);
-}
-
 static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processWakabaMarkMonospaceSingle, "``", "", "font", "<font face=\"monospace\">", true);
+    processSimmetric(c, &processWakabaMarkPre, "``", "", "font", "<font face=\"monospace\">", true);
 }
 
 QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts)

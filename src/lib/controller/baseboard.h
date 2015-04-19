@@ -64,11 +64,13 @@ public:
     std::string name;
     std::string nameRaw;
     unsigned long long number;
+    bool ownPost;
     std::string rawName;
     bool rawHtml;
     std::string rawPostText;
     std::string rawSubject;
     std::list<Ref> referencedBy;
+    std::list<Ref> refersTo;
     bool showRegistered;
     std::string subject;
     bool subjectIsRaw;
@@ -104,6 +106,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string complainText;
     AbstractBoard::BoardInfo currentBoard;
     unsigned long long currentThread;
+    std::string deleteFileText;
     std::string deletePostText;
     std::string deleteThreadText;
     std::string downloadThreadText;

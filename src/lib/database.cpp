@@ -307,7 +307,7 @@ static QStringList deleteFileInfos(const Post &post, bool *ok = 0)
         }
         t.commit();
     } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
+        qDebug() << "deleteFileInfos" << Tools::fromStd(e.what());
         return bRet(ok, false, QStringList());
     }
     return bRet(ok, true, list);
@@ -338,20 +338,10 @@ static bool saveFile(const Tools::File &f, AbstractBoard::FileTransaction &ft, Q
 }
 
 static bool saveFiles(const QMap<QString, QString> &params, const Tools::FileList &files,
-                      AbstractBoard::FileTransaction &ft, bool thread, QString *error = 0, QString *description = 0,
+                      AbstractBoard::FileTransaction &ft, QString *error = 0, QString *description = 0,
                       const QLocale &l = BCoreApplication::locale())
 {
-    TranslatorQt tq(l);
     Tools::Post post = Tools::toPost(params, files);
-    if (thread && post.files.isEmpty() && post.fileHashes.isEmpty()) {
-        return bRet(error, tq.translate("saveFiles", "No file", "error"), description,
-                    tq.translate("saveFiles", "Attempt to create a thread without attaching a file", "description"),
-                    false);
-    }
-    if (post.text.isEmpty() && post.files.isEmpty() && post.fileHashes.isEmpty()) {
-        return bRet(error, tq.translate("saveFiles", "No file/text", "error"), description,
-                    tq.translate("saveFiles", "Both file and comment are missing", "description"), false);
-    }
     foreach (const Tools::File &f, post.files) {
         if (!saveFile(f, ft, error, description, l))
             return false;
@@ -526,7 +516,8 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             thread->setDateTime(p.dateTime);
             update(thread);
         }
-        board->beforeStoring(ps.data(), p.params, isThread);
+        if (!board->beforeStoringNewPost(p.request, ps.data(), p.params, isThread, p.error, p.description))
+            return false;
         t->persist(ps);
         foreach (const AbstractBoard::FileInfo &fi, p.fileTransaction.fileInfos()) {
             FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
@@ -741,8 +732,8 @@ void checkOutdatedEntries()
             }
         }
         t.commit();
-    }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+    } catch (const odb::exception &e) {
+        qDebug() << "checkOutdatedEntries" << e.what();
     }
 }
 
@@ -758,7 +749,7 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
                     tq.translate("createPost", "Internal logic error", "description"), false);
     }
     CreatePostInternalParameters pp(p, board);
-    if (!saveFiles(p.params, p.files, pp.fileTransaction, false, p.error, p.description, p.locale))
+    if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     try {
         Transaction t;
@@ -786,7 +777,7 @@ void createSchema()
         t->execute("PRAGMA foreign_keys=ON");
         t.commit();
     } catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "createSchema" << e.what();
     }
 }
 
@@ -802,7 +793,7 @@ quint64 createThread(CreateThreadParameters &p)
                     tq.translate("createThread", "Internal logic error", "description"), 0L);
     }
     CreatePostInternalParameters pp(p, board);
-    if (!saveFiles(p.params, p.files, pp.fileTransaction, true, p.error, p.description, p.locale))
+    if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     try {
         QStringList filesToDelete;
@@ -870,6 +861,48 @@ quint64 createThread(CreateThreadParameters &p)
     } catch (const odb::exception &e) {
         return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
                     Tools::fromStd(e.what()), 0L);
+    }
+}
+
+bool deleteFile(const QString &boardName, const QString &fileName,  const cppcms::http::request &req,
+                const QByteArray &password, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("deleteFile", "Invalid board name", "error"), false);
+    if (fileName.isEmpty())
+        return bRet(error, tq.translate("deleteFile", "Invalid file name", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (password.isEmpty() && hashpass.isEmpty())
+        return bRet(error, tq.translate("deleteFile", "Invalid password", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("deleteFile", "Internal database error", "error"), false);
+        Result<FileInfo> fileInfo = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
+        if (fileInfo.error)
+            return bRet(error, tq.translate("deleteFile", "Internal database error", "error"), false);
+        if (!fileInfo)
+            return bRet(error, tq.translate("deleteFile", "No such file", "error"), false);
+        QSharedPointer<Post> post = fileInfo->post().load();
+        if (post->board() != boardName)
+            return bRet(error, tq.translate("deleteFile", "Board name mismatch", "error"), false);
+        if (password.isEmpty()) {
+            if (hashpass != post->hashpass()) {
+                int lvl = registeredUserLevel(req);
+                if (!moderOnBoard(req, boardName) || registeredUserLevel(post->hashpass()) >= lvl)
+                    return bRet(error, tq.translate("deleteFile", "Not enough rights", "error"), false);
+            }
+        } else if (password != post->password()) {
+            return bRet(error, tq.translate("deleteFile", "Incorrect password", "error"), false);
+        }
+        erase(fileInfo);
+        t.commit();
+        Cache::removePost(boardName, post->number());
+        deleteFiles(boardName, QStringList() << fileName);
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
     }
 }
 
@@ -982,15 +1015,16 @@ bool editPost(EditPostParameters &p)
         post->setName(p.name);
         post->setSubject(p.subject);
         bool draftLast = post->draft();
+        Thread thread = *post->thread().load();
         if (post->draft() != draftLast) {
-            Thread thread = *post->thread().load();
-            if (thread.number() == post->number()) {
+            if (thread.number() == post->number())
                 thread.setDraft(post->draft());
-                t->update(thread);
-            }
         }
         if (!wasDraft)
             post->setModificationDateTime(QDateTime::currentDateTimeUtc());
+        if (!board->beforeStoringEditedPost(p.request, p.userData, *post, thread, p.error))
+            return false;
+        t->update(thread);
         update(post);
         Cache::removePost(p.boardName, p.postNumber);
         t.commit();
@@ -1014,7 +1048,7 @@ bool fileExists(const QByteArray &hash, bool *ok)
         t.commit();
         return bRet(ok, true, count->count > 0);
     } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
+        qDebug() << "fileExists" << Tools::fromStd(e.what());
         return bRet(ok, false, false);
     }
 }
@@ -1181,6 +1215,30 @@ quint64 incrementPostCounter(const QString &boardName, QString *error, const QLo
     return bRet(error, QString(), incremented);
 }
 
+bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp, const QByteArray &hashpass)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return false;
+    bool ok = false;
+    if (!Tools::ipNum(userIp, &ok) || !ok)
+        return false;
+    try {
+        Transaction t;
+        if (!t)
+            return false;
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == threadNumber);
+        if (post.error || !post)
+            return false;
+        bool b = (post->posterIp() == userIp) || (!hashpass.isEmpty() && post->hashpass() == hashpass);
+        t.commit();
+        return b;
+    } catch (const odb::exception &e) {
+        qDebug() << "isOp" << Tools::fromStd(e.what());
+        return false;
+    }
+}
+
 quint64 lastPostNumber(const QString &boardName, QString *error, const QLocale &l)
 {
     TranslatorQt tq(l);
@@ -1238,7 +1296,7 @@ bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNum
         t.commit();
         return true;
     }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "postExists" << e.what();
         return bRet(threadNumber, quint64(0), false);
     }
 }
@@ -1256,7 +1314,7 @@ QString posterIp(const QString &boardName, quint64 postNumber)
         t.commit();
         return post->posterIp();
     }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "posterIp" << e.what();
         return "";
     }
 }
@@ -1286,7 +1344,7 @@ QStringList registeredUserBoards(const QByteArray &hashpass)
         t.commit();
         return user->boards();
     }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "registeredUserBoards" << e.what();
         return QStringList();
     }
 }
@@ -1316,7 +1374,7 @@ int registeredUserLevel(const QByteArray &hashpass)
         t.commit();
         return level->level;
     }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "registeredUserLevel" << e.what();
         return -1;
     }
 }
@@ -1354,10 +1412,13 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
-        odb::query<Post> q;
-        foreach (const QString &board, boardNames)
-            q = q || odb::query<Post>::board == board;
-        q = odb::query<Post>::rawHtml == false && q;
+        odb::query<Post> q = (odb::query<Post>::rawHtml == false);
+        if (!boardNames.isEmpty()) {
+            odb::query<Post> qq = (odb::query<Post>::board == boardNames.first());
+            foreach (const QString &board, boardNames.mid(1))
+                qq = qq || (odb::query<Post>::board == board);
+            q = q && qq;
+        }
         QList<Post> posts = query<Post, Post>(q);
         foreach (int i, bRangeD(0, posts.size() - 1)) {
             Post &post = posts[i];
@@ -1440,6 +1501,91 @@ bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened
     }
 }
 
+bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request &req, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!postNumber)
+        return bRet(error, tq.translate("setVoteOpened", "Invalid post number", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("setVoteOpened", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
+                                                 && odb::query<Post>::board == "rpg");
+        if (post.error)
+            return bRet(error, tq.translate("setVoteOpened", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("setVoteOpened", "No such post", "error"), false);
+        QVariantMap m = post->userData().toMap();
+        if (m.value("disabled") == !opened)
+            return bRet(error, QString(), true);
+        m["disabled"] = !opened;
+        post->setUserData(m);
+        update(post);
+        t.commit();
+        Cache::removePost("rpg", postNumber);
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
+bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!postNumber)
+        return bRet(error, tq.translate("unvote", "Invalid post number", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("unvote", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
+                                                 && odb::query<Post>::board == "rpg");
+        if (post.error)
+            return bRet(error, tq.translate("unvote", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("unvote", "No such post", "error"), false);
+        QVariantMap m = post->userData().toMap();
+        if (m.value("disabled").toBool())
+            return bRet(error, tq.translate("unvote", "Voting disabled", "error"), false);
+        unsigned int ip = Tools::ipNum(Tools::userIp(req));
+        QVariantList users = m.value("users").toList();
+        bool voted = false;
+        foreach (int i, bRangeR(users.size() - 1, 0)) {
+            if (users.at(i).toUInt() == ip) {
+                users.removeAt(i);
+                voted = true;
+                break;
+            }
+        }
+        if (!voted)
+            return bRet(error, tq.translate("unvote", "Not voted yet", "error"), false);
+        m["users"] = users;
+        QVariantList variants = m.value("variants").toList();
+        foreach (int i, bRangeD(0, variants.size() - 1)) {
+            QVariantMap mm = variants.at(i).toMap();
+            QVariantList list = mm["users"].toList();
+            foreach (int i, bRangeR(list.size() - 1, 0)) {
+                if (list.at(i).toUInt() == ip) {
+                    list.removeAt(i);
+                    mm["voteCount"] = mm.value("voteCount").toUInt() - 1;
+                    break;
+                }
+            }
+            mm["users"] = list;
+            variants[i] = mm;
+        }
+        m["variants"] = variants;
+        post->setUserData(m);
+        update(post);
+        Cache::removePost("rpg", postNumber);
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
 BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QString *error, const QLocale &l)
 {
     BanInfo inf;
@@ -1484,6 +1630,66 @@ BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QStri
         return bRet(ok, true, error, QString(), inf);
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), inf);
+    }
+}
+
+bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::request &req, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!postNumber)
+        return bRet(error, tq.translate("vote", "Invalid post number", "error"), false);
+    if (votes.isEmpty())
+        return bRet(error, tq.translate("vote", "No votes", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("vote", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
+                                                 && odb::query<Post>::board == "rpg");
+        if (post.error)
+            return bRet(error, tq.translate("vote", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("vote", "No such post", "error"), false);
+        QVariantMap m = post->userData().toMap();
+        if (m.value("disabled").toBool())
+            return bRet(error, tq.translate("vote", "Voting disabled", "error"), false);
+        if (!m.value("multiple").toBool() && votes.size() > 1)
+            return bRet(error, tq.translate("vote", "Too many votes", "error"), false);
+        unsigned int ip = Tools::ipNum(Tools::userIp(req));
+        QVariantList users = m.value("users").toList();
+        foreach (const QVariant &v, users) {
+            if (v.toUInt() == ip)
+                return bRet(error, tq.translate("vote", "Repeated voting", "error"), false);
+        }
+        users << ip;
+        m["users"] = users;
+        QVariantList variants = m.value("variants").toList();
+        foreach (const QString &id, votes) {
+            if (votes.count(id) > 1)
+                return bRet(error, tq.translate("vote", "Multiple vote occurance", "error"), false);
+            bool found = false;
+            for (int i = 0; i < variants.size(); ++i) {
+                QVariantMap mm = variants.at(i).toMap();
+                if (mm.value("id").toString() != id)
+                    continue;
+                mm["voteCount"] = mm.value("voteCount").toUInt() + 1;
+                QVariantList list = mm["users"].toList();
+                list << ip;
+                mm["users"] = list;
+                variants[i] = mm;
+                found = true;
+            }
+            if (!found)
+                return bRet(error, tq.translate("vote", "Invalid vote", "error"), false);
+        }
+        m["variants"] = variants;
+        post->setUserData(m);
+        update(post);
+        Cache::removePost("rpg", postNumber);
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
     }
 }
 

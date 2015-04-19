@@ -281,6 +281,96 @@ The default is true.</source>
         <translation>Определяет, включены ли черновики на этой доске.
 По умолчанию true.</translation>
     </message>
+    <message>
+        <source>/a/nime</source>
+        <comment>title</comment>
+        <translation>/a/ниме</translation>
+    </message>
+    <message>
+        <source>Kamina</source>
+        <comment>defaultUserName</comment>
+        <translation>Камина</translation>
+    </message>
+    <message>
+        <source>/b/rotherhood</source>
+        <comment>title</comment>
+        <translation>/b/ратство</translation>
+    </message>
+    <message>
+        <source>/h/entai</source>
+        <comment>title</comment>
+        <translation>Хентай</translation>
+    </message>
+    <message>
+        <source>/int/ernational</source>
+        <comment>title</comment>
+        <translation>/int/ernational</translation>
+    </message>
+    <message>
+        <source>Vladimir Putin</source>
+        <comment>defaultUserName</comment>
+        <translation>Владимир Путин</translation>
+    </message>
+    <message>
+        <source>Refuge</source>
+        <comment>title</comment>
+        <translation>Убежище</translation>
+    </message>
+    <message>
+        <source>Whiner</source>
+        <comment>defaultUserName</comment>
+        <translation>Нытик</translation>
+    </message>
+    <message>
+        <source>Social life</source>
+        <comment>title</comment>
+        <translation>Жизнь в обществе</translation>
+    </message>
+    <message>
+        <source>Life of the party</source>
+        <comment>defaultUserName</comment>
+        <translation>Душа компании</translation>
+    </message>
+    <message>
+        <source>3D pron</source>
+        <comment>title</comment>
+        <translation>3D прон</translation>
+    </message>
+    <message>
+        <source>Video games</source>
+        <comment>title</comment>
+        <translation>Видеоигры</translation>
+    </message>
+    <message>
+        <source>PC Nobleman</source>
+        <comment>defaultUserName</comment>
+        <translation>Пекабоярин</translation>
+    </message>
+    <message>
+        <source>Attempt to create a thread without attaching a file</source>
+        <comment>error</comment>
+        <translation>Попытка создать тред без прикрепления файла</translation>
+    </message>
+    <message>
+        <source>Both file and comment are missing</source>
+        <comment>error</comment>
+        <translation>Отсутствуют и файл, и комментарий</translation>
+    </message>
+    <message>
+        <source>Too many files</source>
+        <comment>error</comment>
+        <translation>Слишком много файлов</translation>
+    </message>
+    <message>
+        <source>File is too big</source>
+        <comment>error</comment>
+        <translation>Файл слишком большой</translation>
+    </message>
+    <message>
+        <source>File type is not supported</source>
+        <comment>error</comment>
+        <translation>Тип файла не поддерживается</translation>
+    </message>
 </context>
 <context>
     <name>ActionAjaxHandler</name>
@@ -376,12 +466,12 @@ The default is true.</source>
     <message>
         <source>second list item</source>
         <comment>listItem2</comment>
-        <translation>первый элемент списка</translation>
+        <translation>второй элемент списка</translation>
     </message>
     <message>
         <source>third list item</source>
         <comment>listItem3</comment>
-        <translation>первый элемент списка</translation>
+        <translation>третий элемент списка</translation>
     </message>
     <message>
         <source>List markup</source>
@@ -485,19 +575,6 @@ text</source>
     </message>
 </context>
 <context>
-    <name>aBoard</name>
-    <message>
-        <source>/a/nime</source>
-        <comment>board title</comment>
-        <translation>/a/ниме</translation>
-    </message>
-    <message>
-        <source>Kamina</source>
-        <comment>defaultUserName</comment>
-        <translation>Камина</translation>
-    </message>
-</context>
-<context>
     <name>addToReferencedPosts</name>
     <message>
         <source>Internal error</source>
@@ -523,14 +600,6 @@ text</source>
         <source>There is no such post</source>
         <comment>description</comment>
         <translation>Нет такого поста</translation>
-    </message>
-</context>
-<context>
-    <name>bBoard</name>
-    <message>
-        <source>/b/rotherhood</source>
-        <comment>board title</comment>
-        <translation>/b/ратство</translation>
     </message>
 </context>
 <context>
@@ -769,6 +838,49 @@ text</source>
     </message>
 </context>
 <context>
+    <name>deleteFile</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid file name</source>
+        <comment>error</comment>
+        <translation>Неправильное имя файла</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such file</source>
+        <comment>error</comment>
+        <translation>Нет такого файла</translation>
+    </message>
+    <message>
+        <source>Board name mismatch</source>
+        <comment>error</comment>
+        <translation>Несоответствие имени доски</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+</context>
+<context>
     <name>deletePost</name>
     <message>
         <source>Invalid board name</source>
@@ -860,6 +972,26 @@ text</source>
         <source>Thread link:</source>
         <comment>postFormLabelLink</comment>
         <translation>Ссылка на тред:</translation>
+    </message>
+    <message>
+        <source>Attempt to edit link of non-OP post</source>
+        <comment>error</comment>
+        <translation>Попытка редактирования ссылки в не-ОП-посте</translation>
+    </message>
+    <message>
+        <source>This board/thread may not be accepted</source>
+        <comment>error</comment>
+        <translation>Эта доска/тред не может быть принята</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
@@ -1007,14 +1139,6 @@ text</source>
         <source>Internal logic error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
-    </message>
-</context>
-<context>
-    <name>hBoard</name>
-    <message>
-        <source>/h/entai</source>
-        <comment>board title</comment>
-        <translation>Хентай</translation>
     </message>
 </context>
 <context>
@@ -1388,16 +1512,6 @@ Your choice:</source>
         <translation>Закрыть тред</translation>
     </message>
     <message>
-        <source>Delete post</source>
-        <comment>fixedText</comment>
-        <translation>Удалить пост</translation>
-    </message>
-    <message>
-        <source>Delete thread</source>
-        <comment>fixedText</comment>
-        <translation>Удалить тред</translation>
-    </message>
-    <message>
         <source>If password is empty, current hashpass will be used</source>
         <comment>enterPasswordText</comment>
         <translation>Если пароль пуст, будет использован текущий хешпасс</translation>
@@ -1650,7 +1764,7 @@ Your choice:</source>
     <message>
         <source>Download all thread files as a .zip archive</source>
         <comment>downloadThreadText</comment>
-        <translation>Скачать все файлы из треда в виде .zip-архива</translation>
+        <translation>Скачoать все файлы из треда в виде .zip-архива</translation>
     </message>
     <message>
         <source>Draft:</source>
@@ -1661,6 +1775,21 @@ Your choice:</source>
         <source>Last modified:</source>
         <comment>modificationDateTimeText</comment>
         <translation>Последнее изменение:</translation>
+    </message>
+    <message>
+        <source>Delete post</source>
+        <comment>deletePostText</comment>
+        <translation>Удалить пост</translation>
+    </message>
+    <message>
+        <source>Delete thread</source>
+        <comment>deleteThreadText</comment>
+        <translation>Удалить тред</translation>
+    </message>
+    <message>
+        <source>Delete file</source>
+        <comment>deleteFileText</comment>
+        <translation>Удалить файл</translation>
     </message>
 </context>
 <context>
@@ -2026,19 +2155,6 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>intBoard</name>
-    <message>
-        <source>/int/ernational</source>
-        <comment>board title</comment>
-        <translation>/int/ernational</translation>
-    </message>
-    <message>
-        <source>Vladimir Putin</source>
-        <comment>defaultUserName</comment>
-        <translation>Владимир Путин</translation>
-    </message>
-</context>
-<context>
     <name>lastPostNumber</name>
     <message>
         <source>Invalid database connection</source>
@@ -2257,16 +2373,86 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>rfBoard</name>
+    <name>rpgBoard</name>
     <message>
-        <source>Refuge</source>
+        <source>Role-playing games</source>
         <comment>board title</comment>
-        <translation>Убежище</translation>
+        <translation>Ролевые игры</translation>
     </message>
     <message>
-        <source>Whiner</source>
-        <comment>defaultUserName</comment>
-        <translation>Нытик</translation>
+        <source>Add variant</source>
+        <comment>addVoteVariantText</comment>
+        <translation>Добавить вариант</translation>
+    </message>
+    <message>
+        <source>Multiple variants allowed:</source>
+        <comment>multipleVoteVariantsText</comment>
+        <translation>Разрешено несколько вариантов:</translation>
+    </message>
+    <message>
+        <source>Remove variant</source>
+        <comment>removeVoteVariantText</comment>
+        <translation>Убрать вариант</translation>
+    </message>
+    <message>
+        <source>Vote:</source>
+        <comment>postFormLabelVote</comment>
+        <translation>Голосование:</translation>
+    </message>
+    <message>
+        <source>Vote</source>
+        <comment>voteActionText</comment>
+        <translation>Проголосовать</translation>
+    </message>
+    <message>
+        <source>Text:</source>
+        <comment>voteTextText</comment>
+        <translation>Текст:</translation>
+    </message>
+    <message>
+        <source>voted:</source>
+        <comment>votedText</comment>
+        <translation>проголосовало:</translation>
+    </message>
+    <message>
+        <source>Take vote back</source>
+        <comment>unvoteActionText</comment>
+        <translation>Забрать голос</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Attempt to attach voting while not being the OP</source>
+        <comment>description</comment>
+        <translation>Попытка прикрепить голосование не будучи ОПом</translation>
+    </message>
+    <message>
+        <source>Close voting</source>
+        <comment>closeVoteActionText</comment>
+        <translation>Закрыть голосование</translation>
+    </message>
+    <message>
+        <source>Open voting</source>
+        <comment>openVoteActionText</comment>
+        <translation>Открыть голосование</translation>
+    </message>
+    <message>
+        <source>Voting is closed</source>
+        <comment>voteClosedText</comment>
+        <translation>Голосование закрыто</translation>
     </message>
 </context>
 <context>
@@ -2285,29 +2471,6 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Internal file system error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка файловой системы</translation>
-    </message>
-</context>
-<context>
-    <name>saveFiles</name>
-    <message>
-        <source>No file</source>
-        <comment>error</comment>
-        <translation>Отсутствует файл</translation>
-    </message>
-    <message>
-        <source>Attempt to create a thread without attaching a file</source>
-        <comment>description</comment>
-        <translation>Попытка создать тред без прикрепления файла</translation>
-    </message>
-    <message>
-        <source>No file/text</source>
-        <comment>error</comment>
-        <translation>Нет файла/текста</translation>
-    </message>
-    <message>
-        <source>Both file and comment are missing</source>
-        <comment>description</comment>
-        <translation>Отсутствуют и файл, и комментарий</translation>
     </message>
 </context>
 <context>
@@ -2439,6 +2602,24 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
+    <name>setVoteOpened</name>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+</context>
+<context>
     <name>showDefaultThreadPassword</name>
     <message>
         <source>Password is stored as a hash (SHA-1). You may see it in the .conf file.</source>
@@ -2470,19 +2651,6 @@ IP-адреса записываются в виде диапазонов и о�
     <message>
         <source>Poster country:</source>
         <translation>Страна постера:</translation>
-    </message>
-</context>
-<context>
-    <name>socBoard</name>
-    <message>
-        <source>Life of the party</source>
-        <comment>defaultUserName</comment>
-        <translation>Душа компании</translation>
-    </message>
-    <message>
-        <source>Social life</source>
-        <comment>board title</comment>
-        <translation>Жизнь в обществе</translation>
     </message>
 </context>
 <context>
@@ -2519,16 +2687,6 @@ IP-адреса записываются в виде диапазонов и о�
         <translation>Неправильные параметры</translation>
     </message>
     <message>
-        <source>Too many files</source>
-        <comment>description</comment>
-        <translation>Слишком много файлов</translation>
-    </message>
-    <message>
-        <source>File is too big</source>
-        <comment>description</comment>
-        <translation>Файл слишком большой</translation>
-    </message>
-    <message>
         <source>Internal error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
@@ -2537,11 +2695,6 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Internal logic error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
-    </message>
-    <message>
-        <source>File type is not supported</source>
-        <comment>description</comment>
-        <translation>Тип файла не поддерживается</translation>
     </message>
 </context>
 <context>
@@ -2558,11 +2711,31 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>threedpdBoard</name>
+    <name>unvote</name>
     <message>
-        <source>3D pron</source>
-        <comment>board title</comment>
-        <translation>3D прон</translation>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Voting disabled</source>
+        <comment>error</comment>
+        <translation>Голосование отключено</translation>
+    </message>
+    <message>
+        <source>Not voted yet</source>
+        <comment>error</comment>
+        <translation>Еще не голосовал</translation>
     </message>
 </context>
 <context>
@@ -2579,16 +2752,51 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
-    <name>vgBoard</name>
+    <name>vote</name>
     <message>
-        <source>Video games</source>
-        <comment>board title</comment>
-        <translation>Видеоигры</translation>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
     </message>
     <message>
-        <source>PC Nobleman</source>
-        <comment>defaultUserName</comment>
-        <translation>Пекабоярин</translation>
+        <source>No votes</source>
+        <comment>error</comment>
+        <translation>Отсутствуют голоса</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Repeated voting</source>
+        <comment>error</comment>
+        <translation>Повторное голосование</translation>
+    </message>
+    <message>
+        <source>Too many votes</source>
+        <comment>error</comment>
+        <translation>Слишком много голосов</translation>
+    </message>
+    <message>
+        <source>Multiple vote occurance</source>
+        <comment>error</comment>
+        <translation>Множественное повторение голоса</translation>
+    </message>
+    <message>
+        <source>Invalid vote</source>
+        <comment>error</comment>
+        <translation>Некорректный голос</translation>
+    </message>
+    <message>
+        <source>Voting disabled</source>
+        <comment>error</comment>
+        <translation>Голосование отключено</translation>
     </message>
 </context>
 </TS>

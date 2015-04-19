@@ -65,7 +65,7 @@ struct OLOLORD_EXPORT IpRange
     unsigned int end;
 public:
     explicit IpRange(const QString &text, const QChar &separator = '-');
-    explicit IpRange(const QStringList &sl, int startIndex = 0, int endIndex = 1);
+    explicit IpRange(const QStringList &sl, int startIndex = 0, int endIndex = 1, bool num = false);
 public:
     void clear();
     bool in(unsigned int ip) const;
@@ -133,6 +133,7 @@ OLOLORD_EXPORT int ipBanLevel(const QString &ip);
 OLOLORD_EXPORT int ipBanLevel(const cppcms::http::request &req);
 OLOLORD_EXPORT bool isAudioType(const QString &mimeType);
 OLOLORD_EXPORT bool isImageType(const QString &mimeType);
+OLOLORD_EXPORT unsigned int ipNum(const QString &ip, bool *ok = 0);
 OLOLORD_EXPORT bool isSpecialThumbName(const QString &tn);
 OLOLORD_EXPORT bool isVideoType(const QString &mimeType);
 OLOLORD_EXPORT QDateTime localDateTime(const QDateTime &dt, int offsetMinutes = -1000);

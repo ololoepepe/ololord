@@ -11,6 +11,7 @@ class Thread;
 }
 
 class Post;
+class Thread;
 
 namespace Tools
 {
@@ -45,6 +46,8 @@ class request;
 #include <QMap>
 #include <QMutex>
 #include <QString>
+
+#include <cppcms/json.h>
 
 #include <list>
 #include <string>
@@ -113,7 +116,11 @@ public:
 public:
     unsigned int archiveLimit() const;
     QString bannerFileName() const;
-    virtual void beforeStoring(Post *post, const Tools::PostParameters &params, bool thread);
+    virtual bool beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
+                                         Thread &thread, QString *error = 0);
+    virtual bool beforeStoringNewPost(const cppcms::http::request &req, Post *post,
+                                      const Tools::PostParameters &params, bool thread, QString *error = 0,
+                                      QString *description = 0);
     unsigned int bumpLimit() const;
     unsigned int captchaQuota() const;
     unsigned int captchaQuota(const QString &ip) const;
@@ -141,13 +148,14 @@ public:
     virtual bool saveFile(const Tools::File &f, FileTransaction &ft);
     virtual bool showWhois() const;
     virtual QString supportedFileTypes() const;
-    virtual bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l,
-                            QString *error = 0) const;
+    virtual bool testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
+                            const QLocale &l, QString *error = 0) const;
     unsigned int threadLimit() const;
     unsigned int threadsPerPage() const;
     virtual QString title(const QLocale &l) const = 0;
     virtual Content::Post toController(const Post &post, const cppcms::http::request &req, bool *ok = 0,
                                        QString *error = 0) const;
+    virtual cppcms::json::object toJson(const Content::Post &post, const cppcms::http::request &req) const;
 protected:
     virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
     virtual void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);

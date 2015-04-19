@@ -104,12 +104,12 @@ void Transaction::commit()
                 delete h;
                 delete db;
             } catch (const std::exception &e) {
-                qDebug() << e.what();
+                qDebug() << "commit" << "exception" << e.what();
                 return;
             }
         }
     } catch (const odb::not_in_transaction &e) {
-        qDebug() << e.what();
+        qDebug() << "commit" << "not_in_transaction" << e.what();
         return;
     }
     finalized = true;
@@ -121,7 +121,7 @@ odb::database *Transaction::db() const
         odb::transaction &t = odb::transaction::current();
         return &t.database();
     } catch (const odb::not_in_transaction &e) {
-        qDebug() << e.what();
+        qDebug() << "db" << e.what();
         return 0;
     }
 }
@@ -147,7 +147,7 @@ void Transaction::reset()
             sqlite3_create_function(c->handle(), "like", 3, SQLITE_UTF8, 0, &sqliteLike3, 0, 0);
             new Hack(db->begin());
         } catch (const std::exception &e) {
-            qDebug() << e.what();
+            qDebug() << "reset" << e.what();
             return;
         }
     }
@@ -169,12 +169,12 @@ void Transaction::rollback()
                 delete h;
                 delete db;
             } catch (const std::exception &e) {
-                qDebug() << e.what();
+                qDebug() << "rollback" << "exception" << e.what();
                 return;
             }
         }
     } catch (const odb::not_in_transaction &e) {
-        qDebug() << e.what();
+        qDebug() << "rollback" << "not_in_transaction" << e.what();
         return;
     }
     finalized = true;

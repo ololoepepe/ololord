@@ -2,6 +2,16 @@
     Base
 */
 
+@media only screen and (max-width: 768px) {
+    body {
+        -moz-text-size-adjust: 100%;
+        -webkit-text-size-adjust: 100%;
+        -ms-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+        font-size: 16px;
+    }
+}
+
 body {
     background-color: #EEEEEE;
 }
@@ -52,6 +62,16 @@ hr {
     padding: 5px 5px 5px 5px;
 }
 
+.critical {
+    color: red;
+    border: 1px dotted red;
+}
+
+.warning {
+    color: orange;
+    border: 1px dotted orange;
+}
+
 /*
     Ban
 */
@@ -81,9 +101,11 @@ blockquote {
     margin-top: 5px;
     margin-left: 10px;
     overflow-y: auto;
-    overflow-x: visible;
+    overflow-x: auto;
     max-height: 300px;
-    max-width: 2000px;
+    box-sizing: border-box;
+    max-width: 1200px;
+    word-wrap: break-word;
 }
 
 span.spoiler, span.spoiler a {
@@ -584,4 +606,19 @@ a.progressBlocking {
     margin-right: auto;
     text-align: center;
     white-space: nowrap;
+}
+
+/* Vote */
+
+.vote {
+    background-color: #CCCCCC;
+    border: 1px solid #BBBBBB;
+}
+
+.voteText {
+    font-weight: bold;
+}
+
+.voteCount {
+    font-style: italic;
 }

@@ -1,0 +1,133 @@
+<% c++ #include "controller/rpgthread.h" %>
+<% skin my_skin %>
+<% view rpg_thread uses Content::rpgThread extends thread %>
+
+<% template customPostFormField4(std::string position) %>
+<% if ( content.voteEnabled ) %>
+    <tr>
+        <td class="postformLabel">
+            <b><%= postFormLabelVote %></b>
+        </td>
+        <td class="postformField">
+            <div><%= voteTextText %> <input id="voteText<%= position %>" type="text" name="voteText" size="36" /></div>
+            <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
+            <div id="voteVariants<%= position %>"></div>
+            <a href="javascript:lord.addVoteVariant('<%= position %>');">
+                <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
+            <input id="voteVariantCount<%= position %>" type="hidden" name="voteVariantCount" value="0" />
+        </td>
+    </tr>
+<% end %>
+<% end template %>
+
+<% template customPostFormFieldEdit4() %>
+<tr>
+    <td class="postformLabel">
+        <b><%= postFormLabelVote %></b>
+    </td>
+    <td class="postformField">
+        <div><%= voteTextText %> <input type="text" name="voteText" size="36" /></div>
+        <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
+        <div name="voteVariants"></div>
+        <a href="javascript:void(0)">
+            <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
+        <input type="hidden" name="voteVariantCount" value="0" />
+    </td>
+</tr>
+<% end template %>
+
+<% template customPostBody2(Content::Post post, Content::Board::ThreadPointer) %>
+<% c++ QVariantMap m = post.userData.toMap(); %>
+<% c++ QVariantList variants = m.value("variants").toList(); %>
+<% c++ if (variants.isEmpty()) return; %>
+<% c++ std::string voteText = Tools::toStd(m.value("text").toString()); %>
+<% c++ bool multiple = m.value("multiple").toBool(); %>
+<% c++ bool disabled = m.value("disabled").toBool(); %>
+<% c++ bool voted = false; %>
+<% c++ QVariantList users = m.value("users").toList(); %>
+<% c++ for (int i = 0; i < users.size(); ++i) { %>
+<% c++     if (users.at(i).toUInt() == content.userIp) { %>
+<% c++         voted = true; %>
+<% c++         break; %>
+<% c++     } %>
+<% c++ } %>
+<tr>
+    <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"vote\">"; %>
+        <% c++ out() << "<div name=\"voteText\" class=\"voteText\">"; %>
+        <% c++ if (disabled) { %>
+            <img name="voteClosedImg" src="/<%= sitePathPrefix %>img/closed.png" title="<%= voteClosedText %>">
+        <% c++ } %>
+        <% c++ out() << voteText << "</div>"; %>
+        <div name="voteVariants">
+            <% c++ out() << "<input type=\"hidden\" value=\"" << (multiple ? "true" : "false") << "\" />"; %> 
+            <% c++ for (int i = 0; i < variants.size(); ++i) { %>
+            <% c++     QVariantMap mm = variants.at(i).toMap(); %>
+            <% c++     std::string id = Tools::toStd(mm.value("id").toString()); %>
+            <% c++     std::string text = Tools::toStd(mm.value("text").toString()); %>
+            <% c++     unsigned int voteCount = mm.value("voteCount").toUInt(); %>
+            <% c++     if (multiple) {%>
+            <% c++         out() << "<input type=\"checkbox\" name=\"voteVariant" << id << "\" "; %>
+            <% c++     } else { %>
+            <% c++         out() << "<input type=\"radio\" name=\"voteGroup\" value=\"" << id << "\" "; %>
+            <% c++     } %>
+            <% c++     if (disabled || voted) out() << "disabled=\"true\" "; %>
+            <% c++     foreach (const QVariant &v, mm.value("users").toList()) { %>
+            <% c++         if (v.toUInt() == content.userIp) { out() << "checked=\"true\" "; break; } %>
+            <% c++     } %>
+            <% c++     out() << "/> " << text << " <span class=\"voteCount\">(" << content.votedText << " "; %>
+            <% c++     out() << voteCount << ")</span><br>"; %>
+            <% c++ } %>
+        </div>
+        <% if ( !disabled && !voted ) %>
+            <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
+        <% else %>
+            <button name="buttonVote" disabled="true"><%= voteActionText %></button>
+        <% end %>
+        <% if ( !disabled && voted ) %>
+            <button name="buttonUnvote" onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
+        <% else %>
+            <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
+        <% end %>
+        <% if ( post.ownPost ) %>
+            <% if ( !disabled ) %>
+                <button name="buttonSetVoteClosed"
+                        onclick="lord.setVoteOpened(<%= post.number %>, false);"><%= closeVoteActionText %></button>
+            <% else %>
+                <button name="buttonSetVoteOpened"
+                        onclick="lord.setVoteOpened(<%= post.number %>, true);"><%= openVoteActionText %></button>
+            <% end %>
+        <% end %>
+    </td>
+</tr>
+<% end template %>
+
+<% template customPostBodyTemplate2() %>
+<tr name="voteTr">
+    <td name="voteTd" colspan="2" class="vote">
+        <div name="voteText" class="voteText">
+            <img name="voteClosedImg" src="/<%= sitePathPrefix %>img/closed.png" title="<%= voteClosedText %>">
+        </div>
+        <div name="voteVariants">
+            <input type="hidden" value="false" />
+        </div>
+        <button name="buttonVote"><%= voteActionText %></button>
+        <button name="buttonUnvote"><%= unvoteActionText %></button>
+        <button name="buttonSetVoteClosed"><%= closeVoteActionText %></button>
+        <button name="buttonSetVoteOpened"><%= openVoteActionText %></button>
+    </td>
+<tr>
+<% end template %>
+
+<% template boardHead() %>
+<%include thread::boardHead() %>
+<script type="text/javascript" src="/<%= sitePathPrefix %>js/rpg_base.js"></script>
+<% end template %>
+
+<% template boardTexts() %>
+<%include thread::boardTexts() %>
+<input type="hidden" id="removeVoteVariantText" value="<%= removeVoteVariantText %>" />
+<input type="hidden" id="votedText" value="<%= votedText %>" />
+<% end template %>
+
+<% end view %>
+<% end skin %>

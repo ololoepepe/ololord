@@ -41,6 +41,8 @@ class request;
 #include <QString>
 #include <QStringList>
 
+#include <cppcms/json.h>
+
 #ifndef OLOLORD_NO_ODB
 #include <odb/database.hxx>
 #include <odb/query.hxx>
@@ -246,6 +248,7 @@ public:
     bool raw;
     QString subject;
     QString text;
+    cppcms::json::value userData;
     RefMap referencedPosts;
 public:
     explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post);
@@ -279,6 +282,8 @@ OLOLORD_EXPORT void checkOutdatedEntries();
 OLOLORD_EXPORT bool createPost(CreatePostParameters &p, quint64 *postNumber = 0);
 OLOLORD_EXPORT void createSchema();
 OLOLORD_EXPORT quint64 createThread(CreateThreadParameters &p);
+OLOLORD_EXPORT bool deleteFile(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
+                               const QByteArray &password, QString *error = 0);
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QString *error = 0,
                                const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
@@ -293,6 +298,8 @@ OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boa
                             bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *error = 0,
                                             const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp,
+                         const QByteArray &hashpass = QByteArray());
 OLOLORD_EXPORT quint64 lastPostNumber(const QString &boardName, QString *error = 0,
                                       const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool moderOnBoard(const cppcms::http::request &req, const QString &board1,
@@ -318,8 +325,13 @@ OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumb
                                     const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened,
                                     const cppcms::http::request &req, QString *error = 0);
+OLOLORD_EXPORT bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request &req,
+                                  QString *error = 0);
+OLOLORD_EXPORT bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error = 0);
 OLOLORD_EXPORT BanInfo userBanInfo(const QString &ip, const QString &boardName = QString(), bool *ok = 0,
                                    QString *error = 0, const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::request &req,
+                         QString *error = 0);
 
 }
 
