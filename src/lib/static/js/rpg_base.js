@@ -105,7 +105,7 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
                 inp.name = "voteGroup";
                 inp.value = v.id;
             }
-            if (disabled || voted)
+            if (!!res["ownPost"] || disabled || voted)
                 inp.disabled = "true";
             inp.checked = !!v.selected;
             div.appendChild(inp);
@@ -118,18 +118,6 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
         });
         var btnVote = lord.nameOne("buttonVote", tr);
         var btnUnvote = lord.nameOne("buttonUnvote", tr);
-        if (disabled) {
-            btnVote.disabled = "true";
-            btnUnvote.disabled = "true";
-        } else {
-            if (voted) {
-                btnUnvote.onclick = lord.unvote.bind(lord, +res["number"]);
-                btnVote.disabled = "true";
-            } else {
-                btnVote.onclick = lord.vote.bind(lord, +res["number"]);
-                btnUnvote.disabled = "true";
-            }
-        }
         var btnClose = lord.nameOne("buttonSetVoteClosed", tr);
         var btnOpen = lord.nameOne("buttonSetVoteOpened", tr);
         if (!!res["ownPost"]) {
@@ -140,7 +128,21 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
                 btnClose.onclick = lord.setVoteOpened.bind(lord, res["number"], false);
                 btnOpen.parentNode.removeChild(btnOpen);
             }
+            btnVote.parentNode.removeChild(btnVote);
+            btnUnvote.parentNode.removeChild(btnUnvote);
         } else {
+            if (disabled) {
+                btnVote.disabled = "true";
+                btnUnvote.disabled = "true";
+            } else {
+                if (voted) {
+                    btnUnvote.onclick = lord.unvote.bind(lord, +res["number"]);
+                    btnVote.disabled = "true";
+                } else {
+                    btnVote.onclick = lord.vote.bind(lord, +res["number"]);
+                    btnUnvote.disabled = "true";
+                }
+            }
             btnClose.parentNode.removeChild(btnClose);
             btnOpen.parentNode.removeChild(btnOpen);
         }
@@ -152,6 +154,8 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
 lord.customResetForm = function(form) {
     var pos = form.id.replace("postForm", "");
     var parent = lord.id("voteVariants" + pos);
+    if (!parent)
+        return;
     lord.arr(parent.children).forEach(function(el) {
         parent.removeChild(el);
     });

@@ -70,7 +70,7 @@
             <% c++     } else { %>
             <% c++         out() << "<input type=\"radio\" name=\"voteGroup\" value=\"" << id << "\" "; %>
             <% c++     } %>
-            <% c++     if (disabled || voted) out() << "disabled=\"true\" "; %>
+            <% c++     if (post.ownPost || disabled || voted) out() << "disabled=\"true\" "; %>
             <% c++     foreach (const QVariant &v, mm.value("users").toList()) { %>
             <% c++         if (v.toUInt() == content.userIp) { out() << "checked=\"true\" "; break; } %>
             <% c++     } %>
@@ -78,16 +78,6 @@
             <% c++     out() << voteCount << ")</span><br>"; %>
             <% c++ } %>
         </div>
-        <% if ( !disabled && !voted ) %>
-            <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
-        <% else %>
-            <button name="buttonVote" disabled="true"><%= voteActionText %></button>
-        <% end %>
-        <% if ( !disabled && voted ) %>
-            <button name="buttonUnvote" onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
-        <% else %>
-            <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
-        <% end %>
         <% if ( post.ownPost ) %>
             <% if ( !disabled ) %>
                 <button name="buttonSetVoteClosed"
@@ -95,6 +85,17 @@
             <% else %>
                 <button name="buttonSetVoteOpened"
                         onclick="lord.setVoteOpened(<%= post.number %>, true);"><%= openVoteActionText %></button>
+            <% end %>
+        <% else %>
+            <% if ( !disabled && !voted ) %>
+                <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
+            <% else %>
+                <button name="buttonVote" disabled="true"><%= voteActionText %></button>
+            <% end %>
+            <% if ( !disabled && voted ) %>
+                <button name="buttonUnvote" onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
+            <% else %>
+                <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
             <% end %>
         <% end %>
     </td>

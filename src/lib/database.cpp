@@ -1650,12 +1650,15 @@ bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::requ
             return bRet(error, tq.translate("vote", "Internal database error", "error"), false);
         if (!post)
             return bRet(error, tq.translate("vote", "No such post", "error"), false);
+        QString userIp = Tools::userIp(req);
+        if (post->posterIp() == userIp)
+            return bRet(error, tq.translate("vote", "Attempt to vote in an own voting", "error"), false);
         QVariantMap m = post->userData().toMap();
         if (m.value("disabled").toBool())
             return bRet(error, tq.translate("vote", "Voting disabled", "error"), false);
         if (!m.value("multiple").toBool() && votes.size() > 1)
             return bRet(error, tq.translate("vote", "Too many votes", "error"), false);
-        unsigned int ip = Tools::ipNum(Tools::userIp(req));
+        unsigned int ip = Tools::ipNum(userIp);
         QVariantList users = m.value("users").toList();
         foreach (const QVariant &v, users) {
             if (v.toUInt() == ip)

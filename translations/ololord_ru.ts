@@ -2798,5 +2798,10 @@ IP-адреса записываются в виде диапазонов и о�
         <comment>error</comment>
         <translation>Голосование отключено</translation>
     </message>
+    <message>
+        <source>Attempt to vote in an own voting</source>
+        <comment>error</comment>
+        <translation>Попытка проголосовать в собственном голосовании</translation>
+    </message>
 </context>
 </TS>
