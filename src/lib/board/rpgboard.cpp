@@ -23,16 +23,22 @@ rpgBoard::rpgBoard()
     //
 }
 
-void rpgBoard::beforeStoring(Post *post, const Tools::PostParameters &params, bool thread)
+bool rpgBoard::beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,
+                                    bool thread, QString *error, QString *description)
 {
-    if (!post)
-        return;
-    if (!thread && !Database::isOp(post->board(), post->thread()->number(), post->posterIp(), post->hashpass()))
-        return;
+    TranslatorQt tq(req);
+    if (!post) {
+        return bRet(error, tq.translate("rpgBoard", "Internal error", "error"), description,
+                    tq.translate("rpgBoard", "Internal logic error", "description"), false);
+    }
     bool ok = false;
     int count = params.value("voteVariantCount").toInt(&ok);
     if (!ok || count <= 0)
-        return;
+        return bRet(error, QString(), description, QString(), true);
+    if (!thread && !Database::isOp(post->board(), post->thread()->number(), post->posterIp(), post->hashpass())) {
+        return bRet(error, tq.translate("rpgBoard", "Not enough rights", "error"), description,
+                    tq.translate("rpgBoard", "Attempt to attach voting while not being the OP", "description"), false);
+    }
     QVariantMap m;
     QVariantList variants;
     foreach (int i, bRangeD(1, count)) {
@@ -45,11 +51,12 @@ void rpgBoard::beforeStoring(Post *post, const Tools::PostParameters &params, bo
         variants << mm;
     }
     if (variants.isEmpty())
-        return;
+        return bRet(error, QString(), description, QString(), true);
     m.insert("variants", variants);
     m.insert("multiple", params.value("multipleVoteVariants") == "true");
     m.insert("text", params.value("voteText"));
     post->setUserData(m);
+    return bRet(error, QString(), description, QString(), true);
 }
 
 QString rpgBoard::name() const

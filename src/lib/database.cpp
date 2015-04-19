@@ -526,7 +526,8 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             thread->setDateTime(p.dateTime);
             update(thread);
         }
-        board->beforeStoring(ps.data(), p.params, isThread);
+        if (!board->beforeStoringNewPost(p.request, ps.data(), p.params, isThread, p.error, p.description))
+            return false;
         t->persist(ps);
         foreach (const AbstractBoard::FileInfo &fi, p.fileTransaction.fileInfos()) {
             FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
@@ -1031,7 +1032,7 @@ bool editPost(EditPostParameters &p)
         }
         if (!wasDraft)
             post->setModificationDateTime(QDateTime::currentDateTimeUtc());
-        if (!board->editPost(p.request, p.userData, *post, thread, p.error))
+        if (!board->beforeStoringEditedPost(p.request, p.userData, *post, thread, p.error))
             return false;
         t->update(thread);
         update(post);

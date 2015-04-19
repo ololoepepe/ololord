@@ -441,12 +441,12 @@ The default is true.</source>
     <message>
         <source>second list item</source>
         <comment>listItem2</comment>
-        <translation>первый элемент списка</translation>
+        <translation>второй элемент списка</translation>
     </message>
     <message>
         <source>third list item</source>
         <comment>listItem3</comment>
-        <translation>первый элемент списка</translation>
+        <translation>третий элемент списка</translation>
     </message>
     <message>
         <source>List markup</source>
@@ -957,6 +957,16 @@ text</source>
         <source>This board/thread may not be accepted</source>
         <comment>error</comment>
         <translation>Эта доска/тред не может быть принята</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
@@ -2383,6 +2393,26 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Take vote back</source>
         <comment>unvoteActionText</comment>
         <translation>Забрать голос</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Attempt to attach voting while not being the OP</source>
+        <comment>description</comment>
+        <translation>Попытка прикрепить голосование не будучи ОПом</translation>
     </message>
 </context>
 <context>

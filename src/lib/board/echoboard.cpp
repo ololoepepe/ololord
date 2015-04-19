@@ -29,20 +29,8 @@ echoBoard::echoBoard()
     //
 }
 
-void echoBoard::beforeStoring(Post *post, const Tools::PostParameters &params, bool thread)
-{
-    if (!post)
-        return;
-    if (!thread)
-        return;
-    QString link = params.value("link");
-    if (!link.startsWith("http"))
-        link.prepend("http://");
-    post->setUserData(link);
-}
-
-bool echoBoard::editPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p, Thread &thread,
-                         QString *error)
+bool echoBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
+                                        Thread &thread, QString *error)
 {
     if (userData.is_null() || userData.is_undefined())
         return bRet(error, QString(), true);
@@ -63,6 +51,23 @@ bool echoBoard::editPost(const cppcms::http::request &req, cppcms::json::value &
         link.prepend("http://");
     p.setUserData(link);
     return bRet(error, QString(), true);
+}
+
+bool echoBoard::beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,
+                                     bool thread, QString *error, QString *description)
+{
+    TranslatorQt tq(req);
+    if (!post) {
+        return bRet(error, tq.translate("echoBoard", "Internal error", "error"), description,
+                    tq.translate("echoBoard", "Internal logic error", "description"), false);
+    }
+    if (!thread)
+        return bRet(error, QString(), description, QString(), true);
+    QString link = params.value("link");
+    if (!link.startsWith("http"))
+        link.prepend("http://");
+    post->setUserData(link);
+    return bRet(error, QString(), description, QString(), true);
 }
 
 QString echoBoard::name() const

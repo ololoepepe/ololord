@@ -39,7 +39,8 @@ class rpgBoard : public AbstractBoard
 public:
     explicit rpgBoard();
 public:
-    void beforeStoring(Post *post, const Tools::PostParameters &params, bool thread);
+    bool beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,
+                              bool thread, QString *error = 0, QString *description = 0);
     QString name() const;
     QString title(const QLocale &l) const;
     cppcms::json::object toJson(const Content::Post &post, const cppcms::http::request &req) const;

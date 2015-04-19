@@ -38,9 +38,10 @@ class OLOLORD_EXPORT echoBoard : public AbstractBoard
 public:
     explicit echoBoard();
 public:
-    void beforeStoring(Post *post, const Tools::PostParameters &params, bool thread);
-    bool editPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p, Thread &thread,
-                  QString *error = 0);
+    bool beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
+                                 Thread &thread, QString *error = 0);
+    bool beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,
+                              bool thread, QString *error = 0, QString *description = 0);
     QString name() const;
     bool testParams(const Tools::PostParameters &params, bool post, const QLocale &l, QString *error) const;
     QString title(const QLocale &l) const;

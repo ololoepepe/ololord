@@ -355,7 +355,7 @@ static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
 
 static void processWakabaMarkItalicExtra(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processWakabaMarkStrikeout, "//", "", "em");
+    processSimmetric(c, &processWakabaMarkStrikeout, "///", "", "em");
 }
 
 static void processWakabaMarkItalic(ProcessPostTextContext &c)

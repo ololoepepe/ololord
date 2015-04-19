@@ -293,9 +293,16 @@ QString AbstractBoard::bannerFileName() const
     return fns.at(qrand() % fns.size());
 }
 
-void AbstractBoard::beforeStoring(Post */*post*/, const Tools::PostParameters &/*params*/, bool /*thread*/)
+bool AbstractBoard::beforeStoringEditedPost(const cppcms::http::request &, cppcms::json::value &, Post &, Thread &,
+                                            QString *)
 {
-    //
+    return true;
+}
+
+bool AbstractBoard::beforeStoringNewPost(const cppcms::http::request &, Post *, const Tools::PostParameters &, bool,
+                                         QString *, QString *)
+{
+    return true;
 }
 
 unsigned int AbstractBoard::bumpLimit() const
@@ -424,11 +431,6 @@ bool AbstractBoard::draftsEnabled() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/drafts_enabled", s->value("Board/drafts_enabled", true)).toBool();
-}
-
-bool AbstractBoard::editPost(const cppcms::http::request &, cppcms::json::value &, Post &, Thread &, QString *)
-{
-    return true;
 }
 
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)

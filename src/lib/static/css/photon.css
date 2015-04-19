@@ -103,7 +103,8 @@ blockquote {
     overflow-y: auto;
     overflow-x: visible;
     max-height: 300px;
-    max-width: 2000px;
+    max-width: 1200px;
+    word-wrap: break-word;
 }
 
 span.spoiler, span.spoiler a {

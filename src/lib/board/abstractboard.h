@@ -116,7 +116,11 @@ public:
 public:
     unsigned int archiveLimit() const;
     QString bannerFileName() const;
-    virtual void beforeStoring(Post *post, const Tools::PostParameters &params, bool thread);
+    virtual bool beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
+                                         Thread &thread, QString *error = 0);
+    virtual bool beforeStoringNewPost(const cppcms::http::request &req, Post *post,
+                                      const Tools::PostParameters &params, bool thread, QString *error = 0,
+                                      QString *description = 0);
     unsigned int bumpLimit() const;
     unsigned int captchaQuota() const;
     unsigned int captchaQuota(const QString &ip) const;
@@ -127,8 +131,6 @@ public:
     virtual void createThread(cppcms::application &app);
     virtual QString defaultUserName(const QLocale &l) const;
     bool draftsEnabled() const;
-    virtual bool editPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p, Thread &thread,
-                          QString *error = 0);
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
