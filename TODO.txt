@@ -8,9 +8,9 @@
 [done] Add ability to delete files
 [done] Add ability to edit /echo/ board thread links
 [done] Implement /rpg/ board
+[done] Add ability to make boards where images are restricted
 * Add ability to set limits for each thread
 * Add ability to change/add files
-* Add ability to make boards where images are restricted
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
