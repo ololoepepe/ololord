@@ -23,6 +23,59 @@ rpgBoard::rpgBoard()
     //
 }
 
+bool rpgBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
+                                       Thread &/*thread*/, QString *error)
+{
+    if (userData.is_null() || userData.is_undefined())
+        return bRet(error, QString(), true);
+    TranslatorQt tq(req);
+    cppcms::json::object o = userData.object();
+    QVariantMap m = p.userData().toMap();
+    cppcms::json::array arr = o["variants"].array();
+    QVariantList variants = m.value("variants").toList();
+    QStringList ids;
+    for (int i = 0; i < int(arr.size()); ++i) {
+        cppcms::json::object oo = arr.at(i).object();
+        QString id = Tools::fromStd(oo["id"].str());
+        QString text = Tools::fromStd(oo["text"].str());
+        if (text.isEmpty())
+            continue;
+        if (!id.isEmpty()) {
+            bool found = false;
+            for (int i = 0; i < variants.size(); ++i) {
+                QVariantMap mm = variants.at(i).toMap();
+                if (mm.value("id").toString() != id)
+                    continue;
+                mm["text"] = text;
+                variants[i] = mm;
+                found = true;
+            }
+            if (!found)
+                return bRet(error, tq.translate("vote", "Invalid vote", "error"), false);
+        } else {
+            QVariantMap mm;
+            mm.insert("text", text);
+            id = BUuid::createUuid().toString(true);
+            mm.insert("id", id);
+            variants << mm;
+        }
+        ids << id;
+    }
+    for (int i = 0; i < variants.size(); ++i) {
+        if (!ids.contains(variants.at(i).toMap().value("id").toString()))
+            variants.removeAt(i);
+    }
+    if (variants.isEmpty()) {
+        p.setUserData(QVariant());
+        return bRet(error, QString(), true);
+    }
+    m["variants"] = variants;
+    m["multiple"] = o["multiple"].boolean();
+    m["text"] = Tools::fromStd(o["text"].str());
+    p.setUserData(m);
+    return bRet(error, QString(), true);
+}
+
 bool rpgBoard::beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,
                                     bool thread, QString *error, QString *description)
 {

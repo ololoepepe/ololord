@@ -816,7 +816,7 @@ lord.editPost = function(boardName, postNumber) {
             "userData": null
         };
         if (lord.customEditFormGet)
-            params["userData"] = lord.customEditFormGet(form, params, !!draftField, !!rawField);
+            params["userData"] = lord.customEditFormGet(form, params);
         lord.ajaxRequest("edit_post", [params], 5, function() {
             lord.updatePost(boardName, postNumber, post);
         });

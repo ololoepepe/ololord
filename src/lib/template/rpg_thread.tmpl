@@ -15,9 +15,25 @@
             <a href="javascript:lord.addVoteVariant('<%= position %>');">
                 <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
             <input id="voteVariantCount<%= position %>" type="hidden" name="voteVariantCount" value="0" />
-         </td>
+        </td>
     </tr>
 <% end %>
+<% end template %>
+
+<% template customPostFormFieldEdit4() %>
+<tr>
+    <td class="postformLabel">
+        <b><%= postFormLabelVote %></b>
+    </td>
+    <td class="postformField">
+        <div><%= voteTextText %> <input type="text" name="voteText" size="36" /></div>
+        <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
+        <div name="voteVariants"></div>
+        <a href="javascript:void(0)">
+            <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
+        <input type="hidden" name="voteVariantCount" value="0" />
+    </td>
+</tr>
 <% end template %>
 
 <% template customPostBody2(Content::Post post, Content::Board::ThreadPointer) %>

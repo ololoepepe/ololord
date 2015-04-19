@@ -4,6 +4,81 @@ var lord = lord || {};
 
 /*Functions*/
 
+lord.customEditFormSet = function(form, post) {
+    var text = lord.nameOne("voteText", form);
+    var multiple = lord.nameOne("multipleVoteVariants", form);
+    var variants = lord.nameOne("voteVariants", form);
+    var count = lord.nameOne("voteVariantCount", form);
+    text.value = lord.nameOne("voteText", post).innerHTML;
+    var vv = lord.nameOne("voteVariants", post);
+    multiple.checked = ("true" == lord.queryOne("input[type='hidden']", vv).value);
+    count.value = 0;
+    var createInp = function(id, text) {
+        var lastN = +count.value;
+        var div = lord.node("div");
+        var inp = lord.node("input");
+        inp.type = "text";
+        inp.name = "voteVariant" + (lastN + 1);
+        inp.size = "43";
+        div.appendChild(inp);
+        var a = lord.node("a");
+        a.onclick = (function(inp) {
+            var div = inp.parentNode;
+            variants.removeChild(div);
+            var i = 0;
+            count.value = i;
+            lord.query("div > input", variants).forEach(function(inp) {
+                ++i;
+                inp.name = "voteVariant" + i;
+                count.value = i;
+            });
+        }).bind(lord, inp);
+        var img = lord.node("img");
+        img.src = "/" + lord.text("sitePathPrefix") + "img/delete.png";
+        img.title = lord.text("removeVoteVariantText");
+        a.appendChild(img);
+        div.appendChild(a);
+        variants.appendChild(div);
+        count.value = (lastN + 1);
+        if (id)
+            inp.voteId = id;
+        if (text)
+            inp.value = text;
+        return inp;
+    };
+    lord.query("input:not([type='hidden'])", vv).forEach(function(inp) {
+        var id = multiple.checked ? inp.name.replace("voteVariant", "") : inp.value;
+        var text = inp.nextSibling.nodeValue
+        text = text.substr(1, text.length - 2); //NOTE: Removig the spaces
+        createInp(id, text);
+    });
+    variants.nextSibling.nextSibling.onclick = function() {
+        createInp();
+    };
+};
+
+lord.customEditFormGet = function(form, params) {
+    var text = lord.nameOne("voteText", form);
+    var multiple = lord.nameOne("multipleVoteVariants", form);
+    var variants = lord.nameOne("voteVariants", form);
+    var data = {};
+    data.text = text.value;
+    data.multiple = !!multiple.checked;
+    data.variants = [];
+    lord.query("div > input", variants).forEach(function(inp) {
+        var v = {};
+        v.text = inp.value;
+        v.id = inp.voteId ? inp.voteId : "";
+        data.variants.push(v);
+    });
+    return data;
+};
+
+lord.addVoteVariant = function(pos) {
+    parent.appendChild(div);
+    lord.id("voteVariantCount" + pos).value = (lastN + 1);
+};
+
 lord.createPostNodeCustom = function(post, res, permanent, boardName) {
     var variants = res["voteVariants"];
     var tr = lord.nameOne("voteTr", post);
@@ -28,7 +103,11 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
                 inp.disabled = "true";
             inp.checked = !!v.selected;
             div.appendChild(inp);
-            div.appendChild(lord.node("text", " " + v.text + " (" + lord.text("votedText") + " " + v.voteCount + ")"));
+            div.appendChild(lord.node("text", " " + v.text + " "));
+            var span = lord.node("span");
+            span.className = "voteCount";
+            span.appendChild(lord.node("text", "(" + lord.text("votedText") + " " + v.voteCount + ")"));
+            div.appendChild(span);
             div.appendChild(lord.node("br"));
         });
         var btnVote = lord.nameOne("buttonVote", tr);

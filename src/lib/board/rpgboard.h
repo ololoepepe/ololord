@@ -39,6 +39,8 @@ class rpgBoard : public AbstractBoard
 public:
     explicit rpgBoard();
 public:
+    bool beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
+                                 Thread &thread, QString *error = 0);
     bool beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,
                               bool thread, QString *error = 0, QString *description = 0);
     QString name() const;
