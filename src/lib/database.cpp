@@ -307,7 +307,7 @@ static QStringList deleteFileInfos(const Post &post, bool *ok = 0)
         }
         t.commit();
     } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
+        qDebug() << "deleteFileInfos" << Tools::fromStd(e.what());
         return bRet(ok, false, QStringList());
     }
     return bRet(ok, true, list);
@@ -732,8 +732,8 @@ void checkOutdatedEntries()
             }
         }
         t.commit();
-    }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+    } catch (const odb::exception &e) {
+        qDebug() << "checkOutdatedEntries" << e.what();
     }
 }
 
@@ -777,7 +777,7 @@ void createSchema()
         t->execute("PRAGMA foreign_keys=ON");
         t.commit();
     } catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "createSchema" << e.what();
     }
 }
 
@@ -1048,7 +1048,7 @@ bool fileExists(const QByteArray &hash, bool *ok)
         t.commit();
         return bRet(ok, true, count->count > 0);
     } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
+        qDebug() << "fileExists" << Tools::fromStd(e.what());
         return bRet(ok, false, false);
     }
 }
@@ -1234,7 +1234,7 @@ bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp,
         t.commit();
         return b;
     } catch (const odb::exception &e) {
-        qDebug() << Tools::fromStd(e.what());
+        qDebug() << "isOp" << Tools::fromStd(e.what());
         return false;
     }
 }
@@ -1296,7 +1296,7 @@ bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNum
         t.commit();
         return true;
     }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "postExists" << e.what();
         return bRet(threadNumber, quint64(0), false);
     }
 }
@@ -1314,7 +1314,7 @@ QString posterIp(const QString &boardName, quint64 postNumber)
         t.commit();
         return post->posterIp();
     }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "posterIp" << e.what();
         return "";
     }
 }
@@ -1344,7 +1344,7 @@ QStringList registeredUserBoards(const QByteArray &hashpass)
         t.commit();
         return user->boards();
     }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "registeredUserBoards" << e.what();
         return QStringList();
     }
 }
@@ -1374,7 +1374,7 @@ int registeredUserLevel(const QByteArray &hashpass)
         t.commit();
         return level->level;
     }  catch (const odb::exception &e) {
-        qDebug() << e.what();
+        qDebug() << "registeredUserLevel" << e.what();
         return -1;
     }
 }

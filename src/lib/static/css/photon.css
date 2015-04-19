@@ -101,8 +101,9 @@ blockquote {
     margin-top: 5px;
     margin-left: 10px;
     overflow-y: auto;
-    overflow-x: visible;
+    overflow-x: auto;
     max-height: 300px;
+    box-sizing: border-box;
     max-width: 1200px;
     word-wrap: break-word;
 }

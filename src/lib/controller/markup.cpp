@@ -590,13 +590,13 @@ static void processTagCode(ProcessPostTextContext &c)
                 sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
                 sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
             } catch (const srchilite::ParserException &e) {
-                qDebug() << e.what();
+                qDebug() << "processTagCode" << "ParserException" << e.what();
                 return;
             } catch (const srchilite::IOException &e) {
-                qDebug() << e.what();
+                qDebug() << "processTagCode" << "IOException" << e.what();
                 return;
             } catch (const std::exception &e) {
-                qDebug() << e.what();
+                qDebug() << "processTagCode" << "exception" << e.what();
                 return;
             }
             QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
@@ -647,13 +647,13 @@ static void processWakabaMarkCode(ProcessPostTextContext &c)
                 sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
                 sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
             } catch (const srchilite::ParserException &e) {
-                qDebug() << e.what();
+                qDebug() << "processWakabaMarkCode" << "ParserException" << e.what();
                 return;
             } catch (const srchilite::IOException &e) {
-                qDebug() << e.what();
+                qDebug() << "processWakabaMarkCode" << "IOException" << e.what();
                 return;
             } catch (const std::exception &e) {
-                qDebug() << e.what();
+                qDebug() << "processWakabaMarkCode" << "exception" << e.what();
                 return;
             }
             QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
