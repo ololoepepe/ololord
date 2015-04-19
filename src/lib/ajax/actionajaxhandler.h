@@ -36,8 +36,9 @@ public:
     void getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber);
     void getPost(std::string boardName, long long postNumber);
     QList<Handler> handlers() const;
-    void setThreadFixed(std::string boardName, long long postNumber, bool fixed);
-    void setThreadOpened(std::string boardName, long long postNumber, bool opened);
+    void setThreadFixed(std::string boardName, long long threadNumber, bool fixed);
+    void setThreadOpened(std::string boardName, long long threadNumber, bool opened);
+    void setVoteOpened(long long postNumber, bool opened);
     void unvote(long long postNumber);
     void vote(long long postNumber, const cppcms::json::array &votes);
 };

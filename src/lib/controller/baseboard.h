@@ -64,6 +64,7 @@ public:
     std::string name;
     std::string nameRaw;
     unsigned long long number;
+    bool ownPost;
     std::string rawName;
     bool rawHtml;
     std::string rawPostText;

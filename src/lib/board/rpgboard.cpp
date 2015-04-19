@@ -160,12 +160,15 @@ void rpgBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Boar
         return;
     TranslatorStd ts(req);
     cc->addVoteVariantText = ts.translate("rpgBoard", "Add variant", "addVoteVariantText");
+    cc->closeVoteActionText = ts.translate("rpgBoard", "Close voting", "closeVoteActionText");
     cc->multipleVoteVariantsText = ts.translate("rpgBoard", "Multiple variants allowed:", "multipleVoteVariantsText");
+    cc->openVoteActionText = ts.translate("rpgBoard", "Open voting", "openVoteActionText");
     cc->removeVoteVariantText = ts.translate("rpgBoard", "Remove variant", "removeVoteVariantText");
     cc->postFormLabelVote = ts.translate("rpgBoard", "Vote:", "postFormLabelVote");
     cc->unvoteActionText = ts.translate("rpgBoard", "Take vote back", "unvoteActionText");
     cc->userIp = Tools::ipNum(Tools::userIp(req));
     cc->voteActionText = ts.translate("rpgBoard", "Vote", "voteActionText");
+    cc->voteClosedText = ts.translate("rpgBoard", "Voting is closed", "voteClosedText");
     cc->votedText = ts.translate("rpgBoard", "voted:", "votedText");
     cc->voteTextText = ts.translate("rpgBoard", "Text:", "voteTextText");
 }
@@ -177,13 +180,16 @@ void rpgBoard::beforeRenderThread(const cppcms::http::request &req, Content::Thr
         return;
     TranslatorStd ts(req);
     cc->addVoteVariantText = ts.translate("rpgBoard", "Add variant", "addVoteVariantText");
+    cc->closeVoteActionText = ts.translate("rpgBoard", "Close voting", "closeVoteActionText");
     cc->multipleVoteVariantsText = ts.translate("rpgBoard", "Multiple variants allowed:", "multipleVoteVariantsText");
+    cc->openVoteActionText = ts.translate("rpgBoard", "Open voting", "openVoteActionText");
     cc->removeVoteVariantText = ts.translate("rpgBoard", "Remove variant", "removeVoteVariantText");
     cc->postFormLabelVote = ts.translate("rpgBoard", "Vote:", "postFormLabelVote");
     cc->unvoteActionText = ts.translate("rpgBoard", "Take vote back", "unvoteActionText");
     cc->userIp = Tools::ipNum(Tools::userIp(req));
     cc->voteEnabled = Database::isOp("rpg", quint64(cc->number), Tools::userIp(req), Tools::hashpass(req));
     cc->voteActionText = ts.translate("rpgBoard", "Vote", "voteActionText");
+    cc->voteClosedText = ts.translate("rpgBoard", "Voting is closed", "voteClosedText");
     cc->votedText = ts.translate("rpgBoard", "voted:", "votedText");
     cc->voteTextText = ts.translate("rpgBoard", "Text:", "voteTextText");
 }

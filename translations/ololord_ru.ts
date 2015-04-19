@@ -2439,6 +2439,21 @@ IP-адреса записываются в виде диапазонов и о�
         <comment>description</comment>
         <translation>Попытка прикрепить голосование не будучи ОПом</translation>
     </message>
+    <message>
+        <source>Close voting</source>
+        <comment>closeVoteActionText</comment>
+        <translation>Закрыть голосование</translation>
+    </message>
+    <message>
+        <source>Open voting</source>
+        <comment>openVoteActionText</comment>
+        <translation>Открыть голосование</translation>
+    </message>
+    <message>
+        <source>Voting is closed</source>
+        <comment>voteClosedText</comment>
+        <translation>Голосование закрыто</translation>
+    </message>
 </context>
 <context>
     <name>saveFile</name>
@@ -2584,6 +2599,24 @@ IP-адреса записываются в виде диапазонов и о�
         <source>No such thread</source>
         <comment>error</comment>
         <translation>Нет такого треда</translation>
+    </message>
+</context>
+<context>
+    <name>setVoteOpened</name>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
     </message>
 </context>
 <context>

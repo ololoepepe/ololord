@@ -53,7 +53,11 @@
 <% c++ } %>
 <tr>
     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"vote\">"; %>
-        <% c++ out() << "<div name=\"voteText\" class=\"voteText\">" << voteText << "</div>"; %>
+        <% c++ out() << "<div name=\"voteText\" class=\"voteText\">"; %>
+        <% c++ if (disabled) { %>
+            <img name="voteClosedImg" src="/<%= sitePathPrefix %>img/closed.png" title="<%= voteClosedText %>">
+        <% c++ } %>
+        <% c++ out() << voteText << "</div>"; %>
         <div name="voteVariants">
             <% c++ out() << "<input type=\"hidden\" value=\"" << (multiple ? "true" : "false") << "\" />"; %> 
             <% c++ for (int i = 0; i < variants.size(); ++i) { %>
@@ -84,6 +88,15 @@
         <% else %>
             <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
         <% end %>
+        <% if ( post.ownPost ) %>
+            <% if ( !disabled ) %>
+                <button name="buttonSetVoteClosed"
+                        onclick="lord.setVoteOpened(<%= post.number %>, false);"><%= closeVoteActionText %></button>
+            <% else %>
+                <button name="buttonSetVoteOpened"
+                        onclick="lord.setVoteOpened(<%= post.number %>, true);"><%= openVoteActionText %></button>
+            <% end %>
+        <% end %>
     </td>
 </tr>
 <% end template %>
@@ -91,12 +104,16 @@
 <% template customPostBodyTemplate2() %>
 <tr name="voteTr">
     <td name="voteTd" colspan="2" class="vote">
-        <div name="voteText" class="voteText"></div>
+        <div name="voteText" class="voteText">
+            <img name="voteClosedImg" src="/<%= sitePathPrefix %>img/closed.png" title="<%= voteClosedText %>">
+        </div>
         <div name="voteVariants">
             <input type="hidden" value="false" />
         </div>
         <button name="buttonVote"><%= voteActionText %></button>
         <button name="buttonUnvote"><%= unvoteActionText %></button>
+        <button name="buttonSetVoteClosed"><%= closeVoteActionText %></button>
+        <button name="buttonSetVoteOpened"><%= openVoteActionText %></button>
     </td>
 <tr>
 <% end template %>

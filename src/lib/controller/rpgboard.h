@@ -13,12 +13,15 @@ namespace Content
 struct OLOLORD_EXPORT rpgBoard : public Board
 {
     std::string addVoteVariantText;
+    std::string closeVoteActionText;
     std::string multipleVoteVariantsText;
+    std::string openVoteActionText;
     std::string removeVoteVariantText;
     std::string postFormLabelVote;
     std::string unvoteActionText;
     unsigned long long userIp;
     std::string voteActionText;
+    std::string voteClosedText;
     std::string votedText;
     std::string voteTextText;
 };

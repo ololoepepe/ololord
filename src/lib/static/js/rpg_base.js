@@ -89,7 +89,11 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
         var voted = !!res["voteVoted"];
         var multiple = !!res["voteMultiple"];
         var div = lord.nameOne("voteVariants", post);
-        lord.nameOne("voteText", post).appendChild(lord.node("text", res["voteText"]));
+        if (!res["voteDisabled"]) {
+            var closed = lord.nameOne("voteClosedImg", post);
+            closed.parentNode.removeChild(closed);
+        }
+        lord.nameOne("voteText", post).appendChild(lord.node("text", (res["disabled"] ? " " : "") + res["voteText"]));
         lord.queryOne("input", div).value = multiple ? "true" : "false";
         variants.forEach(function(v) {
             var inp = lord.node("input");
@@ -125,7 +129,21 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
                 btnVote.onclick = lord.vote.bind(lord, +res["number"]);
                 btnUnvote.disabled = "true";
             }
-        }   
+        }
+        var btnClose = lord.nameOne("buttonSetVoteClosed", tr);
+        var btnOpen = lord.nameOne("buttonSetVoteOpened", tr);
+        if (!!res["ownPost"]) {
+            if (!!res["voteDisabled"]) {
+                btnOpen.onclick = lord.setVoteOpened.bind(lord, res["number"], true);
+                btnClose.parentNode.removeChild(btnClose);
+            } else {
+                btnClose.onclick = lord.setVoteOpened.bind(lord, res["number"], false);
+                btnOpen.parentNode.removeChild(btnOpen);
+            }
+        } else {
+            btnClose.parentNode.removeChild(btnClose);
+            btnOpen.parentNode.removeChild(btnOpen);
+        }
     } else {
         tr.parentNode.removeChild(tr);
     }
@@ -210,6 +228,18 @@ lord.unvote = function(postNumber) {
     if (!post)
         return;
     lord.ajaxRequest("unvote", [postNumber], 12, function() {
+        lord.updatePost("rpg", postNumber, post);
+    });
+};
+
+lord.setVoteOpened = function(postNumber, opened) {
+    postNumber = +postNumber;
+    if (isNaN(postNumber) || postNumber <= 0)
+        return;
+    var post = lord.id("post" + postNumber);
+    if (!post)
+        return;
+    lord.ajaxRequest("set_vote_opened", [postNumber, !!opened], 13, function() {
         lord.updatePost("rpg", postNumber, post);
     });
 };

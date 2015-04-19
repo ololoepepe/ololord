@@ -990,6 +990,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
     int regLvl = Database::registeredUserLevel(req);
     if (regLvl >= RegisteredUser::ModerLevel)
         pp.ip = Tools::toStd(post.posterIp());
+    pp.ownPost = (post.posterIp() == Tools::userIp(req));
     pp.dateTime = Tools::toStd(l.toString(Tools::dateTime(post.dateTime(), req), DateTimeFormat));
     if (!post.modificationDateTime().isNull()) {
         pp.modificationDateTime = Tools::toStd(l.toString(Tools::dateTime(post.modificationDateTime(), req),
@@ -1078,6 +1079,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["text"] = post.text;
     o["rawPostText"] = post.rawPostText;
     o["tripcode"] = post.tripcode;
+    o["ownPost"] = post.ownPost;
     cppcms::json::array refs;
     typedef Content::Post::Ref Ref;
     for (std::list<Ref>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end(); ++i) {

@@ -1501,6 +1501,35 @@ bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened
     }
 }
 
+bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request &req, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!postNumber)
+        return bRet(error, tq.translate("setVoteOpened", "Invalid post number", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("setVoteOpened", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
+                                                 && odb::query<Post>::board == "rpg");
+        if (post.error)
+            return bRet(error, tq.translate("setVoteOpened", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("setVoteOpened", "No such post", "error"), false);
+        QVariantMap m = post->userData().toMap();
+        if (m.value("disabled") == !opened)
+            return bRet(error, QString(), true);
+        m["disabled"] = !opened;
+        post->setUserData(m);
+        update(post);
+        t.commit();
+        Cache::removePost("rpg", postNumber);
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
 bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error)
 {
     TranslatorQt tq(req);
