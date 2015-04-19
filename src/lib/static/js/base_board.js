@@ -268,6 +268,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
     }
     file.appendChild(divFileSearch);
     var divImage = lord.node("div");
+    divImage.className = "postFileFile";
     var aImage = lord.node("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
     if (lord.isImageType(f["type"])) {
@@ -477,6 +478,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var openButton = lord.nameOne("openButton", post);
     var closeButton = lord.nameOne("closeButton", post);
     var banButton = lord.nameOne("banButton", post);
+    var downloadButton = lord.nameOne("downloadButton", post);
     var rawText = lord.nameOne("rawText", post);
     lord.nameOne("draft", post).value = !!res["draft"];
     if (moder || !!res["draft"]) {
@@ -488,6 +490,8 @@ lord.createPostNode = function(res, permanent, boardName) {
     } else {
         editButton.parentNode.removeChild(editButton);
     }
+    if (res["number"] != res["threadNumber"] || !inp || +inp.value !== res["threadNumber"])
+        downloadButton.parentNode.removeChild(downloadButton);
     if (!moder) {
         fixButton.parentNode.removeChild(fixButton);
         unfixButton.parentNode.removeChild(unfixButton);
@@ -516,9 +520,13 @@ lord.createPostNode = function(res, permanent, boardName) {
             closeButton.href = closeButton.href.replace("%postNumber%", res["number"]);
             openButton.parentNode.removeChild(openButton);
         }
-        toThread.style.display = "";
-        var toThreadLink = lord.nameOne("toThreadLink", post);
-        toThreadLink.href = toThreadLink.href.replace("%postNumber%", res["number"]);
+        if (!inp) {
+            toThread.style.display = "";
+            var toThreadLink = lord.nameOne("toThreadLink", post);
+            toThreadLink.href = toThreadLink.href.replace("%postNumber%", res["number"]);
+        } else {
+            toThread.parentNode.removeChild(toThread);
+        }
     } else {
         fixButton.parentNode.removeChild(fixButton);
         unfixButton.parentNode.removeChild(unfixButton);

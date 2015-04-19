@@ -5,14 +5,8 @@ var lord = lord || {};
 /*Functions*/
 
 lord.customEditFormSet = function(form, post) {
-    var text = lord.nameOne("voteText", form);
-    var multiple = lord.nameOne("multipleVoteVariants", form);
     var variants = lord.nameOne("voteVariants", form);
     var count = lord.nameOne("voteVariantCount", form);
-    text.value = lord.nameOne("voteText", post).innerHTML;
-    var vv = lord.nameOne("voteVariants", post);
-    multiple.checked = ("true" == lord.queryOne("input[type='hidden']", vv).value);
-    count.value = 0;
     var createInp = function(id, text) {
         var lastN = +count.value;
         var div = lord.node("div");
@@ -46,15 +40,23 @@ lord.customEditFormSet = function(form, post) {
             inp.value = text;
         return inp;
     };
+    variants.nextSibling.nextSibling.onclick = function() {
+        createInp();
+    };
+    if (!lord.nameOne("voteText", post))
+        return;
+    var text = lord.nameOne("voteText", form);
+    var multiple = lord.nameOne("multipleVoteVariants", form);
+    text.value = lord.nameOne("voteText", post).innerHTML;
+    var vv = lord.nameOne("voteVariants", post);
+    multiple.checked = ("true" == lord.queryOne("input[type='hidden']", vv).value);
+    count.value = 0;
     lord.query("input:not([type='hidden'])", vv).forEach(function(inp) {
         var id = multiple.checked ? inp.name.replace("voteVariant", "") : inp.value;
         var text = inp.nextSibling.nodeValue
         text = text.substr(1, text.length - 2); //NOTE: Removig the spaces
         createInp(id, text);
     });
-    variants.nextSibling.nextSibling.onclick = function() {
-        createInp();
-    };
 };
 
 lord.customEditFormGet = function(form, params) {
