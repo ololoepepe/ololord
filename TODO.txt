@@ -1,14 +1,3 @@
-[done] Implement configurable board
-[done] Remove some board classes
-[done] Fix post reference creation when using AJAX
-[done] Refactor JS
-[done] Improve templates flexibility
-[done] Replace alerts with popups
-[done] Fix post preview
-[done] Add ability to delete files
-[done] Add ability to edit /echo/ board thread links
-[done] Implement /rpg/ board
-[done] Add ability to make boards where images are restricted
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page
