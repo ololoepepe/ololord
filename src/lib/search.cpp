@@ -134,7 +134,7 @@ static QStringList words(const QString &text)
     QStringList list;
     QString word;
     foreach (const QChar &c, text) {
-        if (c.isLetter()) {
+        if (c.isLetterOrNumber()) {
             word += c;
         } else if (!word.isEmpty()) {
             list << word.toLower();
