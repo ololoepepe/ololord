@@ -67,8 +67,9 @@ void SearchRoute::handle()
             Tools::log(application, "search", "fail:" + err, logTarget);
             return;
         }
-        QList<Post> list = Database::findPosts(q, ("*" != boardName) ? boardName : QString(), &ok, &err, &desc,
-                                               tq.locale());
+        if ("*" == boardName)
+            boardName.clear();
+        QList<Post> list = Database::findPosts(q, boardName, &ok, &err, &desc, tq.locale());
         foreach (Post post, list) {
             Content::Search::SearchResult r;
             r.boardName = Tools::toStd(post.board());

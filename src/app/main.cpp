@@ -411,10 +411,11 @@ bool handleReloadPostIndex(const QString &, const QStringList &)
     if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
         return true;
     QString err;
-    if (Database::reloadPostIndex(&err))
-        bWriteLine(translate("handleReloadPostIndex", "OK"));
+    int count = Database::reloadPostIndex(&err);
+    if (count < 0)
+        bWriteLine(translate("handleReloadPostIndex", "Error:") + " " + err);
     else
-        bWriteLine(err);
+        bWriteLine(translate("handleReloadPostIndex", "Reloaded index of posts:") +  " " + QString::number(count));
     return true;
 }
 

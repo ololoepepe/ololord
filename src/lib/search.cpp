@@ -244,11 +244,11 @@ Query query(const QString &q, bool *ok, QString *error, const QLocale &l)
     Query qq;
     foreach (const QString &phrase, phrases) {
         if (phrase.startsWith('+'))
-            qq.requiredPhrases << phrase.mid(1);
+            qq.requiredPhrases << phrase.mid(1).toLower();
         else if (phrase.startsWith('-'))
-            qq.excludedPhrases << phrase.mid(1);
+            qq.excludedPhrases << phrase.mid(1).toLower();
         else
-            qq.possiblePhrases << phrase;
+            qq.possiblePhrases << phrase.toLower();
     }
     return bRet(ok, true, error, QString(), qq);
 }

@@ -309,7 +309,7 @@ OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass);
 OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level = RegisteredUser::UserLevel,
                                  const QStringList &boards = QStringList("*"), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool reloadPostIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT int reloadPostIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT int rerenderPosts(const QStringList boardNames = QStringList(), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, QString *error = 0,

@@ -1392,20 +1392,20 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
     }
 }
 
-bool reloadPostIndex(QString *error, const QLocale &l)
+int reloadPostIndex(QString *error, const QLocale &l)
 {
     TranslatorQt tq(l);
     try {
         Transaction t;
         if (!t)
-            return bRet(error, tq.translate("reloadPostIndex", "Internal database error", "error"), false);
+            return bRet(error, tq.translate("reloadPostIndex", "Internal database error", "error"), -1);
         QList<Post> posts = queryAll<Post>();
         foreach (const Post &post, posts)
             Search::addToIndex(post.board(), post.number(), post.rawText());
         t.commit();
-        return bRet(error, QString(), true);
+        return bRet(error, QString(), posts.size());
     } catch (const odb::exception &e) {
-        return bRet(error, Tools::fromStd(e.what()), false);
+        return bRet(error, Tools::fromStd(e.what()), -1);
     }
 }
 

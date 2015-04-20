@@ -1324,8 +1324,12 @@ Your choice:</source>
         <translation>Вы уверены?</translation>
     </message>
     <message>
-        <source>OK</source>
-        <translation>ОК</translation>
+        <source>Error:</source>
+        <translation>Ошибка:</translation>
+    </message>
+    <message>
+        <source>Reloaded index of posts:</source>
+        <translation>Перезагружен индекс постов:</translation>
     </message>
 </context>
 <context>
