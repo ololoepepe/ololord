@@ -537,21 +537,19 @@ text</source>
     </message>
 </context>
 <context>
+    <name>Search</name>
+    <message>
+        <source>Invalid search query</source>
+        <comment>error</comment>
+        <translation>Недействительный поисковый запрос</translation>
+    </message>
+</context>
+<context>
     <name>SearchRoute</name>
     <message>
         <source>Search</source>
         <comment>pageTitle</comment>
         <translation>Поиск</translation>
-    </message>
-    <message>
-        <source>Invalid query</source>
-        <comment>error</comment>
-        <translation>Недействительный запрос</translation>
-    </message>
-    <message>
-        <source>Invalid search query</source>
-        <comment>description</comment>
-        <translation>Недействительный поисковый запрос</translation>
     </message>
     <message>
         <source>Internal error</source>
@@ -572,6 +570,11 @@ text</source>
         <source>Nothing found</source>
         <comment>nothingFoundMessage</comment>
         <translation>Ничего не найдено</translation>
+    </message>
+    <message>
+        <source>Query error</source>
+        <comment>error</comment>
+        <translation>Ошибка запроса</translation>
     </message>
 </context>
 <context>
@@ -1060,16 +1063,6 @@ text</source>
 <context>
     <name>findPosts</name>
     <message>
-        <source>Invalid parameters</source>
-        <comment>error</comment>
-        <translation>Неправильные параметры</translation>
-    </message>
-    <message>
-        <source>No phrases to search for</source>
-        <comment>description</comment>
-        <translation>Отсутствуют фразы для поиска</translation>
-    </message>
-    <message>
         <source>Internal error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
@@ -1078,6 +1071,11 @@ text</source>
         <source>Internal database error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Query error</source>
+        <comment>error</comment>
+        <translation>Ошибка запроса</translation>
     </message>
 </context>
 <context>
@@ -1317,6 +1315,17 @@ Your choice:</source>
     <message>
         <source>Are you sure?</source>
         <translation>Вы уверены?</translation>
+    </message>
+</context>
+<context>
+    <name>handleReloadPostIndex</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
     </message>
 </context>
 <context>
@@ -1912,6 +1921,10 @@ If one or more board names are specified, rerenders only posts on those boards.<
         <translation>Рендерит заново все посты на всех досках.
 Если указано одно или более названий досок, рендерит посты только на этих досках.</translation>
     </message>
+    <message>
+        <source>Clear post text index and create it from scratch.</source>
+        <translation>Очистить индекс текста постов и создать его с нуля.</translation>
+    </message>
 </context>
 <context>
     <name>initSettings</name>
@@ -2242,6 +2255,14 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Invalid board(s)</source>
         <comment>error</comment>
         <translation>Неправильная(ые) доска(и)</translation>
+    </message>
+</context>
+<context>
+    <name>reloadPostIndex</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>

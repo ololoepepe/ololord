@@ -3,6 +3,7 @@
 #include "board/abstractboard.h"
 #include "cache.h"
 #include "controller/controller.h"
+#include "search.h"
 #include "stored/banneduser.h"
 #include "stored/banneduser-odb.hxx"
 #include "stored/postcounter.h"
@@ -91,14 +92,6 @@ EditPostParameters::EditPostParameters(const cppcms::http::request &req, const Q
     draft = false;
     error = 0;
     raw = false;
-}
-
-FindPostsParameters::FindPostsParameters(const QLocale &l) :
-    locale(l)
-{
-    ok = 0;
-    error = 0;
-    description = 0;
 }
 
 class CreatePostInternalParameters
@@ -529,6 +522,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         bSet(p.postNumber, postNumber);
         t.commit();
         p.fileTransaction.commit();
+        Search::addToIndex(boardName, postNumber, post.text);
         return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description,
@@ -591,6 +585,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             t->update(p);
         }
         Cache::removePost(boardName, postNumber);
+        Search::removeFromIndex(boardName, postNumber, post->text());
         t.commit();
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
@@ -997,6 +992,7 @@ bool editPost(EditPostParameters &p)
             return bRet(p.error, tq.translate("editPost", "Name is too long", "error"), false);
         if (p.subject.length() > int(Tools::maxInfo(Tools::MaxSubjectFieldLength, p.boardName)))
             return bRet(p.error, tq.translate("editPost", "Subject is too long", "error"), false);
+        QString previousText = post->rawText();
         post->setRawText(p.text);
         bool wasDraft = post->draft();
         post->setDraft(board->draftsEnabled() && p.draft);
@@ -1027,6 +1023,8 @@ bool editPost(EditPostParameters &p)
         t->update(thread);
         update(post);
         Cache::removePost(p.boardName, p.postNumber);
+        Search::removeFromIndex(p.boardName, p.postNumber, previousText);
+        Search::addToIndex(p.boardName, p.postNumber, p.text);
         t.commit();
         return bRet(p.error, QString(), true);
     } catch (const odb::exception &e) {
@@ -1064,45 +1062,34 @@ bool fileExists(const QString &hashString, bool *ok)
     return fileExists(hash, ok);
 }
 
-QList<Post> findPosts(FindPostsParameters &p)
+QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool *ok, QString *error,
+                      QString *description, const QLocale &l)
 {
-    TranslatorQt tq(p.locale);
-    if (p.possiblePhrases.isEmpty() && p.requiredPhrases.isEmpty() && p.excludedPhrases.isEmpty()) {
-        return bRet(p.ok, false, p.error, tq.translate("findPosts", "Invalid parameters", "error"), p.description,
-                    tq.translate("findPosts", "No phrases to search for", "description"), QList<Post>());
-    }
+    TranslatorQt tq(l);
+    bool b = false;
+    Search::BoardMap result = Search::find(query, boardName, &b, description, l);
+    if (!b)
+        return bRet(ok, false, error, tq.translate("findPosts", "Query error", "error"), QList<Post>());
+    if (result.isEmpty())
+        return bRet(ok, true, error, QString(), description, QString(), QList<Post>());
     try {
         Transaction t;
         if (!t) {
-            return bRet(p.ok, false, p.error, tq.translate("findPosts", "Internal error", "error"), p.description,
+            return bRet(ok, false, error, tq.translate("findPosts", "Internal error", "error"), description,
                         tq.translate("findPosts", "Internal database error", "description"), QList<Post>());
         }
-        odb::query<Post> q;
         QString qs;
-        if (!p.boardNames.isEmpty()) {
-            qs += "(";
-            foreach (const QString &bn, p.boardNames)
-                qs += "board = '" + bn + "' OR ";
-            qs.remove(qs.length() - 4, 4);
-            qs += ") AND ";
+        for (Search::BoardMap::ConstIterator posts = result.begin(); posts != result.end(); ++posts) {
+            qs += "(board = '" + posts.key() + "' AND number IN (";
+            foreach (const quint64 &pn, posts.value().keys())
+                qs += QString::number(pn) + ", ";
+            qs.remove(qs.length() - 2, 2);
+            qs += ")) OR ";
         }
-        foreach (const QString &s, p.requiredPhrases)
-            qs += "rawText LIKE '%" + BTextTools::unwrapped(s, "\"").replace('%', "\\%") + "%' AND ";
-        foreach (const QString &s, p.excludedPhrases)
-            qs += "rawText NOT LIKE '%" + BTextTools::unwrapped(s, "\"").replace('%', "\\%") + "%' AND ";
-        if (!p.possiblePhrases.isEmpty()) {
-            qs += "(";
-            foreach (const QString &s, p.possiblePhrases)
-                qs += "rawText LIKE '%" + BTextTools::unwrapped(s, "\"").replace('%', "\\%") + "%' OR ";
-            qs.remove(qs.length() - 4, 4);
-            qs += ")";
-        }
-        if (qs.endsWith(" AND "))
-            qs.remove(qs.length() - 5, 5);
-        q = q + Tools::toStd(qs).data();
-        return bRet(p.ok, true, p.error, QString(), p.description, QString(), query<Post, Post>(q));
+        qs.remove(qs.length() - 4, 4);
+        return bRet(ok, true, error, QString(), description, QString(), Database::query<Post, Post>(qs));
     } catch (const odb::exception &e) {
-        return bRet(p.ok, false, p.error, tq.translate("findPosts", "Internal error", "error"), p.description,
+        return bRet(ok, false, error, tq.translate("findPosts", "Internal error", "error"), description,
                     Tools::fromStd(e.what()), QList<Post>());
     }
 }
@@ -1398,6 +1385,23 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
             return bRet(error, tq.translate("registerUser", "Internal database error", "error"), false);
         RegisteredUser user(hashpass, QDateTime::currentDateTimeUtc(), level, boards);
         t->persist(user);
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
+bool reloadPostIndex(QString *error, const QLocale &l)
+{
+    TranslatorQt tq(l);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("reloadPostIndex", "Internal database error", "error"), false);
+        QList<Post> posts = queryAll<Post>();
+        foreach (const Post &post, posts)
+            Search::addToIndex(post.board(), post.number(), post.rawText());
         t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {

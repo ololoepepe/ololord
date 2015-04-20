@@ -1,3 +1,5 @@
+[done] Fix vote system
+[done] Implement index-based search
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page

@@ -3,6 +3,7 @@
 #include "controller/controller.h"
 #include "controller/search.h"
 #include "database.h"
+#include "search.h"
 #include "stored/thread.h"
 #include "stored/thread-odb.hxx"
 #include "tools.h"
@@ -44,36 +45,21 @@ void SearchRoute::handle()
     Controller::initBase(c, application.request(), tq.translate("SearchRoute", "Search", "pageTitle"));
     c.query = Tools::toStd(query);
     c.queryBoard = Tools::toStd(boardName);
-    Database::FindPostsParameters p(tq.locale());
     bool ok = false;
-    QStringList phrases = BTextTools::splitCommand(query, &ok);
+    QString desc;
+    Search::Query q = Search::query(query, &ok, &err, tq.locale());
     if (!ok) {
-        c.error = false;
-        c.errorMessage = ts.translate("SearchRoute", "Invalid query", "error");
-        err = tq.translate("SearchRoute", "Invalid search query", "description");
+        c.error = true;
+        c.errorMessage = ts.translate("SearchRoute", "Query error", "error");
         c.errorDescription = Tools::toStd(err);
         application.render("search", c);
         Tools::log(application, "search", "fail:" + err, logTarget);
         return;
     }
-    foreach (const QString &phrase, phrases) {
-        if (phrase.startsWith('+'))
-            p.requiredPhrases << phrase.mid(1);
-        else if (phrase.startsWith('-'))
-            p.excludedPhrases << phrase.mid(1);
-        else
-            p.possiblePhrases << phrase;
-    }
-    if ("*" != boardName)
-        p.boardNames << boardName;
-    QString desc;
-    p.ok = &ok;
-    p.error = &err;
-    p.description = &desc;
     try {
         Transaction t;
         if (!t) {
-            c.error = false;
+            c.error = true;
             c.errorMessage = ts.translate("SearchRoute", "Internal error", "error");
             err = tq.translate("SearchRoute", "Internal database error", "description");
             c.errorDescription = Tools::toStd(err);
@@ -81,7 +67,8 @@ void SearchRoute::handle()
             Tools::log(application, "search", "fail:" + err, logTarget);
             return;
         }
-        QList<Post> list = Database::findPosts(p);
+        QList<Post> list = Database::findPosts(q, ("*" != boardName) ? boardName : QString(), &ok, &err, &desc,
+                                               tq.locale());
         foreach (Post post, list) {
             Content::Search::SearchResult r;
             r.boardName = Tools::toStd(post.board());
@@ -97,7 +84,7 @@ void SearchRoute::handle()
                 subj = subj.left(97) + "...";
             r.subject = Tools::toStd(subj);
             txt = Controller::toHtml(txt);
-            foreach (const QString &phrase, p.requiredPhrases + p.possiblePhrases) {
+            foreach (const QString &phrase, q.requiredPhrases + q.possiblePhrases) {
                 int ind = txt.indexOf(phrase, Qt::CaseInsensitive);
                 while (ind >= 0) {
                     QString nphrase = "<b><font color=\"red\">" + phrase + "</font></b>";
@@ -110,7 +97,7 @@ void SearchRoute::handle()
         }
         t.commit();
     } catch (const odb::exception &e) {
-        c.error = false;
+        c.error = true;
         c.errorMessage = ts.translate("SearchRoute", "Internal error", "error");
         err = Tools::fromStd(e.what());
         c.errorDescription = Tools::toStd(err);

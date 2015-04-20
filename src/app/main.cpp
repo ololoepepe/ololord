@@ -6,6 +6,7 @@
 #include <cache.h>
 #include <database.h>
 #include <ololordapplication.h>
+#include <search.h>
 #include <settingslocker.h>
 #include <stored/RegisteredUser>
 #include <tools.h>
@@ -49,6 +50,7 @@ static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
+static bool handleReloadPostIndex(const QString &cmd, const QStringList &args);
 static bool handleRerenderPosts(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
@@ -85,7 +87,10 @@ int main(int argc, char **argv)
         initTerminal();
         QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
                 + "/captcha-quota.dat";
+        QString searchIndexFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
+                + "/search-index.dat";
         AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
+        Search::restoreIndex(BDirTools::readFile(searchIndexFile));
         bLogger->setDateTimeFormat("yyyy.MM.dd hh:mm:ss");
         QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
         fn += QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss") + ".txt";
@@ -110,6 +115,8 @@ int main(int argc, char **argv)
         owt.shutdown();
         owt.wait(10 * BeQt::Second);
         BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
+        BDirTools::writeFile(searchIndexFile, Search::saveIndex());
+
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
@@ -398,6 +405,19 @@ bool handleReloadBoards(const QString &, const QStringList &)
     return true;
 }
 
+bool handleReloadPostIndex(const QString &, const QStringList &)
+{
+    QString s = bReadLine(translate("handleReloadPostIndex", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    QString err;
+    if (Database::reloadPostIndex(&err))
+        bWriteLine(translate("handleReloadPostIndex", "OK"));
+    else
+        bWriteLine(err);
+    return true;
+}
+
 bool handleRerenderPosts(const QString &, const QStringList &args)
 {
     QString s = bReadLine(translate("handleRerenderPosts", "Are you sure?") + " [yN] ");
@@ -579,7 +599,11 @@ void initCommands()
     BTerminal::installHandler("reload-boards", &handleReloadBoards);
     ch.usage = "reload-boards";
     ch.description = BTranslation::translate("initCommands", "Reload all boards: builtin and provided by plugins.");
-    BTerminal::setCommandHelp("reload-boards", ch);
+    //
+    BTerminal::installHandler("reload-post-index", &handleReloadPostIndex);
+    ch.usage = "reload-post-index";
+    ch.description = BTranslation::translate("initCommands", "Clear post text index and create it from scratch.");
+    BTerminal::setCommandHelp("reload-post-index", ch);
     //
     BTerminal::installHandler("register-user", &handleRegisterUser);
     ch.usage = "register-user";

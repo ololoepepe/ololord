@@ -19,6 +19,7 @@ SOURCES += \
     cache.cpp \
     database.cpp \
     ololordapplication.cpp \
+    search.cpp \
     settingslocker.cpp \
     tools.cpp \
     transaction.cpp \
@@ -29,6 +30,7 @@ HEADERS += \
     database.h \
     global.h \
     ololordapplication.h \
+    search.h \
     settingslocker.h \
     tools.h \
     transaction.h \
