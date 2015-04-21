@@ -27,8 +27,8 @@ void ThreadRoute::handle(std::string boardName, std::string thread)
     QString err;
     if (!Controller::testRequest(application, Controller::GetRequest, &err))
         return Tools::log(application, "thread", "fail:" + err, logTarget);
-    AbstractBoard *board = AbstractBoard::board(bn);
-    if (!board) {
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+    if (board.isNull()) {
         Controller::renderNotFound(application);
         Tools::log(application, "thread", "fail:not_found", logTarget);
         return;

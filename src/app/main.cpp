@@ -85,6 +85,7 @@ int main(int argc, char **argv)
         BCoreApplication::installBeqtTranslator("beqt");
         BCoreApplication::installBeqtTranslator("ololord");
         initTerminal();
+        AbstractBoard::reloadBoards(); //Required to initialize board settings
         QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
                 + "/captcha-quota.dat";
         QString searchIndexFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
@@ -775,7 +776,6 @@ void initSettings()
         nnn->setDescription(t);
     }
     BTerminal::setRootSettingsNode(root);
-    AbstractBoard::boardNames(); //Required to initialize board settings
 }
 
 void initTerminal()

@@ -230,8 +230,15 @@ QString cookieValue(const cppcms::http::request &req, const QString &name)
 
 QString countryCode(const QString &ip)
 {
+    unsigned int n = ipNum(ip);
+    if (!n)
+        return "";
     typedef QMap<IpRange, QString> CodeMap;
     QMutexLocker locker(&countryCodeMutex);
+    static QMap<unsigned int, QString> map;
+    QString code = map.value(n);
+    if (!code.isEmpty())
+        return ("-" != code) ? code : "";
     init_once(CodeMap, codes, CodeMap()) {
         QString fn = BDirTools::findResource("res/ip_country_code_map.txt");
         QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
@@ -248,13 +255,14 @@ QString countryCode(const QString &ip)
             codes.insert(r, c);
         }
     }
-    unsigned int n = ipNum(ip);
-    if (!n)
-        return "";
     foreach (const IpRange &r, codes.keys()) {
-        if (n >= r.start && n <= r.end)
-            return codes.value(r);
+        if (n >= r.start && n <= r.end) {
+            QString code = codes.value(r);
+            map.insert(n, code);
+            return code;
+        }
     }
+    map.insert(n, "-");
     return "";
 }
 

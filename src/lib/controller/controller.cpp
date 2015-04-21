@@ -147,7 +147,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     foreach (const QString &s, userBoards) {
         AbstractBoard::BoardInfo inf;
         inf.name = Tools::toStd(s);
-        AbstractBoard *b = AbstractBoard::board(s);
+        AbstractBoard::LockingWrapper b = AbstractBoard::board(s);
         inf.title = Tools::toStd(b ? b->title(tq.locale()) : tq.translate("initBaseBoard", "All boards", "boardName"));
         c.availableBoards.push_back(inf);
     }

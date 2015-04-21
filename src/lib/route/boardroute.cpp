@@ -33,8 +33,8 @@ void BoardRoute::handle(std::string boardName)
         Tools::log(application, "board", "begin", logTarget);
         if (!Controller::testRequest(application, Controller::GetRequest, &err))
             return Tools::log(application, "board", "fail:" + err, logTarget);
-        AbstractBoard *board = AbstractBoard::board(bn);
-        if (!board) {
+        AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+        if (board.isNull()) {
             Controller::renderNotFound(application);
             Tools::log(application, "board", "fail:not_found", logTarget);
             return;
@@ -44,8 +44,8 @@ void BoardRoute::handle(std::string boardName)
         Tools::log(application, "board_rules", "begin", logTarget);
         if (!Controller::testRequest(application, Controller::GetRequest, &err))
             return Tools::log(application, "board", "fail:" + err, logTarget);
-        AbstractBoard *board = AbstractBoard::board(bn);
-        if (!board) {
+        AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+        if (board.isNull()) {
             Controller::renderNotFound(application);
             Tools::log(application, "board", "fail:not_found", logTarget);
             return;
@@ -63,8 +63,8 @@ void BoardRoute::handle(std::string boardName, std::string page)
     QString err;
     if (!Controller::testRequest(application, Controller::GetRequest, &err))
         return Tools::log(application, "board", "fail:" + err, logTarget);
-    AbstractBoard *board = AbstractBoard::board(bn);
-    if (!board) {
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+    if (board.isNull()) {
         Tools::log(application, "board", "fail:not_found", logTarget);
         Controller::renderNotFound(application);
         return;

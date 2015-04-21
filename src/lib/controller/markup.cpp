@@ -730,9 +730,9 @@ void toHtml(QString *s)
 QList<Content::Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
                                  quint64 lastPostNumber, bool *ok, QString *error)
 {
-    AbstractBoard *board = AbstractBoard::board(boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (!board) {
+    if (board.isNull()) {
         return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"),
                     QList<Content::Post>());
     }
@@ -756,9 +756,9 @@ QList<Content::Post> getNewPosts(const cppcms::http::request &req, const QString
 Content::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok,
                       QString *error)
 {
-    AbstractBoard *board = AbstractBoard::board(boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (!board)
+    if (board.isNull())
         return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"), Content::Post());
     bool b = false;
     Post post = Database::getPost(req, boardName, postNumber, &b, error);

@@ -127,9 +127,9 @@ void ActionAjaxHandler::getCaptchaQuota(std::string boardName)
     Tools::log(server, "ajax_get_captcha_quota", "begin", logTarget);
     if (!testBan(bn, true))
         return Tools::log(server, "ajax_get_captcha_quota", "fail:ban", logTarget);
-    AbstractBoard *board = AbstractBoard::board(bn);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
     TranslatorStd ts;
-    if (!board) {
+    if (board.isNull()) {
         std::string err = ts.translate("ActionAjaxHandler", "No such board", "error");
         server.return_error(err);
         Tools::log(server, "ajax_get_captcha_quota", "fail:" + Tools::fromStd(err), logTarget);
@@ -167,8 +167,8 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
     quint64 lpn = lastPostNumber > 0 ? quint64(lastPostNumber) : 0;
     QString logTarget = bn + "/" + QString::number(tn) + "/" + QString::number(lpn);
     Tools::log(server, "ajax_get_new_posts", "begin", logTarget);
-    AbstractBoard *board = AbstractBoard::board(bn);
-    if (!board) {
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+    if (board.isNull()) {
         TranslatorQt tq(server.request());
         QString err = tq.translate("ActionAjaxHandler", "No such board", "error");
         Tools::log(server, "ajax_get_new_posts", "fail:" + err, logTarget);
@@ -198,8 +198,8 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
     quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
     QString logTarget = bn + "/" + QString::number(pn);
     Tools::log(server, "ajax_get_post", "begin", logTarget);
-    AbstractBoard *board = AbstractBoard::board(bn);
-    if (!board) {
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+    if (board.isNull()) {
         TranslatorQt tq(server.request());
         QString err = tq.translate("ActionAjaxHandler", "No such board", "error");
         Tools::log(server, "ajax_post", "fail:" + err, logTarget);

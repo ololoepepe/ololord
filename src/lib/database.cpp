@@ -350,8 +350,8 @@ static bool testCaptcha(const cppcms::http::request &req, const QMap<QString, QS
                         QString *description = 0, const QLocale &l = BCoreApplication::locale())
 {
     TranslatorQt tq(l);
-    AbstractBoard *board = AbstractBoard::board(params.value("board"));
-    if (!board) {
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(params.value("board"));
+    if (board.isNull()) {
         return bRet(error, tq.translate("testCaptcha", "Internal error", "error"), description,
                     tq.translate("testCaptcha", "Internal logic error", "description"), false);
     }
@@ -435,10 +435,10 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
 static bool createPostInternal(CreatePostInternalParameters &p)
 {
     QString boardName = p.params.value("board");
-    AbstractBoard *board = AbstractBoard::board(boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(p.locale);
     bSet(p.postNumber, quint64(0L));
-    if (!board) {
+    if (board.isNull()) {
         return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description,
                            tq.translate("createPostInternal", "Internal logic error", "description"), false);
     }
@@ -536,8 +536,8 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     TranslatorQt tq(l);
     if (boardName.isEmpty() || !AbstractBoard::boardNames().contains(boardName))
         return bRet(error, tq.translate("deletePostInternal", "Invalid board name", "error"), false);
-    AbstractBoard *board = AbstractBoard::board(boardName);
-    if (!board)
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    if (board.isNull())
         return bRet(error, tq.translate("deletePostInternal", "Internal logic error", "error"), false);
     if (!postNumber)
         return bRet(error, tq.translate("deletePostInternal", "Invalid post number", "error"), false);
@@ -738,12 +738,12 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
     if (!testCaptcha(p.request, p.params, p.error, p.description, p.locale))
         return false;
     TranslatorQt tq(p.locale);
-    AbstractBoard *board = AbstractBoard::board(p.params.value("board"));
-    if (!board) {
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(p.params.value("board"));
+    if (board.isNull()) {
         return bRet(p.error, tq.translate("createPost", "Internal error", "error"), p.description,
                     tq.translate("createPost", "Internal logic error", "description"), false);
     }
-    CreatePostInternalParameters pp(p, board);
+    CreatePostInternalParameters pp(p, board.data());
     if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     try {
@@ -781,13 +781,13 @@ quint64 createThread(CreateThreadParameters &p)
     if (!testCaptcha(p.request, p.params, p.error, p.description, p.locale))
         return false;
     QString boardName = p.params.value("board");
-    AbstractBoard *board = AbstractBoard::board(boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(p.locale);
-    if (!board) {
+    if (board.isNull()) {
         return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
                     tq.translate("createThread", "Internal logic error", "description"), 0L);
     }
-    CreatePostInternalParameters pp(p, board);
+    CreatePostInternalParameters pp(p, board.data());
     if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     try {
@@ -952,9 +952,9 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
 
 bool editPost(EditPostParameters &p)
 {
-    AbstractBoard *board = AbstractBoard::board(p.boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(p.boardName);
     TranslatorQt tq(p.request);
-    if (!board)
+    if (board.isNull())
         return bRet(p.error, tq.translate("editPost", "Invalid board name", "error"), false);
     if (!p.postNumber)
         return bRet(p.error, tq.translate("editPost", "Invalid post number", "error"), false);
@@ -1097,9 +1097,9 @@ QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool
 QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
                         quint64 lastPostNumber, bool *ok, QString *error)
 {
-    AbstractBoard *board = AbstractBoard::board(boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (!board)
+    if (board.isNull())
         return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"), QList<Post>());
     if (!threadNumber)
         return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid thread number", "error"), QList<Post>());
@@ -1146,9 +1146,9 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
 
 Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok, QString *error)
 {
-    AbstractBoard *board = AbstractBoard::board(boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (!board)
+    if (board.isNull())
         return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"), Post());
     if (!postNumber)
         return bRet(ok, false, error, tq.translate("getPost", "Invalid post number", "error"), Post());

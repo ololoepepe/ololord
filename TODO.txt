@@ -1,5 +1,7 @@
 [done] Fix vote system
 [done] Implement index-based search
+[done] Lock boards properly
+[done] Cache IP-locale mapping
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page

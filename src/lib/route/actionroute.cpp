@@ -49,8 +49,8 @@ void ActionRoute::handle(std::string action)
         Tools::log(application, a, "fail:" + err, logTarget);
         return;
     }
-    AbstractBoard *board = AbstractBoard::board(boardName);
-    if (!board) {
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    if (board.isNull()) {
         err = tq.translate("ActionRoute", "Unknown board", "error");
         Controller::renderError(application, err,
                                 tq.translate("ActionRoute", "There is no such board", "description"));

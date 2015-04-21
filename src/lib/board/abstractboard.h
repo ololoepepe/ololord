@@ -45,6 +45,9 @@ class request;
 #include <QList>
 #include <QMap>
 #include <QMutex>
+#include <QReadLocker>
+#include <QReadWriteLock>
+#include <QSharedPointer>
 #include <QString>
 
 #include <cppcms/json.h>
@@ -92,6 +95,27 @@ public:
         void setThumbFile(const QString &fn);
         void setThumbFileSize(int height, int width);
     };
+    class OLOLORD_EXPORT LockingWrapper
+    {
+    private:
+        AbstractBoard * const Board;
+    private:
+        QSharedPointer<QReadLocker> locker;
+    public:
+        LockingWrapper(const LockingWrapper &other);
+    private:
+        explicit LockingWrapper(AbstractBoard *board);
+    public:
+        AbstractBoard *data() const;
+        bool isNull() const;
+    public:
+        LockingWrapper &operator =(const LockingWrapper &other);
+        AbstractBoard *operator ->() const;
+        bool operator !() const;
+        operator bool() const;
+    private:
+        friend class AbstractBoard;
+    };
 public:
     typedef std::list<BoardInfo> BoardInfoList;
 public:
@@ -99,7 +123,7 @@ public:
 private:
     static QMap<QString, AbstractBoard *> boards;
     static bool boardsInitialized;
-    static QMutex boardsMutex;
+    static QReadWriteLock boardsLock;
 private:
     QMap<QString, unsigned int> captchaQuotaMap;
     mutable QMutex captchaQuotaMutex;
@@ -107,7 +131,7 @@ public:
     explicit AbstractBoard();
     virtual ~AbstractBoard();
 public:
-    static AbstractBoard *board(const QString &name);
+    static LockingWrapper board(const QString &name);
     static BoardInfoList boardInfos(const QLocale &l, bool includeHidden = true);
     static QStringList boardNames(bool includeHidden = true);
     static void reloadBoards();
@@ -163,7 +187,8 @@ protected:
     virtual Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 private:
     static void cleanupBoards();
-    static void initBoards(bool reinit = false);
+private:
+    friend class LockingWrapper;
 };
 
 #endif // ABSTRACTBOARD_H
