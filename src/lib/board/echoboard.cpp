@@ -32,25 +32,29 @@ echoBoard::echoBoard()
 bool echoBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
                                         Thread &thread, QString *error)
 {
-    if (userData.is_null() || userData.is_undefined())
-        return bRet(error, QString(), true);
-    TranslatorQt tq(req);
-    if (p.number() != thread.number())
-        return bRet(error, tq.translate("echoBoard", "Attempt to edit link of non-OP post", "error"), false);
-    QString link = Tools::fromStd(userData.str());
-    bool ok = false;
-    foreach (const QString &s, Tools::acceptedExternalBoards()) {
-        if (QRegExp(s).exactMatch(link)) {
-            ok = true;
-            break;
+    try {
+        if (userData.is_null() || userData.is_undefined())
+            return bRet(error, QString(), true);
+        TranslatorQt tq(req);
+        if (p.number() != thread.number())
+            return bRet(error, tq.translate("echoBoard", "Attempt to edit link of non-OP post", "error"), false);
+        QString link = Tools::fromStd(userData.str());
+        bool ok = false;
+        foreach (const QString &s, Tools::acceptedExternalBoards()) {
+            if (QRegExp(s).exactMatch(link)) {
+                ok = true;
+                break;
+            }
         }
+        if (!ok)
+            return bRet(error, tq.translate("echoBoard", "This board/thread may not be accepted", "error"), false);
+        if (!link.startsWith("http"))
+            link.prepend("http://");
+        p.setUserData(link);
+        return bRet(error, QString(), true);
+    } catch (const cppcms::json::bad_value_cast &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
     }
-    if (!ok)
-        return bRet(error, tq.translate("echoBoard", "This board/thread may not be accepted", "error"), false);
-    if (!link.startsWith("http"))
-        link.prepend("http://");
-    p.setUserData(link);
-    return bRet(error, QString(), true);
 }
 
 bool echoBoard::beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,

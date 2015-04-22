@@ -30,25 +30,35 @@ ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
 
 void ActionAjaxHandler::banUser(const cppcms::json::object &params)
 {
-    QString sourceBoard = Tools::fromStd(params.at("boardName").str());
-    long long pn = (long long) params.at("postNumber").number();
-    quint64 postNumber = pn > 0 ? quint64(pn) : 0;
-    QString board = Tools::fromStd(params.at("board").str());
-    QString logTarget = sourceBoard + "/" + QString::number(postNumber);
-    Tools::log(server, "ajax_ban_user", "begin", logTarget);
-    if (!testBan(sourceBoard) || !testBan(board))
-        return Tools::log(server, "ajax_ban_user", "fail:ban", logTarget);
-    QString reason = Tools::fromStd(params.at("reason").str());
-    int level = (int) params.at("level").number();
-    QDateTime expires = QDateTime::fromString(Tools::fromStd(params.at("expires").str()), "dd.MM.yyyy:hh");
-    QString err;
-    if (!Database::banUser(server.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
+    try {
+        QString sourceBoard = Tools::fromStd(params.at("boardName").str());
+        long long pn = (long long) params.at("postNumber").number();
+        quint64 postNumber = pn > 0 ? quint64(pn) : 0;
+        QString board = Tools::fromStd(params.at("board").str());
+        QString logTarget = sourceBoard + "/" + QString::number(postNumber);
+        Tools::log(server, "ajax_ban_user", "begin", logTarget);
+        if (!testBan(sourceBoard) || !testBan(board))
+            return Tools::log(server, "ajax_ban_user", "fail:ban", logTarget);
+        QString reason = Tools::fromStd(params.at("reason").str());
+        int level = (int) params.at("level").number();
+        QDateTime expires = QDateTime::fromString(Tools::fromStd(params.at("expires").str()), "dd.MM.yyyy:hh");
+        QString err;
+        if (!Database::banUser(server.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_ban_user", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(true);
+        Tools::log(server, "ajax_ban_user", "success", logTarget);
+    } catch (const cppcms::json::bad_value_cast &e) {
+        QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
-        Tools::log(server, "ajax_ban_user", "fail:" + err, logTarget);
-        return;
+        Tools::log(server, "ajax_ban_user", "fail:" + err);
+    } catch (const std::out_of_range &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_ban_user", "fail:" + err);
     }
-    server.return_result(true);
-    Tools::log(server, "ajax_ban_user", "success", logTarget);
 }
 
 void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string password)
@@ -89,35 +99,45 @@ void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, 
 
 void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 {
-    QString boardName = Tools::fromStd(params.at("boardName").str());
-    long long pn = (long long) params.at("postNumber").number();
-    Database::EditPostParameters p(server.request(), boardName, pn > 0 ? quint64(pn) : 0);
-    QString logTarget = boardName + "/" + QString::number(p.postNumber);
-    Tools::log(server, "ajax_edit_post", "begin", logTarget);
-    if (!testBan(boardName))
-        return Tools::log(server, "ajax_edit_post", "fail:ban", logTarget);
-    p.email = Tools::fromStd(params.at("email").str());
-    p.name = Tools::fromStd(params.at("name").str());
-    p.raw = params.at("raw").boolean();
-    p.subject = Tools::fromStd(params.at("subject").str());
-    p.text = Tools::fromStd(params.at("text").str());
-    p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
-    p.draft = params.at("draft").boolean();
-    p.userData = params.at("userData");
-    QString err;
-    p.error = &err;
-    if (!Database::editPost(p)) {
+    try {
+        QString boardName = Tools::fromStd(params.at("boardName").str());
+        long long pn = (long long) params.at("postNumber").number();
+        Database::EditPostParameters p(server.request(), boardName, pn > 0 ? quint64(pn) : 0);
+        QString logTarget = boardName + "/" + QString::number(p.postNumber);
+        Tools::log(server, "ajax_edit_post", "begin", logTarget);
+        if (!testBan(boardName))
+            return Tools::log(server, "ajax_edit_post", "fail:ban", logTarget);
+        p.email = Tools::fromStd(params.at("email").str());
+        p.name = Tools::fromStd(params.at("name").str());
+        p.raw = params.at("raw").boolean();
+        p.subject = Tools::fromStd(params.at("subject").str());
+        p.text = Tools::fromStd(params.at("text").str());
+        p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
+        p.draft = params.at("draft").boolean();
+        p.userData = params.at("userData");
+        QString err;
+        p.error = &err;
+        if (!Database::editPost(p)) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_edit_post", "fail:" + err, logTarget);
+            return;
+        }
+        cppcms::json::object refs;
+        foreach (const Database::RefKey &key, p.referencedPosts.keys()) {
+            std::string k = Tools::toStd(key.boardName) + "/" + Tools::toStd(QString::number(key.postNumber));
+            refs[k] = Tools::toStd(QString::number(p.referencedPosts.value(key)));
+        }
+        server.return_result(refs);
+        Tools::log(server, "ajax_edit_post", "success", logTarget);
+    } catch (const cppcms::json::bad_value_cast &e) {
+        QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
-        Tools::log(server, "ajax_edit_post", "fail:" + err, logTarget);
-        return;
+        Tools::log(server, "ajax_edit_post", "fail:" + err);
+    } catch (const std::out_of_range &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_edit_post", "fail:" + err);
     }
-    cppcms::json::object refs;
-    foreach (const Database::RefKey &key, p.referencedPosts.keys()) {
-        std::string k = Tools::toStd(key.boardName) + "/" + Tools::toStd(QString::number(key.postNumber));
-        refs[k] = Tools::toStd(QString::number(p.referencedPosts.value(key)));
-    }
-    server.return_result(refs);
-    Tools::log(server, "ajax_edit_post", "success", logTarget);
 }
 
 void ActionAjaxHandler::getCaptchaQuota(std::string boardName)
@@ -316,6 +336,7 @@ void ActionAjaxHandler::unvote(long long postNumber)
 
 void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &votes)
 {
+    try {
     quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
     QString logTarget = QString::number(pn);
     Tools::log(server, "ajax_vote", "begin", logTarget);
@@ -332,4 +353,9 @@ void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &vo
     }
     server.return_result(true);
     Tools::log(server, "ajax_vote", "success", logTarget);
+    } catch (const cppcms::json::bad_value_cast &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_vote", "fail:" + err);
+    }
 }

@@ -590,13 +590,13 @@ static void processTagCode(ProcessPostTextContext &c)
                 sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
                 sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
             } catch (const srchilite::ParserException &e) {
-                qDebug() << "processTagCode" << "ParserException" << e.what();
+                Tools::log("Controller::processTagCode", e);
                 return;
             } catch (const srchilite::IOException &e) {
-                qDebug() << "processTagCode" << "IOException" << e.what();
+                Tools::log("Controller::processTagCode", e);
                 return;
             } catch (const std::exception &e) {
-                qDebug() << "processTagCode" << "exception" << e.what();
+                Tools::log("Controller::processTagCode", e);
                 return;
             }
             QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
@@ -647,13 +647,13 @@ static void processWakabaMarkCode(ProcessPostTextContext &c)
                 sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
                 sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
             } catch (const srchilite::ParserException &e) {
-                qDebug() << "processWakabaMarkCode" << "ParserException" << e.what();
+                Tools::log("Controller::processWakabaMarkCode", e);
                 return;
             } catch (const srchilite::IOException &e) {
-                qDebug() << "processWakabaMarkCode" << "IOException" << e.what();
+                Tools::log("Controller::processWakabaMarkCode", e);
                 return;
             } catch (const std::exception &e) {
-                qDebug() << "processWakabaMarkCode" << "exception" << e.what();
+                Tools::log("Controller::processWakabaMarkCode", e);
                 return;
             }
             QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";

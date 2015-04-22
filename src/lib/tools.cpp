@@ -497,6 +497,14 @@ void log(const cppcms::http::request &req, const QString &action, const QString 
     bLog("[" + ip + "] [" + action + "] [" + state + "]" + (!target.isEmpty() ? (" " + target) : QString()));
 }
 
+void log(const char *where, const std::exception &e)
+{
+    QString s = "[" + QString::fromLatin1(where) + "] [" + QString::fromLatin1(typeid(e).name()) + "]"
+            + Tools::fromStd(e.what());
+    qDebug() << s;
+    bLog(s);
+}
+
 unsigned int maxInfo(MaxInfo m, const QString &boardName)
 {
     typedef QMap< MaxInfo, QPair<QString, uint> > MaxMap;

@@ -2,6 +2,8 @@
 
 #include "ololordwebapp.h"
 
+#include <tools.h>
+
 #include <QDebug>
 #include <QThread>
 
@@ -27,7 +29,7 @@ void OlolordWebAppThread::run()
             service.applications_pool().mount(cppcms::applications_factory<OlolordWebApp>());
             service.run();
         } catch(std::exception const &e) {
-            qDebug() << e.what();
+            Tools::log("OlolordWebAppThread::run", e);
         }
         mservice = 0;
     }

@@ -61,12 +61,12 @@ void Transaction::commit()
                 delete h;
                 delete db;
             } catch (const std::exception &e) {
-                qDebug() << "commit" << "exception" << e.what();
+                Tools::log("Transaction::commit", e);
                 return;
             }
         }
     } catch (const odb::not_in_transaction &e) {
-        qDebug() << "commit" << "not_in_transaction" << e.what();
+        Tools::log("Transaction::commit", e);
         return;
     }
     finalized = true;
@@ -78,7 +78,7 @@ odb::database *Transaction::db() const
         odb::transaction &t = odb::transaction::current();
         return &t.database();
     } catch (const odb::not_in_transaction &e) {
-        qDebug() << "db" << e.what();
+        Tools::log("Transaction::db", e);
         return 0;
     }
 }
@@ -101,7 +101,7 @@ void Transaction::reset()
                                                           SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
             new Hack(db->begin());
         } catch (const std::exception &e) {
-            qDebug() << "reset" << e.what();
+            Tools::log("Transaction::reset", e);
             return;
         }
     }
@@ -123,12 +123,12 @@ void Transaction::rollback()
                 delete h;
                 delete db;
             } catch (const std::exception &e) {
-                qDebug() << "rollback" << "exception" << e.what();
+                Tools::log("Transaction::rollback", e);
                 return;
             }
         }
     } catch (const odb::not_in_transaction &e) {
-        qDebug() << "rollback" << "not_in_transaction" << e.what();
+        Tools::log("Transaction::rollback", e);
         return;
     }
     finalized = true;
