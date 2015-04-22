@@ -2,6 +2,7 @@
 [done] Implement index-based search
 [done] Lock boards properly
 [done] Cache IP-locale mapping
+* Implement quick reply
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page

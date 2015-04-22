@@ -1302,8 +1302,10 @@ lord.postedOnBoard = function() {
         lord.formSubmitted = null;
         var errmsg = lord.queryOne("#errorMessage", iframeDocument);
         var errdesc = lord.queryOne("#errorDescription", iframeDocument);
-        lord.showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML, {type: "critical"});
-        resetCaptcha();
+        var txt = (errmsg && errdesc) ? (errmsg.innerHTML + ": " + errdesc.innerHTML)
+                                      : lord.queryOne("body", iframeDocument).innerHTML;
+        lord.showPopup(txt, {type: "critical"});
+        lord.resetCaptcha();
     }
 };
 

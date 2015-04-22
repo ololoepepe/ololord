@@ -152,6 +152,8 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
             var post = lord.createPostNode(res[i], true);
             if (!post)
                 continue;
+            if (lord.id(post.id))
+                continue;
             document.body.insertBefore(post, before);
         }
         if (!lord.blinkTimer && "hidden" == lord.pageVisible) {
