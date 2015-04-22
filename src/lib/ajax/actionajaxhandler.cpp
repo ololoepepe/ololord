@@ -143,7 +143,7 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 void ActionAjaxHandler::getBoards()
 {
     Tools::log(server, "ajax_get_boards", "begin");
-    AbstractBoard::BoardInfoList list = AbstractBoard::boardInfos(Tools::locale(server.request()));
+    AbstractBoard::BoardInfoList list = AbstractBoard::boardInfos(Tools::locale(server.request()), false);
     cppcms::json::array arr;
     foreach (const AbstractBoard::BoardInfo &inf, list) {
         cppcms::json::object o;
@@ -255,26 +255,33 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
     Tools::log(server, "ajax_get_post", "success", logTarget);
 }
 
-void ActionAjaxHandler::getThreadNumbers(std::string boardName)
+void ActionAjaxHandler::getThreadOpPosts(std::string boardName)
 {
     QString bn = Tools::fromStd(boardName);
     QString logTarget = bn;
-    Tools::log(server, "ajax_get_thread_numbers", "begin", logTarget);
+    Tools::log(server, "ajax_get_thread_op_posts", "begin", logTarget);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+    if (board.isNull()) {
+        TranslatorQt tq(server.request());
+        QString err = tq.translate("ActionAjaxHandler", "No such board", "error");
+        Tools::log(server, "ajax_get_thread_op_posts", "fail:" + err, logTarget);
+        server.return_error(Tools::toStd(err));
+    }
     if (!testBan(bn, true))
-        return Tools::log(server, "ajax_get_thread_numbers", "fail:ban", logTarget);
+        return Tools::log(server, "ajax_get_thread_op_posts", "fail:ban", logTarget);
     bool ok = false;
     QString err;
-    QList<quint64> list = Database::getThreadNumbers(server.request(), bn, &ok, &err);
+    QList<Content::Post> list = Controller::getThreadOpPosts(server.request(), bn, &ok, &err);
     if (!ok) {
         server.return_error(Tools::toStd(err));
-        Tools::log(server, "ajax_get_thread_numbers", "fail:" + err, logTarget);
+        Tools::log(server, "ajax_get_thread_op_posts", "fail:" + err, logTarget);
         return;
     }
     cppcms::json::array arr;
-    foreach (quint64 number, list)
-        arr.push_back(number);
+    foreach (const Content::Post &p, list)
+        arr.push_back(board->toJson(p, server.request()));
     server.return_result(arr);
-    Tools::log(server, "ajax_get_thread_numbers", "success", logTarget);
+    Tools::log(server, "ajax_get_thread_op_posts", "success", logTarget);
 }
 
 QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
@@ -292,6 +299,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
                     method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);
+    list << Handler("get_thread_op_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getThreadOpPosts, self),
+                    method_role);
     list << Handler("set_thread_fixed", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadFixed, self),
                     method_role);
     list << Handler("set_thread_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadOpened, self),

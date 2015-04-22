@@ -1175,37 +1175,35 @@ Post getPost(const cppcms::http::request &req, const QString &boardName, quint64
     }
 }
 
-QList<quint64> getThreadNumbers(const cppcms::http::request &req, const QString &boardName, bool *ok, QString *error)
+QList<Post> getThreadOpPosts(const cppcms::http::request &req, const QString &boardName, bool *ok, QString *error)
 {
     AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (board.isNull()) {
-        return bRet(ok, false, error, tq.translate("getThreadNumbers", "Invalid board name", "error"),
-                    QList<quint64>());
-    }
+    if (board.isNull())
+        return bRet(ok, false, error, tq.translate("getThreadOpPosts", "Invalid board name", "error"), QList<Post>());
     try {
         Transaction t;
         if (!t) {
-            return bRet(ok, false, error, tq.translate("getThreadNumbers", "Internal database error", "error"),
-                        QList<quint64>());
+            return bRet(ok, false, error, tq.translate("getThreadOpPosts", "Internal database error", "error"),
+                        QList<Post>());
         }
         QByteArray hashpass = Tools::hashpass(req);
         bool modOnBoard = moderOnBoard(req, boardName);
         int lvl = registeredUserLevel(req);
         QList<Thread> threads = query<Thread, Thread>(odb::query<Thread>::board == boardName);
-        QList<quint64> list;
+        QList<Post> list;
         foreach (Thread t, threads) {
             QSharedPointer<Post> post = t.posts().first().load();
             if (post->draft() && hashpass != post->hashpass()
                     && (!modOnBoard || registeredUserLevel(post->hashpass()) >= lvl)) {
                 continue;
             }
-            list << t.number();
+            list << *post;
         }
         t.commit();
         return bRet(ok, true, error, QString(), list);
     }  catch (const odb::exception &e) {
-        return bRet(ok, false, error, Tools::fromStd(e.what()), QList<quint64>());
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QList<Post>());
     }
 }
 

@@ -1140,11 +1140,16 @@ text</source>
     </message>
 </context>
 <context>
-    <name>getThreadNumbers</name>
+    <name>getThreadOpPosts</name>
     <message>
         <source>Invalid board name</source>
         <comment>error</comment>
         <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal database error</source>
