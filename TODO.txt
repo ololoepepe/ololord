@@ -2,6 +2,7 @@
 [done] Implement index-based search
 [done] Lock boards properly
 [done] Cache IP-locale mapping
+[done] Add AJAX requests for retrieving boards and thread numbers
 * Implement quick reply
 * Add ability to set limits for each thread
 * Add ability to change/add files

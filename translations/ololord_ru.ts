@@ -1140,6 +1140,19 @@ text</source>
     </message>
 </context>
 <context>
+    <name>getThreadNumbers</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>handleBanPoster</name>
     <message>
         <source>OK</source>

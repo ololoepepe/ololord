@@ -227,6 +227,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
     divFileName.className = "postFileName";
     var aFileName = lord.node("a");
     aFileName.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
+    aFileName.target = "_blank";
     aFileName.appendChild(lord.node("text", f["sourceName"]));
     divFileName.appendChild(aFileName);
     file.appendChild(divFileName);
