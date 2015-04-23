@@ -98,8 +98,8 @@
         <% include searchAction() %>
         <% if ( !content.bannerFileName.empty() ) %>
             <br />
+            <% include banner() %>
         <% end %>
-        <% include banner() %>
         <div class="theTitle">
             <h1>
                 <%= currentBoard.title %>
@@ -107,19 +107,19 @@
                          title="<%= boardRulesLinkText %>">?</a>]</sup>
             </h1>
         </div>
-        <% if ( !content.postingEnabled ) %>
+        <% if ( content.postingEnabled ) %>
+            <hr />
+            <% include createAction("Top") %>
+        <% else %>
             <div class="postingDisabledMessage">
                 <h2><%= postingDisabledText %></h2>
             </div>
-        <% else %>
-            <hr />
         <% end %>
-        <% include createAction("Top") %>
         <% include threads() %>
         <% if ( content.postingEnabled ) %>
             <hr />
+            <% include createAction("Bottom") %>
         <% end %>
-        <% include createAction("Bottom") %>
         <hr />
         <% include pages() %>
         <hr />

@@ -47,8 +47,8 @@
 <% include searchAction() %>
 <% if ( !content.bannerFileName.empty() ) %>
     <br />
+    <% include banner() %>
 <% end %>
-<% include banner() %>
 <div class="theTitle">
     <% if ( !content.pageTitle.empty() ) %>
         <h1><%= pageTitle %></h1>
@@ -66,13 +66,13 @@
     </div>
 <% else %>
     <hr />
+    <% include createAction("Top") %>
 <% end %>
 <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
     <div class="theMessage">
         <h3><%= bumpLimitReachedText %></h3>
     </div>
 <% end %>
-<% include createAction("Top") %>
 <hr />
 <% include threadActions("top") %>
 <hr />
@@ -87,8 +87,8 @@
 <% include threadActions("bottom") %>
 <% if ( content.postingEnabled && !content.postLimitReached() ) %>
     <hr />
+    <% include createAction("Bottom") %>
 <% end %>
-<% include createAction("Bottom") %>
 <hr />
 <% include navbar() %>
 <a id="bottom"></a>
