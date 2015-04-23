@@ -1514,6 +1514,16 @@ Your choice:</source>
         <comment>searchInputPlaceholder</comment>
         <translation>Поиск: возможно +обязательно -исключается</translation>
     </message>
+    <message>
+        <source>Settings</source>
+        <comment>settingsButtonText</comment>
+        <translation>Настройки</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>settingsDialogTitle</comment>
+        <translation>Настройки</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

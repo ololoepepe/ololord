@@ -21,32 +21,7 @@
         </select>
     </span>
     <span>
-        <%= styleLabelText %>
-        <select id="styleChangeSelect" class="select" onchange="javascript:lord.changeStyle();">
-            <% foreach st in styles %>
-                <% item %>
-                    <% if ( st.name == content.style.name ) %>
-                        <option value="<%= st.name %>" selected="true">
-                    <% else %>
-                        <option value="<%= st.name %>">
-                    <% end %>
-                        <%= st.title %>
-                    </option>
-                <% end %>
-            <% end %>
-        </select>
-    </span>
-    <span>
-        <%= timeLabelText %>
-        <select id="timeChangeSelect" class="select" onchange="javascript:lord.changeTime();">
-            <% if ( content.currentTime == "local" ) %>
-                <option value="server"><%= timeServerText %></option>
-                <option value="local" selected="true"><%= timeLocalText %></option>
-            <% else %>
-                <option value="server" selected="true"><%= timeServerText %></option>
-                <option value="local"><%= timeLocalText %></option>
-            <% end %>
-        </select>
+        <button class="button" onclick="javascript:lord.showSettings();"><%= settingsButtonText %></button>
     </span>
     <span>
         <%= loginLabelText %>
@@ -106,6 +81,49 @@
 <input type="hidden" id="showPasswordText" value="<%= showPasswordText %>" />
 <input type="hidden" id="cancelButtonText" value="<%= cancelButtonText %>" />
 <input type="hidden" id="confirmButtonText" value="<%= confirmButtonText %>" />
+<input type="hidden" id="settingsDialogTitle" value="<%= settingsDialogTitle %>" />
+<div id="settingsDialogTemplate" class="settingsDialog" style="display: none;" >
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    <%= styleLabelText %>
+                </td>
+                <td>
+                    <select name="styleChangeSelect" class="select">
+                        <% foreach st in styles %>
+                            <% item %>
+                                <% if ( st.name == content.style.name ) %>
+                                    <option value="<%= st.name %>" selected="true">
+                                <% else %>
+                                    <option value="<%= st.name %>">
+                                <% end %>
+                                    <%= st.title %>
+                                </option>
+                            <% end %>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <%= timeLabelText %>
+                </td>
+                <td>
+                    <select name="timeChangeSelect" class="select">
+                        <% if ( content.currentTime == "local" ) %>
+                            <option value="server"><%= timeServerText %></option>
+                            <option value="local" selected="true"><%= timeLocalText %></option>
+                        <% else %>
+                            <option value="server" selected="true"><%= timeServerText %></option>
+                            <option value="local"><%= timeLocalText %></option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
 <% end template %>
 
 <% template baseHead(bool javascript) %>

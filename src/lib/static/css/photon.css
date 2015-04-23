@@ -626,3 +626,10 @@ a.progressBlocking {
 .voteCount {
     font-style: italic;
 }
+
+/* Settings dialog */
+
+.settingsDialog {
+    width: 400px;
+    height: 200px;
+}

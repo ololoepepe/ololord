@@ -107,6 +107,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.searchButtonText = ts.translate("initBase", "Search", "searchButtonText");
     c.searchInputPlaceholder = ts.translate("initBase", "Search: possible +required -excluded",
                                             "searchInputPlaceholder");
+    c.settingsButtonText = ts.translate("initBase", "Settings", "settingsButtonText");
+    c.settingsDialogTitle = ts.translate("initBase", "Settings", "settingsDialogTitle");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());

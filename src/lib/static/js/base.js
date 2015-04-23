@@ -12,43 +12,6 @@ lord.popups = [];
 
 /*Functions*/
 
-lord.dtsIbEngine = { //For compatibility with Dollchan Extension Tools
-    lord: { value: true },
-    cFileInfo: "postFileSize",
-    cOPost: "opPost",
-    cReply: { value: "post" },
-    cRPost: "post",
-    cSubj: { value: "postSubject" },
-    cTrip: "tripcode",
-    qBan: { value: ".bannedFor" },
-    qClosed: { value: "img[src$=\"closed.png\"]" },
-    qDelBut: "a[name='deleteButton']",
-    qDForm: { value: null },
-    qError: { value: null },
-    qHide: { value: "a[name='hideButton']" },
-    qImgLink: { value: ".postFileName > a" },
-    qMsg: { value: "blockquote" },
-    qName: ".userName",
-    qOmitted: ".omittedPosts",
-    qPages: ".pagesItem",
-    qPostForm: "#postFormTop", //, #postFormBottom
-    qPostRedir: { value: null },
-    qTable: ".postFormTable",
-    qThumbImages: ".postFileFile > a > img",
-    qTrunc: { value: null },
-    getWrap: {
-        value: function value(el) {
-            return el.parentNode;
-        }
-    },
-    hasPicWrap: { value: false },
-    markupBB: { value: true },
-    markupTags: { value: ["B", "I", "U", "S", "SPOILER", "CODE", "SUP", "SUB", "Q"] },
-    multiFile: { value: true },
-    rLinkClick: { value: "" },
-    timePattern: { value: "dd+nn+yyyy+w+hh+ii+ss" }
-};
-
 lord.getCookie = function(name) {
     var matches = document.cookie.match(
         new RegExp("(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"));
@@ -211,7 +174,7 @@ lord.showPopup = function(text, options) {
 
 lord.showDialog = function(title, label, body, callback, afterShow) {
     var root = lord.node("div");
-    if (!!title && !!label) {
+    if (!!title || !!label) {
         var div = lord.node("div");
         if (!!title) {
             var c = lord.node("center");
@@ -228,8 +191,10 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
         root.appendChild(div);
         root.appendChild(lord.node("br"));
     }
-    if (!!body)
+    if (!!body) {
         root.appendChild(body);
+        root.appendChild(lord.node("br"));
+    }
     var div2 = lord.node("div");
     var dialog = null;
     var cancel = lord.node("button");
@@ -262,24 +227,6 @@ lord.changeLocale = function() {
     var sel = lord.id("localeChangeSelect");
     var ln = sel.options[sel.selectedIndex].value;
     lord.setCookie("locale", ln, {
-        "expires": lord.Billion, "path": "/"
-    });
-    lord.reloadPage();
-};
-
-lord.changeStyle = function() {
-    var sel = lord.id("styleChangeSelect");
-    var sn = sel.options[sel.selectedIndex].value;
-    lord.setCookie("style", sn, {
-        "expires": lord.Billion, "path": "/"
-    });
-    lord.reloadPage();
-};
-
-lord.changeTime = function() {
-    var sel = lord.id("timeChangeSelect");
-    var ln = sel.options[sel.selectedIndex].value;
-    lord.setCookie("time", ln, {
         "expires": lord.Billion, "path": "/"
     });
     lord.reloadPage();
@@ -352,6 +299,25 @@ lord.searchKeyPress = function(e) {
     if (e.keyCode != 13)
         return;
     lord.doSearch();
+};
+
+lord.showSettings = function() {
+    var div = lord.id("settingsDialogTemplate").cloneNode(true);
+    div.style.display = "";
+    div.className = "settingsDialog";
+    lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
+        var sel = lord.nameOne("styleChangeSelect", div);
+        var sn = sel.options[sel.selectedIndex].value;
+        lord.setCookie("style", sn, {
+            "expires": lord.Billion, "path": "/"
+        });
+        sel = lord.nameOne("timeChangeSelect", div);
+        var tm = sel.options[sel.selectedIndex].value;
+        lord.setCookie("time", tm, {
+            "expires": lord.Billion, "path": "/"
+        });
+        lord.reloadPage();
+    });
 };
 
 lord.initializeOnLoadSettings = function() {

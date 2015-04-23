@@ -49,6 +49,8 @@ public:
     std::string pageTitle;
     std::string searchButtonText;
     std::string searchInputPlaceholder;
+    std::string settingsButtonText;
+    std::string settingsDialogTitle;
     std::string showPasswordText;
     std::string showTripcodeText;
     std::string siteDomain;

@@ -4,6 +4,7 @@
 [done] Cache IP-locale mapping
 [done] Add AJAX requests for retrieving boards and thread numbers
 [done] Fix post text processing to avoid transaction timeout
+[done] Implement settings dialog
 * Implement quick reply
 * Add ability to select captcha
 * Add ability to set limits for each thread
