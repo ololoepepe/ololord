@@ -247,6 +247,7 @@ lord.downloadThread = function() {
     lord.toCenter(progress, progress.offsetWidth, progress.offsetHeight);
     lord.toCenter(cButton, cButton.offsetWidth, cButton.offsetHeight);
     var zip = new JSZip();
+    var last = 0;
     var append = function(i) {
         if (i >= as.length) {
             var content = zip.generate({
@@ -267,6 +268,7 @@ lord.downloadThread = function() {
             return;
         }
         var a = as[i];
+        last = i;
         JSZipUtils.getBinaryContent(a.href, function (err, data) {
             if (!err) {
                 zip.file(a.href.split("/").pop(), data, {
@@ -274,10 +276,12 @@ lord.downloadThread = function() {
                 });
             }
             progress.value = +progress.value + 1;
-            append(i + 1);
+            append(++last);
         });
     };
-    append(0);
+    append(last);
+    if (as.length > 1)
+        append(++last);
 };
 
 lord.initializeOnLoadThread = function() {
