@@ -324,3 +324,8 @@ lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
 };
+
+window.addEventListener("load", function load() {
+    window.removeEventListener("load", load, false);
+    lord.initializeOnLoadSettings();
+}, false);

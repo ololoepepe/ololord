@@ -1336,4 +1336,10 @@ lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
+    lord.id("kostyleeque").addEventListener("load", lord.postedInThread || lord.postedOnBoard, false);
 };
+
+window.addEventListener("load", function load() {
+    window.removeEventListener("load", load, false);
+    lord.initializeOnLoadBaseBoard();
+}, false);

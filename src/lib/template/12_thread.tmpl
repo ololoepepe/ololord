@@ -38,7 +38,7 @@
 <input id="noNewPostsText" type="hidden" value="<%= noNewPostsText %>" />
 <input id="newPostsText" type="hidden" value="<%= newPostsText %>" />
 <input id="currentThreadNumber" type="hidden" value="<%= opPost.number %>" />
-<iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="lord.postedInThread();"></iframe>
+<iframe id="kostyleeque" name="kostyleeque" style="display: none;"></iframe>
 <a id="top"></a>
 <% include settings() %>
 <br />
@@ -100,7 +100,7 @@
     <head>
         <% include head() %>
     </head>
-    <body onload="javascript:lord.initializeOnLoadThread();">
+    <body>
         <% include body() %>
     </body>
 </html>

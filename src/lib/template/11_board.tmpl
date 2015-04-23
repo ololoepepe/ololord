@@ -84,12 +84,12 @@
         <% include baseHead(1) %>
         <% include boardHead() %>
     </head>
-    <body onload="javascript:lord.initializeOnLoadBaseBoard();">
+    <body>
         <% include baseTexts() %>
         <% include boardTexts() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>
-        <iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="lord.postedOnBoard();"></iframe>
+        <iframe id="kostyleeque" name="kostyleeque" style="display: none;"></iframe>
         <a id="top"></a>
         <% include settings() %>
         <br />

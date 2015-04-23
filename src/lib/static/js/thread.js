@@ -307,3 +307,8 @@ lord.initializeOnLoadThread = function() {
         lord.selectPost(post);
     }
 };
+
+window.addEventListener("load", function load() {
+    window.removeEventListener("load", load, false);
+    lord.initializeOnLoadThread();
+}, false);
