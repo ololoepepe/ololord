@@ -526,7 +526,7 @@ lord.createPostNode = function(res, permanent, boardName) {
             var toThreadLink = lord.nameOne("toThreadLink", post);
             toThreadLink.href = toThreadLink.href.replace("%postNumber%", res["number"]);
         } else {
-            toThread.parentNode.removeChild(toThread);s
+            toThread.parentNode.removeChild(toThread);
         }
     } else {
         fixButton.parentNode.removeChild(fixButton);

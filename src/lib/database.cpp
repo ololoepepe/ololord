@@ -27,12 +27,15 @@
 #include <QDir>
 #include <QFile>
 #include <QFileInfo>
+#include <QReadLocker>
+#include <QReadWriteLock>
 #include <QScopedPointer>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
 #include <QVariantMap>
+#include <QWriteLocker>
 
 #include <cppcms/http_request.h>
 
@@ -146,6 +149,8 @@ public:
         referencedPosts = 0;
     }
 };
+
+static QReadWriteLock processTextLock(QReadWriteLock::Recursive);
 
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
                                  QString *description = 0)
@@ -446,6 +451,10 @@ static bool createPostInternal(CreatePostInternalParameters &p)
     if (!p.threadNumber)
         p.threadNumber = p.params.value("thread").toULongLong();
     Tools::Post post = Tools::toPost(p.params, p.files);
+    bool draft = board->draftsEnabled() && post.draft;
+    RefMap refs;
+    QString processedText = Controller::processPostText(post.text, boardName, !draft ? &refs : 0);
+    QReadLocker locker(&processTextLock);
     try {
         Transaction t;
         if (!t) {
@@ -493,15 +502,14 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         ps->setName(post.name);
         ps->setSubject(post.subject);
         ps->setRawText(post.text);
-        if (board->draftsEnabled() && post.draft)
+        if (draft)
             ps->setDraft(true);
         bool raw = post.raw && registeredUserLevel(p.request) >= RegisteredUser::AdminLevel;
-        RefMap refs;
         if (raw) {
             ps->setText(post.text);
             ps->setRawHtml(true);
         } else {
-            ps->setText(Controller::processPostText(post.text, boardName, !ps->draft() ? &refs : 0));
+            ps->setText(processedText);
             bSet(p.referencedPosts, refs);
         }
         ps->setShowTripcode(!Tools::cookieValue(p.request, "show_tripcode").compare("true", Qt::CaseInsensitive));
@@ -541,6 +549,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
         return bRet(error, tq.translate("deletePostInternal", "Internal logic error", "error"), false);
     if (!postNumber)
         return bRet(error, tq.translate("deletePostInternal", "Invalid post number", "error"), false);
+    QReadLocker lock(&processTextLock);
     try {
         Transaction t;
         if (!t)
@@ -961,6 +970,7 @@ bool editPost(EditPostParameters &p)
     QByteArray hashpass = Tools::hashpass(p.request);
     if (p.password.isEmpty() && hashpass.isEmpty())
         return bRet(p.error, tq.translate("editPost", "Invalid password", "error"), false);
+    QReadLocker locker(&processTextLock);
     try {
         Transaction t;
         if (!t)
@@ -1444,6 +1454,8 @@ int reloadPostIndex(QString *error, const QLocale &l)
 int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l)
 {
     TranslatorQt tq(l);
+    QWriteLocker locker(&processTextLock);
+    QList<quint64> postIds;
     try {
         Transaction t;
         if (!t)
@@ -1455,24 +1467,48 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                 qq = qq || (odb::query<Post>::board == board);
             q = q && qq;
         }
-        QList<Post> posts = query<Post, Post>(q);
-        foreach (int i, bRangeD(0, posts.size() - 1)) {
-            Post &post = posts[i];
-            if (!post.draft() && !removeFromReferencedPosts(post.id(), error))
-                return -1;
-            RefMap refs;
-            post.setText(Controller::processPostText(post.rawText(), post.board(), &refs));
-            QSharedPointer<Post> sp(new Post(post));
-            if (!post.draft() && !addToReferencedPosts(sp, refs, error))
-                return -1;
-            t->update(post);
-            Cache::removePost(post.board(), post.number());
-        }
+        QList<PostId> ids = query<PostId, Post>(q);
+        foreach (const PostId &id, ids)
+            postIds << id.id;
         t.commit();
-        return bRet(error, QString(), posts.size());
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), -1);
     }
+    if (postIds.isEmpty())
+        return bRet(error, QString(), 0);
+    int count = 0;
+    int offset = 0;
+    while (offset < postIds.size()) {
+        try {
+            Transaction t;
+            if (!t)
+                return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
+            QString qs = "id IN (";
+            foreach (quint64 id, postIds.mid(count, 50))
+                qs += QString::number(id) + ", ";
+            qs.remove(qs.length() - 2, 2);
+            qs += ")";
+            QList<Post> posts = query<Post, Post>(qs);
+            foreach (int i, bRangeD(0, posts.size() - 1)) {
+                Post &post = posts[i];
+                if (!post.draft() && !removeFromReferencedPosts(post.id(), error))
+                    return -1;
+                RefMap refs;
+                post.setText(Controller::processPostText(post.rawText(), post.board(), &refs));
+                QSharedPointer<Post> sp(new Post(post));
+                if (!post.draft() && !addToReferencedPosts(sp, refs, error))
+                    return -1;
+                t->update(post);
+                Cache::removePost(post.board(), post.number());
+            }
+            t.commit();
+            count += posts.size();
+            offset += 50;
+        } catch (const odb::exception &e) {
+            return bRet(error, Tools::fromStd(e.what()), -1);
+        }
+    }
+    return bRet(error, QString(), count);
 }
 
 bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error, const QLocale &l)

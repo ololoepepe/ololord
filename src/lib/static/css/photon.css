@@ -20,6 +20,10 @@ a {
     color: #FF6600;
 }
 
+a:hover {
+    color: #0066FF;
+}
+
 hr {
     color: #CCCCCC; /*IE*/
     background-color: #CCCCCC; /*Firefox, Opera, Safari*/

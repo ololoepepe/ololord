@@ -166,6 +166,12 @@ struct OLOLORD_EXPORT PostCount
     int count;
 };
 
+PRAGMA_DB(view object(Post))
+struct OLOLORD_EXPORT PostId
+{
+    quint64 id;
+};
+
 PRAGMA_DB(object table("postReferences"))
 class OLOLORD_EXPORT PostReference
 {

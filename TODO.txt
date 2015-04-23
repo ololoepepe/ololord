@@ -3,7 +3,9 @@
 [done] Lock boards properly
 [done] Cache IP-locale mapping
 [done] Add AJAX requests for retrieving boards and thread numbers
+[done] Fix post text processing to avoid transaction timeout
 * Implement quick reply
+* Add ability to select captcha
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page
