@@ -8,6 +8,7 @@
 [done] Download two thread files simultaneously to minimize ping delay effect
 [done] Implement quick reply
 [done] Add ability to select captcha
+[done] Add Yandex captcha support
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page

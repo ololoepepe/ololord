@@ -1,5 +1,6 @@
 #include "abstractcaptchaengine.h"
 
+#include "abstractyandexcaptchaengine.h"
 #include "codechacaptchaengine.h"
 #include "googlerecaptchacaptchaengine.h"
 #include "plugin/global/captchaenginefactoryplugininterface.h"
@@ -121,6 +122,12 @@ void AbstractCaptchaEngine::reloadEngines()
     AbstractCaptchaEngine *e = new GoogleRecaptchaCaptchaEngine;
     engines.insert(e->id(), e);
     e = new CodechaCaptchaEngine;
+    engines.insert(e->id(), e);
+    e = new YandexCaptchaElatmEngine;
+    engines.insert(e->id(), e);
+    e = new YandexCaptchaEstdEngine;
+    engines.insert(e->id(), e);
+    e = new YandexCaptchaRusEngine;
     engines.insert(e->id(), e);
     foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("captcha-engine-factory")) {
         pw->unload();

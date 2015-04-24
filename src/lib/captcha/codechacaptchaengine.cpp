@@ -60,9 +60,9 @@ QString CodechaCaptchaEngine::id() const
     return "codecha";
 }
 
-QString CodechaCaptchaEngine::title(const QLocale &/*l*/) const
+QString CodechaCaptchaEngine::title(const QLocale &l) const
 {
-    return "Codecha";
+    return TranslatorQt(l).translate("CodechaCaptchaEngine", "Codecha - programmers' CAPTCHA", "title");
 }
 
 QString CodechaCaptchaEngine::widgetHtml() const

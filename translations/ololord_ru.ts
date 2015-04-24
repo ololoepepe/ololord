@@ -388,6 +388,49 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>AbstractYandexCaptchaEngine</name>
+    <message>
+        <source>Yandex captcha</source>
+        <comment>title</comment>
+        <translation>Капча Yandex</translation>
+    </message>
+    <message>
+        <source>Latin</source>
+        <comment>title</comment>
+        <translation>латиница</translation>
+    </message>
+    <message>
+        <source>digits</source>
+        <comment>title</comment>
+        <translation>цифры</translation>
+    </message>
+    <message>
+        <source>Cyrillic</source>
+        <comment>title</comment>
+        <translation>кириллица</translation>
+    </message>
+    <message>
+        <source>Captcha ID is empty</source>
+        <comment>error</comment>
+        <translation>Идентификатор капчи пуст</translation>
+    </message>
+    <message>
+        <source>Captcha challenge is empty</source>
+        <comment>error</comment>
+        <translation>Задание капчи пусто</translation>
+    </message>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+</context>
+<context>
     <name>ActionAjaxHandler</name>
     <message>
         <source>Internal database error</source>
@@ -398,6 +441,21 @@ Apperas in the HTML pages.</source>
         <source>No such board</source>
         <comment>error</comment>
         <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Invalid captcha type</source>
+        <comment>error</comment>
+        <translation>Недействительный тип капчи</translation>
+    </message>
+    <message>
+        <source>No engine for this captcha type</source>
+        <comment>error</comment>
+        <translation>Отсутствует движок для этого типа капчи</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
     </message>
 </context>
 <context>
@@ -434,6 +492,11 @@ Apperas in the HTML pages.</source>
         <source>Captcha is incorrect</source>
         <comment>error</comment>
         <translation>Капча решена неправильно</translation>
+    </message>
+    <message>
+        <source>Codecha - programmers&apos; CAPTCHA</source>
+        <comment>title</comment>
+        <translation>Codecha - программистская CAPTCHA</translation>
     </message>
 </context>
 <context>

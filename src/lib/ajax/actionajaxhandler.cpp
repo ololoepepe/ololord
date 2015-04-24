@@ -1,6 +1,8 @@
 #include "actionajaxhandler.h"
 
 #include "database.h"
+#include "captcha/abstractcaptchaengine.h"
+#include "captcha/abstractyandexcaptchaengine.h"
 #include "controller/controller.h"
 #include "controller/baseboard.h"
 #include "tools.h"
@@ -14,12 +16,19 @@
 #include <QList>
 #include <QLocale>
 #include <QMap>
+#include <QRegExp>
 #include <QString>
 #include <QStringList>
+#include <QUrl>
 
 #include <cppcms/json.h>
 #include <cppcms/rpc_json.h>
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+
+#include <sstream>
 #include <string>
 
 ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
@@ -284,6 +293,87 @@ void ActionAjaxHandler::getThreadOpPosts(std::string boardName)
     Tools::log(server, "ajax_get_thread_op_posts", "success", logTarget);
 }
 
+void ActionAjaxHandler::getYandexCaptchaImage(std::string type)
+{
+    QString t = Tools::fromStd(type);
+    QString logTarget = t;
+    Tools::log(server, "ajax_get_yandex_captcha_image", "begin", logTarget);
+    TranslatorQt tq(server.request());
+    if ("elatm" != t && "estd" != t && "rus" != t) {
+        QString err = tq.translate("ActionAjaxHandler", "Invalid captcha type", "error");
+        Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
+        server.return_error(Tools::toStd(err));
+        return;
+    }
+    AbstractCaptchaEngine::LockingWrapper e = AbstractCaptchaEngine::engine("yandex-captcha-" + t);
+    if (e.isNull()) {
+        QString err = tq.translate("ActionAjaxHandler", "No engine for this captcha type", "error");
+        Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
+        server.return_error(Tools::toStd(err));
+        return;
+    }
+    try {
+        QString id;
+        QString challenge;
+        QString iurl;
+        {
+            curlpp::Cleanup curlppCleanup;
+            Q_UNUSED(curlppCleanup)
+            curlpp::Easy request;
+            QString url = "http://cleanweb-api.yandex.ru/1.0/check-spam?key="
+                    + QUrl::toPercentEncoding(e->privateKey());
+            request.setOpt(curlpp::options::Url(Tools::toStd(url)));
+            std::ostringstream os;
+            os << request;
+            QString result = Tools::fromStd(os.str());
+            QRegExp rx("<id>.+</id>");
+            if (rx.indexIn(result) < 0) {
+                QString err = tq.translate("ActionAjaxHandler", "Internal error", "error");
+                Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
+                server.return_error(Tools::toStd(err));
+                return;
+            }
+            id = rx.cap().remove("<id>").remove("</id>");
+        }
+        {
+            curlpp::Cleanup curlppCleanup;
+            Q_UNUSED(curlppCleanup)
+            QString url = "http://cleanweb-api.yandex.ru/1.0/get-captcha?key="
+                    + QUrl::toPercentEncoding(e->privateKey()) + "&id=" + QUrl::toPercentEncoding(id)
+                    + "&type=" + QUrl::toPercentEncoding(t);
+            curlpp::Easy request;
+            request.setOpt(curlpp::options::Url(Tools::toStd(url)));
+            std::ostringstream os;
+            os << request;
+            QString result = Tools::fromStd(os.str());
+            QRegExp rxc("<captcha>.+</captcha>");
+            QRegExp rxu("<url>.+</url>");
+            if (rxc.indexIn(result) < 0 || rxu.indexIn(result) < 0) {
+                QString err = tq.translate("ActionAjaxHandler", "Internal error", "error");
+                Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
+                server.return_error(Tools::toStd(err));
+                return;
+            }
+            challenge = rxc.cap().remove("<captcha>").remove("</captcha>");
+            iurl = rxu.cap().remove("<url>").remove("</url>");
+        }
+        cppcms::json::object o;
+        o["id"] = Tools::toStd(id);
+        o["challenge"] = Tools::toStd(challenge);
+        o["url"] = Tools::toStd(iurl);
+        server.return_result(o);
+        Tools::log(server, "ajax_get_yandex_captcha_image", "success", logTarget);
+    } catch (curlpp::RuntimeError &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err);
+    } catch(curlpp::LogicError &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err);
+    }
+}
+
 QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
 {
     QList<ActionAjaxHandler::Handler> list;
@@ -301,6 +391,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);
     list << Handler("get_thread_op_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getThreadOpPosts, self),
                     method_role);
+    list << Handler("get_yandex_captcha_image",
+                    cppcms::rpc::json_method(&ActionAjaxHandler::getYandexCaptchaImage, self), method_role);
     list << Handler("set_thread_fixed", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadFixed, self),
                     method_role);
     list << Handler("set_thread_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadOpened, self),
@@ -384,22 +476,22 @@ void ActionAjaxHandler::unvote(long long postNumber)
 void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &votes)
 {
     try {
-    quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
-    QString logTarget = QString::number(pn);
-    Tools::log(server, "ajax_vote", "begin", logTarget);
-    if (!testBan("rpg"))
-        return Tools::log(server, "ajax_vote", "fail:ban", logTarget);
-    QString err;
-    QStringList list;
-    foreach (int i, bRangeD(0, votes.size() - 1))
-        list << Tools::fromStd(votes.at(i).str());
-    if (!Database::vote(pn, list, server.request(), &err)) {
-        server.return_error(Tools::toStd(err));
-        Tools::log(server, "ajax_vote", "fail:" + err, logTarget);
-        return;
-    }
-    server.return_result(true);
-    Tools::log(server, "ajax_vote", "success", logTarget);
+        quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+        QString logTarget = QString::number(pn);
+        Tools::log(server, "ajax_vote", "begin", logTarget);
+        if (!testBan("rpg"))
+            return Tools::log(server, "ajax_vote", "fail:ban", logTarget);
+        QString err;
+        QStringList list;
+        foreach (int i, bRangeD(0, votes.size() - 1))
+            list << Tools::fromStd(votes.at(i).str());
+        if (!Database::vote(pn, list, server.request(), &err)) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_vote", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(true);
+        Tools::log(server, "ajax_vote", "success", logTarget);
     } catch (const cppcms::json::bad_value_cast &e) {
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
