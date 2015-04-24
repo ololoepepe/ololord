@@ -10,9 +10,13 @@ lord.lastPostPreviewTimer = null;
 lord.formSubmitted = null;
 lord.images = {};
 lord.img = null;
-lord.postFormVisible = {
-    "Top": false,
-    "Bottom": false
+lord.postForm = {
+    "visibility": {
+        "Top": false,
+        "Bottom": false
+    },
+    "last": "",
+    "quickReply": false
 };
 
 /*Functions*/
@@ -129,7 +133,7 @@ lord.reloadCaptchaFunction = function() {
 };
 
 lord.resetCaptcha = function() {
-    var captcha = lord.id("googleCaptcha");
+    var captcha = lord.id("captcha");
     if (!!captcha) {
         var boardName = lord.text("currentBoardName");
         lord.ajaxRequest("get_captcha_quota", [boardName], 8, function(res) {
@@ -137,34 +141,21 @@ lord.resetCaptcha = function() {
             if (isNaN(res))
                 return;
             var hiddenCaptcha = lord.id("hiddenCaptcha");
+            var td = lord.id("captchaContainer");
+            for (var i = 0; i < td.children.length; ++i) {
+                if (td.children[i] == captcha)
+                    continue;
+                td.removeChild(td.children[i]);
+            }
             if (res > 0) {
                 hiddenCaptcha.appendChild(captcha);
-                ["Top", "Bottom"].forEach(function (pos) {
-                    var td = lord.id("googleCaptcha" + pos);
-                    for (var i = 0; i < td.children.length; ++i) {
-                        var child = td.children[i];
-                        if (child == captcha)
-                            continue;
-                        td.removeChild(child);
-                    }
-                    var span = lord.node("span");
-                    span.className = "noCaptchaText";
-                    var text = lord.text("noCaptchaText") + ". " + lord.text("captchaQuotaText") + " " + res;
-                    span.appendChild(lord.node("text", text));
-                    td.appendChild(span);
-                });
+                var span = lord.node("span");
+                span.className = "noCaptchaText";
+                var text = lord.text("noCaptchaText") + ". " + lord.text("captchaQuotaText") + " " + res;
+                span.appendChild(lord.node("text", text));
+                td.appendChild(span);
             } else {
-                ["Top", "Bottom"].forEach(function (pos) {
-                    var td = lord.id("googleCaptcha" + pos);
-                    for (var i = 0; i < td.children.length; ++i) {
-                        var child = td.children[i];
-                        if (child == captcha)
-                            continue;
-                        td.removeChild(child);
-                    }
-                });
-                var pos = !!lord.postFormVisible["Bottom"] ? "Bottom" : "Top";
-                lord.id("googleCaptcha" + pos).appendChild(captcha);
+                lord.id("captchaContainer").appendChild(captcha);
             }
             if (!!lord.reloadCaptchaFunction && "hiddenCaptcha" !== captcha.parentNode.id)
                 lord.reloadCaptchaFunction();
@@ -438,6 +429,8 @@ lord.createPostNode = function(res, permanent, boardName) {
         post.className += " temporary";
         return post;
     }
+    var quickReply = lord.nameOne("quickReply", post);
+    quickReply.href = quickReply.href.replace("%postNumber%", res["number"]);
     lord.removeReferences(res["number"]);
     if (!!res["refersTo"]) {
         var refersTo = {};
@@ -471,7 +464,6 @@ lord.createPostNode = function(res, permanent, boardName) {
     var hideButton = lord.nameOne("hideButton", post);
     hideButton.id = hideButton.id.replace("%postNumber%", res["number"]);
     hideButton.href = hideButton.href.replace("%postNumber%", res["number"]);
-    
     hideButton.href = hideButton.href.replace("%hide%", !hidden);
     var editButton = lord.nameOne("editButton", post);
     var fixButton = lord.nameOne("fixButton", post);
@@ -646,21 +638,21 @@ lord.showPasswordDialog = function(title, label, callback) {
 };
 
 lord.showHidePostForm = function(position) {
+    lord.removeQuickReply();
+    var postForm = lord.id("postForm");
     var theButton = lord.id("showHidePostFormButton" + position);
-    if (lord.postFormVisible[position]) {
+    if (lord.postForm.visibility[position]) {
         theButton.innerHTML = lord.text("showPostFormText");
-        lord.id("postForm" + position).className = "postFormInvisible";
+        lord.id("hiddenPostForm").appendChild(postForm);
+        lord.postForm.last = "";
     } else {
-        theButton.innerHTML = lord.text("hidePostFormText");
-        lord.id("postForm" + position).className = "postFormVisible";
         var p = ("Top" === position) ? "Bottom" : "Top";
-        if (lord.postFormVisible[p])
+        if (lord.postForm.visibility[p])
             lord.showHidePostForm(p);
-        var captcha = lord.id("googleCaptcha");
-        if (!!captcha && "hiddenCaptcha" !== captcha.parentNode.id)
-            lord.id("googleCaptcha" + position).appendChild(captcha);
+        theButton.innerHTML = lord.text("hidePostFormText");
+        lord.id("createActionContainer" + position).appendChild(postForm);
     }
-    lord.postFormVisible[position] = !lord.postFormVisible[position];
+    lord.postForm.visibility[position] = !lord.postForm.visibility[position];
 };
 
 lord.deletePost = function(boardName, postNumber, fromThread) {
@@ -771,6 +763,62 @@ lord.banUser = function(boardName, postNumber) {
             lord.reloadPage();
         });
     });
+};
+
+lord.insertPostNumber = function(postNumber) {
+    var field = lord.nameOne("text", lord.id("postForm"));
+    var value = ">>" + postNumber + "\n";
+    if (document.selection) {
+        field.focus();
+        var sel = document.selection.createRange();
+        sel.text = value;
+    } else if (field.selectionStart || field.selectionStart == "0") {
+        var startPos = field.selectionStart;
+        var endPos = field.selectionEnd;
+        field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+    } else {
+        field.value += value;
+    }
+    return field;
+};
+
+lord.quickReply = function(postNumber) {
+    var postForm = lord.id("postForm");
+    if (lord.postForm.quickReply) {
+        var prev = postForm.previousSibling;
+        prev = prev ? prev.id.replace("post", "") : 0;
+        lord.removeQuickReply();
+        if (prev == postNumber)
+            return;
+    }
+    postNumber = +postNumber;
+    if (isNaN(postNumber) || postNumber <= 0)
+        return;
+    var post = lord.id("post" + postNumber);
+    if (!post)
+        return;
+    var parent = post.parentNode;
+    var thread = lord.nameOne("thread", postForm);
+    if (!thread) {
+        var inp = lord.node("input");
+        inp.type = "hidden";
+        inp.name = "thread";
+        inp.value = parent.id.replace("threadPosts", "").replace("thread", "");
+        postForm.appendChild(inp);
+        postForm.action = postForm.action.replace("create_thread", "create_post");
+    }
+    ["Top", "Bottom"].forEach(function(pos) {
+        if (lord.postForm.visibility[pos]) {
+            lord.showHidePostForm(pos);
+            lord.postForm.last = pos;
+        }
+    });
+    if (post.nextSibling)
+        parent.insertBefore(postForm, post.nextSibling);
+    else
+        parent.appendChild(postForm);
+    lord.insertPostNumber(postNumber);
+    lord.postForm.quickReply = true;
 };
 
 lord.editPost = function(boardName, postNumber) {
@@ -1288,11 +1336,34 @@ lord.submitted = function(form) {
     form.querySelector("[name='submit']").disabled = true;
 };
 
+lord.removeQuickReply = function() {
+    if (!lord.postForm.quickReply)
+        return;
+    var postForm = lord.id("postForm");
+    if (!lord.text("currentThreadNumber")) {
+        postForm.removeChild(lord.nameOne("thread", postForm));
+        postForm.action = postForm.action.replace("create_post", "create_thread");
+    }
+    lord.id("hiddenPostForm").appendChild(postForm);
+    lord.postForm.quickReply = false;
+    if (lord.postForm.last)
+        lord.showHidePostForm(lord.postForm.last);
+};
+
 lord.postedOnBoard = function() {
     if (!lord.formSubmitted)
         return;
     var iframe = lord.id("kostyleeque");
     var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+    if (lord.postForm.quickReply) {
+        var postNumber = lord.queryOne("#postNumber", iframeDocument);
+        if (!!postNumber) {
+            var href = window.location.href.split("#").shift();
+            href += "/thread/" + lord.nameOne("thread", lord.id("postForm")).value + ".html#" + postNumber.value;
+            window.location.href = href;
+            return;
+        }
+    }
     var threadNumber = lord.queryOne("#threadNumber", iframeDocument);
     lord.formSubmitted.querySelector("[name='submit']").disabled = false;
     if (!!threadNumber) {

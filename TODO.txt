@@ -6,7 +6,7 @@
 [done] Fix post text processing to avoid transaction timeout
 [done] Implement settings dialog
 [done] Download two thread files simultaneously to minimize ping delay effect
-* Implement quick reply
+[done] Implement quick reply
 * Add ability to select captcha
 * Add ability to set limits for each thread
 * Add ability to change/add files

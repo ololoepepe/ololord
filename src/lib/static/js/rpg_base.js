@@ -81,11 +81,6 @@ lord.customEditFormGet = function(form, params) {
     return data;
 };
 
-lord.addVoteVariant = function(pos) {
-    parent.appendChild(div);
-    lord.id("voteVariantCount" + pos).value = (lastN + 1);
-};
-
 lord.createPostNodeCustom = function(post, res, permanent, boardName) {
     var variants = res["voteVariants"];
     var tr = lord.nameOne("voteTr", post);
@@ -157,20 +152,20 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
 };
 
 lord.customResetForm = function(form) {
-    var pos = form.id.replace("postForm", "");
-    var parent = lord.id("voteVariants" + pos);
+    var parent = lord.nameOne("voteVariants", form);
     if (!parent)
         return;
     lord.arr(parent.children).forEach(function(el) {
         parent.removeChild(el);
     });
-    lord.id("voteVariantCount" + pos).value = 0;
-    var text = lord.id("voteText" + pos);
+    lord.nameOne("voteVariantCount", form).value = 0;
+    var text = lord.nameOne("voteText", form);
     text.parentNode.replaceChild(text.cloneNode(false), text);
 };
 
-lord.addVoteVariant = function(pos) {
-    var parent = lord.id("voteVariants" + pos);
+lord.addVoteVariant = function() {
+    var form = lord.id("postForm");
+    var parent = lord.nameOne("voteVariants", form);
     var variants = lord.query("div > input", parent);
     var lastN = (variants && variants.length) ? +lord.last(variants).name.replace("voteVariant", "") : 0;
     var div = lord.node("div");
@@ -187,7 +182,7 @@ lord.addVoteVariant = function(pos) {
     a.appendChild(img);
     div.appendChild(a);
     parent.appendChild(div);
-    lord.id("voteVariantCount" + pos).value = (lastN + 1);
+    lord.nameOne("voteVariantCount", form).value = (lastN + 1);
 };
 
 lord.removeVoteVariant = function(div) {

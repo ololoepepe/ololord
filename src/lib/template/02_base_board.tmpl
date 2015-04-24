@@ -10,10 +10,8 @@
 </div>
 <% end template %>
 
-<% template captchaField(std::string position) %>
-<% if ( "Top" == position ) %>
-    <div id="googleCaptcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
-<% end %>
+<% template captchaField() %>
+<div id="captcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
 <% end template %>
 
 <% template navigationButton(std::string target) %>
@@ -26,31 +24,31 @@
 <% end %>
 <% end template %>
 
-<% template customPostFormField0(std::string) %>
+<% template customPostFormField0() %>
 <% end template %>
 
-<% template customPostFormField1(std::string) %>
+<% template customPostFormField1() %>
 <% end template %>
 
-<% template customPostFormField2(std::string) %>
+<% template customPostFormField2() %>
 <% end template %>
 
-<% template customPostFormField3(std::string) %>
+<% template customPostFormField3() %>
 <% end template %>
 
-<% template customPostFormField4(std::string) %>
+<% template customPostFormField4() %>
 <% end template %>
 
-<% template customPostFormField5(std::string) %>
+<% template customPostFormField5() %>
 <% end template %>
 
-<% template customPostFormField6(std::string) %>
+<% template customPostFormField6() %>
 <% end template %>
 
-<% template customPostFormField7(std::string) %>
+<% template customPostFormField7() %>
 <% end template %>
 
-<% template customPostFormField8(std::string) %>
+<% template customPostFormField8() %>
 <% end template %>
 
 <% template customPostFormFieldEdit0() %>
@@ -111,140 +109,11 @@
 <% end template %>
 
 <% template createAction(std::string position) %>
-<div class="createAction">
+<div id="createActionContainer<%= position %>" class="createAction">
     <div>
         [<a id="showHidePostFormButton<%= position %>"
             href="javascript:lord.showHidePostForm('<%= position %>');"><%= showPostFormText %></a>]
     </div>
-    <form id="postForm<%= position %>" class="postFormInvisible" method="post" accept-charset="utf-8"
-          action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data"
-          target="kostyleeque" onsubmit="lord.submitted(this);">
-        <input type="hidden" id="postFormInputBoard<%= position %>" value="<%= currentBoard.name %>" name="board" />
-        <% if ( content.currentThread > 0 ) %>
-            <input type="hidden" id="postFormInputThread<%= position %>" value="<%= currentThread %>" name="thread" />
-        <% end %>
-        <input type="hidden" value="" name="fileHashes" />
-        <table class="postFormTable">
-            <tbody>
-                <% include customPostFormField0(position) %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelEmail %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
-                        <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
-                    </td>
-                </tr>
-                <% include customPostFormField1(position) %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelName %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
-                    </td>
-                </tr>
-                <% include customPostFormField2(position) %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelSubject %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
-                    </td>
-                </tr>
-                <% include customPostFormField3(position) %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelText %></b>
-                    </td>
-                    <td class="postformField">
-                        <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                                  class="postFormTextarea"></textarea>
-                    </td>
-                </tr>
-                <% include customPostFormField4(position) %>
-                <% if ( content.moder >= 10 ) %>
-                    <tr>
-                        <td class="postformLabel">
-                            <b><%= postFormLabelRaw %></b>
-                        </td>
-                        <td class="postformField">
-                            <input type="checkbox" name="raw" value="true" />
-                        </td>
-                    </tr>
-                <% end %>
-                <% if ( content.draftsEnabled && content.loggedIn ) %>
-                    <tr>
-                        <td class="postformLabel">
-                            <b><%= postFormLabelDraft %></b>
-                        </td>
-                        <td class="postformField">
-                            <input type="checkbox" name="draft" value="true" />
-                        </td>
-                    </tr>
-                <% end %>
-                <% include customPostFormField5(position) %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormInputFile %></b>
-                    </td>
-                    <td class="postformField">
-                        <div class="postformFile" onclick="lord.browseFile(event, this);" title="<%= selectFileText %>">
-                            <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
-                            <input type="file" name="file" onchange="lord.fileSelected(this);"
-                                   class="postformFileInput" accept="<%= supportedFileTypes %>" />
-                            <span class="postformFileText"></span>
-                            <a href="javascript:void(0);" style="display: none;" onclick="lord.removeFile(this);"
-                               class="postformFileRemoveButton">
-                                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
-                                     class="postformFileRemoveImage"></a>
-                        </div>
-                    </td>
-                </tr>
-                <% include customPostFormField6(position) %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelPassword %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
-                    </td>
-                </tr>
-                <% include customPostFormField7(position) %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelCaptcha %></b>
-                    </td>
-                    <td id="googleCaptcha<%= position %>" class="postformField">
-                        <% if ( content.captchaEnabled ) %>
-                            <% if ( content.captchaQuota > 0 ) %>
-                                <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
-                                    <%= captchaQuota %></span>
-                            <% else %>
-                                <% include captchaField(position) %>
-                            <% end %>
-                        <% else %>
-                            <span class="noCaptchaText"><%= noCaptchaText %></span>
-                        <% end %>
-                    </td>
-                </tr>
-                <% include customPostFormField8(position) %>
-                <tr>
-                    <td colspan="2" class="postformRules">
-                        <ul>
-                            <%foreach rule in postformRules %>
-                                <% item %>
-                                    <li><%= rule | raw %></li>
-                                <% end %>
-                            <% end %>
-                        </ul>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </form>
 </div>
 <% end template %>
 
@@ -374,6 +243,7 @@
                 <% end %>
             <% end %>
         <% end %>
+        [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>">&gt;&gt;</a>]
         <% if ( content.moder || post.draft ) %>
             <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
                 <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
@@ -614,6 +484,8 @@
         <span name="dateTime"></span>
         #<a name="number"></a>
         <span name="permanent" style="display: none;">
+            [<a name="quickReply" href="javascript:lord.quickReply(%postNumber%);"
+                title="<%= quickReplyText %>">&gt;&gt;</a>]
             <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '%postNumber%');">
                 <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
             <a name="fixButton"
@@ -764,10 +636,141 @@
 <% if ( content.captchaEnabled ) %>
     <div id="hiddenCaptcha" style="display: none;">
         <% if ( content.captchaQuota > 0 ) %>
-            <% include captchaField("Top") %>
+            <% include captchaField() %>
         <% end %>
     </div>
 <% end %>
+<div id="hiddenPostForm" style="display: none;">
+    <form id="postForm" class="postFormInvisible" method="post" accept-charset="utf-8"
+          action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data"
+          target="kostyleeque" onsubmit="lord.submitted(this);">
+        <input type="hidden" value="<%= currentBoard.name %>" name="board" />
+        <% if ( content.currentThread > 0 ) %>
+            <input type="hidden" value="<%= currentThread %>" name="thread" />
+        <% end %>
+        <input type="hidden" value="" name="fileHashes" />
+        <table class="postFormTable">
+            <tbody>
+                <% include customPostFormField0() %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelEmail %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
+                        <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
+                    </td>
+                </tr>
+                <% include customPostFormField1() %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelName %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
+                    </td>
+                </tr>
+                <% include customPostFormField2() %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelSubject %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
+                    </td>
+                </tr>
+                <% include customPostFormField3() %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelText %></b>
+                    </td>
+                    <td class="postformField">
+                        <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                  class="postFormTextarea"></textarea>
+                    </td>
+                </tr>
+                <% include customPostFormField4() %>
+                <% if ( content.moder >= 10 ) %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelRaw %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="checkbox" name="raw" value="true" />
+                        </td>
+                    </tr>
+                <% end %>
+                <% if ( content.draftsEnabled && content.loggedIn ) %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelDraft %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="checkbox" name="draft" value="true" />
+                        </td>
+                    </tr>
+                <% end %>
+                <% include customPostFormField5() %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormInputFile %></b>
+                    </td>
+                    <td class="postformField">
+                        <div class="postformFile" onclick="lord.browseFile(event, this);" title="<%= selectFileText %>">
+                            <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
+                            <input type="file" name="file" onchange="lord.fileSelected(this);"
+                                   class="postformFileInput" accept="<%= supportedFileTypes %>" />
+                            <span class="postformFileText"></span>
+                            <a href="javascript:void(0);" style="display: none;" onclick="lord.removeFile(this);"
+                               class="postformFileRemoveButton">
+                                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
+                                     class="postformFileRemoveImage"></a>
+                        </div>
+                    </td>
+                </tr>
+                <% include customPostFormField6() %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelPassword %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
+                    </td>
+                </tr>
+                <% include customPostFormField7() %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelCaptcha %></b>
+                    </td>
+                    <td id="captchaContainer" class="postformField">
+                        <% if ( content.captchaEnabled ) %>
+                            <% if ( content.captchaQuota > 0 ) %>
+                                <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
+                                    <%= captchaQuota %></span>
+                            <% else %>
+                                <% include captchaField() %>
+                            <% end %>
+                        <% else %>
+                            <span class="noCaptchaText"><%= noCaptchaText %></span>
+                        <% end %>
+                    </td>
+                </tr>
+                <% include customPostFormField8() %>
+                <tr>
+                    <td colspan="2" class="postformRules">
+                        <ul>
+                            <%foreach rule in postformRules %>
+                                <% item %>
+                                    <li><%= rule | raw %></li>
+                                <% end %>
+                            <% end %>
+                        </ul>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+</div>
 <% end template %>
 
 <% template boardHead() %>

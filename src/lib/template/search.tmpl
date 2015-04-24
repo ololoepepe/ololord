@@ -26,6 +26,11 @@
                     }
                 }
             };
+
+            window.addEventListener("load", function load() {
+                window.removeEventListener("load", load, false);
+                lord.setSearchQuery();
+            }, false);
         </script>
     </head>
     <body>

@@ -216,10 +216,6 @@ span.spoiler:hover a {
     white-space: nowrap;
 }
 
-.postFormInvisible {
-    display: none;
-}
-
 .postFormVisible {
     display: block;
 }

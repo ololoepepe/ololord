@@ -240,6 +240,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
     foreach (QString r, board->postformRules(tq.locale()))
         c.postformRules.push_back(Tools::toStd(r.replace("%currentBoard.name%", board->name())));
+    c.quickReplyText = ts.translate("initBaseBoard", "Quick reply", "quickReplyText");
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");

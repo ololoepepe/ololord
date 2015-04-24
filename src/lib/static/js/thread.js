@@ -103,31 +103,6 @@ lord.selectPost = function(post) {
     window.location.href = window.location.href.split("#").shift() + "#" + post;
 };
 
-lord.insertPostNumberInternal = function(postNumber, position) {
-    var field = lord.id("postFormInputText" + position);
-    var value = ">>" + postNumber + "\n";
-    if (document.selection) {
-        field.focus();
-        var sel = document.selection.createRange();
-        sel.text = value;
-    } else if (field.selectionStart || field.selectionStart == "0") {
-        var startPos = field.selectionStart;
-        var endPos = field.selectionEnd;
-        field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
-    } else {
-        field.value += value;
-    }
-    return field;
-};
-
-lord.insertPostNumber = function(postNumber) {
-    var field = lord.insertPostNumberInternal(postNumber, "Top");
-    if (!field.offsetParent)
-        field = lord.insertPostNumberInternal(postNumber, "Bottom");
-    if (field.offsetParent)
-        field.focus();
-};
-
 lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback) {
     if (!boardName || isNaN(+threadNumber))
         return;
@@ -207,6 +182,7 @@ lord.postedInThread = function() {
         lord.updateThread(boardName, threadNumber, true, function() {
             lord.selectPost(postNumber.value);
         });
+        lord.removeQuickReply();
         lord.resetCaptcha();
     } else {
         lord.formSubmitted = null;

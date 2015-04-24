@@ -29,9 +29,7 @@
         <% end %>
         <% foreach p in thread.lastPosts %>
             <% item %>
-                <div>
-                    <% include post(p, thread.self()) %>
-                </div>
+                <% include post(p, thread.self()) %>
             <% end %>
         <% end %>
         </div>

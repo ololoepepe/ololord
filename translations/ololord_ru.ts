@@ -1832,6 +1832,11 @@ Your choice:</source>
         <comment>deleteFileText</comment>
         <translation>Удалить файл</translation>
     </message>
+    <message>
+        <source>Quick reply</source>
+        <comment>quickReplyText</comment>
+        <translation>Быстрый ответ</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

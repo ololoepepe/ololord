@@ -7,18 +7,18 @@
 <% skin my_skin %>
 <% view rpg_board uses Content::rpgBoard extends board %>
 
-<% template customPostFormField4(std::string position) %>
+<% template customPostFormField4() %>
 <tr>
     <td class="postformLabel">
         <b><%= postFormLabelVote %></b>
     </td>
     <td class="postformField">
-        <div><%= voteTextText %> <input id="voteText<%= position %>" type="text" name="voteText" size="36" /></div>
+        <div><%= voteTextText %> <input type="text" name="voteText" size="36" /></div>
         <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
-        <div id="voteVariants<%= position %>"></div>
-        <a href="javascript:lord.addVoteVariant('<%= position %>');">
+        <div name="voteVariants"></div>
+        <a href="javascript:lord.addVoteVariant();">
             <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
-        <input id="voteVariantCount<%= position %>" type="hidden" name="voteVariantCount" value="0" />
+        <input type="hidden" name="voteVariantCount" value="0" />
     </td>
 </tr>
 <% end template %>
