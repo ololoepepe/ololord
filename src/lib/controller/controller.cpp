@@ -78,6 +78,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.allBoardsText = ts.translate("initBase", "All boards", "allBoardsText");
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
     c.captchaLabelText = ts.translate("initBase", "Captcha:", "captchaLabelText");
+    c.captchaLabelWarningText = ts.translate("initBase", "This option may be ignored on some boards",
+                                             "captchaLabelWarningText");
     AbstractCaptchaEngine::LockingWrapper ce = AbstractCaptchaEngine::engine(Tools::cookieValue(req, "captchaEngine"));
     if (!ce.isNull()) {
         c.currentCaptchaEngine.id = Tools::toStd(ce->id());

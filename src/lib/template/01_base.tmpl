@@ -123,7 +123,7 @@
             </tr>
             <tr>
                 <td>
-                    <%= captchaLabelText %>
+                    <%= captchaLabelText %><sup><font color="red">*</font></sup>
                 </td>
                 <td>
                     <select name="captchaChangeSelect" class="select">
@@ -139,6 +139,11 @@
                             <% end %>
                         <% end %>
                     </select>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <sup><font color="red">*</font></sup> <%= captchaLabelWarningText %>
                 </td>
             </tr>
         </tbody>

@@ -1570,6 +1570,11 @@ Your choice:</source>
         <comment>captchaLabelText</comment>
         <translation>Captcha:</translation>
     </message>
+    <message>
+        <source>This option may be ignored on some boards</source>
+        <comment>captchaLabelWarningText</comment>
+        <translation>Эта опция может игнорироваться на некоторых досках</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

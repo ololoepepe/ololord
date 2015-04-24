@@ -41,6 +41,7 @@ public:
     std::string cancelButtonText;
     std::list<CaptchaEngine> captchaEngines;
     std::string captchaLabelText;
+    std::string captchaLabelWarningText;
     std::string confirmButtonText;
     CaptchaEngine currentCaptchaEngine;
     Locale currentLocale;
