@@ -975,8 +975,8 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
     QByteArray hashpass = Tools::hashpass(req);
     if (password.isEmpty() && hashpass.isEmpty())
         return bRet(error, tq.translate("deletePost", "Invalid password", "error"), false);
+    QStringList filesToDelete;
     try {
-        QStringList filesToDelete;
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("deletePost", "Internal database error", "error"), false);
@@ -995,14 +995,14 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         } else if (password != post->password()) {
             return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
         }
-        if (!deletePostInternal(boardName, postNumber, error, tq.locale(), filesToDelete))
-            return false;
         t.commit();
-        deleteFiles(boardName, filesToDelete);
-        return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
     }
+    if (!deletePostInternal(boardName, postNumber, error, tq.locale(), filesToDelete))
+        return false;
+    deleteFiles(boardName, filesToDelete);
+    return bRet(error, QString(), true);
 }
 
 bool editPost(EditPostParameters &p)
