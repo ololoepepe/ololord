@@ -22,7 +22,7 @@ lord.reloadCaptchaFunction = function() {
         id.value = res["id"];
         challenge.value = res["challenge"];
         var img = lord.node("img");
-        img.src = res["url"];
+        img.src = "//" + res["url"].replace("https://", "").replace("http://", "");
         img.onclick = lord.reloadCaptchaFunction.bind(lord);
         image.appendChild(img);
     });
