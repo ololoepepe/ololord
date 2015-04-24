@@ -3,7 +3,7 @@
 [done] Lock boards properly
 [done] Cache IP-locale mapping
 [done] Add AJAX requests for retrieving boards and thread numbers
-[done] Fix post text processing to avoid transaction timeout
+[done] Process posts outside transaction
 [done] Implement settings dialog
 [done] Download two thread files simultaneously to minimize ping delay effect
 [done] Implement quick reply
@@ -12,7 +12,6 @@
 [done] Fix audio/video files playing for posts received with AJAX
 [done] Fix dimension displaying for non-image files
 [done] Fix posting error displaying
-* Process posts outside transaction
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page

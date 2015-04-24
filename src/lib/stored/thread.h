@@ -167,9 +167,11 @@ struct OLOLORD_EXPORT PostCount
 };
 
 PRAGMA_DB(view object(Post))
-struct OLOLORD_EXPORT PostId
+struct OLOLORD_EXPORT PostIdBoardRawText
 {
     quint64 id;
+    QString board;
+    QString rawText;
 };
 
 PRAGMA_DB(object table("postReferences"))

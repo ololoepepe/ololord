@@ -50,6 +50,13 @@
 namespace Database
 {
 
+struct PostTmpInfo
+{
+    RefMap refs;
+    QString board;
+    QString text;
+};
+
 RefKey::RefKey()
 {
     postNumber = 0;
@@ -555,7 +562,40 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
         return bRet(error, tq.translate("deletePostInternal", "Internal logic error", "error"), false);
     if (!postNumber)
         return bRet(error, tq.translate("deletePostInternal", "Invalid post number", "error"), false);
-    QReadLocker lock(&processTextLock);
+    QWriteLocker lock(&processTextLock);
+    QMap<quint64, PostTmpInfo> postIds;
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error)
+            return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
+        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::board == boardName
+                                                         && odb::query<Thread>::number == postNumber);
+        if (thread.error)
+            return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+        if (!removeFromReferencedPosts(post.data->id(), error))
+            return false;
+        typedef QLazySharedPointer<PostReference> PostReferenceSP;
+        foreach (PostReferenceSP ref, post->referencedBy()) {
+            PostTmpInfo tmp;
+            Post p = *ref.load()->sourcePost().load();
+            tmp.board = p.board();
+            tmp.text = p.rawText();
+            postIds.insert(p.id(), tmp);
+        }
+        t.commit();
+    }  catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+    foreach (quint64 id, postIds.keys()) {
+        PostTmpInfo &tmp = postIds[id];
+        tmp.text = Controller::processPostText(tmp.text, tmp.board);
+    }
     try {
         Transaction t;
         if (!t)
@@ -595,7 +635,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
         }
         foreach (Post p, referenced) {
-            p.setText(Controller::processPostText(p.rawText(), p.board()));
+            p.setText(postIds.value(p.id()).text);
             Cache::removePost(p.board(), p.number());
             t->update(p);
         }
@@ -976,6 +1016,7 @@ bool editPost(EditPostParameters &p)
     QByteArray hashpass = Tools::hashpass(p.request);
     if (p.password.isEmpty() && hashpass.isEmpty())
         return bRet(p.error, tq.translate("editPost", "Invalid password", "error"), false);
+    QString processedText = Controller::processPostText(p.text, p.boardName, &p.referencedPosts);
     QReadLocker locker(&processTextLock);
     try {
         Transaction t;
@@ -1019,7 +1060,7 @@ bool editPost(EditPostParameters &p)
             post->setRawHtml(true);
         } else {
             post->setRawHtml(false);
-            post->setText(Controller::processPostText(p.text, p.boardName, !post->draft() ? &p.referencedPosts : 0));
+            post->setText(processedText);
             if (!post->draft() && !addToReferencedPosts(post.data, p.referencedPosts, p.error))
                 return false;
         }
@@ -1461,7 +1502,7 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
 {
     TranslatorQt tq(l);
     QWriteLocker locker(&processTextLock);
-    QList<quint64> postIds;
+    QMap<quint64, PostTmpInfo> postIds;
     try {
         Transaction t;
         if (!t)
@@ -1473,15 +1514,23 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                 qq = qq || (odb::query<Post>::board == board);
             q = q && qq;
         }
-        QList<PostId> ids = query<PostId, Post>(q);
-        foreach (const PostId &id, ids)
-            postIds << id.id;
+        QList<PostIdBoardRawText> ids = query<PostIdBoardRawText, Post>(q);
+        foreach (const PostIdBoardRawText &id, ids) {
+            PostTmpInfo tmp;
+            tmp.board = id.board;
+            tmp.text = id.rawText;
+            postIds.insert(id.id, tmp);
+        }
         t.commit();
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), -1);
     }
     if (postIds.isEmpty())
         return bRet(error, QString(), 0);
+    foreach (quint64 id, postIds.keys()) {
+        PostTmpInfo &tmp = postIds[id];
+        tmp.text = Controller::processPostText(tmp.text, tmp.board, &tmp.refs);
+    }
     int count = 0;
     int offset = 0;
     while (offset < postIds.size()) {
@@ -1490,7 +1539,8 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
             if (!t)
                 return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
             QString qs = "id IN (";
-            foreach (quint64 id, postIds.mid(count, 50))
+            static const int Offset = 1000;
+            foreach (quint64 id, postIds.keys().mid(count, Offset))
                 qs += QString::number(id) + ", ";
             qs.remove(qs.length() - 2, 2);
             qs += ")";
@@ -1499,17 +1549,17 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                 Post &post = posts[i];
                 if (!post.draft() && !removeFromReferencedPosts(post.id(), error))
                     return -1;
-                RefMap refs;
-                post.setText(Controller::processPostText(post.rawText(), post.board(), &refs));
+                const PostTmpInfo &tmp = postIds.value(post.id());
+                post.setText(tmp.text);
                 QSharedPointer<Post> sp(new Post(post));
-                if (!post.draft() && !addToReferencedPosts(sp, refs, error))
+                if (!post.draft() && !addToReferencedPosts(sp, tmp.refs, error))
                     return -1;
                 t->update(post);
                 Cache::removePost(post.board(), post.number());
             }
             t.commit();
             count += posts.size();
-            offset += 50;
+            offset += Offset;
         } catch (const odb::exception &e) {
             return bRet(error, Tools::fromStd(e.what()), -1);
         }
