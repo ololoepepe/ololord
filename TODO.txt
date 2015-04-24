@@ -9,6 +9,10 @@
 [done] Implement quick reply
 [done] Add ability to select captcha
 [done] Add Yandex captcha support
+[done] Fix audio/video files playing for posts received with AJAX
+[done] Fix dimension displaying for non-image files
+[done] Fix posting error displaying
+* Process posts outside transaction
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page

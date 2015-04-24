@@ -1110,7 +1110,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
                 f.thumbSizeY = fis->thumbHeight();
-                if (f.sizeX >= 0 && f.sizeY >= 0)
+                if (f.sizeX >=0 && f.sizeY > 0)
                     sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);

@@ -263,12 +263,8 @@ lord.createPostFile = function(f, boardName, postNumber) {
     divImage.className = "postFileFile";
     var aImage = lord.node("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
-    if (lord.isImageType(f["type"])) {
-        aImage.onclick = function(e) {
-            return lord.showImage("/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"], f["sizeX"],
-                             f["sizeY"]);
-        };
-    }
+    aImage.onclick = lord.showImage.bind(lord, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"],
+        f["sizeX"], f["sizeY"]);
     var image = lord.node("img");
     var thumbSizeX = +f["thumbSizeX"];
     var thumbSizeY = +f["thumbSizeY"];

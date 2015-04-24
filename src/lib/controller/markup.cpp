@@ -105,7 +105,7 @@ public:
 };
 
 static const QString ExternalLinkRegexpPattern =
-        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-]*)*\\/?";
+        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-\\?\\=]*)*\\/?";
 
 static QString tagName(const QRegExp &rx)
 {
