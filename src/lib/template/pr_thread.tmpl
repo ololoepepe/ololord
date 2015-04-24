@@ -2,12 +2,6 @@
 <% skin my_skin %>
 <% view pr_thread uses Content::prThread extends thread %>
 
-<% template captchaField() %>
-<div id="captcha" class="codechaContainer">
-    <script type="text/javascript" src="//codecha.org/api/challenge?k=<%= codechaPublicKey %>"></script>
-</div>
-<% end template %>
-
 <% template boardHead() %>
 <%include thread::boardHead() %>
 <script type="text/javascript">

@@ -4,6 +4,7 @@
 
 #include <board/abstractboard.h>
 #include <cache.h>
+#include <captcha/abstractcaptchaengine.h>
 #include <database.h>
 #include <ololordapplication.h>
 #include <search.h>
@@ -85,7 +86,8 @@ int main(int argc, char **argv)
         BCoreApplication::installBeqtTranslator("beqt");
         BCoreApplication::installBeqtTranslator("ololord");
         initTerminal();
-        AbstractBoard::reloadBoards(); //Required to initialize board settings
+        AbstractCaptchaEngine::reloadEngines();
+        AbstractBoard::reloadBoards();
         QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
                 + "/captcha-quota.dat";
         QString searchIndexFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
@@ -100,7 +102,8 @@ int main(int argc, char **argv)
         bWriteLine(translate("main", "This is") + " " + BCoreApplication::applicationName()
                    + " v" + BCoreApplication::applicationVersion());
         bWriteLine(translate("main", "Enter \"help --commands\" to see the list of available commands"));
-        BCoreApplication::loadPlugins(QStringList() << "route-factory" << "ajax-handler-factory");
+        BCoreApplication::loadPlugins(QStringList() << "route-factory" << "ajax-handler-factory"
+                                      << "captcha-engine-factory");
         QString confFileName = BDirTools::findResource("res/config.js", BDirTools::AllResources);
         bool ok = false;
         cppcms::json::value conf = Tools::readJsonValue(confFileName, &ok);
@@ -640,6 +643,11 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Determines if captcha is enabled.\n"
                                                "If false, captcha will be disabled on all boards.\n"
                                                "The default is true."));
+    nn = new BSettingsNode(QVariant::Bool, "supported_captcha_engines", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Identifiers of supported captcha engines.\n"
+                                               "Identifers must be separated by commas.\n"
+                                               "Example: google-recaptcha,codecha\n"
+                                               "By default all captcha engines are supported."));
     nn = new BSettingsNode(QVariant::UInt, "threads_per_page", n);
     nn->setDescription(BTranslation::translate("initSettings", "Number of threads per one page.\n"
                                                "The default is 20."));
@@ -715,25 +723,12 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
                                                "For example, if prefix is board/, the resulting URL will start with "
                                                "your-site.com/board/."));
-    nn = new BSettingsNode(QVariant::String, "captcha_private_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Private captcha key.\n"
-                                               "Is stored locally, does not appear anywhere in any HTML pages or "
-                                               "other resources."));
-    nn = new BSettingsNode(QVariant::String, "captcha_public_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Public key for captcha service.\n"
-                                               "Apperas in the HTML pages."));
-    nn = new BSettingsNode(QVariant::String, "codecha_private_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Private codecha key.\n"
-                                               "Is stored locally, does not appear anywhere in any HTML pages or "
-                                               "other resources."));
-    nn = new BSettingsNode(QVariant::String, "codecha_public_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Public key for codecha service.\n"
-                                               "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
     nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));
     nn = new BSettingsNode(QVariant::String, "ssl_proxy_query", n);
     nn->setDescription(BTranslation::translate("initSettings", "Query used to proxy non-SSL links inside iframes.\n"
                                                "Must contain \"%1\" (without quotes) - it is replaced by URL."));
+    n = new BSettingsNode("Captcha", root);
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);
     nn->setDescription(BTranslation::translate("initSettings", "Determines if HTTP_X_REAL_IP header is used to "

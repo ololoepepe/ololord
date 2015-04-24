@@ -769,17 +769,18 @@ lord.insertPostNumber = function(postNumber) {
     var field = lord.nameOne("text", lord.id("postForm"));
     var value = ">>" + postNumber + "\n";
     if (document.selection) {
-        field.focus();
         var sel = document.selection.createRange();
         sel.text = value;
     } else if (field.selectionStart || field.selectionStart == "0") {
         var startPos = field.selectionStart;
         var endPos = field.selectionEnd;
         field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+        var pos = ((startPos < endPos) ? startPos : endPos) + value.length;
+        field.setSelectionRange(pos, pos);
     } else {
         field.value += value;
     }
-    return field;
+    field.focus();
 };
 
 lord.quickReply = function(postNumber) {

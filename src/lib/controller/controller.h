@@ -65,7 +65,7 @@ OLOLORD_EXPORT Content::Post getPost(const cppcms::http::request &req, const QSt
 OLOLORD_EXPORT QList<Content::Post> getThreadOpPosts(const cppcms::http::request &req, const QString &boardName,
                                                      bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle = QString());
-OLOLORD_EXPORT void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
+OLOLORD_EXPORT bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
     bool postingEnabled, const QString &pageTitle = QString(), quint64 currentThread = 0);
 OLOLORD_EXPORT QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts = 0);
 OLOLORD_EXPORT void redirect(cppcms::application &app, const QString &where);

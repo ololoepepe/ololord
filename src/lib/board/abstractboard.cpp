@@ -7,6 +7,7 @@
 #include "board/prboard.h"
 #include "board/rpgboard.h"
 #include "cache.h"
+#include "captcha/abstractcaptchaengine.h"
 #include "controller/baseboard.h"
 #include "controller/board.h"
 #include "controller/controller.h"
@@ -68,11 +69,6 @@
 #include <odb/result.hxx>
 #include <odb/transaction.hxx>
 
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
-
-#include <ostream>
 #include <string>
 #include <vector>
 
@@ -251,7 +247,7 @@ AbstractBoard::BoardInfoList AbstractBoard::boardInfos(const QLocale &l, bool in
             continue;
         BoardInfo info;
         info.name = Tools::toStd(board->name());
-        info.title = Tools::toStd(boards.value(key)->title(l));
+        info.title = Tools::toStd(board->title(l));
         list.push_back(info);
     }
     return list;
@@ -343,6 +339,12 @@ void AbstractBoard::reloadBoards()
         nnn->setDescription(BTranslation::translate("AbstractBoard",
                                                     "Determines if captcha is enabled on this board.\n"
                                                     "The default is true."));
+        nnn = new BSettingsNode(QVariant::Bool, "supported_captcha_engines", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Identifiers of captcha engines supported on "
+                                                    "this board.\n"
+                                                    "Identifers must be separated by commas.\n"
+                                                    "Example: google-recaptcha,codecha\n"
+                                                    "By default all captcha engines are supported."));
         nnn = new BSettingsNode(QVariant::UInt, "threads_per_page", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Number of threads per one page on this board.\n"
                                                     "The default is 20."));
@@ -711,7 +713,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
-    Controller::initBaseBoard(c, app.request(), this, postingEn, title(ts.locale()));
+    if (!Controller::initBaseBoard(c, app.request(), this, postingEn, title(ts.locale()))) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "board", "fail:" + err, logTarget);
+        return;
+    }
     c.boardRulesLinkText = ts.translate("AbstractBoard", "Borad rules", "boardRulesLinkText");
     c.currentPage = page;
     c.omittedPostsText = ts.translate("AbstractBoard", "Posts omitted:", "omittedPostsText");
@@ -841,7 +848,12 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         Tools::log(app, "thread", "fail:" + err, logTarget);
         return;
     }
-    Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber);
+    if (!Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber)) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "board", "fail:" + err, logTarget);
+        return;
+    }
     c.autoUpdateEnabled = !Tools::cookieValue(app.request(), "auto_update").compare("true", Qt::CaseInsensitive);
     c.autoUpdateText = ts.translate("AbstractBoard", "Auto update", "autoUpdateText");
     c.backText = ts.translate("AbstractBoard", "Back", "backText");
@@ -856,34 +868,12 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     Tools::log(app, "thread", "success", logTarget);
 }
 
-bool AbstractBoard::isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params,
-                                   QString &error) const
+bool AbstractBoard::isCaptchaEngineSupported(const QString &id) const
 {
-    QString captcha = params.value("g-recaptcha-response");
-    TranslatorQt tq(req);
-    if (captcha.isEmpty())
-        return bRet(&error, tq.translate("AbstractBoard", "Captcha is empty", "error"), false);
-    try {
-        curlpp::Cleanup curlppCleanup;
-        Q_UNUSED(curlppCleanup)
-        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2&remoteip=%3";
-        url = url.arg(SettingsLocker()->value("Site/captcha_private_key").toString()).arg(captcha);
-        url = url.arg(Tools::userIp(req));
-        curlpp::Easy request;
-        request.setOpt(curlpp::options::Url(Tools::toStd(url)));
-        std::ostringstream os;
-        os << request;
-        QString result = Tools::fromStd(os.str());
-        result.remove(QRegExp(".*\"success\":\\s*\"?"));
-        result.remove(QRegExp("\"?\\,?\\s+.+"));
-        if (result.compare("true", Qt::CaseInsensitive))
-            return bRet(&error, tq.translate("AbstractBoard", "Captcha is incorrect", "error"), false);
-        return true;
-    } catch (curlpp::RuntimeError &e) {
-        return bRet(&error, Tools::fromStd(e.what()), false);
-    } catch(curlpp::LogicError &e) {
-        return bRet(&error, Tools::fromStd(e.what()), false);
-    }
+    if (id.isEmpty())
+        return false;
+    QStringList ids = supportedCaptchaEngines().split(',');
+    return ids.contains(id, Qt::CaseInsensitive);
 }
 
 bool AbstractBoard::isEnabled() const
@@ -1013,6 +1003,14 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
 bool AbstractBoard::showWhois() const
 {
     return false;
+}
+
+QString AbstractBoard::supportedCaptchaEngines() const
+{
+    SettingsLocker s;
+    return s->value("Board/" + name() + "/supported_captcha_engines",
+                    s->value("Board/supported_captcha_engines",
+                             AbstractCaptchaEngine::engineIds().join(","))).toString();
 }
 
 QString AbstractBoard::supportedFileTypes() const

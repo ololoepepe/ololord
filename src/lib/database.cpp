@@ -2,6 +2,7 @@
 
 #include "board/abstractboard.h"
 #include "cache.h"
+#include "captcha/abstractcaptchaengine.h"
 #include "controller/controller.h"
 #include "search.h"
 #include "stored/banneduser.h"
@@ -351,7 +352,7 @@ static bool saveFiles(const QMap<QString, QString> &params, const Tools::FileLis
     return bRet(error, QString(), description, QString(), true);
 }
 
-static bool testCaptcha(const cppcms::http::request &req, const QMap<QString, QString> &params, QString *error = 0,
+static bool testCaptcha(const cppcms::http::request &req, const Tools::PostParameters &params, QString *error = 0,
                         QString *description = 0, const QLocale &l = BCoreApplication::locale())
 {
     TranslatorQt tq(l);
@@ -366,8 +367,13 @@ static bool testCaptcha(const cppcms::http::request &req, const QMap<QString, QS
     if (board->captchaQuota(ip)) {
         board->captchaUsed(ip);
     } else {
+        AbstractCaptchaEngine::LockingWrapper e = AbstractCaptchaEngine::engine(params.value("captchaEngine"));
+        if (e.isNull()) {
+            return bRet(error, tq.translate("testCaptcha", "Invalid captcha", "error"), description,
+                        tq.translate("testCaptcha", "No engine for this captcha type", "sescription"), false);
+        }
         QString err;
-        if (!board->isCaptchaValid(req, params, err))
+        if (!e->checkCaptcha(req, params, err))
             return bRet(error, tq.translate("testCaptcha", "Invalid captcha", "error"), description, err, false);
         board->captchaSolved(ip);
     }

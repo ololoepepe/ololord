@@ -38,6 +38,7 @@ HEADERS += \
 
 include(ajax/ajax.pri)
 include(board/board.pri)
+include(captcha/captcha.pri)
 include(controller/controller.pri)
 include(plugin/plugin.pri)
 include(route/route.pri)

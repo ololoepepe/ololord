@@ -10,10 +10,6 @@
 </div>
 <% end template %>
 
-<% template captchaField() %>
-<div id="captcha" class="g-recaptcha" data-sitekey="<%= captchaKey %>"></div>
-<% end template %>
-
 <% template navigationButton(std::string target) %>
 <% if ( "top" == target ) %>
     <a class="navigationButton navigationButtonBottom" title="<%= toTopText %>"
@@ -636,7 +632,7 @@
 <% if ( content.captchaEnabled ) %>
     <div id="hiddenCaptcha" style="display: none;">
         <% if ( content.captchaQuota > 0 ) %>
-            <% include captchaField() %>
+            <%= captchaWidgetHtml | raw %>
         <% end %>
     </div>
 <% end %>
@@ -648,6 +644,7 @@
         <% if ( content.currentThread > 0 ) %>
             <input type="hidden" value="<%= currentThread %>" name="thread" />
         <% end %>
+        <input type="hidden" value="<%= currentCaptchaEngine.id %>" name="captchaEngine" />
         <input type="hidden" value="" name="fileHashes" />
         <table class="postFormTable">
             <tbody>
@@ -748,7 +745,7 @@
                                 <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
                                     <%= captchaQuota %></span>
                             <% else %>
-                                <% include captchaField() %>
+                                <%= captchaWidgetHtml | raw %>
                             <% end %>
                         <% else %>
                             <span class="noCaptchaText"><%= noCaptchaText %></span>
@@ -777,7 +774,12 @@
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/base_board.js"></script>
 <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/lib-typedarrays-min.js"></script>
 <% if ( content.captchaEnabled ) %>
-    <script type="text/javascript" src="https://www.google.com/recaptcha/api.js"></script>
+    <% if ( !content.captchaScriptSource.empty() ) %>
+        <script type="text/javascript" src="<%= captchaScriptSource %>"></script>
+    <% end %>
+    <% if ( !content.captchaHeaderHtml.empty() ) %>
+        <%= captchaHeaderHtml | raw %>
+    <% end %>
 <% end %>
 <% end template %>
 

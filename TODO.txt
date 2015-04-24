@@ -7,7 +7,7 @@
 [done] Implement settings dialog
 [done] Download two thread files simultaneously to minimize ping delay effect
 [done] Implement quick reply
-* Add ability to select captcha
+[done] Add ability to select captcha
 * Add ability to set limits for each thread
 * Add ability to change/add files
 * Reload codecha instead of reloading a page

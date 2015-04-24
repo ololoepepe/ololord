@@ -121,6 +121,26 @@
                     </select>
                 </td>
             </tr>
+            <tr>
+                <td>
+                    <%= captchaLabelText %>
+                </td>
+                <td>
+                    <select name="captchaChangeSelect" class="select">
+                        <% foreach ce in captchaEngines %>
+                            <% item %>
+                                <% if ( ce.id == content.currentCaptchaEngine.id ) %>
+                                    <option value="<%= ce.id %>" selected="true">
+                                <% else %>
+                                    <option value="<%= ce.id %>">
+                                <% end %>
+                                    <%= ce.title %>
+                                </option>
+                            <% end %>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
         </tbody>
     </table>
 </div>

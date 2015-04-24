@@ -316,6 +316,11 @@ lord.showSettings = function() {
         lord.setCookie("time", tm, {
             "expires": lord.Billion, "path": "/"
         });
+        sel = lord.nameOne("captchaChangeSelect", div);
+        var tm = sel.options[sel.selectedIndex].value;
+        lord.setCookie("captchaEngine", tm, {
+            "expires": lord.Billion, "path": "/"
+        });
         lord.reloadPage();
     });
 };

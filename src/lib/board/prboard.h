@@ -33,8 +33,8 @@ class OLOLORD_EXPORT prBoard : public AbstractBoard
 public:
     explicit prBoard();
 public:
-    bool isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params, QString &error) const;
     QString name() const;
+    QString supportedCaptchaEngines() const;
     QString title(const QLocale &l) const;
 protected:
     void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);

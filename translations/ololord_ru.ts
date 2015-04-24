@@ -171,16 +171,6 @@ The default is 0 (do not archive).</source>
         <translation>Аноним</translation>
     </message>
     <message>
-        <source>Captcha is empty</source>
-        <comment>error</comment>
-        <translation>Капча пуста</translation>
-    </message>
-    <message>
-        <source>Captcha is incorrect</source>
-        <comment>error</comment>
-        <translation>Капча решена неправильно</translation>
-    </message>
-    <message>
         <source>Internal logic error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
@@ -371,6 +361,31 @@ The default is true.</source>
         <comment>error</comment>
         <translation>Тип файла не поддерживается</translation>
     </message>
+    <message>
+        <source>Identifiers of captcha engines supported on this board.
+Identifers must be separated by commas.
+Example: google-recaptcha,codecha
+By default all captcha engines are supported.</source>
+        <translation>Идентификаторы движков капчи, поддерживаемые на этой доске.
+Идентификаторы должны разделяться запятыми.
+Пример: google-recaptcha,codecha
+По умолчанию поддерживаются все движки капчи.</translation>
+    </message>
+</context>
+<context>
+    <name>AbstractCaptchaEngine</name>
+    <message>
+        <source>Private captcha key.
+Is stored locally and does not appear anywhere in any HTML pages or other resources.</source>
+        <translation>Закрытый ключ капчи.
+Хранится локально, не появляется ни в каких HTML-страницах или других ресурсах.</translation>
+    </message>
+    <message>
+        <source>Public captcha key.
+Apperas in the HTML pages.</source>
+        <translation>Открытый ключ сервиса капчи.
+Появляется в HTML-страницах.</translation>
+    </message>
 </context>
 <context>
     <name>ActionAjaxHandler</name>
@@ -406,6 +421,32 @@ The default is true.</source>
         <source>There is no such board</source>
         <comment>description</comment>
         <translation>Нет такой доски</translation>
+    </message>
+</context>
+<context>
+    <name>CodechaCaptchaEngine</name>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+</context>
+<context>
+    <name>GoogleRecaptchaCaptchaEngine</name>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
     </message>
 </context>
 <context>
@@ -1524,6 +1565,11 @@ Your choice:</source>
         <comment>settingsDialogTitle</comment>
         <translation>Настройки</translation>
     </message>
+    <message>
+        <source>Captcha:</source>
+        <comment>captchaLabelText</comment>
+        <translation>Captcha:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -2006,18 +2052,6 @@ For example, if prefix is board/, the resulting URL will start with your-site.co
 Например, если префикс board/, результирующий URL будет начинаться с your-site.com/board/.</translation>
     </message>
     <message>
-        <source>Private captcha key.
-Is stored locally, does not appear anywhere in any HTML pages or other resources.</source>
-        <translation>Закрытый ключ капчи.
-Хранится локально, не появляется ни в каких HTML-страницах или других ресурсах.</translation>
-    </message>
-    <message>
-        <source>Public key for captcha service.
-Apperas in the HTML pages.</source>
-        <translation>Открытый ключ сервиса капчи.
-Появляется в HTML-страницах.</translation>
-    </message>
-    <message>
         <source>Determines if HTTP_X_REAL_IP header is used to get user IP address.
 Otherwise the address is taken directly from the socket.
 Useful when a proxy HTTP server is used (for example, nginx).
@@ -2124,18 +2158,6 @@ The default is true.</source>
 По умолчанию true.</translation>
     </message>
     <message>
-        <source>Private codecha key.
-Is stored locally, does not appear anywhere in any HTML pages or other resources.</source>
-        <translation>Закрытый ключ кодечи.
-Хранится локально, не появляется ни в каких HTML-страницах или других ресурсах.</translation>
-    </message>
-    <message>
-        <source>Public key for codecha service.
-Apperas in the HTML pages.</source>
-        <translation>Открытый ключ сервиса кодечи.
-Появляется в HTML-страницах.</translation>
-    </message>
-    <message>
         <source>Maximum count of extra posts a user may make before solving captcha again.
 The default is 0 (solve captcha every time).</source>
         <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи.
@@ -2203,6 +2225,16 @@ Example: 127.0.0.1,192.168.0.1-192.168.0.255</source>
 IP-адреса записываются в виде диапазонов и отделяются запятыми.
 Пример: 127.0.0.1,192.168.0.1-192.168.0.255</translation>
     </message>
+    <message>
+        <source>Identifiers of supported captcha engines.
+Identifers must be separated by commas.
+Example: google-recaptcha,codecha
+By default all captcha engines are supported.</source>
+        <translation>Идентификаторы поддерживаемых движков капчи.
+Идентификаторы должны разделяться запятыми.
+Пример: google-recaptcha,codecha
+По умолчанию поддерживаются все движки капчи.</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>
@@ -2264,16 +2296,6 @@ IP-адреса записываются в виде диапазонов и о�
         <source>/pr/ogramming</source>
         <comment>board title</comment>
         <translation>Программирование</translation>
-    </message>
-    <message>
-        <source>Captcha is empty</source>
-        <comment>error</comment>
-        <translation>Капча пуста</translation>
-    </message>
-    <message>
-        <source>Captcha is incorrect</source>
-        <comment>error</comment>
-        <translation>Капча решена неправильно</translation>
     </message>
 </context>
 <context>
@@ -2740,6 +2762,11 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Invalid captcha</source>
         <comment>error</comment>
         <translation>Неправильная капча</translation>
+    </message>
+    <message>
+        <source>No engine for this captcha type</source>
+        <comment>sescription</comment>
+        <translation>Отсутствует движок для этого типа капчи</translation>
     </message>
 </context>
 <context>

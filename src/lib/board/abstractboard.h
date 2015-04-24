@@ -158,8 +158,7 @@ public:
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
-    virtual bool isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params,
-                                QString &error) const;
+    bool isCaptchaEngineSupported(const QString &id) const;
     bool isEnabled() const;
     bool isFileTypeSupported(const QString &mimeType) const;
     bool isFileTypeSupported(const QByteArray &data) const;
@@ -171,6 +170,7 @@ public:
     virtual QStringList rules(const QLocale &l) const;
     virtual bool saveFile(const Tools::File &f, FileTransaction &ft);
     virtual bool showWhois() const;
+    virtual QString supportedCaptchaEngines() const;
     virtual QString supportedFileTypes() const;
     virtual bool testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
                             const QLocale &l, QString *error = 0) const;

@@ -4,6 +4,7 @@
 #include "base.h"
 #include "baseboard.h"
 #include "board/abstractboard.h"
+#include "captcha/abstractcaptchaengine.h"
 #include "database.h"
 #include "error.h"
 #include "ipban.h"
@@ -76,6 +77,27 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     TranslatorStd ts(req);
     c.allBoardsText = ts.translate("initBase", "All boards", "allBoardsText");
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
+    c.captchaLabelText = ts.translate("initBase", "Captcha:", "captchaLabelText");
+    AbstractCaptchaEngine::LockingWrapper ce = AbstractCaptchaEngine::engine(Tools::cookieValue(req, "captchaEngine"));
+    if (!ce.isNull()) {
+        c.currentCaptchaEngine.id = Tools::toStd(ce->id());
+        c.currentCaptchaEngine.title = Tools::toStd(ce->title(ts.locale()));
+    }
+    AbstractCaptchaEngine::EngineInfoList eilist = AbstractCaptchaEngine::engineInfos(ts.locale());
+    foreach (const AbstractCaptchaEngine::EngineInfo &inf, eilist) {
+        Content::BaseBoard::CaptchaEngine e;
+        e.id = inf.id;
+        e.title = inf.title;
+        c.captchaEngines.push_back(e);
+        if (ce.isNull() && inf.id == "google-recaptcha") {
+            c.currentCaptchaEngine.id = inf.id;
+            c.currentCaptchaEngine.title = inf.title;
+        }
+    }
+    if (ce.isNull() && c.currentCaptchaEngine.id.empty() && !eilist.isEmpty()) {
+        c.currentCaptchaEngine.id = eilist.first().id;
+        c.currentCaptchaEngine.title = eilist.first().title;
+    }
     c.cancelButtonText = ts.translate("initBase", "Cancel", "cancelButtonText");
     c.confirmButtonText = ts.translate("initBase", "Confirm", "confirmButtonText");
     c.currentLocale = toWithLocale(ts.locale());
@@ -133,11 +155,11 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
 }
 
-void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
+bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
                    bool postingEnabled, const QString &pageTitle, quint64 currentThread)
 {
     if (!board)
-        return;
+        return false;
     TranslatorStd ts(req);
     TranslatorQt tq(req);
     initBase(c, req, pageTitle);
@@ -176,7 +198,22 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.bumpLimitReachedText = ts.translate("initBaseBoard", "Bump limit reached", "bumpLimitReachedText");
     QString ip = Tools::userIp(req);
     c.captchaEnabled = Tools::captchaEnabled(board->name());
-    c.captchaKey = Tools::toStd(SettingsLocker()->value("Site/captcha_public_key").toString());
+    QStringList supportedCaptchaEngines = board->supportedCaptchaEngines().split(',');
+    if (supportedCaptchaEngines.isEmpty())
+        return false;
+    QString ceid = Tools::cookieValue(req, "captchaEngine");
+    if (ceid.isEmpty() || !supportedCaptchaEngines.contains(ceid, Qt::CaseInsensitive)) {
+        if (supportedCaptchaEngines.contains("google-recaptcha"))
+            ceid = "google-recaptcha";
+        else
+            ceid = supportedCaptchaEngines.first();
+    }
+    AbstractCaptchaEngine::LockingWrapper ce = AbstractCaptchaEngine::engine(ceid);
+    if (ce.isNull())
+        return false;
+    c.captchaHeaderHtml = Tools::toStd(ce->headerHtml());
+    c.captchaScriptSource = Tools::toStd(ce->scriptSource());
+    c.captchaWidgetHtml = Tools::toStd(ce->widgetHtml());
     c.captchaQuota = board->captchaQuota(ip);
     c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
@@ -254,6 +291,7 @@ void initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.toThread = ts.translate("initBaseBoard", "Answer", "toThread");
     c.toTopText = ts.translate("initBaseBoard", "Scroll to the top", "toTopText");
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
+    return true;
 }
 
 void redirect(cppcms::application &app, const QString &where)

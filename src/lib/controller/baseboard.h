@@ -97,9 +97,11 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string bumpLimitReachedText;
     std::string bytesText;
     bool captchaEnabled;
-    std::string captchaKey;
+    std::string captchaHeaderHtml;
     unsigned long long captchaQuota;
     std::string captchaQuotaText;
+    std::string captchaScriptSource;
+    std::string captchaWidgetHtml;
     std::string closedText;
     std::string closeThreadText;
     std::string complainMessage;

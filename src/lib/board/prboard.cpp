@@ -8,64 +8,27 @@
 #include "tools.h"
 #include "translator.h"
 
-#include <QByteArray>
 #include <QDebug>
 #include <QLocale>
-#include <QRegExp>
 #include <QSettings>
 #include <QString>
 #include <QVariant>
 
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
-
-#include <list>
 #include <string>
-#include <sstream>
 
 prBoard::prBoard()
 {
     //
 }
 
-bool prBoard::isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params,
-                             QString &error) const
-{
-    QString challenge = params.value("codecha_challenge_field");
-    QString response = params.value("codecha_response_field");
-    TranslatorQt tq(req);
-    if (challenge.isEmpty() || response.isEmpty())
-        return bRet(&error, tq.translate("prBoard", "Captcha is empty", "error"), false);
-    try {
-        curlpp::Cleanup curlppCleanup;
-        Q_UNUSED(curlppCleanup)
-        curlpp::Easy request;
-        request.setOpt(curlpp::options::Url("http://codecha.org/api/verify"));
-        cURLpp::Forms formParts;
-        formParts.push_back(new cURLpp::FormParts::Content("challenge", challenge.toUtf8().data()));
-        formParts.push_back(new cURLpp::FormParts::Content("response", response.toUtf8().data()));
-        formParts.push_back(new cURLpp::FormParts::Content("remoteip", Tools::userIp(req).toLatin1().data()));
-        QString privateKey = SettingsLocker()->value("Site/codecha_private_key").toString();
-        formParts.push_back(new cURLpp::FormParts::Content("privatekey", privateKey.toLatin1().data()));
-        request.setOpt(new cURLpp::Options::HttpPost(formParts));
-        std::ostringstream os;
-        os << request;
-        QString result = Tools::fromStd(os.str());
-        result.remove(QRegExp("\r?\n+"));
-        if (result.compare("true", Qt::CaseInsensitive))
-            return bRet(&error, tq.translate("prBoard", "Captcha is incorrect", "error"), false);
-        return true;
-    } catch (curlpp::RuntimeError &e) {
-        return bRet(&error, Tools::fromStd(e.what()), false);
-    } catch(curlpp::LogicError &e) {
-        return bRet(&error, Tools::fromStd(e.what()), false);
-    }
-}
-
 QString prBoard::name() const
 {
     return "pr";
+}
+
+QString prBoard::supportedCaptchaEngines() const
+{
+    return "codecha";
 }
 
 QString prBoard::title(const QLocale &l) const
