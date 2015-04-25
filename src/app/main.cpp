@@ -51,6 +51,7 @@ static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
+static bool handleReloadCaptchaEngines(const QString &cmd, const QStringList &args);
 static bool handleReloadPostIndex(const QString &cmd, const QStringList &args);
 static bool handleRerenderPosts(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
@@ -409,6 +410,16 @@ bool handleReloadBoards(const QString &, const QStringList &)
     return true;
 }
 
+bool handleReloadCaptchaEngines(const QString &, const QStringList &)
+{
+    QString s = bReadLine(translate("handleReloadCaptchaEngines", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    AbstractCaptchaEngine::reloadEngines();
+    bWriteLine(translate("handleReloadCaptchaEngines", "OK"));
+    return true;
+}
+
 bool handleReloadPostIndex(const QString &, const QStringList &)
 {
     QString s = bReadLine(translate("handleReloadPostIndex", "Are you sure?") + " [Yn] ");
@@ -604,6 +615,11 @@ void initCommands()
     BTerminal::installHandler("reload-boards", &handleReloadBoards);
     ch.usage = "reload-boards";
     ch.description = BTranslation::translate("initCommands", "Reload all boards: builtin and provided by plugins.");
+    //
+    BTerminal::installHandler("reload-captcha-engines", &handleReloadCaptchaEngines);
+    ch.usage = "reload-captcha-engines";
+    ch.description = BTranslation::translate("initCommands", "Reload all captcha engines: builtin and provided by "
+                                             "plugins.");
     //
     BTerminal::installHandler("reload-post-index", &handleReloadPostIndex);
     ch.usage = "reload-post-index";

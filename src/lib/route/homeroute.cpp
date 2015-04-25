@@ -30,6 +30,15 @@ void HomeRoute::handle()
     TranslatorStd ts(application.request());
     Controller::initBase(c, application.request(),
                          tq.translate("HomeRoute", "ololord - (almost) free communication", "pageTitle"));
+    c.custom = Tools::toStd(Tools::customHomePageContent(tq.locale()));
+    foreach (const Tools::Friend &f, Tools::siteFriends()) {
+        Content::Home::Friend ff;
+        ff.name = Tools::toStd(f.name);
+        ff.title = Tools::toStd(f.title);
+        ff.url = Tools::toStd(f.url);
+        c.friends.push_back(ff);
+    }
+    c.friendsHeader = ts.translate("HomeRoute", "Our friends", "friendsHeader");
     c.newsHeader = ts.translate("HomeRoute", "News", "newsHeader");
     foreach (const QString &s, Tools::news(tq.locale()))
         c.news.push_back(Tools::toStd(s));

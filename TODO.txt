@@ -14,6 +14,7 @@
 [done] Fix posting error displaying
 [done] Post with XHR, get rid of iframe hack
 [done] Implement ability to add new files to existing posts
+[done] Improve home page
 * Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

@@ -534,6 +534,11 @@ Apperas in the HTML pages.</source>
         <comment>rulesHeader</comment>
         <translation>Правила</translation>
     </message>
+    <message>
+        <source>Our friends</source>
+        <comment>friendsHeader</comment>
+        <translation>Наши друзья</translation>
+    </message>
 </context>
 <context>
     <name>MarkupRoute</name>
@@ -1478,6 +1483,17 @@ Your choice:</source>
     </message>
 </context>
 <context>
+    <name>handleReloadCaptchaEngines</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
+    </message>
+</context>
+<context>
     <name>handleReloadPostIndex</name>
     <message>
         <source>Are you sure?</source>
@@ -1675,6 +1691,11 @@ Your choice:</source>
         <source>This option may be ignored on some boards</source>
         <comment>captchaLabelWarningText</comment>
         <translation>Эта опция может игнорироваться на некоторых досках</translation>
+    </message>
+    <message>
+        <source>Markup</source>
+        <comment>toMarkupPageText</comment>
+        <translation>Разметка</translation>
     </message>
 </context>
 <context>
@@ -2123,6 +2144,10 @@ If one or more board names are specified, rerenders only posts on those boards.<
     <message>
         <source>Clear post text index and create it from scratch.</source>
         <translation>Очистить индекс текста постов и создать его с нуля.</translation>
+    </message>
+    <message>
+        <source>Reload all captcha engines: builtin and provided by plugins.</source>
+        <translation>Перезагрузить все движки капчи: встроенные и предоставленные плагинами.</translation>
     </message>
 </context>
 <context>

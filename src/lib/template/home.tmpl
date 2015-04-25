@@ -18,6 +18,22 @@
         <div class="theTitle">
             <h1><%= welcomeMessage %></h1>
         </div>
+        <% if ( !content.custom.empty() ) %>
+            <%= custom | raw %>
+        <% end %>
+        <% if ( !content.friends.empty() ) %>
+            <div class="sectionHeader">
+                <h3><%= friendsHeader %></h3>
+            </div>
+            <div class="navbar">
+                <% foreach f in friends %>
+                    <% item %>
+                        <span class="navbarItem">[<a href="<%= f.url %>" title="<%= f.title %>"
+                              target="_blank"><%= f.name %></a>] </span>
+                    <% end %>
+                <% end %>
+            </div>
+        <% end %>
         <% if ( !content.rules.empty() ) %>
             <div class="sectionHeader">
                 <h3><%= rulesHeader %></h3>

@@ -52,8 +52,8 @@
             <span class="navbarItem">[<a href="/<%= sitePathPrefix %><%= board.name %>"
                   title="<%= board.title %>"><%= board.name %></a>] </span>
         <% end %>
-    <% empty %>
     <% end %>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>markup"><%= toMarkupPageText %></a>]</span>
     <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"><%= toHomePageText %></a>]</span>
 </div>
 <% end template %>

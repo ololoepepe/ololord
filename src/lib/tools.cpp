@@ -12,6 +12,7 @@
 #include <BCoreApplication>
 #include <BDirTools>
 #include <BLogger>
+#include <BTextTools>
 
 #include <QByteArray>
 #include <QBuffer>
@@ -293,6 +294,26 @@ QString countryName(const QString &countryCode)
     if (countryCode.length() != 2)
         return "";
     return names.value(countryCode);
+}
+
+QString customHomePageContent(const QLocale &l)
+{
+    QString *s = Cache::customHomePageContent(l);
+    if (!s) {
+        QString path = BDirTools::findResource("homepage", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return QString();
+        QString fn = BDirTools::localeBasedFileName(path + "/content.html", l);
+        if (fn.isEmpty())
+            return QString();
+        s = new QString(BDirTools::readTextFile(fn, "UTF-8"));
+        if (!Cache::cacheCustomHomePageContent(l, s)) {
+            QString ss = *s;
+            delete s;
+            return ss;
+        }
+    }
+    return *s;
 }
 
 QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
@@ -640,6 +661,38 @@ QStringList rules(const QString &prefix, const QLocale &l)
         }
     }
     return *sl;
+}
+
+FriendList siteFriends()
+{
+    FriendList *list = Cache::friendList();
+    if (!list) {
+        QString path = BDirTools::findResource("res/friends.txt", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return FriendList();
+        QStringList sl = BDirTools::readTextFile(path, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+        list = new FriendList;
+        foreach (const QString &s, sl) {
+            bool ok = false;
+            QStringList sll = BTextTools::splitCommand(s, &ok);
+            if (!ok || sll.size() < 2 || sll.size() > 3)
+                continue;
+            Friend f;
+            f.url = sll.first();
+            f.name = sll.at(1);
+            if (sll.size() > 2)
+                f.title = sll.last();
+            if (f.url.isEmpty() || f.name.isEmpty())
+                continue;
+            *list << f;
+        }
+        if (!Cache::cacheFriendList(list)) {
+            FriendList llist = *list;
+            delete list;
+            return llist;
+        }
+    }
+    return *list;
 }
 
 QString storagePath()

@@ -13,6 +13,15 @@ namespace Content
 
 struct OLOLORD_EXPORT Home : public Base
 {
+    struct Friend
+    {
+        std::string name;
+        std::string title;
+        std::string url;
+    };
+public:
+    std::list<Friend> friends;
+    std::string friendsHeader;
     std::list<std::string> news;
     std::string newsHeader;
     std::list<std::string> rules;

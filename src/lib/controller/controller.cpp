@@ -157,6 +157,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
+    c.toMarkupPageText = ts.translate("initBase", "Markup", "toMarkupPageText");
 }
 
 bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,

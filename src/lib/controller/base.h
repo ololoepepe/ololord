@@ -46,6 +46,7 @@ public:
     CaptchaEngine currentCaptchaEngine;
     Locale currentLocale;
     std::string currentTime;
+    std::string custom;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;
@@ -72,6 +73,7 @@ public:
     std::string timeLocalText;
     std::string timeServerText;
     std::string toHomePageText;
+    std::string toMarkupPageText;
 };
 
 }
