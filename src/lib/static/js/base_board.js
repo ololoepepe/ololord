@@ -1386,14 +1386,15 @@ lord.posted = function(response) {
     if (lord.postForm.quickReply) {
         var postNumber = o.postNumber;
         if (postNumber) {
-            var href = window.location.href.split("#").shift();
             if (currentThreadNumber) {
+                postForm.reset();
                 lord.updateThread(boardName, currentThreadNumber, true, function() {
                     lord.selectPost(postNumber);
                 });
                 lord.removeQuickReply();
                 lord.resetCaptcha();
             } else {
+                var href = window.location.href.split("#").shift();
                 href += "/thread/" + lord.nameOne("thread", lord.id("postForm")).value + ".html#" + postNumber;
             }
             return;
@@ -1401,7 +1402,6 @@ lord.posted = function(response) {
     }
     if (postNumber) {
         postForm.reset();
-        lord.nameOne("text", postForm).value = "";
         var divs = lord.query(".postformFile", postForm);
         for (var i = divs.length - 1; i >= 0; --i)
             lord.removeFile(lord.queryOne("a", divs[i]));

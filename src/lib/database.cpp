@@ -622,6 +622,8 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                 filesToDelete << deleteFileInfos(p, &ok);
                 if (!ok)
                     return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+                t->erase_query<PostReference>(odb::query<PostReference>::sourcePost == p.id());
+                t->erase_query<PostReference>(odb::query<PostReference>::targetPost == p.id());
             }
             t->erase_query<Post>(odb::query<Post>::thread == thread->id());
         } else {
