@@ -1951,6 +1951,11 @@ Your choice:</source>
         <comment>quickReplyText</comment>
         <translation>Быстрый ответ</translation>
     </message>
+    <message>
+        <source>Sending:</source>
+        <comment>postFormButtonSubmitSending</comment>
+        <translation>Отправка:</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -2408,46 +2413,6 @@ By default all captcha engines are supported.</source>
 <context>
     <name>renderBan</name>
     <message>
-        <source>Board</source>
-        <comment>pageTitle</comment>
-        <translation>Доска</translation>
-    </message>
-    <message>
-        <source>Date</source>
-        <comment>pageTitle</comment>
-        <translation>Дата</translation>
-    </message>
-    <message>
-        <source>never</source>
-        <comment>pageTitle</comment>
-        <translation>никогда</translation>
-    </message>
-    <message>
-        <source>Expires</source>
-        <comment>pageTitle</comment>
-        <translation>Дата окончания</translation>
-    </message>
-    <message>
-        <source>Restricted actions</source>
-        <comment>pageTitle</comment>
-        <translation>Запрещенные действия</translation>
-    </message>
-    <message>
-        <source>You are banned</source>
-        <comment>pageTitle</comment>
-        <translation>Вы забанены</translation>
-    </message>
-    <message>
-        <source>Reason</source>
-        <comment>pageTitle</comment>
-        <translation>Причина</translation>
-    </message>
-    <message>
-        <source>Ban</source>
-        <comment>pageTitle</comment>
-        <translation>Бан</translation>
-    </message>
-    <message>
         <source>all boards</source>
         <comment>pageTitle</comment>
         <translation>все доски</translation>
@@ -2467,12 +2432,115 @@ By default all captcha engines are supported.</source>
         <comment>pageTitle</comment>
         <translation>нет запрещенных действий</translation>
     </message>
+    <message>
+        <source>Ban</source>
+        <comment>banBoard</comment>
+        <translation>Бан</translation>
+    </message>
+    <message>
+        <source>Board</source>
+        <comment>banBoardLabel</comment>
+        <translation>Доска</translation>
+    </message>
+    <message>
+        <source>Date</source>
+        <comment>banDateTimeLabel</comment>
+        <translation>Дата</translation>
+    </message>
+    <message>
+        <source>never</source>
+        <comment>banExpires</comment>
+        <translation>никогда</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <comment>banExpiresLabel</comment>
+        <translation>Дата окончания</translation>
+    </message>
+    <message>
+        <source>Restricted actions</source>
+        <comment>banLevelLabel</comment>
+        <translation>Запрещенные действия</translation>
+    </message>
+    <message>
+        <source>You are banned</source>
+        <comment>banMessage</comment>
+        <translation>Вы забанены</translation>
+    </message>
+    <message>
+        <source>Reason</source>
+        <comment>banReasonLabel</comment>
+        <translation>Причина</translation>
+    </message>
+</context>
+<context>
+    <name>renderBanAjax</name>
+    <message>
+        <source>You are banned</source>
+        <comment>errorMessage</comment>
+        <translation>Вы забанены</translation>
+    </message>
+    <message>
+        <source>Board:</source>
+        <comment>errorDescription</comment>
+        <translation>Доска:</translation>
+    </message>
+    <message>
+        <source>all boards</source>
+        <comment>errorDescription</comment>
+        <translation>все доски</translation>
+    </message>
+    <message>
+        <source>Date:</source>
+        <comment>errorDescription</comment>
+        <translation>Дата:</translation>
+    </message>
+    <message>
+        <source>Expires:</source>
+        <comment>errorDescription</comment>
+        <translation>Истекает:</translation>
+    </message>
+    <message>
+        <source>never</source>
+        <comment>errorDescription</comment>
+        <translation>никогда</translation>
+    </message>
+    <message>
+        <source>Restricted actions:</source>
+        <comment>errorDescription</comment>
+        <translation>Запрещенные действия:</translation>
+    </message>
+    <message>
+        <source>reading and posting are restricted</source>
+        <comment>errorDescription</comment>
+        <translation>запрещены чтение и постинг</translation>
+    </message>
+    <message>
+        <source>posting is restricted (read-only access)</source>
+        <comment>errorDescription</comment>
+        <translation>запрещен постинг (доступ ридонли)</translation>
+    </message>
+    <message>
+        <source>no action is restricted</source>
+        <comment>errorDescription</comment>
+        <translation>нет запрещенных действий</translation>
+    </message>
+    <message>
+        <source>Reason:</source>
+        <comment>banReasonLabel</comment>
+        <translation>Причина:</translation>
+    </message>
 </context>
 <context>
     <name>renderError</name>
     <message>
         <source>Error</source>
         <comment>pageTitle</comment>
+        <translation>Ошибка</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <comment>errorMessage</comment>
         <translation>Ошибка</translation>
     </message>
 </context>
@@ -2485,17 +2553,35 @@ By default all captcha engines are supported.</source>
     </message>
     <message>
         <source>You are banned</source>
-        <comment>pageTitle</comment>
+        <comment>banMessage</comment>
         <translation>Вы забанены</translation>
     </message>
     <message>
         <source>Your IP address is in the ban list. You are not allowed to read or make posts.</source>
-        <comment>pageTitle</comment>
+        <comment>banDescription</comment>
         <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить или читать.</translation>
     </message>
     <message>
         <source>Your IP address is in the ban list. You are not allowed to make posts.</source>
-        <comment>pageTitle</comment>
+        <comment>banDescription</comment>
+        <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить.</translation>
+    </message>
+</context>
+<context>
+    <name>renderIpBanAjax</name>
+    <message>
+        <source>You are banned</source>
+        <comment>errorMessage</comment>
+        <translation>Вы забанены</translation>
+    </message>
+    <message>
+        <source>Your IP address is in the ban list. You are not allowed to read or make posts.</source>
+        <comment>errorDescription</comment>
+        <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить или читать.</translation>
+    </message>
+    <message>
+        <source>Your IP address is in the ban list. You are not allowed to make posts.</source>
+        <comment>errorDescription</comment>
         <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить.</translation>
     </message>
 </context>
@@ -2811,21 +2897,29 @@ By default all captcha engines are supported.</source>
     <message>
         <source>Internal logic error</source>
         <comment>description</comment>
-        <translation type="unfinished">Внутренняя ошибка в логике программы</translation>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal error</source>
         <comment>error</comment>
-        <translation type="unfinished">Внутренняя ошибка</translation>
+        <translation>Внутренняя ошибка</translation>
     </message>
     <message>
         <source>Invalid parameters</source>
         <comment>error</comment>
-        <translation type="unfinished">Неправильные параметры</translation>
+        <translation>Неправильные параметры</translation>
     </message>
 </context>
 <context>
     <name>testBan</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+</context>
+<context>
+    <name>testBanAjax</name>
     <message>
         <source>Internal error</source>
         <comment>error</comment>
@@ -2856,11 +2950,11 @@ By default all captcha engines are supported.</source>
     </message>
 </context>
 <context>
-    <name>testParams</name>
+    <name>testParamsAjax</name>
     <message>
-        <source>Invalid parameters</source>
-        <comment>error</comment>
-        <translation>Неправильные параметры</translation>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal error</source>
@@ -2868,9 +2962,9 @@ By default all captcha engines are supported.</source>
         <translation>Внутренняя ошибка</translation>
     </message>
     <message>
-        <source>Internal logic error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка в логике программы</translation>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation>Неправильные параметры</translation>
     </message>
 </context>
 <context>

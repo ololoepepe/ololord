@@ -445,6 +445,8 @@
 <input type="hidden" id="showPostFormText" value="<%= showPostFormText %>" />
 <input type="hidden" id="noCaptchaText" value="<%= noCaptchaText %>" />
 <input type="hidden" id="captchaQuotaText" value="<%= captchaQuotaText %>" />
+<input type="hidden" id="postFormButtonSubmit" value="<%= postFormButtonSubmit %>" />
+<input type="hidden" id="postFormButtonSubmitSending" value="<%= postFormButtonSubmitSending %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
         <% item %>
@@ -638,7 +640,7 @@
 <% end %>
 <div id="hiddenPostForm" style="display: none;">
     <form id="postForm" method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/<%= action %>"
-          enctype="multipart/form-data" target="kostyleeque" onsubmit="lord.submitted(this);">
+          enctype="multipart/form-data" onsubmit="return lord.submitted(this);">
         <input type="hidden" value="<%= currentBoard.name %>" name="board" />
         <% if ( content.currentThread > 0 ) %>
             <input type="hidden" value="<%= currentThread %>" name="thread" />

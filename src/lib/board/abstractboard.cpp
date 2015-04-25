@@ -564,18 +564,18 @@ void AbstractBoard::createPost(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    if (!Controller::testBan(app, Controller::WriteAction, name()))
+    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_post", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
     QString err;
-    if (!Controller::testParams(this, app, params, files, true, &err))
+    if (!Controller::testParamsAjax(this, app, params, files, true, &err))
         return Tools::log(app, "create_post", "fail:" + err, logTarget);
     TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
-        Controller::renderError(app, err,
-                                tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
+        Controller::renderErrorAjax(app, err,
+                                    tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
@@ -587,11 +587,11 @@ void AbstractBoard::createPost(cppcms::application &app)
     p.description = &desc;
     quint64 postNumber = 0L;
     if (!Database::createPost(p, &postNumber)) {
-        Controller::renderError(app, err, desc);
+        Controller::renderErrorAjax(app, err, desc);
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
-    Controller::renderSuccessfulPost(app, postNumber, p.referencedPosts);
+    Controller::renderSuccessfulPostAjax(app, postNumber);
     Tools::log(app, "create_post", "success", logTarget);
 }
 
@@ -599,18 +599,18 @@ void AbstractBoard::createThread(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    if (!Controller::testBan(app, Controller::WriteAction, name()))
+    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_thread", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
     QString err;
-    if (!Controller::testParams(this, app, params, files, false, &err))
+    if (!Controller::testParamsAjax(this, app, params, files, false, &err))
         return Tools::log(app, "create_thread", "fail:" + err, logTarget);
     TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
-        Controller::renderError(app, err,
-                                tq.translate("AbstractBoard", "Posting is disabled for this board", "description"));
+        Controller::renderErrorAjax(app, err,
+                                    tq.translate("AbstractBoard", "Posting is disabled for this board", "description"));
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
@@ -622,11 +622,11 @@ void AbstractBoard::createThread(cppcms::application &app)
     p.description = &desc;
     quint64 threadNumber = Database::createThread(p);
     if (!threadNumber) {
-        Controller::renderError(app, err, desc);
+        Controller::renderErrorAjax(app, err, desc);
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
-    Controller::renderSuccessfulThread(app, threadNumber);
+    Controller::renderSuccessfulThreadAjax(app, threadNumber);
     Tools::log(app, "create_thread", "success", logTarget);
 }
 

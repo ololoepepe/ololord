@@ -32,8 +32,10 @@
 #include <cppcms/http_cookie.h>
 #include <cppcms/http_request.h>
 #include <cppcms/http_response.h>
+#include <cppcms/json.h>
 
 #include <list>
+#include <string>
 
 namespace Controller
 {
@@ -258,6 +260,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
+    c.postFormButtonSubmitSending = ts.translate("initBaseBoard", "Sending:", "postFormButtonSubmitSending");
     c.postFormInputFile = ts.translate("initBaseBoard", "File(s):", "postFormInputFile");
     SettingsLocker s;
     int maxText = s->value("Board/" + board->name() + "/max_text_length",
@@ -306,29 +309,56 @@ void renderBan(cppcms::application &app, const Database::BanInfo &info)
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::Ban c;
-    initBase(c, app.request(), tq.translate("renderBan", "Ban", "pageTitle"));
+    initBase(c, app.request(), tq.translate("renderBan", "Ban", "banBoard"));
     c.banBoard = ("*" != info.boardName) ? Tools::toStd(info.boardName)
                                          : ts.translate("renderBan", "all boards", "pageTitle");
-    c.banBoardLabel = ts.translate("renderBan", "Board", "pageTitle");
+    c.banBoardLabel = ts.translate("renderBan", "Board", "banBoardLabel");
     c.banDateTime = Tools::toStd(ts.locale().toString(Tools::dateTime(info.dateTime, app.request()),
                                                       "dd.MM.yyyy ddd hh:mm:ss"));
-    c.banDateTimeLabel = ts.translate("renderBan", "Date", "pageTitle");
+    c.banDateTimeLabel = ts.translate("renderBan", "Date", "banDateTimeLabel");
     c.banExpires = info.expires.isValid()
             ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
                                                 "dd.MM.yyyy ddd hh:mm:ss"))
-            : ts.translate("renderBan", "never", "pageTitle");
-    c.banExpiresLabel = ts.translate("renderBan", "Expires", "pageTitle");
+            : ts.translate("renderBan", "never", "banExpires");
+    c.banExpiresLabel = ts.translate("renderBan", "Expires", "banExpiresLabel");
     if (info.level >= 10)
         c.banLevel = ts.translate("renderBan", "reading and posting are restricted", "pageTitle");
     else if (info.level >= 1)
         c.banLevel = ts.translate("renderBan", "posting is restricted (read-only access)", "pageTitle");
     else
         c.banLevel = ts.translate("renderBan", "no action is restricted", "pageTitle");
-    c.banLevelLabel = ts.translate("renderBan", "Restricted actions", "pageTitle");
-    c.banMessage = ts.translate("renderBan", "You are banned", "pageTitle");
+    c.banLevelLabel = ts.translate("renderBan", "Restricted actions", "banLevelLabel");
+    c.banMessage = ts.translate("renderBan", "You are banned", "banMessage");
     c.banReason = Tools::toStd(info.reason);
-    c.banReasonLabel = ts.translate("renderBan", "Reason", "pageTitle");
+    c.banReasonLabel = ts.translate("renderBan", "Reason", "banReasonLabel");
     app.render("ban", c);
+}
+
+void renderBanAjax(cppcms::application &app, const Database::BanInfo &info)
+{
+    TranslatorStd ts(app.request());
+    cppcms::json::object o;
+    o["errorMessage"] = ts.translate("renderBanAjax", "You are banned", "errorMessage");
+    std::string desc = ts.translate("renderBanAjax", "Board:", "errorDescription") + " ";
+    desc += ("*" != info.boardName) ? Tools::toStd(info.boardName)
+                                    : ts.translate("renderBanAjax", "all boards", "errorDescription") + ". ";
+    desc += ts.translate("renderBanAjax", "Date:", "errorDescription") + " ";
+    desc += Tools::toStd(ts.locale().toString(Tools::dateTime(info.dateTime, app.request()),
+                                              "dd.MM.yyyy ddd hh:mm:ss")) + ". ";
+    desc += ts.translate("renderBanAjax", "Expires:", "errorDescription") + " ";
+    desc += info.expires.isValid() ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
+                                                                       "dd.MM.yyyy ddd hh:mm:ss"))
+                                   : ts.translate("renderBanAjax", "never", "errorDescription") + ". ";
+    desc += ts.translate("renderBanAjax", "Restricted actions:", "errorDescription") + " ";
+    if (info.level >= 10)
+        desc += ts.translate("renderBanAjax", "reading and posting are restricted", "errorDescription");
+    else if (info.level >= 1)
+        desc += ts.translate("renderBanAjax", "posting is restricted (read-only access)", "errorDescription");
+    else
+        desc += ts.translate("renderBanAjax", "no action is restricted", "errorDescription");
+    desc += ". " + ts.translate("renderBanAjax", "Reason:", "banReasonLabel") + " " + Tools::toStd(info.reason);
+    o["errorDescription"] = desc;
+    app.response().out() << cppcms::json::value(o).save();
 }
 
 void renderError(cppcms::application &app, const QString &error, const QString &description)
@@ -341,21 +371,45 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     app.render("error", c);
 }
 
+void renderErrorAjax(cppcms::application &app, const QString &error, const QString &description)
+{
+    TranslatorStd ts(app.request());
+    cppcms::json::object o;
+    o["errorMessage"] = !error.isEmpty() ? Tools::toStd(error) : ts.translate("renderError", "Error", "errorMessage");
+    o["errorDescription"] = Tools::toStd(description);
+    app.response().out() << cppcms::json::value(o).save();
+}
+
 void renderIpBan(cppcms::application &app, int level)
 {
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Content::IpBan c;
     initBase(c, app.request(), tq.translate("renderIpBan", "Ban", "pageTitle"));
-    c.banMessage = ts.translate("renderIpBan", "You are banned", "pageTitle");
+    c.banMessage = ts.translate("renderIpBan", "You are banned", "banMessage");
     if (level >= 10) {
         c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
-                                        "You are not allowed to read or make posts.", "pageTitle");
+                                        "You are not allowed to read or make posts.", "banDescription");
     } else if (level >= 1) {
         c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
-                                        "You are not allowed to make posts.", "pageTitle");
+                                        "You are not allowed to make posts.", "banDescription");
     }
     app.render("ip_ban", c);
+}
+
+void renderIpBanAjax(cppcms::application &app, int level)
+{
+    TranslatorStd ts(app.request());
+    cppcms::json::object o;
+    o["errorMessage"] = ts.translate("renderIpBanAjax", "You are banned", "errorMessage");
+    if (level >= 10) {
+        o["errorDescription"] = ts.translate("renderIpBanAjax", "Your IP address is in the ban list. "
+                                             "You are not allowed to read or make posts.", "errorDescription");
+    } else if (level >= 1) {
+        o["errorDescription"] = ts.translate("renderIpBanAjax", "Your IP address is in the ban list. "
+                                              "You are not allowed to make posts.", "errorDescription");
+    }
+    app.response().out() << cppcms::json::value(o).save();
 }
 
 void renderNotFound(cppcms::application &app)
@@ -375,24 +429,18 @@ void renderNotFound(cppcms::application &app)
     app.render("not_found", c);
 }
 
-void renderSuccessfulPost(cppcms::application &app, quint64 postNumber, const Database::RefMap &referencedPosts)
+void renderSuccessfulPostAjax(cppcms::application &app, quint64 postNumber)
 {
-    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
-                         << "<title></title></head><body><input id=\"postNumber\" type=\"hidden\" "
-                         << "value=\"" << postNumber << "\" /> ";
-    foreach (const Database::RefKey key, referencedPosts.keys()) {
-        app.response().out() << "<input name=\"referencedPost\" type=\"hidden\" value=\""
-                             << Tools::toStd(key.boardName) << "/" << Tools::toStd(QString::number(key.postNumber))
-                             << "/" << Tools::toStd(QString::number(referencedPosts.value(key))) << "\" />";
-    }
-    app.response().out() << " </body></html>";
+    cppcms::json::object o;
+    o["postNumber"] = postNumber;
+    app.response().out() << cppcms::json::value(o).save();
 }
 
-void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber)
+void renderSuccessfulThreadAjax(cppcms::application &app, quint64 threadNumber)
 {
-    app.response().out() << "<html><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=utf-8\">"
-                         << "<title></title></head><body><input id=\"threadNumber\" type=\"hidden\" "
-                         << "value=\"" << threadNumber << "\" /></body></html>";
+    cppcms::json::object o;
+    o["threadNumber"] = threadNumber;
+    app.response().out() << cppcms::json::value(o).save();
 }
 
 bool testAddFileParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
@@ -435,18 +483,41 @@ bool testBan(cppcms::application &app, UserActionType proposedAction, const QStr
     return true;
 }
 
-bool testParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
-                const Tools::FileList &files, bool post, QString *error)
+bool testBanAjax(cppcms::application &app, UserActionType proposedAction, const QString &board)
+{
+    QString ip = Tools::userIp(app.request());
+    int lvl = Tools::ipBanLevel(ip);
+    if (lvl >= proposedAction) {
+        renderIpBanAjax(app, lvl);
+        return false;
+    }
+    TranslatorQt tq(app.request());
+    bool ok = false;
+    QString err;
+    Database::BanInfo inf = Database::userBanInfo(ip, board, &ok, &err, tq.locale());
+    if (!ok) {
+        renderErrorAjax(app, tq.translate("testBanAjax", "Internal error", "error"), err);
+        return false;
+    }
+    if (inf.level >= proposedAction) {
+        renderBanAjax(app, inf);
+        return false;
+    }
+    return true;
+}
+
+bool testParamsAjax(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
+                    const Tools::FileList &files, bool post, QString *error)
 {
     TranslatorQt tq(app.request());
     if (!board) {
-        QString err = tq.translate("testParams", "Internal logic error", "description");
-        renderError(app, tq.translate("testParams", "Internal error", "error"), err);
+        QString err = tq.translate("testParamsAjax", "Internal logic error", "description");
+        renderErrorAjax(app, tq.translate("testParamsAjax", "Internal error", "error"), err);
         return bRet(error, err, false);
     }
     QString err;
     if (!board->testParams(params, files, post, tq.locale(), &err)){
-        renderError(app, tq.translate("testParams", "Invalid parameters", "error"), err);
+        renderErrorAjax(app, tq.translate("testParamsAjax", "Invalid parameters", "error"), err);
         return false;
     }
     return bRet(error, QString(), true);

@@ -1328,7 +1328,30 @@ lord.complain = function() {
 };
 
 lord.submitted = function(form) {
-    form.querySelector("[name='submit']").disabled = true;
+    var btn = form.querySelector("[name='submit']");
+    btn.disabled = true;
+    btn.value = lord.text("postFormButtonSubmitSending") + " 0%";
+    var formData = new FormData(form);
+    var xhr = new XMLHttpRequest();
+    xhr.open("POST", form.action);
+    xhr.upload.onprogress = function(e) {
+        btn.value = lord.text("postFormButtonSubmitSending") + " " + Math.floor(100 * (e.loaded / e.total)) + "%";
+    };
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var response = xhr.responseText;
+                var err = response.error;
+                if (!!err)
+                    return lord.showPopup(err, {type: "critical"});
+                lord.posted(response);
+            } else {
+                lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+            }
+        }
+    };
+    xhr.send(formData);
+    return false;
 };
 
 lord.removeQuickReply = function() {
@@ -1345,30 +1368,58 @@ lord.removeQuickReply = function() {
         lord.showHidePostForm(lord.postForm.last);
 };
 
-lord.postedOnBoard = function() {
+lord.posted = function(response) {
     var postForm = lord.id("postForm");
-    var iframe = lord.id("kostyleeque");
-    var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
+    var o = {};
+    try {
+        o = JSON.parse(response);
+    } catch (ex) {
+        //
+    }
+    var postNumber = o.postNumber;
+    var threadNumber = o.threadNumber;
+    var boardName = lord.text("currentBoardName");
+    var currentThreadNumber = lord.text("currentThreadNumber");
+    var btn = postForm.querySelector("[name='submit']");
+    btn.disabled = false;
+    btn.value = lord.text("postFormButtonSubmit");
     if (lord.postForm.quickReply) {
-        var postNumber = lord.queryOne("#postNumber", iframeDocument);
-        if (!!postNumber) {
+        var postNumber = o.postNumber;
+        if (postNumber) {
             var href = window.location.href.split("#").shift();
-            href += "/thread/" + lord.nameOne("thread", lord.id("postForm")).value + ".html#" + postNumber.value;
-            window.location.href = href;
+            if (currentThreadNumber) {
+                lord.updateThread(boardName, currentThreadNumber, true, function() {
+                    lord.selectPost(postNumber);
+                });
+                lord.removeQuickReply();
+                lord.resetCaptcha();
+            } else {
+                href += "/thread/" + lord.nameOne("thread", lord.id("postForm")).value + ".html#" + postNumber;
+            }
             return;
         }
     }
-    var threadNumber = lord.queryOne("#threadNumber", iframeDocument);
-    postForm.querySelector("[name='submit']").disabled = false;
-    if (!!threadNumber) {
+    if (postNumber) {
+        postForm.reset();
+        lord.nameOne("text", postForm).value = "";
+        var divs = lord.query(".postformFile", postForm);
+        for (var i = divs.length - 1; i >= 0; --i)
+            lord.removeFile(lord.queryOne("a", divs[i]));
+        if (lord.customResetForm)
+            lord.customResetForm(postForm);
+        lord.updateThread(boardName, currentThreadNumber, true, function() {
+            lord.selectPost(postNumber);
+        });
+        lord.removeQuickReply();
+        lord.resetCaptcha();
+    } else if (threadNumber) {
         var href = window.location.href.split("#").shift();
-        window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/"
-            + threadNumber.value + ".html";
+        window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/" + threadNumber
+            + ".html";
     } else {
-        var errmsg = lord.queryOne("#errorMessage", iframeDocument);
-        var errdesc = lord.queryOne("#errorDescription", iframeDocument);
-        var txt = (errmsg && errdesc) ? (errmsg.innerHTML + ": " + errdesc.innerHTML)
-                                      : lord.queryOne("body", iframeDocument).innerHTML;
+        var errmsg = o.errorMessage;
+        var errdesc = o.errorDescription;
+        var txt = (errmsg && errdesc) ? (errmsg + ": " + errdesc) : response.substring(0, 150);
         lord.showPopup(txt, {type: "critical"});
         lord.resetCaptcha();
     }
@@ -1400,7 +1451,6 @@ lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
-    lord.id("kostyleeque").addEventListener("load", lord.postedInThread || lord.postedOnBoard, false);
 };
 
 window.addEventListener("load", function load() {

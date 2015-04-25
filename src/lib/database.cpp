@@ -610,8 +610,6 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                                                          && odb::query<Thread>::number == postNumber);
         if (thread.error)
             return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
-        if (!removeFromReferencedPosts(post.data->id(), error))
-            return false;
         typedef QLazySharedPointer<PostReference> PostReferenceSP;
         QList<Post> referenced;
         foreach (PostReferenceSP ref, post->referencedBy())
@@ -626,7 +624,6 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                     return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
             }
             t->erase_query<Post>(odb::query<Post>::thread == thread->id());
-            t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
         } else {
             bool ok = false;
             filesToDelete << deleteFileInfos(*post, &ok);
@@ -635,10 +632,14 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             t->erase_query<Post>(odb::query<Post>::board == boardName && odb::query<Post>::number == postNumber);
         }
         foreach (Post p, referenced) {
+            if (thread && p.thread().load()->id() == thread->id())
+                continue;
             p.setText(postIds.value(p.id()).text);
             Cache::removePost(p.board(), p.number());
             t->update(p);
         }
+        if (thread)
+            t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
         Cache::removePost(boardName, postNumber);
         Search::removeFromIndex(boardName, postNumber, post->text());
         t.commit();

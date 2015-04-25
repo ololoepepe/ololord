@@ -161,37 +161,6 @@ lord.setAutoUpdateEnabled = function(cbox) {
     });
 };
 
-lord.postedInThread = function() {
-    var postForm = lord.id("postForm");
-    var iframe = lord.id("kostyleeque");
-    var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-    var postNumber = lord.queryOne("#postNumber", iframeDocument);
-    var referencedPosts = lord.name("referencedPost", iframeDocument);
-    lord.nameOne("submit", postForm).disabled = false;
-    if (!!postNumber) {
-        postForm.reset();
-        var divs = lord.query(".postformFile", postForm);
-        for (var i = divs.length - 1; i >= 0; --i)
-            lord.removeFile(lord.queryOne("a", divs[i]));
-        if (lord.customResetForm)
-            lord.customResetForm(postForm);
-        var boardName = lord.text("currentBoardName");
-        var threadNumber = lord.text("currentThreadNumber");
-        lord.updateThread(boardName, threadNumber, true, function() {
-            lord.selectPost(postNumber.value);
-        });
-        lord.removeQuickReply();
-        lord.resetCaptcha();
-    } else {
-        var errmsg = lord.queryOne("#errorMessage", iframeDocument);
-        var errdesc = lord.queryOne("#errorDescription", iframeDocument);
-        var txt = (errmsg && errdesc) ? (errmsg.innerHTML + ": " + errdesc.innerHTML)
-                                      : lord.queryOne("body", iframeDocument).innerHTML;
-        lord.showPopup(txt, {type: "critical"});
-        lord.resetCaptcha();
-    }
-};
-
 lord.downloadThread = function() {
     if (lord.isDownloading)
         return;
