@@ -736,23 +736,26 @@
                     </tr>
                 <% end %>
                 <% include customPostFormField5() %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormInputFile %></b>
-                    </td>
-                    <td class="postformField">
-                        <div class="postformFile" onclick="lord.browseFile(event, this);" title="<%= selectFileText %>">
-                            <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
-                            <input type="file" name="file" onchange="lord.fileSelected(this);"
-                                   class="postformFileInput" accept="<%= supportedFileTypes %>" />
-                            <span class="postformFileText"></span>
-                            <a href="javascript:void(0);" style="display: none;" onclick="lord.removeFile(this);"
-                               class="postformFileRemoveButton">
-                                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
-                                     class="postformFileRemoveImage"></a>
-                        </div>
-                    </td>
-                </tr>
+                <% if ( content.maxFileCount ) %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormInputFile %></b>
+                        </td>
+                        <td class="postformField">
+                            <div class="postformFile" onclick="lord.browseFile(event, this);"
+                                 title="<%= selectFileText %>">
+                                <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
+                                <input type="file" name="file" onchange="lord.fileSelected(this);"
+                                       class="postformFileInput" accept="<%= supportedFileTypes %>" />
+                                <span class="postformFileText"></span>
+                                <a href="javascript:void(0);" style="display: none;" onclick="lord.removeFile(this);"
+                                   class="postformFileRemoveButton">
+                                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
+                                         class="postformFileRemoveImage"></a>
+                            </div>
+                        </td>
+                    </tr>
+                <% end %>
                 <% include customPostFormField6() %>
                 <tr>
                     <td class="postformLabel">
