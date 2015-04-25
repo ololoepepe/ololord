@@ -460,6 +460,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     hideButton.id = hideButton.id.replace("%postNumber%", res["number"]);
     hideButton.href = hideButton.href.replace("%postNumber%", res["number"]);
     hideButton.href = hideButton.href.replace("%hide%", !hidden);
+    var addFileButton = lord.nameOne("addFileButton", post);
     var editButton = lord.nameOne("editButton", post);
     var fixButton = lord.nameOne("fixButton", post);
     var unfixButton = lord.nameOne("unfixButton", post);
@@ -468,8 +469,13 @@ lord.createPostNode = function(res, permanent, boardName) {
     var banButton = lord.nameOne("banButton", post);
     var downloadButton = lord.nameOne("downloadButton", post);
     var rawText = lord.nameOne("rawText", post);
-    lord.nameOne("draft", post).value = !!res["draft"];
-    if (moder || !!res["draft"]) {
+    lord.nameOne("draft", post).value = res["draft"];
+    if ((moder || res["draft"]) && (res["files"].length < +lord.text("maxFileCount"))) {
+        addFileButton.href = addFileButton.href.replace("%postNumber%", res["number"]);
+    } else {
+        addFileButton.parentNode.removeChild(addFileButton);
+    }
+    if (moder || res["draft"]) {
         editButton.href = editButton.href.replace("%postNumber%", res["number"]);
         rawText.value = res["rawPostText"];
         lord.nameOne("email", post).value = res["email"];
@@ -578,7 +584,30 @@ lord.readableSize = function(sz) {
 };
 
 lord.getFileHashes = function(div) {
-    return div.parentNode.parentNode.parentNode.parentNode.parentNode.querySelector("[name='fileHashes']");
+    var parent = div.parentNode.parentNode;
+    var fhs = parent.querySelector("[name='fileHashes']");
+    if (fhs)
+        return fhs;
+    return parent.parentNode.parentNode.parentNode.querySelector("[name='fileHashes']");
+};
+
+lord.getAdditionalCount = function(el) {
+    if (!el)    
+        return 0;
+    el = el.parentNode;
+    if (!el)    
+        return 0;
+    el = el.parentNode;
+    if (!el)    
+        return 0;
+    el = el.parentNode;
+    if (!el)    
+        return 0;
+    el = el.parentNode;
+    if (!el)    
+        return 0;
+    el = lord.nameOne("additionalCount", el);
+    return el ? el.value : 0;
 };
 
 lord.hideImage = function() {
@@ -815,6 +844,54 @@ lord.quickReply = function(postNumber) {
         parent.appendChild(postForm);
     lord.insertPostNumber(postNumber);
     lord.postForm.quickReply = true;
+};
+
+lord.addFile = function(boardName, postNumber) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var post = lord.id("post" + postNumber);
+    if (!post)
+        return;
+    var title = lord.text("addFileText");
+    var div = lord.id("addFileTemplate").cloneNode(true);
+    var form = lord.queryOne("form", div);
+    div.id = "";
+    div.style.display = "";
+    lord.nameOne("additionalCount", div).value = additionalCount = lord.query(".postFile", post).length;
+    lord.showDialog(title, null, div, function() {
+        if (!lord.getCookie("hashpass"))
+            return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
+        lord.nameOne("postNumber", form).value = postNumber;
+        var formData = new FormData(form);
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", form.action);
+        var progress = lord.node("progress");
+        progress.className = "progressBlocking";
+        progress.max = 100;
+        progress.value = 0;
+        document.body.appendChild(progress);
+        lord.toCenter(progress, progress.offsetWidth, progress.offsetHeight);
+        xhr.upload.onprogress = function(e) {
+            progress.value = Math.floor(100 * (e.loaded / e.total));
+        };
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    document.body.removeChild(progress);
+                    var response = xhr.responseText;
+                    var err = response.error;
+                    if (!!err)
+                        return lord.showPopup(err, {type: "critical"});
+                    lord.updatePost(boardName, postNumber, post);
+                } else {
+                    document.body.removeChild(progress);
+                    lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+                }
+            }
+        };
+        xhr.send(formData);
+        return false;
+    });
 };
 
 lord.editPost = function(boardName, postNumber) {
@@ -1085,11 +1162,14 @@ lord.fileSelected = function(current) {
     if (!inp)
         return;
     var maxCount = +inp.value;
+    var additionalCount = lord.getAdditionalCount(current);
+    if (additionalCount)
+        maxCount -= +additionalCount;
     if (isNaN(maxCount))
         return;
     var div = current.parentNode;
     if (current.value == "")
-        return lord.removeFile(div.querySelector("a"));
+        return lord.removeFile(div.querySelector("a"), additionalCount);
     lord.clearFileInput(div);
     var file = current.files[0];
     div.querySelector("span").appendChild(lord.node("text", file.name + " (" + lord.readableSize(file.size) + ")"));
@@ -1175,6 +1255,9 @@ lord.removeFile = function(current) {
         if (!inp)
             return;
         var maxCount = +inp.value;
+        var additionalCount = lord.getAdditionalCount(current);
+        if (additionalCount)
+            maxCount -= +additionalCount;
         if (isNaN(maxCount))
             return;
         if (parent.children.length >= maxCount)

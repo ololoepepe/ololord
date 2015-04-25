@@ -466,20 +466,20 @@ void AbstractBoard::addFile(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    if (!Controller::testBan(app, Controller::WriteAction, name()))
+    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
         return Tools::log(app, "add_file", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
     QString err;
-    if (!Controller::testAddFileParams(this, app, params, files, &err))
+    if (!Controller::testAddFileParamsAjax(this, app, params, files, &err))
         return Tools::log(app, "add_file", "fail:" + err, logTarget);
     QString desc;
-    if (!Database::addFile(req, params, files, &err, &desc, Tools::locale(req))) {
-        Controller::renderError(app, err, desc);
+    if (!Database::addFile(req, params, files, &err, &desc)) {
+        Controller::renderErrorAjax(app, err, desc);
         Tools::log(app, "add_file", "fail:" + err, logTarget);
         return;
     }
-    //Controller::renderSuccessfulPost(app, postNumber, p.referencedPosts);
+    app.response().out() << "{}";
     Tools::log(app, "add_file", "success", logTarget);
 }
 
@@ -639,27 +639,6 @@ bool AbstractBoard::draftsEnabled() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/drafts_enabled", s->value("Board/drafts_enabled", true)).toBool();
-}
-
-void AbstractBoard::editFile(cppcms::application &app)
-{
-    cppcms::http::request &req = app.request();
-    QString logTarget = name();
-    if (!Controller::testBan(app, Controller::WriteAction, name()))
-        return Tools::log(app, "edit_file", "fail:ban", logTarget);
-    Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req);
-    QString err;
-    if (!Controller::testAddFileParams(this, app, params, files, &err))
-        return Tools::log(app, "edit_file", "fail:" + err, logTarget);
-    QString desc;
-    if (!Database::editFile(req, params, files, &err, &desc, Tools::locale(req))) {
-        Controller::renderError(app, err, desc);
-        Tools::log(app, "add_file", "fail:" + err, logTarget);
-        return;
-    }
-    //Controller::renderSuccessfulPost(app, postNumber, p.referencedPosts);
-    Tools::log(app, "edit_file", "success", logTarget);
 }
 
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)

@@ -624,6 +624,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                     return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
                 t->erase_query<PostReference>(odb::query<PostReference>::sourcePost == p.id());
                 t->erase_query<PostReference>(odb::query<PostReference>::targetPost == p.id());
+                Cache::removePost(p.board(), p.number());
             }
             t->erase_query<Post>(odb::query<Post>::thread == thread->id());
         } else {
@@ -714,9 +715,52 @@ static bool threadIdDateTimeFixedLessThan(const ThreadIdDateTimeFixed &t1, const
 }
 
 bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &params, const QList<Tools::File> &files,
-             QString *error, QString *description, const QLocale &l)
+             QString *error, QString *description)
 {
-    //
+    TranslatorQt tq(req);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(params.value("board"));
+    if (board.isNull()) {
+        return bRet(error, tq.translate("addFile", "Internal error", "error"), description,
+                    tq.translate("addFile", "Internal logic error", "description"), false);
+    }
+    AbstractBoard::FileTransaction ft(board.data());
+    if (!saveFiles(params, files, ft, error, description, tq.locale()))
+        return false;
+    try {
+        Transaction t;
+        quint64 postNumber = params.value("postNumber").toULongLong();
+        if (!postNumber) {
+            return bRet(error, tq.translate("addFile", "Invalid parameters", "error"), description,
+                        tq.translate("addFile", "Invalid post number", "description"), false);
+        }
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == board->name()
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error) {
+            return bRet(error, tq.translate("addFile", "Internal error", "error"), description,
+                        tq.translate("addFile", "Internal database error", "error"), false);
+        }
+        if (!post) {
+            return bRet(error, tq.translate("addFile", "Invalid parameters", "error"), description,
+                        tq.translate("addFile", "No such post", "error"), false);
+        }
+        QList<AbstractBoard::FileInfo> infos = ft.fileInfos();
+        if ((infos.size() + post->fileInfos().size()) > int(Tools::maxInfo(Tools::MaxFileCount, board->name()))) {
+            return bRet(error, tq.translate("addFile", "Invalid parameters", "error"), description,
+                        tq.translate("addFile", "Too many files", "error"), false);
+        }
+        foreach (const AbstractBoard::FileInfo &fi, infos) {
+            FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
+                              fi.thumbHeight, fi.thumbWidth, post.data);
+            t->persist(fileInfo);
+        }
+        t.commit();
+        ft.commit();
+        Cache::removePost(post->board(), post->number());
+        return bRet(error, QString(), description, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, tq.translate("addFile", "Internal error", "error"), description, Tools::fromStd(e.what()),
+                    false);
+    }
 }
 
 bool banUser(const QString &ip, const QString &board, int level, const QString &reason, const QDateTime &expires,
@@ -958,7 +1002,7 @@ bool deleteFile(const QString &boardName, const QString &fileName,  const cppcms
         erase(fileInfo);
         t.commit();
         Cache::removePost(boardName, post->number());
-        deleteFiles(boardName, QStringList() << fileName);
+        deleteFiles(boardName, QStringList() << fileInfo->name() << fileInfo->thumbName());
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -1012,12 +1056,6 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         return false;
     deleteFiles(boardName, filesToDelete);
     return bRet(error, QString(), true);
-}
-
-bool editFile(const cppcms::http::request &req, const QMap<QString, QString> &params, const QList<Tools::File> &files,
-              QString *error, QString *description, const QLocale &l)
-{
-    //
 }
 
 bool editPost(EditPostParameters &p)
@@ -1094,10 +1132,10 @@ bool editPost(EditPostParameters &p)
             return false;
         t->update(thread);
         update(post);
+        t.commit();
         Cache::removePost(p.boardName, p.postNumber);
         Search::removeFromIndex(p.boardName, p.postNumber, previousText);
         Search::addToIndex(p.boardName, p.postNumber, p.text);
-        t.commit();
         return bRet(p.error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(p.error, Tools::fromStd(e.what()), false);

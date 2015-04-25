@@ -13,8 +13,8 @@
 [done] Fix dimension displaying for non-image files
 [done] Fix posting error displaying
 [done] Post with XHR, get rid of iframe hack
+[done] Implement ability to add new files to existing posts
 * Add ability to set limits for each thread
-* Add ability to change/add files
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools

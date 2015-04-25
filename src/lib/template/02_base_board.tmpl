@@ -240,6 +240,10 @@
             <% end %>
         <% end %>
         [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>">&gt;&gt;</a>]
+        <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
+            <a name="addFileButton" href="javascript:lord.addFile('<%= currentBoard.name %>', '<%= post.number %>');">
+                <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+        <% end %>
         <% if ( content.moder || post.draft ) %>
             <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
                 <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
@@ -484,6 +488,8 @@
         <span name="permanent" style="display: none;">
             [<a name="quickReply" href="javascript:lord.quickReply(%postNumber%);"
                 title="<%= quickReplyText %>">&gt;&gt;</a>]
+            <a name="addFileButton" href="javascript:lord.addFile('<%= currentBoard.name %>', '%postNumber%');">
+                <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
             <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '%postNumber%');">
                 <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
             <a name="fixButton"
@@ -558,6 +564,27 @@
             <% include customPostBodyTemplate5() %>
         </tbody>
     </table>
+</div>
+<div id="addFileTemplate" width="400px" style="display: none;">
+    <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/add_file"
+          enctype="multipart/form-data">
+        <input name="board" type="hidden" value="<%= currentBoard.name %>" />
+        <input name="postNumber" type="hidden" value="" />
+        <input type="hidden" value="" name="fileHashes" />
+        <div>
+            <div class="postformFile" onclick="lord.browseFile(event, this);" title="<%= selectFileText %>">
+                <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
+                <input type="file" name="file" onchange="lord.fileSelected(this);" class="postformFileInput"
+                       accept="<%= supportedFileTypes %>" />
+                <span class="postformFileText"></span>
+                <a name="deleteButton" href="javascript:void(0);" style="display: none;" onclick="lord.removeFile(this);"
+                   class="postformFileRemoveButton">
+                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
+                         class="postformFileRemoveImage"></a>
+            </div>
+        </div>
+    </form>
+    <input name="additionalCount" type="hidden" value="" />
 </div>
 <table id="editPostTemplate" class="postFormTable" style="display: none;">
     <tbody>

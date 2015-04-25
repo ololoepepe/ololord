@@ -180,6 +180,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
         c.availableBoards.push_back(inf);
     }
     c.action = currentThread ? "create_post" : "create_thread";
+    c.addFileText = ts.translate("initBaseBoard", "Add file", "addFileText");
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");
@@ -443,18 +444,18 @@ void renderSuccessfulThreadAjax(cppcms::application &app, quint64 threadNumber)
     app.response().out() << cppcms::json::value(o).save();
 }
 
-bool testAddFileParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
-                       const Tools::FileList &files, QString *error)
+bool testAddFileParamsAjax(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
+                           const Tools::FileList &files, QString *error)
 {
     TranslatorQt tq(app.request());
     if (!board) {
-        QString err = tq.translate("testAddFileParams", "Internal logic error", "description");
-        renderError(app, tq.translate("testAddFileParams", "Internal error", "error"), err);
+        QString err = tq.translate("testAddFileParamsAjax", "Internal logic error", "description");
+        renderErrorAjax(app, tq.translate("testAddFileParamsAjax", "Internal error", "error"), err);
         return bRet(error, err, false);
     }
     QString err;
     if (!board->testAddFileParams(params, files, tq.locale(), &err)){
-        renderError(app, tq.translate("testAddFileParams", "Invalid parameters", "error"), err);
+        renderErrorAjax(app, tq.translate("testAddFileParamsAjax", "Invalid parameters", "error"), err);
         return false;
     }
     return bRet(error, QString(), true);

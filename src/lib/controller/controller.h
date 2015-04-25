@@ -80,9 +80,9 @@ OLOLORD_EXPORT void renderIpBanAjax(cppcms::application &app, int level);
 OLOLORD_EXPORT void renderNotFound(cppcms::application &app);
 OLOLORD_EXPORT void renderSuccessfulPostAjax(cppcms::application &app, quint64 postNumber);
 OLOLORD_EXPORT void renderSuccessfulThreadAjax(cppcms::application &app, quint64 threadNumber);
-OLOLORD_EXPORT bool testAddFileParams(const AbstractBoard *board, cppcms::application &app,
-                                      const Tools::PostParameters &params, const Tools::FileList &files,
-                                      QString *error = 0);
+OLOLORD_EXPORT bool testAddFileParamsAjax(const AbstractBoard *board, cppcms::application &app,
+                                          const Tools::PostParameters &params, const Tools::FileList &files,
+                                          QString *error = 0);
 OLOLORD_EXPORT bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board);
 OLOLORD_EXPORT bool testBanAjax(cppcms::application &app, UserActionType proposedAction, const QString &board);
 OLOLORD_EXPORT bool testParamsAjax(const AbstractBoard *board, cppcms::application &app,

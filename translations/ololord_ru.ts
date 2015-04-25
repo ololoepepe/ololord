@@ -682,6 +682,44 @@ text</source>
     </message>
 </context>
 <context>
+    <name>addFile</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>description</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation>Неправильные параметры</translation>
+    </message>
+    <message>
+        <source>Too many files</source>
+        <comment>error</comment>
+        <translation>Слишком много файлов</translation>
+    </message>
+</context>
+<context>
     <name>addToReferencedPosts</name>
     <message>
         <source>Internal error</source>
@@ -1956,6 +1994,11 @@ Your choice:</source>
         <comment>postFormButtonSubmitSending</comment>
         <translation>Отправка:</translation>
     </message>
+    <message>
+        <source>Add file</source>
+        <comment>addFileText</comment>
+        <translation>Добавить файл</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -2893,7 +2936,7 @@ By default all captcha engines are supported.</source>
     </message>
 </context>
 <context>
-    <name>testAddFileParams</name>
+    <name>testAddFileParamsAjax</name>
     <message>
         <source>Internal logic error</source>
         <comment>description</comment>

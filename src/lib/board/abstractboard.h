@@ -156,7 +156,6 @@ public:
     virtual void createThread(cppcms::application &app);
     virtual QString defaultUserName(const QLocale &l) const;
     bool draftsEnabled() const;
-    virtual void editFile(cppcms::application &app);
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
