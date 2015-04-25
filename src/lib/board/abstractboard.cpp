@@ -311,6 +311,8 @@ void AbstractBoard::reloadBoards()
     boards.insert(cb->name(), cb);
     b = new rpgBoard;
     boards.insert(b->name(), b);
+    cb = new ConfigurableBoard("d", BTranslation::translate("AbstractBoard", "Board /d/iscussion", "title"));
+    boards.insert(cb->name(), cb);
     foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
         pw->unload();
         BCoreApplication::removePlugin(pw);

@@ -371,6 +371,11 @@ By default all captcha engines are supported.</source>
 Пример: google-recaptcha,codecha
 По умолчанию поддерживаются все движки капчи.</translation>
     </message>
+    <message>
+        <source>Board /d/iscussion</source>
+        <comment>title</comment>
+        <translation>/d/искуссии о борде</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
