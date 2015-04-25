@@ -2807,6 +2807,24 @@ By default all captcha engines are supported.</source>
     </message>
 </context>
 <context>
+    <name>testAddFileParams</name>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation type="unfinished">Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation type="unfinished">Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation type="unfinished">Неправильные параметры</translation>
+    </message>
+</context>
+<context>
     <name>testBan</name>
     <message>
         <source>Internal error</source>

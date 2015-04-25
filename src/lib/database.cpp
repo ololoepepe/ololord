@@ -710,6 +710,12 @@ static bool threadIdDateTimeFixedLessThan(const ThreadIdDateTimeFixed &t1, const
         return false;
 }
 
+bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &params, const QList<Tools::File> &files,
+             QString *error, QString *description, const QLocale &l)
+{
+    //
+}
+
 bool banUser(const QString &ip, const QString &board, int level, const QString &reason, const QDateTime &expires,
              QString *error, const QLocale &l)
 {
@@ -1003,6 +1009,12 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         return false;
     deleteFiles(boardName, filesToDelete);
     return bRet(error, QString(), true);
+}
+
+bool editFile(const cppcms::http::request &req, const QMap<QString, QString> &params, const QList<Tools::File> &files,
+              QString *error, QString *description, const QLocale &l)
+{
+    //
 }
 
 bool editPost(EditPostParameters &p)

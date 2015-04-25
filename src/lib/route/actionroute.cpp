@@ -26,8 +26,10 @@ ActionRoute::ActionRoute(cppcms::application &app) :
 QStringList ActionRoute::availableActions()
 {
     init_once(QStringList, actions, QStringList()) {
+        actions << "add_file";
         actions << "create_post";
         actions << "create_thread";
+        actions << "edit_file";
     }
     return actions;
 }
@@ -61,6 +63,10 @@ void ActionRoute::handle(std::string action)
         board->createPost(application);
     } else if ("create_thread" == action) {
         board->createThread(application);
+    } else if ("add_file" == action) {
+        board->addFile(application);
+    } else if ("edit_file" == action) {
+        board->editFile(application);
     } else {
         err = tq.translate("ActionRoute", "Unknown action", "error");
         Controller::renderError(application, err,

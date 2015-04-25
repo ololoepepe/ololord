@@ -261,6 +261,9 @@ public:
     explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post);
 };
 
+OLOLORD_EXPORT bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &params,
+                            const QList<Tools::File> &files, QString *error = 0, QString *description = 0,
+                            const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int level = 1,
                             const QString &reason = QString(), const QDateTime &expires = QDateTime(),
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
@@ -280,6 +283,9 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QSt
                                const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
+OLOLORD_EXPORT bool editFile(const cppcms::http::request &req, const QMap<QString, QString> &params,
+                             const QList<Tools::File> &files, QString *error = 0, QString *description = 0,
+                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool editPost(EditPostParameters &p);
 OLOLORD_EXPORT bool fileExists(const QByteArray &hash, bool *ok = 0);
 OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);

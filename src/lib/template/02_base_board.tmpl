@@ -637,9 +637,8 @@
     </div>
 <% end %>
 <div id="hiddenPostForm" style="display: none;">
-    <form id="postForm" class="postFormInvisible" method="post" accept-charset="utf-8"
-          action="/<%= sitePathPrefix %>action/<%= action %>" enctype="multipart/form-data"
-          target="kostyleeque" onsubmit="lord.submitted(this);">
+    <form id="postForm" method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/<%= action %>"
+          enctype="multipart/form-data" target="kostyleeque" onsubmit="lord.submitted(this);">
         <input type="hidden" value="<%= currentBoard.name %>" name="board" />
         <% if ( content.currentThread > 0 ) %>
             <input type="hidden" value="<%= currentThread %>" name="thread" />

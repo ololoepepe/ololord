@@ -138,6 +138,7 @@ public:
     static void restoreCaptchaQuota(const QByteArray &data);
     static QByteArray saveCaptchaQuota();
 public:
+    virtual void addFile(cppcms::application &app);
     unsigned int archiveLimit() const;
     QString bannerFileName() const;
     virtual bool beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
@@ -155,6 +156,7 @@ public:
     virtual void createThread(cppcms::application &app);
     virtual QString defaultUserName(const QLocale &l) const;
     bool draftsEnabled() const;
+    virtual void editFile(cppcms::application &app);
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
@@ -172,6 +174,8 @@ public:
     virtual bool showWhois() const;
     virtual QString supportedCaptchaEngines() const;
     virtual QString supportedFileTypes() const;
+    virtual bool testAddFileParams(const Tools::PostParameters &params, const Tools::FileList &files, const QLocale &l,
+                                   QString *error = 0) const;
     virtual bool testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
                             const QLocale &l, QString *error = 0) const;
     unsigned int threadLimit() const;

@@ -395,6 +395,23 @@ void renderSuccessfulThread(cppcms::application &app, quint64 threadNumber)
                          << "value=\"" << threadNumber << "\" /></body></html>";
 }
 
+bool testAddFileParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
+                       const Tools::FileList &files, QString *error)
+{
+    TranslatorQt tq(app.request());
+    if (!board) {
+        QString err = tq.translate("testAddFileParams", "Internal logic error", "description");
+        renderError(app, tq.translate("testAddFileParams", "Internal error", "error"), err);
+        return bRet(error, err, false);
+    }
+    QString err;
+    if (!board->testAddFileParams(params, files, tq.locale(), &err)){
+        renderError(app, tq.translate("testAddFileParams", "Invalid parameters", "error"), err);
+        return false;
+    }
+    return bRet(error, QString(), true);
+}
+
 bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board)
 {
     QString ip = Tools::userIp(app.request());

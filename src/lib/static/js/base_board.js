@@ -7,7 +7,6 @@ var lord = lord || {};
 lord.postPreviews = {};
 lord.lastPostPreview = null;
 lord.lastPostPreviewTimer = null;
-lord.formSubmitted = null;
 lord.images = {};
 lord.img = null;
 lord.postForm = {
@@ -1329,7 +1328,6 @@ lord.complain = function() {
 };
 
 lord.submitted = function(form) {
-    lord.formSubmitted = form;
     form.querySelector("[name='submit']").disabled = true;
 };
 
@@ -1348,8 +1346,7 @@ lord.removeQuickReply = function() {
 };
 
 lord.postedOnBoard = function() {
-    if (!lord.formSubmitted)
-        return;
+    var postForm = lord.id("postForm");
     var iframe = lord.id("kostyleeque");
     var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
     if (lord.postForm.quickReply) {
@@ -1362,13 +1359,12 @@ lord.postedOnBoard = function() {
         }
     }
     var threadNumber = lord.queryOne("#threadNumber", iframeDocument);
-    lord.formSubmitted.querySelector("[name='submit']").disabled = false;
+    postForm.querySelector("[name='submit']").disabled = false;
     if (!!threadNumber) {
         var href = window.location.href.split("#").shift();
         window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/"
             + threadNumber.value + ".html";
     } else {
-        lord.formSubmitted = null;
         var errmsg = lord.queryOne("#errorMessage", iframeDocument);
         var errdesc = lord.queryOne("#errorDescription", iframeDocument);
         var txt = (errmsg && errdesc) ? (errmsg.innerHTML + ": " + errdesc.innerHTML)
