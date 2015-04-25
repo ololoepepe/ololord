@@ -1088,7 +1088,7 @@ bool AbstractBoard::testParams(const Tools::PostParameters &params, const Tools:
     }
     if (params.value("text").isEmpty() && !fileCount)
         return bRet(error, tq.translate("AbstractBoard", "Both file and comment are missing", "error"), false);
-    if (maxFileCount && (fileCount > maxFileCount)) {
+    if (fileCount > maxFileCount) {
         return bRet(error, tq.translate("AbstractBoard", "Too many files", "error"), false);
     } else {
         foreach (const Tools::File &f, files) {
