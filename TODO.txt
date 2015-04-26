@@ -1,23 +1,4 @@
-[done] Fix vote system
-[done] Implement index-based search
-[done] Lock boards properly
-[done] Cache IP-locale mapping
-[done] Add AJAX requests for retrieving boards and thread numbers
-[done] Process posts outside transaction
-[done] Implement settings dialog
-[done] Download two thread files simultaneously to minimize ping delay effect
-[done] Implement quick reply
-[done] Add ability to select captcha
-[done] Add Yandex captcha support
-[done] Fix audio/video files playing for posts received with AJAX
-[done] Fix dimension displaying for non-image files
-[done] Fix posting error displaying
-[done] Post with XHR, get rid of iframe hack
-[done] Implement ability to add new files to existing posts
-[done] Improve home page
-[done] Add /d/ board
-[done] Implement post counting system
-* Add ability to set limits for each thread
+? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Make HTML compatible with Dollchan Extension Tools
