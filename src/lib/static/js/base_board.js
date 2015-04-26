@@ -1481,6 +1481,7 @@ lord.posted = function(response) {
             } else {
                 var href = window.location.href.split("#").shift();
                 href += "/thread/" + lord.nameOne("thread", lord.id("postForm")).value + ".html#" + postNumber;
+                window.location.href = href;
             }
             return;
         }

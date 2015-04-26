@@ -339,7 +339,7 @@ QString externalLinkRegexpPattern()
         QString s = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts).join("|");
         if (s.isEmpty())
             s = "[a-z]{2,6}\\.?";
-        pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.(" + s + ")(\\/[\\w\\.\\-\\?\\=]*)*\\/?(?!\\S)";
+        pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.(" + s + ")(\\/[\\w\\.\\-\\?\\=#]*)*\\/?(?!\\S)";
     }
     return pattern;
 }
