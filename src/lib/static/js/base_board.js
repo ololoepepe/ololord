@@ -1473,6 +1473,11 @@ lord.posted = function(response) {
         if (postNumber) {
             if (currentThreadNumber) {
                 postForm.reset();
+                var divs = lord.query(".postformFile", postForm);
+                for (var i = divs.length - 1; i >= 0; --i)
+                    lord.removeFile(lord.queryOne("a", divs[i]));
+                if (lord.customResetForm)
+                    lord.customResetForm(postForm);
                 lord.updateThread(boardName, currentThreadNumber, true, function() {
                     lord.selectPost(postNumber);
                 });
