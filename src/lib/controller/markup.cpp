@@ -104,8 +104,8 @@ public:
     }
 };
 
-//static const QString ExternalLinkRegexpPattern =
-//        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-\\?\\=]*)*\\/?";
+static const QString ExternalLinkRegexpLightPattern =
+        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-\\?\\=]*)*\\/?";
 
 static QString tagName(const QRegExp &rx)
 {
@@ -712,7 +712,7 @@ void toHtml(QString *s)
     if (!s)
         return;
     SkipList skip;
-    QRegExp rx(Tools::externalLinkRegexpPattern());
+    QRegExp rx(ExternalLinkRegexpLightPattern);
     int ind = rx.indexIn(*s);
     while (ind >= 0) {
         s->insert(ind + rx.matchedLength(), "</a>");
