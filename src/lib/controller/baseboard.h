@@ -149,6 +149,8 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postFormTextPlaceholder;
     std::string postingDisabledText;
     bool postingEnabled;
+    std::string postingSpeed;
+    std::string postingSpeedText;
     std::string postLimitReachedText;
     std::string quickReplyText;
     std::string referencedByText;

@@ -121,6 +121,12 @@
         <% include pages() %>
         <hr />
         <% include navbar() %>
+        <% if ( content.postingEnabled ) %>
+            <hr />
+            <div class="navbar">
+                <span class="navbarItem">[<%= postingSpeedText %> <%= postingSpeed %>]</span>
+            </div>
+        <% end %>
         <a id="bottom"></a>
     </body>
 </html>

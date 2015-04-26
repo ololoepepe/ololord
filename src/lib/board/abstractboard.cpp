@@ -39,6 +39,7 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QImage>
 #include <QList>
@@ -222,7 +223,9 @@ AbstractBoard::LockingWrapper::operator bool() const
 AbstractBoard::AbstractBoard() :
     captchaQuotaMutex(QMutex::Recursive)
 {
-    //
+    postCount = 0;
+    uptime = 0;
+    uptimeTimer.start();
 }
 
 AbstractBoard::~AbstractBoard()
@@ -450,6 +453,25 @@ void AbstractBoard::restoreCaptchaQuota(const QByteArray &data)
     }
 }
 
+void AbstractBoard::restorePostingSpeed(const QByteArray &data)
+{
+    QVariantMap m = BeQt::deserialize(data).toMap();
+    QReadLocker locker(&boardsLock);
+    foreach (const QString &boardName, m.keys()) {
+        AbstractBoard *board = boards.value(boardName);
+        if (!board)
+            continue;
+        QVariantMap mm = m.value(boardName).toMap();
+        QMutexLocker lockerSpeed(&board->speedMutex);
+        board->postCount = mm.value("post_count").toLongLong();
+        board->uptime = mm.value("uptime").toLongLong();
+        if (board->postCount < 0)
+            board->postCount = 0;
+        if (board->uptime < 0)
+            board->uptime = 0;
+    }
+}
+
 QByteArray AbstractBoard::saveCaptchaQuota()
 {
     QVariantMap m;
@@ -459,6 +481,20 @@ QByteArray AbstractBoard::saveCaptchaQuota()
         QMutexLocker lockerQuota(&board->captchaQuotaMutex);
         foreach (const QString &ip, board->captchaQuotaMap.keys())
             mm.insert(ip, board->captchaQuotaMap.value(ip));
+        m.insert(board->name(), mm);
+    }
+    return BeQt::serialize(m);
+}
+
+QByteArray AbstractBoard::savePostingSpeed()
+{
+    QVariantMap m;
+    QReadLocker locker(&boardsLock);
+    foreach (AbstractBoard *board, boards.values()) {
+        QVariantMap mm;
+        QMutexLocker lockerSpeed(&board->speedMutex);
+        mm.insert("post_count", board->postCount);
+        mm.insert("uptime", board->uptime + board->uptimeTimer.elapsed());
         m.insert(board->name(), mm);
     }
     return BeQt::serialize(m);
@@ -593,6 +629,8 @@ void AbstractBoard::createPost(cppcms::application &app)
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
+    QMutexLocker locker(&speedMutex);
+    ++postCount;
     Controller::renderSuccessfulPostAjax(app, postNumber);
     Tools::log(app, "create_post", "success", logTarget);
 }
@@ -628,6 +666,8 @@ void AbstractBoard::createThread(cppcms::application &app)
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
+    QMutexLocker locker(&speedMutex);
+    ++postCount;
     Controller::renderSuccessfulThreadAjax(app, threadNumber);
     Tools::log(app, "create_thread", "success", logTarget);
 }
@@ -935,6 +975,15 @@ bool AbstractBoard::postingEnabled() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/posting_enabled", s->value("Board/posting_enabled", true)).toBool();
+}
+
+AbstractBoard::PostingSpeed AbstractBoard::postingSpeed() const
+{
+    PostingSpeed s;
+    QMutexLocker locker(&speedMutex);
+    s.postCount = postCount;
+    s.uptimeMsecs = uptimeTimer.elapsed() + uptime;
+    return s;
 }
 
 unsigned int AbstractBoard::postLimit() const

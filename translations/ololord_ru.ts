@@ -2025,6 +2025,31 @@ Your choice:</source>
         <comment>addFileText</comment>
         <translation>Добавить файл</translation>
     </message>
+    <message>
+        <source>Posting speed:</source>
+        <comment>postingSpeedText</comment>
+        <translation>Скорость постинга:</translation>
+    </message>
+    <message>
+        <source>post(s) per hour.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./час.</translation>
+    </message>
+    <message>
+        <source>post(s) per day.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./день.</translation>
+    </message>
+    <message>
+        <source>post(s) per month.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./месяц.</translation>
+    </message>
+    <message>
+        <source>post(s) per year.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./год.</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

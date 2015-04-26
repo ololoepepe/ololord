@@ -42,6 +42,13 @@ namespace Controller
 
 static QMutex localeMutex(QMutex::Recursive);
 
+static std::string speedString(const AbstractBoard::PostingSpeed &s)
+{
+    double d = double(s.postCount) / double(s.uptimeMsecs);
+    QString ss = QString::number(d, 'f', 1);
+    return Tools::toStd((ss.split('.').last() != "0") ? ss : ss.split('.').first());
+}
+
 static Content::Base::Locale toWithLocale(const QLocale &l)
 {
     Content::Base::Locale ll;
@@ -281,6 +288,40 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             ? ts.translate("initBaseBoard", "Posting is disabled for this thread", "postingDisabledText")
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
+    c.postingSpeedText = ts.translate("initBaseBoard", "Posting speed:", "postingSpeedText");
+    AbstractBoard::PostingSpeed speed = board->postingSpeed();
+    speed.uptimeMsecs /= BeQt::Hour;
+    if (!speed.uptimeMsecs) {
+        c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+    } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
+        c.postingSpeed = speedString(speed) + " " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+    } else {
+        speed.uptimeMsecs /= 24;
+        if (!speed.uptimeMsecs) {
+            c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+        } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
+            c.postingSpeed = speedString(speed) + " "
+                    + ts.translate("initBaseBoard", "post(s) per day.", "postingSpeed");
+        } else {
+            speed.uptimeMsecs /= 30;
+            if (!speed.uptimeMsecs) {
+                c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+            } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
+                c.postingSpeed = speedString(speed) + " "
+                        + ts.translate("initBaseBoard", "post(s) per month.", "postingSpeed");
+            } else {
+                speed.uptimeMsecs /= 12;
+                if (!speed.uptimeMsecs) {
+                    c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+                } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
+                    c.postingSpeed = speedString(speed) + " "
+                            + ts.translate("initBaseBoard", "post(s) per year.", "postingSpeed");
+                } else {
+                    c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+                }
+            }
+        }
+    }
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
     foreach (QString r, board->postformRules(tq.locale()))
         c.postformRules.push_back(Tools::toStd(r.replace("%currentBoard.name%", board->name())));

@@ -42,6 +42,7 @@ class request;
 #include "tools.h"
 
 #include <QByteArray>
+#include <QElapsedTimer>
 #include <QList>
 #include <QMap>
 #include <QMutex>
@@ -116,6 +117,11 @@ public:
     private:
         friend class AbstractBoard;
     };
+    struct PostingSpeed
+    {
+        qint64 postCount;
+        qint64 uptimeMsecs;
+    };
 public:
     typedef std::list<BoardInfo> BoardInfoList;
 public:
@@ -127,6 +133,10 @@ private:
 private:
     QMap<QString, unsigned int> captchaQuotaMap;
     mutable QMutex captchaQuotaMutex;
+    qint64 postCount;
+    mutable QMutex speedMutex;
+    qint64 uptime;
+    QElapsedTimer uptimeTimer;
 public:
     explicit AbstractBoard();
     virtual ~AbstractBoard();
@@ -136,7 +146,9 @@ public:
     static QStringList boardNames(bool includeHidden = true);
     static void reloadBoards();
     static void restoreCaptchaQuota(const QByteArray &data);
+    static void restorePostingSpeed(const QByteArray &data);
     static QByteArray saveCaptchaQuota();
+    static QByteArray savePostingSpeed();
 public:
     virtual void addFile(cppcms::application &app);
     unsigned int archiveLimit() const;
@@ -167,6 +179,7 @@ public:
     virtual QString name() const = 0;
     virtual QStringList postformRules(const QLocale &l) const;
     virtual bool postingEnabled() const;
+    PostingSpeed postingSpeed() const;
     unsigned int postLimit() const;
     virtual QStringList rules(const QLocale &l) const;
     virtual bool saveFile(const Tools::File &f, FileTransaction &ft);

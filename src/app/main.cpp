@@ -91,9 +91,12 @@ int main(int argc, char **argv)
         AbstractBoard::reloadBoards();
         QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
                 + "/captcha-quota.dat";
+        QString postingSpeedFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
+                + "/posting-speed.dat";
         QString searchIndexFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
                 + "/search-index.dat";
         AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
+        AbstractBoard::restorePostingSpeed(BDirTools::readFile(postingSpeedFile));
         Search::restoreIndex(BDirTools::readFile(searchIndexFile));
         bLogger->setDateTimeFormat("yyyy.MM.dd hh:mm:ss");
         QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
@@ -120,6 +123,7 @@ int main(int argc, char **argv)
         owt.shutdown();
         owt.wait(10 * BeQt::Second);
         BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
+        BDirTools::writeFile(postingSpeedFile, AbstractBoard::savePostingSpeed());
         BDirTools::writeFile(searchIndexFile, Search::saveIndex());
 
     } else {
