@@ -19,6 +19,7 @@
 
 #include <BDirTools>
 #include <BeQt>
+#include <BTerminal>
 #include <BTextTools>
 
 #include <QByteArray>
@@ -1580,7 +1581,11 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
     }
     if (postIds.isEmpty())
         return bRet(error, QString(), 0);
+    int sz = postIds.keys().size();
+    int curr = 1;
     foreach (quint64 id, postIds.keys()) {
+        bWriteLine(QString::number(curr) + "/" + QString::number(sz));
+        ++curr;
         PostTmpInfo &tmp = postIds[id];
         tmp.text = Controller::processPostText(tmp.text, tmp.board, &tmp.refs);
     }

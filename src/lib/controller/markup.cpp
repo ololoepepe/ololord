@@ -104,8 +104,8 @@ public:
     }
 };
 
-static const QString ExternalLinkRegexpPattern =
-        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-\\?\\=]*)*\\/?";
+//static const QString ExternalLinkRegexpPattern =
+//        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-\\?\\=]*)*\\/?";
 
 static QString tagName(const QRegExp &rx)
 {
@@ -119,7 +119,7 @@ static QString tagName(const QRegExp &rx)
 
 static SkipList externalLinks(const QString &s)
 {
-    QRegExp rx(ExternalLinkRegexpPattern);
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(s);
     SkipList skip;
     while (ind >= 0) {
@@ -271,7 +271,7 @@ static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
         return;
     SkipList skip;
     QString t = c.mid();
-    QRegExp rx(ExternalLinkRegexpPattern);
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
         QString cap = rx.cap();
@@ -712,7 +712,7 @@ void toHtml(QString *s)
     if (!s)
         return;
     SkipList skip;
-    QRegExp rx(ExternalLinkRegexpPattern);
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(*s);
     while (ind >= 0) {
         s->insert(ind + rx.matchedLength(), "</a>");

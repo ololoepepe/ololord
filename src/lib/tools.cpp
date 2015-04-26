@@ -332,6 +332,18 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
+QString externalLinkRegexpPattern()
+{
+    init_once(QString, pattern, QString()) {
+        QString fn = BDirTools::findResource("res/root-zones.txt", BDirTools::GlobalOnly);
+        QString s = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+")).join("|");
+        if (s.isEmpty())
+            s = "[a-z]{2,6}\\.?";
+        pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.(" + s + ")(\\/[\\w\\.\\-\\?\\=]*)*\\/?(?!\\S)";
+    }
+    return pattern;
+}
+
 QString flagName(const QString &countryCode)
 {
     if (countryCode.length() != 2)

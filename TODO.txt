@@ -1,4 +1,5 @@
 [done] Fix posting speed displaying
+[done] Improve URL markup
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
