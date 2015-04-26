@@ -1425,8 +1425,10 @@ lord.submitted = function(form) {
             if (xhr.status === 200) {
                 var response = xhr.responseText;
                 var err = response.error;
-                if (!!err)
-                    return lord.showPopup(err, {type: "critical"});
+                if (!!err) {
+                    lord.showPopup(err, {type: "critical"});
+                    return false;
+                }
                 lord.posted(response);
             } else {
                 lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
