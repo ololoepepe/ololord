@@ -42,11 +42,19 @@ namespace Controller
 
 static QMutex localeMutex(QMutex::Recursive);
 
-static std::string speedString(const AbstractBoard::PostingSpeed &s)
+static std::string speedString(const AbstractBoard::PostingSpeed &s, qint64 uptime)
 {
-    double d = double(s.postCount) / double(s.uptimeMsecs);
+    double d = double(s.postCount) / double(uptime);
     QString ss = QString::number(d, 'f', 1);
     return Tools::toStd((ss.split('.').last() != "0") ? ss : ss.split('.').first());
+}
+
+static std::string zeroSpeedString(const AbstractBoard::PostingSpeed &s, const std::string &nonZero, const QLocale &l)
+{
+    if (s.postCount && s.uptimeMsecs)
+        return "1 " + nonZero;
+    else
+        return "0 " + TranslatorStd(l).translate("zeroSpeedString", "post(s) per hour.", "postingSpeed");
 }
 
 static Content::Base::Locale toWithLocale(const QLocale &l)
@@ -290,34 +298,35 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postingEnabled = postingEnabled;
     c.postingSpeedText = ts.translate("initBaseBoard", "Posting speed:", "postingSpeedText");
     AbstractBoard::PostingSpeed speed = board->postingSpeed();
-    speed.uptimeMsecs /= BeQt::Hour;
-    if (!speed.uptimeMsecs) {
-        c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
-    } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
-        c.postingSpeed = speedString(speed) + " " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+    qint64 uptime = speed.uptimeMsecs / BeQt::Hour;
+    std::string shour = ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+    if (!uptime) {
+        c.postingSpeed = zeroSpeedString(speed, shour, ts.locale());
+    } else if ((speed.postCount / uptime) > 0) {
+        c.postingSpeed = speedString(speed, uptime) + " " + shour;
     } else {
-        speed.uptimeMsecs /= 24;
-        if (!speed.uptimeMsecs) {
-            c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
-        } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
-            c.postingSpeed = speedString(speed) + " "
-                    + ts.translate("initBaseBoard", "post(s) per day.", "postingSpeed");
+        uptime /= 24;
+        std::string sday = ts.translate("initBaseBoard", "post(s) per day.", "postingSpeed");
+        if (!uptime) {
+            c.postingSpeed = zeroSpeedString(speed, sday, ts.locale());
+        } else if ((speed.postCount / uptime) > 0) {
+            c.postingSpeed = speedString(speed, uptime) + " " + sday;
         } else {
-            speed.uptimeMsecs /= 30;
-            if (!speed.uptimeMsecs) {
-                c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
-            } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
-                c.postingSpeed = speedString(speed) + " "
-                        + ts.translate("initBaseBoard", "post(s) per month.", "postingSpeed");
+            uptime /= 30;
+            std::string smonth = ts.translate("initBaseBoard", "post(s) per month.", "postingSpeed");
+            if (!uptime) {
+                c.postingSpeed = zeroSpeedString(speed, smonth, ts.locale());
+            } else if ((speed.postCount / uptime) > 0) {
+                c.postingSpeed = speedString(speed, uptime) + " " + smonth;
             } else {
-                speed.uptimeMsecs /= 12;
-                if (!speed.uptimeMsecs) {
-                    c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
-                } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
-                    c.postingSpeed = speedString(speed) + " "
-                            + ts.translate("initBaseBoard", "post(s) per year.", "postingSpeed");
+                uptime /= 12;
+                std::string syear = ts.translate("initBaseBoard", "post(s) per year.", "postingSpeed");
+                if (!uptime) {
+                    c.postingSpeed = zeroSpeedString(speed, syear, ts.locale());
+                } else if ((speed.postCount / uptime) > 0) {
+                    c.postingSpeed = speedString(speed, uptime) + " " + syear;
                 } else {
-                    c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+                    c.postingSpeed = "0 " + syear;
                 }
             }
         }

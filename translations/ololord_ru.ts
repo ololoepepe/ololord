@@ -3172,4 +3172,12 @@ By default all captcha engines are supported.</source>
         <translation>Попытка проголосовать в собственном голосовании</translation>
     </message>
 </context>
+<context>
+    <name>zeroSpeedString</name>
+    <message>
+        <source>post(s) per hour.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./час.</translation>
+    </message>
+</context>
 </TS>
