@@ -4,8 +4,10 @@
 
 #include <board/abstractboard.h>
 #include <cache.h>
+#include <captcha/abstractcaptchaengine.h>
 #include <database.h>
 #include <ololordapplication.h>
+#include <search.h>
 #include <settingslocker.h>
 #include <stored/RegisteredUser>
 #include <tools.h>
@@ -49,6 +51,8 @@ static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
+static bool handleReloadCaptchaEngines(const QString &cmd, const QStringList &args);
+static bool handleReloadPostIndex(const QString &cmd, const QStringList &args);
 static bool handleRerenderPosts(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
@@ -72,7 +76,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-rc4");
+        app.setApplicationVersion("0.1.0-rc5");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -83,9 +87,17 @@ int main(int argc, char **argv)
         BCoreApplication::installBeqtTranslator("beqt");
         BCoreApplication::installBeqtTranslator("ololord");
         initTerminal();
+        AbstractCaptchaEngine::reloadEngines();
+        AbstractBoard::reloadBoards();
         QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
                 + "/captcha-quota.dat";
+        QString postingSpeedFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
+                + "/posting-speed.dat";
+        QString searchIndexFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
+                + "/search-index.dat";
         AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
+        AbstractBoard::restorePostingSpeed(BDirTools::readFile(postingSpeedFile));
+        Search::restoreIndex(BDirTools::readFile(searchIndexFile));
         bLogger->setDateTimeFormat("yyyy.MM.dd hh:mm:ss");
         QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
         fn += QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss") + ".txt";
@@ -94,7 +106,8 @@ int main(int argc, char **argv)
         bWriteLine(translate("main", "This is") + " " + BCoreApplication::applicationName()
                    + " v" + BCoreApplication::applicationVersion());
         bWriteLine(translate("main", "Enter \"help --commands\" to see the list of available commands"));
-        BCoreApplication::loadPlugins(QStringList() << "route-factory" << "ajax-handler-factory");
+        BCoreApplication::loadPlugins(QStringList() << "route-factory" << "ajax-handler-factory"
+                                      << "captcha-engine-factory");
         QString confFileName = BDirTools::findResource("res/config.js", BDirTools::AllResources);
         bool ok = false;
         cppcms::json::value conf = Tools::readJsonValue(confFileName, &ok);
@@ -110,6 +123,9 @@ int main(int argc, char **argv)
         owt.shutdown();
         owt.wait(10 * BeQt::Second);
         BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
+        BDirTools::writeFile(postingSpeedFile, AbstractBoard::savePostingSpeed());
+        BDirTools::writeFile(searchIndexFile, Search::saveIndex());
+
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
@@ -398,6 +414,30 @@ bool handleReloadBoards(const QString &, const QStringList &)
     return true;
 }
 
+bool handleReloadCaptchaEngines(const QString &, const QStringList &)
+{
+    QString s = bReadLine(translate("handleReloadCaptchaEngines", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    AbstractCaptchaEngine::reloadEngines();
+    bWriteLine(translate("handleReloadCaptchaEngines", "OK"));
+    return true;
+}
+
+bool handleReloadPostIndex(const QString &, const QStringList &)
+{
+    QString s = bReadLine(translate("handleReloadPostIndex", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    QString err;
+    int count = Database::reloadPostIndex(&err);
+    if (count < 0)
+        bWriteLine(translate("handleReloadPostIndex", "Error:") + " " + err);
+    else
+        bWriteLine(translate("handleReloadPostIndex", "Reloaded index of posts:") +  " " + QString::number(count));
+    return true;
+}
+
 bool handleRerenderPosts(const QString &, const QStringList &args)
 {
     QString s = bReadLine(translate("handleRerenderPosts", "Are you sure?") + " [yN] ");
@@ -579,7 +619,16 @@ void initCommands()
     BTerminal::installHandler("reload-boards", &handleReloadBoards);
     ch.usage = "reload-boards";
     ch.description = BTranslation::translate("initCommands", "Reload all boards: builtin and provided by plugins.");
-    BTerminal::setCommandHelp("reload-boards", ch);
+    //
+    BTerminal::installHandler("reload-captcha-engines", &handleReloadCaptchaEngines);
+    ch.usage = "reload-captcha-engines";
+    ch.description = BTranslation::translate("initCommands", "Reload all captcha engines: builtin and provided by "
+                                             "plugins.");
+    //
+    BTerminal::installHandler("reload-post-index", &handleReloadPostIndex);
+    ch.usage = "reload-post-index";
+    ch.description = BTranslation::translate("initCommands", "Clear post text index and create it from scratch.");
+    BTerminal::setCommandHelp("reload-post-index", ch);
     //
     BTerminal::installHandler("register-user", &handleRegisterUser);
     ch.usage = "register-user";
@@ -614,6 +663,11 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Determines if captcha is enabled.\n"
                                                "If false, captcha will be disabled on all boards.\n"
                                                "The default is true."));
+    nn = new BSettingsNode(QVariant::Bool, "supported_captcha_engines", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Identifiers of supported captcha engines.\n"
+                                               "Identifers must be separated by commas.\n"
+                                               "Example: google-recaptcha,codecha\n"
+                                               "By default all captcha engines are supported."));
     nn = new BSettingsNode(QVariant::UInt, "threads_per_page", n);
     nn->setDescription(BTranslation::translate("initSettings", "Number of threads per one page.\n"
                                                "The default is 20."));
@@ -689,25 +743,12 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
                                                "For example, if prefix is board/, the resulting URL will start with "
                                                "your-site.com/board/."));
-    nn = new BSettingsNode(QVariant::String, "captcha_private_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Private captcha key.\n"
-                                               "Is stored locally, does not appear anywhere in any HTML pages or "
-                                               "other resources."));
-    nn = new BSettingsNode(QVariant::String, "captcha_public_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Public key for captcha service.\n"
-                                               "Apperas in the HTML pages."));
-    nn = new BSettingsNode(QVariant::String, "codecha_private_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Private codecha key.\n"
-                                               "Is stored locally, does not appear anywhere in any HTML pages or "
-                                               "other resources."));
-    nn = new BSettingsNode(QVariant::String, "codecha_public_key", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Public key for codecha service.\n"
-                                               "Apperas in the HTML pages."));
     nn = new BSettingsNode(QVariant::String, "tripcode_salt", n);
     nn->setDescription(BTranslation::translate("initSettings", "A salt used to generate tripcodes from hashpasses."));
     nn = new BSettingsNode(QVariant::String, "ssl_proxy_query", n);
     nn->setDescription(BTranslation::translate("initSettings", "Query used to proxy non-SSL links inside iframes.\n"
                                                "Must contain \"%1\" (without quotes) - it is replaced by URL."));
+    n = new BSettingsNode("Captcha", root);
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);
     nn->setDescription(BTranslation::translate("initSettings", "Determines if HTTP_X_REAL_IP header is used to "
@@ -750,7 +791,6 @@ void initSettings()
         nnn->setDescription(t);
     }
     BTerminal::setRootSettingsNode(root);
-    AbstractBoard::boardNames(); //Required to initialize board settings
 }
 
 void initTerminal()

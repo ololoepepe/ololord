@@ -14,6 +14,11 @@ namespace Content
 
 struct OLOLORD_EXPORT Base : public cppcms::base_content
 {
+    struct CaptchaEngine
+    {
+        std::string id;
+        std::string title;
+    };
     struct Locale
     {
         std::string country;
@@ -34,9 +39,14 @@ public:
     std::string allBoardsText;
     AbstractBoard::BoardInfoList boards;
     std::string cancelButtonText;
+    std::list<CaptchaEngine> captchaEngines;
+    std::string captchaLabelText;
+    std::string captchaLabelWarningText;
     std::string confirmButtonText;
+    CaptchaEngine currentCaptchaEngine;
     Locale currentLocale;
     std::string currentTime;
+    std::string custom;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;
@@ -49,6 +59,8 @@ public:
     std::string pageTitle;
     std::string searchButtonText;
     std::string searchInputPlaceholder;
+    std::string settingsButtonText;
+    std::string settingsDialogTitle;
     std::string showPasswordText;
     std::string showTripcodeText;
     std::string siteDomain;
@@ -61,6 +73,7 @@ public:
     std::string timeLocalText;
     std::string timeServerText;
     std::string toHomePageText;
+    std::string toMarkupPageText;
 };
 
 }

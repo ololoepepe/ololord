@@ -171,16 +171,6 @@ The default is 0 (do not archive).</source>
         <translation>Аноним</translation>
     </message>
     <message>
-        <source>Captcha is empty</source>
-        <comment>error</comment>
-        <translation>Капча пуста</translation>
-    </message>
-    <message>
-        <source>Captcha is incorrect</source>
-        <comment>error</comment>
-        <translation>Капча решена неправильно</translation>
-    </message>
-    <message>
         <source>Internal logic error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
@@ -371,6 +361,79 @@ The default is true.</source>
         <comment>error</comment>
         <translation>Тип файла не поддерживается</translation>
     </message>
+    <message>
+        <source>Identifiers of captcha engines supported on this board.
+Identifers must be separated by commas.
+Example: google-recaptcha,codecha
+By default all captcha engines are supported.</source>
+        <translation>Идентификаторы движков капчи, поддерживаемые на этой доске.
+Идентификаторы должны разделяться запятыми.
+Пример: google-recaptcha,codecha
+По умолчанию поддерживаются все движки капчи.</translation>
+    </message>
+    <message>
+        <source>Board /d/iscussion</source>
+        <comment>title</comment>
+        <translation>/d/искуссии о борде</translation>
+    </message>
+</context>
+<context>
+    <name>AbstractCaptchaEngine</name>
+    <message>
+        <source>Private captcha key.
+Is stored locally and does not appear anywhere in any HTML pages or other resources.</source>
+        <translation>Закрытый ключ капчи.
+Хранится локально, не появляется ни в каких HTML-страницах или других ресурсах.</translation>
+    </message>
+    <message>
+        <source>Public captcha key.
+Apperas in the HTML pages.</source>
+        <translation>Открытый ключ сервиса капчи.
+Появляется в HTML-страницах.</translation>
+    </message>
+</context>
+<context>
+    <name>AbstractYandexCaptchaEngine</name>
+    <message>
+        <source>Yandex captcha</source>
+        <comment>title</comment>
+        <translation>Капча Yandex</translation>
+    </message>
+    <message>
+        <source>Latin</source>
+        <comment>title</comment>
+        <translation>латиница</translation>
+    </message>
+    <message>
+        <source>digits</source>
+        <comment>title</comment>
+        <translation>цифры</translation>
+    </message>
+    <message>
+        <source>Cyrillic</source>
+        <comment>title</comment>
+        <translation>кириллица</translation>
+    </message>
+    <message>
+        <source>Captcha ID is empty</source>
+        <comment>error</comment>
+        <translation>Идентификатор капчи пуст</translation>
+    </message>
+    <message>
+        <source>Captcha challenge is empty</source>
+        <comment>error</comment>
+        <translation>Задание капчи пусто</translation>
+    </message>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
 </context>
 <context>
     <name>ActionAjaxHandler</name>
@@ -383,6 +446,21 @@ The default is true.</source>
         <source>No such board</source>
         <comment>error</comment>
         <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Invalid captcha type</source>
+        <comment>error</comment>
+        <translation>Недействительный тип капчи</translation>
+    </message>
+    <message>
+        <source>No engine for this captcha type</source>
+        <comment>error</comment>
+        <translation>Отсутствует движок для этого типа капчи</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
     </message>
 </context>
 <context>
@@ -409,6 +487,37 @@ The default is true.</source>
     </message>
 </context>
 <context>
+    <name>CodechaCaptchaEngine</name>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+    <message>
+        <source>Codecha - programmers&apos; CAPTCHA</source>
+        <comment>title</comment>
+        <translation>Codecha - программистская CAPTCHA</translation>
+    </message>
+</context>
+<context>
+    <name>GoogleRecaptchaCaptchaEngine</name>
+    <message>
+        <source>Captcha is empty</source>
+        <comment>error</comment>
+        <translation>Капча пуста</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+</context>
+<context>
     <name>HomeRoute</name>
     <message>
         <source>Welcome. Again.</source>
@@ -429,6 +538,11 @@ The default is true.</source>
         <source>Rules</source>
         <comment>rulesHeader</comment>
         <translation>Правила</translation>
+    </message>
+    <message>
+        <source>Our friends</source>
+        <comment>friendsHeader</comment>
+        <translation>Наши друзья</translation>
     </message>
 </context>
 <context>
@@ -537,21 +651,19 @@ text</source>
     </message>
 </context>
 <context>
+    <name>Search</name>
+    <message>
+        <source>Invalid search query</source>
+        <comment>error</comment>
+        <translation>Недействительный поисковый запрос</translation>
+    </message>
+</context>
+<context>
     <name>SearchRoute</name>
     <message>
         <source>Search</source>
         <comment>pageTitle</comment>
         <translation>Поиск</translation>
-    </message>
-    <message>
-        <source>Invalid query</source>
-        <comment>error</comment>
-        <translation>Недействительный запрос</translation>
-    </message>
-    <message>
-        <source>Invalid search query</source>
-        <comment>description</comment>
-        <translation>Недействительный поисковый запрос</translation>
     </message>
     <message>
         <source>Internal error</source>
@@ -572,6 +684,49 @@ text</source>
         <source>Nothing found</source>
         <comment>nothingFoundMessage</comment>
         <translation>Ничего не найдено</translation>
+    </message>
+    <message>
+        <source>Query error</source>
+        <comment>error</comment>
+        <translation>Ошибка запроса</translation>
+    </message>
+</context>
+<context>
+    <name>addFile</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>description</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such post</source>
+        <comment>error</comment>
+        <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation>Неправильные параметры</translation>
+    </message>
+    <message>
+        <source>Too many files</source>
+        <comment>error</comment>
+        <translation>Слишком много файлов</translation>
     </message>
 </context>
 <context>
@@ -1060,16 +1215,6 @@ text</source>
 <context>
     <name>findPosts</name>
     <message>
-        <source>Invalid parameters</source>
-        <comment>error</comment>
-        <translation>Неправильные параметры</translation>
-    </message>
-    <message>
-        <source>No phrases to search for</source>
-        <comment>description</comment>
-        <translation>Отсутствуют фразы для поиска</translation>
-    </message>
-    <message>
         <source>Internal error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка</translation>
@@ -1078,6 +1223,11 @@ text</source>
         <source>Internal database error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Query error</source>
+        <comment>error</comment>
+        <translation>Ошибка запроса</translation>
     </message>
 </context>
 <context>
@@ -1139,6 +1289,24 @@ text</source>
         <source>Internal logic error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+</context>
+<context>
+    <name>getThreadOpPosts</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>
@@ -1320,6 +1488,32 @@ Your choice:</source>
     </message>
 </context>
 <context>
+    <name>handleReloadCaptchaEngines</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
+    </message>
+</context>
+<context>
+    <name>handleReloadPostIndex</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>Error:</source>
+        <translation>Ошибка:</translation>
+    </message>
+    <message>
+        <source>Reloaded index of posts:</source>
+        <translation>Перезагружен индекс постов:</translation>
+    </message>
+</context>
+<context>
     <name>handleRerenderPosts</name>
     <message>
         <source>Are you sure?</source>
@@ -1482,6 +1676,31 @@ Your choice:</source>
         <source>Search: possible +required -excluded</source>
         <comment>searchInputPlaceholder</comment>
         <translation>Поиск: возможно +обязательно -исключается</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>settingsButtonText</comment>
+        <translation>Настройки</translation>
+    </message>
+    <message>
+        <source>Settings</source>
+        <comment>settingsDialogTitle</comment>
+        <translation>Настройки</translation>
+    </message>
+    <message>
+        <source>Captcha:</source>
+        <comment>captchaLabelText</comment>
+        <translation>Captcha:</translation>
+    </message>
+    <message>
+        <source>This option may be ignored on some boards</source>
+        <comment>captchaLabelWarningText</comment>
+        <translation>Эта опция может игнорироваться на некоторых досках</translation>
+    </message>
+    <message>
+        <source>Markup</source>
+        <comment>toMarkupPageText</comment>
+        <translation>Разметка</translation>
     </message>
 </context>
 <context>
@@ -1791,6 +2010,46 @@ Your choice:</source>
         <comment>deleteFileText</comment>
         <translation>Удалить файл</translation>
     </message>
+    <message>
+        <source>Quick reply</source>
+        <comment>quickReplyText</comment>
+        <translation>Быстрый ответ</translation>
+    </message>
+    <message>
+        <source>Sending:</source>
+        <comment>postFormButtonSubmitSending</comment>
+        <translation>Отправка:</translation>
+    </message>
+    <message>
+        <source>Add file</source>
+        <comment>addFileText</comment>
+        <translation>Добавить файл</translation>
+    </message>
+    <message>
+        <source>Posting speed:</source>
+        <comment>postingSpeedText</comment>
+        <translation>Скорость постинга:</translation>
+    </message>
+    <message>
+        <source>post(s) per hour.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./час.</translation>
+    </message>
+    <message>
+        <source>post(s) per day.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./день.</translation>
+    </message>
+    <message>
+        <source>post(s) per month.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./месяц.</translation>
+    </message>
+    <message>
+        <source>post(s) per year.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./год.</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -1912,6 +2171,14 @@ If one or more board names are specified, rerenders only posts on those boards.<
         <translation>Рендерит заново все посты на всех досках.
 Если указано одно или более названий досок, рендерит посты только на этих досках.</translation>
     </message>
+    <message>
+        <source>Clear post text index and create it from scratch.</source>
+        <translation>Очистить индекс текста постов и создать его с нуля.</translation>
+    </message>
+    <message>
+        <source>Reload all captcha engines: builtin and provided by plugins.</source>
+        <translation>Перезагрузить все движки капчи: встроенные и предоставленные плагинами.</translation>
+    </message>
 </context>
 <context>
     <name>initSettings</name>
@@ -1954,18 +2221,6 @@ The default is 1000.</source>
 For example, if prefix is board/, the resulting URL will start with your-site.com/board/.</source>
         <translation>Глобальный префикс сайта.
 Например, если префикс board/, результирующий URL будет начинаться с your-site.com/board/.</translation>
-    </message>
-    <message>
-        <source>Private captcha key.
-Is stored locally, does not appear anywhere in any HTML pages or other resources.</source>
-        <translation>Закрытый ключ капчи.
-Хранится локально, не появляется ни в каких HTML-страницах или других ресурсах.</translation>
-    </message>
-    <message>
-        <source>Public key for captcha service.
-Apperas in the HTML pages.</source>
-        <translation>Открытый ключ сервиса капчи.
-Появляется в HTML-страницах.</translation>
     </message>
     <message>
         <source>Determines if HTTP_X_REAL_IP header is used to get user IP address.
@@ -2074,18 +2329,6 @@ The default is true.</source>
 По умолчанию true.</translation>
     </message>
     <message>
-        <source>Private codecha key.
-Is stored locally, does not appear anywhere in any HTML pages or other resources.</source>
-        <translation>Закрытый ключ кодечи.
-Хранится локально, не появляется ни в каких HTML-страницах или других ресурсах.</translation>
-    </message>
-    <message>
-        <source>Public key for codecha service.
-Apperas in the HTML pages.</source>
-        <translation>Открытый ключ сервиса кодечи.
-Появляется в HTML-страницах.</translation>
-    </message>
-    <message>
         <source>Maximum count of extra posts a user may make before solving captcha again.
 The default is 0 (solve captcha every time).</source>
         <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи.
@@ -2153,6 +2396,16 @@ Example: 127.0.0.1,192.168.0.1-192.168.0.255</source>
 IP-адреса записываются в виде диапазонов и отделяются запятыми.
 Пример: 127.0.0.1,192.168.0.1-192.168.0.255</translation>
     </message>
+    <message>
+        <source>Identifiers of supported captcha engines.
+Identifers must be separated by commas.
+Example: google-recaptcha,codecha
+By default all captcha engines are supported.</source>
+        <translation>Идентификаторы поддерживаемых движков капчи.
+Идентификаторы должны разделяться запятыми.
+Пример: google-recaptcha,codecha
+По умолчанию поддерживаются все движки капчи.</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>
@@ -2215,16 +2468,6 @@ IP-адреса записываются в виде диапазонов и о�
         <comment>board title</comment>
         <translation>Программирование</translation>
     </message>
-    <message>
-        <source>Captcha is empty</source>
-        <comment>error</comment>
-        <translation>Капча пуста</translation>
-    </message>
-    <message>
-        <source>Captcha is incorrect</source>
-        <comment>error</comment>
-        <translation>Капча решена неправильно</translation>
-    </message>
 </context>
 <context>
     <name>registerUser</name>
@@ -2245,6 +2488,14 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
+    <name>reloadPostIndex</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>removeFromReferencedPosts</name>
     <message>
         <source>Internal logic error</source>
@@ -2259,46 +2510,6 @@ IP-адреса записываются в виде диапазонов и о�
 </context>
 <context>
     <name>renderBan</name>
-    <message>
-        <source>Board</source>
-        <comment>pageTitle</comment>
-        <translation>Доска</translation>
-    </message>
-    <message>
-        <source>Date</source>
-        <comment>pageTitle</comment>
-        <translation>Дата</translation>
-    </message>
-    <message>
-        <source>never</source>
-        <comment>pageTitle</comment>
-        <translation>никогда</translation>
-    </message>
-    <message>
-        <source>Expires</source>
-        <comment>pageTitle</comment>
-        <translation>Дата окончания</translation>
-    </message>
-    <message>
-        <source>Restricted actions</source>
-        <comment>pageTitle</comment>
-        <translation>Запрещенные действия</translation>
-    </message>
-    <message>
-        <source>You are banned</source>
-        <comment>pageTitle</comment>
-        <translation>Вы забанены</translation>
-    </message>
-    <message>
-        <source>Reason</source>
-        <comment>pageTitle</comment>
-        <translation>Причина</translation>
-    </message>
-    <message>
-        <source>Ban</source>
-        <comment>pageTitle</comment>
-        <translation>Бан</translation>
-    </message>
     <message>
         <source>all boards</source>
         <comment>pageTitle</comment>
@@ -2319,12 +2530,115 @@ IP-адреса записываются в виде диапазонов и о�
         <comment>pageTitle</comment>
         <translation>нет запрещенных действий</translation>
     </message>
+    <message>
+        <source>Ban</source>
+        <comment>banBoard</comment>
+        <translation>Бан</translation>
+    </message>
+    <message>
+        <source>Board</source>
+        <comment>banBoardLabel</comment>
+        <translation>Доска</translation>
+    </message>
+    <message>
+        <source>Date</source>
+        <comment>banDateTimeLabel</comment>
+        <translation>Дата</translation>
+    </message>
+    <message>
+        <source>never</source>
+        <comment>banExpires</comment>
+        <translation>никогда</translation>
+    </message>
+    <message>
+        <source>Expires</source>
+        <comment>banExpiresLabel</comment>
+        <translation>Дата окончания</translation>
+    </message>
+    <message>
+        <source>Restricted actions</source>
+        <comment>banLevelLabel</comment>
+        <translation>Запрещенные действия</translation>
+    </message>
+    <message>
+        <source>You are banned</source>
+        <comment>banMessage</comment>
+        <translation>Вы забанены</translation>
+    </message>
+    <message>
+        <source>Reason</source>
+        <comment>banReasonLabel</comment>
+        <translation>Причина</translation>
+    </message>
+</context>
+<context>
+    <name>renderBanAjax</name>
+    <message>
+        <source>You are banned</source>
+        <comment>errorMessage</comment>
+        <translation>Вы забанены</translation>
+    </message>
+    <message>
+        <source>Board:</source>
+        <comment>errorDescription</comment>
+        <translation>Доска:</translation>
+    </message>
+    <message>
+        <source>all boards</source>
+        <comment>errorDescription</comment>
+        <translation>все доски</translation>
+    </message>
+    <message>
+        <source>Date:</source>
+        <comment>errorDescription</comment>
+        <translation>Дата:</translation>
+    </message>
+    <message>
+        <source>Expires:</source>
+        <comment>errorDescription</comment>
+        <translation>Истекает:</translation>
+    </message>
+    <message>
+        <source>never</source>
+        <comment>errorDescription</comment>
+        <translation>никогда</translation>
+    </message>
+    <message>
+        <source>Restricted actions:</source>
+        <comment>errorDescription</comment>
+        <translation>Запрещенные действия:</translation>
+    </message>
+    <message>
+        <source>reading and posting are restricted</source>
+        <comment>errorDescription</comment>
+        <translation>запрещены чтение и постинг</translation>
+    </message>
+    <message>
+        <source>posting is restricted (read-only access)</source>
+        <comment>errorDescription</comment>
+        <translation>запрещен постинг (доступ ридонли)</translation>
+    </message>
+    <message>
+        <source>no action is restricted</source>
+        <comment>errorDescription</comment>
+        <translation>нет запрещенных действий</translation>
+    </message>
+    <message>
+        <source>Reason:</source>
+        <comment>banReasonLabel</comment>
+        <translation>Причина:</translation>
+    </message>
 </context>
 <context>
     <name>renderError</name>
     <message>
         <source>Error</source>
         <comment>pageTitle</comment>
+        <translation>Ошибка</translation>
+    </message>
+    <message>
+        <source>Error</source>
+        <comment>errorMessage</comment>
         <translation>Ошибка</translation>
     </message>
 </context>
@@ -2337,17 +2651,35 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
     <message>
         <source>You are banned</source>
-        <comment>pageTitle</comment>
+        <comment>banMessage</comment>
         <translation>Вы забанены</translation>
     </message>
     <message>
         <source>Your IP address is in the ban list. You are not allowed to read or make posts.</source>
-        <comment>pageTitle</comment>
+        <comment>banDescription</comment>
         <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить или читать.</translation>
     </message>
     <message>
         <source>Your IP address is in the ban list. You are not allowed to make posts.</source>
-        <comment>pageTitle</comment>
+        <comment>banDescription</comment>
+        <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить.</translation>
+    </message>
+</context>
+<context>
+    <name>renderIpBanAjax</name>
+    <message>
+        <source>You are banned</source>
+        <comment>errorMessage</comment>
+        <translation>Вы забанены</translation>
+    </message>
+    <message>
+        <source>Your IP address is in the ban list. You are not allowed to read or make posts.</source>
+        <comment>errorDescription</comment>
+        <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить или читать.</translation>
+    </message>
+    <message>
+        <source>Your IP address is in the ban list. You are not allowed to make posts.</source>
+        <comment>errorDescription</comment>
         <translation>Ваш IP-адрес находится в списке забаненных. Вам запрещено постить.</translation>
     </message>
 </context>
@@ -2453,6 +2785,11 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Voting is closed</source>
         <comment>voteClosedText</comment>
         <translation>Голосование закрыто</translation>
+    </message>
+    <message>
+        <source>Attempt to edit voting while not being the OP</source>
+        <comment>error</comment>
+        <translation>Попытка редактировать голосование не будучи ОПом</translation>
     </message>
 </context>
 <context>
@@ -2654,7 +2991,33 @@ IP-адреса записываются в виде диапазонов и о�
     </message>
 </context>
 <context>
+    <name>testAddFileParamsAjax</name>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation>Неправильные параметры</translation>
+    </message>
+</context>
+<context>
     <name>testBan</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+</context>
+<context>
+    <name>testBanAjax</name>
     <message>
         <source>Internal error</source>
         <comment>error</comment>
@@ -2678,13 +3041,18 @@ IP-адреса записываются в виде диапазонов и о�
         <comment>error</comment>
         <translation>Неправильная капча</translation>
     </message>
+    <message>
+        <source>No engine for this captcha type</source>
+        <comment>sescription</comment>
+        <translation>Отсутствует движок для этого типа капчи</translation>
+    </message>
 </context>
 <context>
-    <name>testParams</name>
+    <name>testParamsAjax</name>
     <message>
-        <source>Invalid parameters</source>
-        <comment>error</comment>
-        <translation>Неправильные параметры</translation>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal error</source>
@@ -2692,9 +3060,9 @@ IP-адреса записываются в виде диапазонов и о�
         <translation>Внутренняя ошибка</translation>
     </message>
     <message>
-        <source>Internal logic error</source>
-        <comment>description</comment>
-        <translation>Внутренняя ошибка в логике программы</translation>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation>Неправильные параметры</translation>
     </message>
 </context>
 <context>
@@ -2797,6 +3165,11 @@ IP-адреса записываются в виде диапазонов и о�
         <source>Voting disabled</source>
         <comment>error</comment>
         <translation>Голосование отключено</translation>
+    </message>
+    <message>
+        <source>Attempt to vote in an own voting</source>
+        <comment>error</comment>
+        <translation>Попытка проголосовать в собственном голосовании</translation>
     </message>
 </context>
 </TS>

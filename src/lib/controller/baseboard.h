@@ -84,6 +84,7 @@ public:
 struct OLOLORD_EXPORT BaseBoard : public Base
 {
     std::string action;
+    std::string addFileText;
     std::string ajaxErrorText;
     std::list<AbstractBoard::BoardInfo> availableBoards;
     std::string banExpiresLabelText;
@@ -97,9 +98,11 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string bumpLimitReachedText;
     std::string bytesText;
     bool captchaEnabled;
-    std::string captchaKey;
+    std::string captchaHeaderHtml;
     unsigned long long captchaQuota;
     std::string captchaQuotaText;
+    std::string captchaScriptSource;
+    std::string captchaWidgetHtml;
     std::string closedText;
     std::string closeThreadText;
     std::string complainMessage;
@@ -132,6 +135,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string notLoggedInText;
     std::string openThreadText;
     std::string postFormButtonSubmit;
+    std::string postFormButtonSubmitSending;
     std::string postFormInputFile;
     std::string postFormLabelCaptcha;
     std::string postFormLabelDraft;
@@ -145,7 +149,10 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postFormTextPlaceholder;
     std::string postingDisabledText;
     bool postingEnabled;
+    std::string postingSpeed;
+    std::string postingSpeedText;
     std::string postLimitReachedText;
+    std::string quickReplyText;
     std::string referencedByText;
     std::string registeredText;
     std::string removeFileText;

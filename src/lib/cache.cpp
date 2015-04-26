@@ -21,8 +21,12 @@
 namespace Cache
 {
 
+static QCache<QString, QString> customHomePageContents;
+static QMutex customHomePageContentsMutex(QMutex::Recursive);
 static QCache<QString, QByteArray> dynamicFiles;
 static QMutex dynamicFilesMutex(QMutex::Recursive);
+static QCache<QString, Tools::FriendList> theFriendList;
+static QMutex friendListMutex(QMutex::Recursive);
 static QCache<QString, IpBanInfoList> theIpBanInfoList;
 static QMutex ipBanInfoListMutex(QMutex::Recursive);
 static QCache<QString, QStringList> theNews;
@@ -50,7 +54,9 @@ void initCache(T &cache, const QString &name, int defaultSize)
 ClearCacheFunctionMap availableClearCacheFunctions()
 {
     init_once(ClearCacheFunctionMap, map, ClearCacheFunctionMap()) {
+        map.insert("custom_home_page_content", &clearCustomHomePageContent);
         map.insert("dynamic_files", &clearDynamicFilesCache);
+        map.insert("friend_list", &clearFriendListCache);
         map.insert("ip_ban_info_list", &clearIpBanInfoListCache);
         map.insert("news", &clearNewsCache);
         map.insert("posts", &clearPostsCache);
@@ -64,7 +70,9 @@ ClearCacheFunctionMap availableClearCacheFunctions()
 SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 {
     init_once(SetMaxCacheSizeFunctionMap, map, SetMaxCacheSizeFunctionMap()) {
+        map.insert("custom_home_page_content", &setCustomHomePageContentMaxCacheSize);
         map.insert("dynamic_files", &setDynamicFilesMaxCacheSize);
+        map.insert("friend_list", &setFriendListMaxCacheSize);
         map.insert("ip_ban_info_list", &setIpBanInfoListMaxCacheSize);
         map.insert("news", &setNewsMaxCacheSize);
         map.insert("posts", &setPostsMaxCacheSize);
@@ -78,7 +86,9 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 QStringList availableCacheNames()
 {
     init_once(QStringList, names, QStringList()) {
+        names << "custom_home_page_content";
         names << "dynamic_files";
+        names << "friend_list";
         names << "ip_ban_info_list";
         names << "news";
         names << "posts";
@@ -87,6 +97,20 @@ QStringList availableCacheNames()
         names << "translators";
     }
     return names;
+}
+
+bool cacheCustomHomePageContent(const QLocale &l, QString *content)
+{
+    if (!content)
+        return false;
+    QMutexLocker locker(&customHomePageContentsMutex);
+    do_once(init)
+        initCache(customHomePageContents, "custom_home_page_content", defaultCustomHomePageContentsCacheSize);
+    int sz = content->length() * 2;
+    if (customHomePageContents.maxCost() < sz)
+        return false;
+    customHomePageContents.insert(l.name(), content, sz);
+    return true;
 }
 
 bool cacheDynamicFile(const QString &path, QByteArray *data)
@@ -99,6 +123,22 @@ bool cacheDynamicFile(const QString &path, QByteArray *data)
     if (dynamicFiles.maxCost() < data->size())
         return false;
     dynamicFiles.insert(path, data, data->size());
+    return true;
+}
+
+bool cacheFriendList(Tools::FriendList *list)
+{
+    if (!list)
+        return false;
+    QMutexLocker locker(&friendListMutex);
+    do_once(init)
+        initCache(theFriendList, "friend_list", defaultFriendListCacheSize);
+    int sz = 0;
+    foreach (const Tools::Friend &f, *list)
+        sz += f.name.length() * 2 + f.title.length() * 2 + f.url.length() * 2;
+    if (theFriendList.maxCost() < sz)
+        return false;
+    theFriendList.insert("x", list, sz);
     return true;
 }
 
@@ -197,10 +237,22 @@ bool clearCache(const QString &name, QString *err, const QLocale &l)
     return bRet(err, QString(), true);
 }
 
+void clearCustomHomePageContent()
+{
+    QMutexLocker locker(&customHomePageContentsMutex);
+    customHomePageContents.clear();
+}
+
 void clearDynamicFilesCache()
 {
     QMutexLocker locker(&dynamicFilesMutex);
     dynamicFiles.clear();
+}
+
+void clearFriendListCache()
+{
+    QMutexLocker locker(&friendListMutex);
+    theFriendList.clear();
 }
 
 void clearIpBanInfoListCache()
@@ -239,11 +291,19 @@ void clearTranslatorsCache()
     translators.clear();
 }
 
+QString *customHomePageContent(const QLocale &l)
+{
+    QMutexLocker locker(&customHomePageContentsMutex);
+    return customHomePageContents.object(l.name());
+}
+
 int defaultCacheSize(const QString &name)
 {
     typedef QMap<QString, int> IntMap;
     init_once(IntMap, map, IntMap()) {
+        map.insert("custom_home_page_content", defaultCustomHomePageContentsCacheSize);
         map.insert("dynamic_files", defaultDynamicFilesCacheSize);
+        map.insert("friend_list", defaultFriendListCacheSize);
         map.insert("ip_ban_info_list", defaultIpBanInfoListCacheSize);
         map.insert("news", defaultNewsCacheSize);
         map.insert("rules", defaultRulesCacheSize);
@@ -259,6 +319,12 @@ QByteArray *dynamicFile(const QString &path)
         return 0;
     QMutexLocker locker(&dynamicFilesMutex);
     return dynamicFiles.object(path);
+}
+
+Tools::FriendList *friendList()
+{
+    QMutexLocker locker(&friendListMutex);
+    return theFriendList.object("x");
 }
 
 IpBanInfoList *ipBanInfoList()
@@ -297,12 +363,28 @@ QStringList *rules(const QLocale &locale, const QString &prefix)
     return theRules.object(prefix + "/" + locale.name());
 }
 
+void setCustomHomePageContentMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QMutexLocker locker(&customHomePageContentsMutex);
+    customHomePageContents.setMaxCost(size);
+}
+
 void setDynamicFilesMaxCacheSize(int size)
 {
     if (size < 0)
         return;
     QMutexLocker locker(&dynamicFilesMutex);
     dynamicFiles.setMaxCost(size);
+}
+
+void setFriendListMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QMutexLocker locker(&friendListMutex);
+    theFriendList.setMaxCost(size);
 }
 
 void setIpBanInfoListMaxCacheSize(int size)

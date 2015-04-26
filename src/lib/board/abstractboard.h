@@ -42,9 +42,13 @@ class request;
 #include "tools.h"
 
 #include <QByteArray>
+#include <QElapsedTimer>
 #include <QList>
 #include <QMap>
 #include <QMutex>
+#include <QReadLocker>
+#include <QReadWriteLock>
+#include <QSharedPointer>
 #include <QString>
 
 #include <cppcms/json.h>
@@ -92,6 +96,32 @@ public:
         void setThumbFile(const QString &fn);
         void setThumbFileSize(int height, int width);
     };
+    class OLOLORD_EXPORT LockingWrapper
+    {
+    private:
+        AbstractBoard * const Board;
+    private:
+        QSharedPointer<QReadLocker> locker;
+    public:
+        LockingWrapper(const LockingWrapper &other);
+    private:
+        explicit LockingWrapper(AbstractBoard *board);
+    public:
+        AbstractBoard *data() const;
+        bool isNull() const;
+    public:
+        LockingWrapper &operator =(const LockingWrapper &other);
+        AbstractBoard *operator ->() const;
+        bool operator !() const;
+        operator bool() const;
+    private:
+        friend class AbstractBoard;
+    };
+    struct PostingSpeed
+    {
+        qint64 postCount;
+        qint64 uptimeMsecs;
+    };
 public:
     typedef std::list<BoardInfo> BoardInfoList;
 public:
@@ -99,21 +129,28 @@ public:
 private:
     static QMap<QString, AbstractBoard *> boards;
     static bool boardsInitialized;
-    static QMutex boardsMutex;
+    static QReadWriteLock boardsLock;
 private:
     QMap<QString, unsigned int> captchaQuotaMap;
     mutable QMutex captchaQuotaMutex;
+    qint64 postCount;
+    mutable QMutex speedMutex;
+    qint64 uptime;
+    QElapsedTimer uptimeTimer;
 public:
     explicit AbstractBoard();
     virtual ~AbstractBoard();
 public:
-    static AbstractBoard *board(const QString &name);
+    static LockingWrapper board(const QString &name);
     static BoardInfoList boardInfos(const QLocale &l, bool includeHidden = true);
     static QStringList boardNames(bool includeHidden = true);
     static void reloadBoards();
     static void restoreCaptchaQuota(const QByteArray &data);
+    static void restorePostingSpeed(const QByteArray &data);
     static QByteArray saveCaptchaQuota();
+    static QByteArray savePostingSpeed();
 public:
+    virtual void addFile(cppcms::application &app);
     unsigned int archiveLimit() const;
     QString bannerFileName() const;
     virtual bool beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
@@ -134,8 +171,7 @@ public:
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
-    virtual bool isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params,
-                                QString &error) const;
+    bool isCaptchaEngineSupported(const QString &id) const;
     bool isEnabled() const;
     bool isFileTypeSupported(const QString &mimeType) const;
     bool isFileTypeSupported(const QByteArray &data) const;
@@ -143,11 +179,15 @@ public:
     virtual QString name() const = 0;
     virtual QStringList postformRules(const QLocale &l) const;
     virtual bool postingEnabled() const;
+    PostingSpeed postingSpeed() const;
     unsigned int postLimit() const;
     virtual QStringList rules(const QLocale &l) const;
     virtual bool saveFile(const Tools::File &f, FileTransaction &ft);
     virtual bool showWhois() const;
+    virtual QString supportedCaptchaEngines() const;
     virtual QString supportedFileTypes() const;
+    virtual bool testAddFileParams(const Tools::PostParameters &params, const Tools::FileList &files, const QLocale &l,
+                                   QString *error = 0) const;
     virtual bool testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
                             const QLocale &l, QString *error = 0) const;
     unsigned int threadLimit() const;
@@ -163,7 +203,8 @@ protected:
     virtual Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 private:
     static void cleanupBoards();
-    static void initBoards(bool reinit = false);
+private:
+    friend class LockingWrapper;
 };
 
 #endif // ABSTRACTBOARD_H

@@ -20,6 +20,10 @@ a {
     color: #FF6600;
 }
 
+a:hover {
+    color: #0066FF;
+}
+
 hr {
     color: #CCCCCC; /*IE*/
     background-color: #CCCCCC; /*Firefox, Opera, Safari*/
@@ -210,10 +214,6 @@ span.spoiler:hover a {
     margin-right: auto;
     text-align: center;
     white-space: nowrap;
-}
-
-.postFormInvisible {
-    display: none;
 }
 
 .postFormVisible {
@@ -621,4 +621,11 @@ a.progressBlocking {
 
 .voteCount {
     font-style: italic;
+}
+
+/* Settings dialog */
+
+.settingsDialog {
+    width: 400px;
+    height: 200px;
 }

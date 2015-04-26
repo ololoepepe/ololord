@@ -1,3 +1,24 @@
+=== ololord 0.1.0-rc5 (26 April 2015) ===
+    * Fix vote system
+    * Implement index-based search
+    * Lock boards properly
+    * Cache IP-locale mapping
+    * Add AJAX requests for retrieving boards and thread numbers
+    * Process posts outside transaction
+    * Implement settings dialog
+    * Download two thread files simultaneously to minimize ping delay effect
+    * Implement quick reply
+    * Add ability to select captcha
+    * Add Yandex captcha support
+    * Fix audio/video files playing for posts received with AJAX
+    * Fix dimension displaying for non-image files
+    * Fix posting error displaying
+    * Post with XHR, get rid of iframe hack
+    * Implement ability to add new files to existing posts
+    * Improve home page
+    * Add /d/ board
+    * Implement post counting system
+
 === ololord 0.1.0-rc4 (19 April 2015) ===
     * Implement configurable board
     * Remove some board classes

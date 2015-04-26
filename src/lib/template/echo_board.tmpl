@@ -2,14 +2,13 @@
 <% skin my_skin %>
 <% view echo_board uses Content::echoBoard extends board %>
 
-<% template customPostFormField3(std::string position) %>
+<% template customPostFormField3() %>
 <tr>
     <td class="postformLabel">
         <b><%= postFormLabelLink %></b>
     </td>
     <td class="postformField">
-        <input type="text" maxlength="<%= maxLinkLength %>" id="postFormInputLink<%= position %>" name="link" 
-               size="43" />
+        <input type="text" maxlength="<%= maxLinkLength %>" name="link" size="43" />
      </td>
 </tr>
 <% end template %>

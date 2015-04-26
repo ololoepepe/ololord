@@ -38,7 +38,6 @@
 <input id="noNewPostsText" type="hidden" value="<%= noNewPostsText %>" />
 <input id="newPostsText" type="hidden" value="<%= newPostsText %>" />
 <input id="currentThreadNumber" type="hidden" value="<%= opPost.number %>" />
-<iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="lord.postedInThread();"></iframe>
 <a id="top"></a>
 <% include settings() %>
 <br />
@@ -47,8 +46,8 @@
 <% include searchAction() %>
 <% if ( !content.bannerFileName.empty() ) %>
     <br />
+    <% include banner() %>
 <% end %>
-<% include banner() %>
 <div class="theTitle">
     <% if ( !content.pageTitle.empty() ) %>
         <h1><%= pageTitle %></h1>
@@ -66,13 +65,13 @@
     </div>
 <% else %>
     <hr />
+    <% include createAction("Top") %>
 <% end %>
 <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
     <div class="theMessage">
         <h3><%= bumpLimitReachedText %></h3>
     </div>
 <% end %>
-<% include createAction("Top") %>
 <hr />
 <% include threadActions("top") %>
 <hr />
@@ -87,8 +86,8 @@
 <% include threadActions("bottom") %>
 <% if ( content.postingEnabled && !content.postLimitReached() ) %>
     <hr />
+    <% include createAction("Bottom") %>
 <% end %>
-<% include createAction("Bottom") %>
 <hr />
 <% include navbar() %>
 <a id="bottom"></a>
@@ -100,7 +99,7 @@
     <head>
         <% include head() %>
     </head>
-    <body onload="javascript:lord.initializeOnLoadThread();">
+    <body>
         <% include body() %>
     </body>
 </html>

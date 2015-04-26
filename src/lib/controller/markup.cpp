@@ -105,7 +105,7 @@ public:
 };
 
 static const QString ExternalLinkRegexpPattern =
-        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-]*)*\\/?";
+        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-\\?\\=]*)*\\/?";
 
 static QString tagName(const QRegExp &rx)
 {
@@ -590,13 +590,13 @@ static void processTagCode(ProcessPostTextContext &c)
                 sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
                 sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
             } catch (const srchilite::ParserException &e) {
-                qDebug() << "processTagCode" << "ParserException" << e.what();
+                Tools::log("Controller::processTagCode", e);
                 return;
             } catch (const srchilite::IOException &e) {
-                qDebug() << "processTagCode" << "IOException" << e.what();
+                Tools::log("Controller::processTagCode", e);
                 return;
             } catch (const std::exception &e) {
-                qDebug() << "processTagCode" << "exception" << e.what();
+                Tools::log("Controller::processTagCode", e);
                 return;
             }
             QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
@@ -647,13 +647,13 @@ static void processWakabaMarkCode(ProcessPostTextContext &c)
                 sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
                 sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
             } catch (const srchilite::ParserException &e) {
-                qDebug() << "processWakabaMarkCode" << "ParserException" << e.what();
+                Tools::log("Controller::processWakabaMarkCode", e);
                 return;
             } catch (const srchilite::IOException &e) {
-                qDebug() << "processWakabaMarkCode" << "IOException" << e.what();
+                Tools::log("Controller::processWakabaMarkCode", e);
                 return;
             } catch (const std::exception &e) {
-                qDebug() << "processWakabaMarkCode" << "exception" << e.what();
+                Tools::log("Controller::processWakabaMarkCode", e);
                 return;
             }
             QString result = "<div class=\"codeBlock\">" + Tools::fromStd(out.str()) + "</div>";
@@ -730,9 +730,9 @@ void toHtml(QString *s)
 QList<Content::Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
                                  quint64 lastPostNumber, bool *ok, QString *error)
 {
-    AbstractBoard *board = AbstractBoard::board(boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (!board) {
+    if (board.isNull()) {
         return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"),
                     QList<Content::Post>());
     }
@@ -756,9 +756,9 @@ QList<Content::Post> getNewPosts(const cppcms::http::request &req, const QString
 Content::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok,
                       QString *error)
 {
-    AbstractBoard *board = AbstractBoard::board(boardName);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (!board)
+    if (board.isNull())
         return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"), Content::Post());
     bool b = false;
     Post post = Database::getPost(req, boardName, postNumber, &b, error);
@@ -770,6 +770,32 @@ Content::Post getPost(const cppcms::http::request &req, const QString &boardName
     if (!p.number)
         return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"), Content::Post());
     return bRet(ok, true, error, QString(), p);
+}
+
+QList<Content::Post> getThreadOpPosts(const cppcms::http::request &req, const QString &boardName, bool *ok,
+                                      QString *error)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (board.isNull()) {
+        return bRet(ok, false, error, tq.translate("getThreadOpPosts", "Invalid board name", "error"),
+                    QList<Content::Post>());
+    }
+    bool b = false;
+    QList<Post> posts = Database::getThreadOpPosts(req, boardName, &b, error);
+    if (!b)
+        return bRet(ok, false, QList<Content::Post>());
+    QList<Content::Post> list;
+    foreach (const Post &p, posts) {
+        list << board->toController(p, req, &b, error);
+        if (!b)
+            return bRet(ok, false, QList<Content::Post>());
+        if (!list.last().number) {
+            return bRet(ok, false, error, tq.translate("getThreadOpPosts", "Internal logic error", "error"),
+                        QList<Content::Post>());
+        }
+    }
+    return bRet(ok, true, error, QString(), list);
 }
 
 }

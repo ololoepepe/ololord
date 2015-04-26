@@ -23,57 +23,69 @@ rpgBoard::rpgBoard()
     //
 }
 
-bool rpgBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &p,
-                                       Thread &/*thread*/, QString *error)
+bool rpgBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms::json::value &userData, Post &post,
+                                       Thread &thread, QString *error)
 {
-    if (userData.is_null() || userData.is_undefined())
-        return bRet(error, QString(), true);
-    TranslatorQt tq(req);
-    cppcms::json::object o = userData.object();
-    QVariantMap m = p.userData().toMap();
-    cppcms::json::array arr = o["variants"].array();
-    QVariantList variants = m.value("variants").toList();
-    QStringList ids;
-    for (int i = 0; i < int(arr.size()); ++i) {
-        cppcms::json::object oo = arr.at(i).object();
-        QString id = Tools::fromStd(oo["id"].str());
-        QString text = Tools::fromStd(oo["text"].str());
-        if (text.isEmpty())
-            continue;
-        if (!id.isEmpty()) {
-            bool found = false;
-            for (int i = 0; i < variants.size(); ++i) {
-                QVariantMap mm = variants.at(i).toMap();
-                if (mm.value("id").toString() != id)
-                    continue;
-                mm["text"] = text;
-                variants[i] = mm;
-                found = true;
+    try {
+        if (userData.is_null() || userData.is_undefined())
+            return bRet(error, QString(), true);
+        TranslatorQt tq(req);
+        cppcms::json::object o = userData.object();
+        QVariantMap m = post.userData().toMap();
+        cppcms::json::array arr = o["variants"].array();
+        QVariantList variants = m.value("variants").toList();
+        QStringList ids;
+        for (int i = 0; i < int(arr.size()); ++i) {
+            cppcms::json::object oo = arr.at(i).object();
+            QString id = Tools::fromStd(oo["id"].str());
+            QString text = Tools::fromStd(oo["text"].str());
+            if (text.isEmpty())
+                continue;
+            if (!id.isEmpty()) {
+                bool found = false;
+                for (int i = 0; i < variants.size(); ++i) {
+                    QVariantMap mm = variants.at(i).toMap();
+                    if (mm.value("id").toString() != id)
+                        continue;
+                    mm["text"] = text;
+                    variants[i] = mm;
+                    found = true;
+                }
+                if (!found)
+                    return bRet(error, tq.translate("vote", "Invalid vote", "error"), false);
+            } else {
+                QVariantMap mm;
+                mm.insert("text", text);
+                id = BUuid::createUuid().toString(true);
+                mm.insert("id", id);
+                variants << mm;
             }
-            if (!found)
-                return bRet(error, tq.translate("vote", "Invalid vote", "error"), false);
-        } else {
-            QVariantMap mm;
-            mm.insert("text", text);
-            id = BUuid::createUuid().toString(true);
-            mm.insert("id", id);
-            variants << mm;
+            ids << id;
         }
-        ids << id;
-    }
-    for (int i = 0; i < variants.size(); ++i) {
-        if (!ids.contains(variants.at(i).toMap().value("id").toString()))
-            variants.removeAt(i);
-    }
-    if (variants.isEmpty()) {
-        p.setUserData(QVariant());
+        for (int i = 0; i < variants.size(); ++i) {
+            if (!ids.contains(variants.at(i).toMap().value("id").toString()))
+                variants.removeAt(i);
+        }
+        if (variants.isEmpty()) {
+            post.setUserData(QVariant());
+            return bRet(error, QString(), true);
+        }
+        QString text = Tools::fromStd(o["text"].str());
+        if ((!thread.number() == post.number()
+             && !Database::isOp(post.board(), thread.number(), post.posterIp(), post.hashpass()))
+                && (m["variants"] != variants || m["multiple"] != o["multiple"].boolean() || m["text"] != text)) {
+            return bRet(error, tq.translate("rpgBoard", "Attempt to edit voting while not being the OP", "error"), false);
+        }
+        m["variants"] = variants;
+        m["multiple"] = o["multiple"].boolean();
+        m["text"] = text;
+        post.setUserData(m);
         return bRet(error, QString(), true);
+    } catch (const cppcms::json::bad_value_cast &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    } catch (const std::out_of_range &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
     }
-    m["variants"] = variants;
-    m["multiple"] = o["multiple"].boolean();
-    m["text"] = Tools::fromStd(o["text"].str());
-    p.setUserData(m);
-    return bRet(error, QString(), true);
 }
 
 bool rpgBoard::beforeStoringNewPost(const cppcms::http::request &req, Post *post, const Tools::PostParameters &params,

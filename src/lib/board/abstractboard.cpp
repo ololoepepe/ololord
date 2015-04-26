@@ -7,6 +7,7 @@
 #include "board/prboard.h"
 #include "board/rpgboard.h"
 #include "cache.h"
+#include "captcha/abstractcaptchaengine.h"
 #include "controller/baseboard.h"
 #include "controller/board.h"
 #include "controller/controller.h"
@@ -38,12 +39,15 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QImage>
 #include <QList>
 #include <QMap>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QReadLocker>
+#include <QReadWriteLock>
 #include <QScopedPointer>
 #include <QSet>
 #include <QSettings>
@@ -53,6 +57,7 @@
 #include <QtAlgorithms>
 #include <QVariant>
 #include <QVariantMap>
+#include <QWriteLocker>
 
 #include <cppcms/application.h>
 #include <cppcms/http_request.h>
@@ -65,11 +70,6 @@
 #include <odb/result.hxx>
 #include <odb/transaction.hxx>
 
-#include <curlpp/cURLpp.hpp>
-#include <curlpp/Easy.hpp>
-#include <curlpp/Options.hpp>
-
-#include <ostream>
 #include <string>
 #include <vector>
 
@@ -179,14 +179,53 @@ void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
 
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
-QMutex AbstractBoard::boardsMutex(QMutex::Recursive);
+QReadWriteLock AbstractBoard::boardsLock(QReadWriteLock::Recursive);
 const QString AbstractBoard::defaultFileTypes = "audio/mpeg,audio/ogg,audio/wav,image/gif,image/jpeg,image/png,"
                                                 "video/mp4,video/ogg,video/webm";
+
+AbstractBoard::LockingWrapper::LockingWrapper(const LockingWrapper &other) :
+    Board(other.Board)
+{
+    locker = other.locker;
+}
+
+AbstractBoard::LockingWrapper::LockingWrapper(AbstractBoard *board) :
+    Board(board)
+{
+    locker = QSharedPointer<QReadLocker>(new QReadLocker(&AbstractBoard::boardsLock));
+}
+
+AbstractBoard *AbstractBoard::LockingWrapper::data() const
+{
+    return Board;
+}
+
+bool AbstractBoard::LockingWrapper::isNull() const
+{
+    return !Board;
+}
+
+AbstractBoard *AbstractBoard::LockingWrapper::operator ->() const
+{
+    return Board;
+}
+
+bool AbstractBoard::LockingWrapper::operator !() const
+{
+    return !Board;
+}
+
+AbstractBoard::LockingWrapper::operator bool() const
+{
+    return Board;
+}
 
 AbstractBoard::AbstractBoard() :
     captchaQuotaMutex(QMutex::Recursive)
 {
-    //
+    postCount = 0;
+    uptime = 0;
+    uptimeTimer.start();
 }
 
 AbstractBoard::~AbstractBoard()
@@ -194,39 +233,33 @@ AbstractBoard::~AbstractBoard()
     //
 }
 
-AbstractBoard *AbstractBoard::board(const QString &name)
+AbstractBoard::LockingWrapper AbstractBoard::board(const QString &name)
 {
-    initBoards();
-    boardsMutex.lock();
+    QReadLocker locker(&boardsLock);
     AbstractBoard *b = boards.value(name);
-    boardsMutex.unlock();
-    return (b && b->isEnabled()) ? b : 0;
+    return (b && b->isEnabled()) ? LockingWrapper(b) : LockingWrapper(0);
 }
 
 AbstractBoard::BoardInfoList AbstractBoard::boardInfos(const QLocale &l, bool includeHidden)
 {
-    initBoards();
     BoardInfoList list;
-    boardsMutex.lock();
+    QReadLocker locker(&boardsLock);
     foreach (const QString &key, boards.keys()) {
         AbstractBoard *board = boards.value(key);
         if (!board || !board->isEnabled() || (!includeHidden && board->isHidden()))
             continue;
         BoardInfo info;
         info.name = Tools::toStd(board->name());
-        info.title = Tools::toStd(boards.value(key)->title(l));
+        info.title = Tools::toStd(board->title(l));
         list.push_back(info);
     }
-    boardsMutex.unlock();
     return list;
 }
 
 QStringList AbstractBoard::boardNames(bool includeHidden)
 {
-    initBoards();
-    boardsMutex.lock();
+    QReadLocker locker(&boardsLock);
     QStringList list = boards.keys();
-    boardsMutex.unlock();
     foreach (int i, bRangeR(list.size() - 1, 0)) {
         AbstractBoard *board = boards.value(list.at(i));
         if (!board || !board->isEnabled() || (!includeHidden && board->isHidden()))
@@ -237,13 +270,172 @@ QStringList AbstractBoard::boardNames(bool includeHidden)
 
 void AbstractBoard::reloadBoards()
 {
-    initBoards(true);
+    QWriteLocker locker(&boardsLock);
+    QSet<QString> boardNames = QSet<QString>::fromList(boards.keys());
+    BSettingsNode *n = BTerminal::rootSettingsNode()->find("Board");
+    foreach (BSettingsNode *nn, n->childNodes()) {
+        if (!boardNames.contains(nn->key()))
+            continue;
+        n->removeChild(nn);
+        delete nn;
+    }
+    foreach (AbstractBoard *b, boards.values())
+        delete b;
+    boards.clear();
+    ConfigurableBoard *cb = new ConfigurableBoard("a", BTranslation::translate("AbstractBoard", "/a/nime", "title"),
+        BTranslation::translate("AbstractBoard", "Kamina", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("b", BTranslation::translate("AbstractBoard", "/b/rotherhood", "title"));
+    boards.insert(cb->name(), cb);
+    AbstractBoard *b = new cgBoard;
+    boards.insert(b->name(), b);
+    b = new echoBoard;
+    boards.insert(b->name(), b);
+    cb = new ConfigurableBoard("h", BTranslation::translate("AbstractBoard", "/h/entai", "title"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("int", BTranslation::translate("AbstractBoard", "/int/ernational", "title"),
+                               BTranslation::translate("AbstractBoard", "Vladimir Putin", "defaultUserName"));
+    cb->setShowWhois(true);
+    boards.insert(cb->name(), cb);
+    b = new mlpBoard;
+    boards.insert(b->name(), b);
+    b = new prBoard;
+    boards.insert(b->name(), b);
+    cb = new ConfigurableBoard("rf", BTranslation::translate("AbstractBoard", "Refuge", "title"),
+                               BTranslation::translate("AbstractBoard", "Whiner", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("soc", BTranslation::translate("AbstractBoard", "Social life", "title"),
+                               BTranslation::translate("AbstractBoard", "Life of the party", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("3dpd", BTranslation::translate("AbstractBoard", "3D pron", "title"));
+    boards.insert(cb->name(), cb);
+    cb = new ConfigurableBoard("vg", BTranslation::translate("AbstractBoard", "Video games", "title"),
+                               BTranslation::translate("AbstractBoard", "PC Nobleman", "defaultUserName"));
+    boards.insert(cb->name(), cb);
+    b = new rpgBoard;
+    boards.insert(b->name(), b);
+    cb = new ConfigurableBoard("d", BTranslation::translate("AbstractBoard", "Board /d/iscussion", "title"));
+    boards.insert(cb->name(), cb);
+    foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
+        pw->unload();
+        BCoreApplication::removePlugin(pw);
+    }
+    BCoreApplication::loadPlugins(QStringList() << "board-factory");
+    foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
+        BoardFactoryPluginInterface *i = qobject_cast<BoardFactoryPluginInterface *>(pw->instance());
+        if (!i)
+            continue;
+        foreach (AbstractBoard *b, i->createBoards()) {
+            if (!b)
+                continue;
+            QString nm = b->name();
+            if (nm.isEmpty()) {
+                delete b;
+                continue;
+            }
+            if (boards.contains(nm))
+                delete boards.take(nm);
+            boards.insert(nm, b);
+        }
+    }
+    foreach (const QString &boardName, boards.keys()) {
+        BSettingsNode *nn = new BSettingsNode(boardName, n);
+        BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "captcha_enabled", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Determines if captcha is enabled on this board.\n"
+                                                    "The default is true."));
+        nnn = new BSettingsNode(QVariant::Bool, "supported_captcha_engines", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Identifiers of captcha engines supported on "
+                                                    "this board.\n"
+                                                    "Identifers must be separated by commas.\n"
+                                                    "Example: google-recaptcha,codecha\n"
+                                                    "By default all captcha engines are supported."));
+        nnn = new BSettingsNode(QVariant::UInt, "threads_per_page", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Number of threads per one page on this board.\n"
+                                                    "The default is 20."));
+        nnn = new BSettingsNode(QVariant::Bool, "posting_enabled", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Determines if posting is enabled on this board.\n"
+                                                    "The default is true."));
+        nnn = new BSettingsNode(QVariant::Bool, "drafts_enabled", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Determines if drafts are enabled on this board.\n"
+                                                    "The default is true."));
+        nnn = new BSettingsNode(QVariant::UInt, "bump_limit", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum bump count on this board.\n"
+                                                    "When a thread has reached it's bump limit, "
+                                                    "it will not be raised anymore.\n"
+                                                    "The default is 500."));
+        nnn = new BSettingsNode(QVariant::UInt, "post_limit", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum post count per thread on this board.\n"
+                                                    "The default is 1000."));
+        nnn = new BSettingsNode(QVariant::UInt, "thread_limit", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum thread count for this board.\n"
+                                                    "When the limit is reached, the most old threads get deleted.\n"
+                                                    "The default is 200."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_last_posts", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum last posts displayed for each thread at "
+                                                    "this board.\nThe default is 3."));
+        nnn = new BSettingsNode(QVariant::Bool, "hidden", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if this board is hidden.\n"
+                                                    "A hidden board will not appear in navigation bars.\n"
+                                                    "The default is false."));
+        nnn = new BSettingsNode(QVariant::Bool, "enabled", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if this board is enabled.\n"
+                                                    "A disabled board will not be accessible by any means.\n"
+                                                    "The default is true."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_email_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the e-mail field for this board.\n"
+                                                    "The default is 150."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_name_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the name field for this board.\n"
+                                                    "The default is 50."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_subject_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the subject field for this board.\n"
+                                                    "The default is 150."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_text_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the text field for this board.\n"
+                                                    "The default is 15000."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_password_length", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum length of the password field for this board.\n"
+                                                    "The default is 150."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_file_size", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum attached file size (in bytes) for this board.\n"
+                                                    "The default is 10485760 (10 MB)."));
+        nnn = new BSettingsNode(QVariant::UInt, "max_file_count", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard",
+                                                    "Maximum attached file count for this board.\n"
+                                                    "The default is 1."));
+        nnn = new BSettingsNode(QVariant::UInt, "archive_limit", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum archived thread count for this board.\n"
+                                                    "The default is 0 (do not archive)."));
+        nnn = new BSettingsNode(QVariant::UInt, "captcha_quota", nn);
+        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum count of extra posts a user may make "
+                                                    "before solving captcha again on this board.\n"
+                                                    "The default is 0 (solve captcha every time)."));
+        nnn = new BSettingsNode(QVariant::String, "supported_file_types", nn);
+        BTranslation t = BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on "
+                                                 "this board.\n"
+                                                 "Must be separated by commas. Wildcard matching is used.\n"
+                                                 "The default is %1.");
+        t.setArgument(defaultFileTypes);
+        nnn->setDescription(t);
+    }
+    if (!boardsInitialized)
+        qAddPostRoutine(&cleanupBoards);
+    boardsInitialized = true;
 }
 
 void AbstractBoard::restoreCaptchaQuota(const QByteArray &data)
 {
     QVariantMap m = BeQt::deserialize(data).toMap();
-    QMutexLocker locker(&boardsMutex);
+    QReadLocker locker(&boardsLock);
     foreach (const QString &boardName, m.keys()) {
         AbstractBoard *board = boards.value(boardName);
         if (!board)
@@ -261,10 +453,29 @@ void AbstractBoard::restoreCaptchaQuota(const QByteArray &data)
     }
 }
 
+void AbstractBoard::restorePostingSpeed(const QByteArray &data)
+{
+    QVariantMap m = BeQt::deserialize(data).toMap();
+    QReadLocker locker(&boardsLock);
+    foreach (const QString &boardName, m.keys()) {
+        AbstractBoard *board = boards.value(boardName);
+        if (!board)
+            continue;
+        QVariantMap mm = m.value(boardName).toMap();
+        QMutexLocker lockerSpeed(&board->speedMutex);
+        board->postCount = mm.value("post_count").toLongLong();
+        board->uptime = mm.value("uptime").toLongLong();
+        if (board->postCount < 0)
+            board->postCount = 0;
+        if (board->uptime < 0)
+            board->uptime = 0;
+    }
+}
+
 QByteArray AbstractBoard::saveCaptchaQuota()
 {
     QVariantMap m;
-    QMutexLocker locker(&boardsMutex);
+    QReadLocker locker(&boardsLock);
     foreach (AbstractBoard *board, boards.values()) {
         QVariantMap mm;
         QMutexLocker lockerQuota(&board->captchaQuotaMutex);
@@ -273,6 +484,41 @@ QByteArray AbstractBoard::saveCaptchaQuota()
         m.insert(board->name(), mm);
     }
     return BeQt::serialize(m);
+}
+
+QByteArray AbstractBoard::savePostingSpeed()
+{
+    QVariantMap m;
+    QReadLocker locker(&boardsLock);
+    foreach (AbstractBoard *board, boards.values()) {
+        QVariantMap mm;
+        QMutexLocker lockerSpeed(&board->speedMutex);
+        mm.insert("post_count", board->postCount);
+        mm.insert("uptime", board->uptime + board->uptimeTimer.elapsed());
+        m.insert(board->name(), mm);
+    }
+    return BeQt::serialize(m);
+}
+
+void AbstractBoard::addFile(cppcms::application &app)
+{
+    cppcms::http::request &req = app.request();
+    QString logTarget = name();
+    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
+        return Tools::log(app, "add_file", "fail:ban", logTarget);
+    Tools::PostParameters params = Tools::postParameters(req);
+    Tools::FileList files = Tools::postFiles(req);
+    QString err;
+    if (!Controller::testAddFileParamsAjax(this, app, params, files, &err))
+        return Tools::log(app, "add_file", "fail:" + err, logTarget);
+    QString desc;
+    if (!Database::addFile(req, params, files, &err, &desc)) {
+        Controller::renderErrorAjax(app, err, desc);
+        Tools::log(app, "add_file", "fail:" + err, logTarget);
+        return;
+    }
+    app.response().out() << "{}";
+    Tools::log(app, "add_file", "success", logTarget);
 }
 
 unsigned int AbstractBoard::archiveLimit() const
@@ -356,18 +602,18 @@ void AbstractBoard::createPost(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    if (!Controller::testBan(app, Controller::WriteAction, name()))
+    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_post", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
     QString err;
-    if (!Controller::testParams(this, app, params, files, true, &err))
+    if (!Controller::testParamsAjax(this, app, params, files, true, &err))
         return Tools::log(app, "create_post", "fail:" + err, logTarget);
     TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
-        Controller::renderError(app, err,
-                                tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
+        Controller::renderErrorAjax(app, err,
+                                    tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
@@ -379,11 +625,13 @@ void AbstractBoard::createPost(cppcms::application &app)
     p.description = &desc;
     quint64 postNumber = 0L;
     if (!Database::createPost(p, &postNumber)) {
-        Controller::renderError(app, err, desc);
+        Controller::renderErrorAjax(app, err, desc);
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
-    Controller::renderSuccessfulPost(app, postNumber, p.referencedPosts);
+    QMutexLocker locker(&speedMutex);
+    ++postCount;
+    Controller::renderSuccessfulPostAjax(app, postNumber);
     Tools::log(app, "create_post", "success", logTarget);
 }
 
@@ -391,18 +639,18 @@ void AbstractBoard::createThread(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    if (!Controller::testBan(app, Controller::WriteAction, name()))
+    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_thread", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
     QString err;
-    if (!Controller::testParams(this, app, params, files, false, &err))
+    if (!Controller::testParamsAjax(this, app, params, files, false, &err))
         return Tools::log(app, "create_thread", "fail:" + err, logTarget);
     TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
-        Controller::renderError(app, err,
-                                tq.translate("AbstractBoard", "Posting is disabled for this board", "description"));
+        Controller::renderErrorAjax(app, err,
+                                    tq.translate("AbstractBoard", "Posting is disabled for this board", "description"));
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
@@ -414,11 +662,13 @@ void AbstractBoard::createThread(cppcms::application &app)
     p.description = &desc;
     quint64 threadNumber = Database::createThread(p);
     if (!threadNumber) {
-        Controller::renderError(app, err, desc);
+        Controller::renderErrorAjax(app, err, desc);
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
-    Controller::renderSuccessfulThread(app, threadNumber);
+    QMutexLocker locker(&speedMutex);
+    ++postCount;
+    Controller::renderSuccessfulThreadAjax(app, threadNumber);
     Tools::log(app, "create_thread", "success", logTarget);
 }
 
@@ -526,7 +776,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
-    Controller::initBaseBoard(c, app.request(), this, postingEn, title(ts.locale()));
+    if (!Controller::initBaseBoard(c, app.request(), this, postingEn, title(ts.locale()))) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "board", "fail:" + err, logTarget);
+        return;
+    }
     c.boardRulesLinkText = ts.translate("AbstractBoard", "Borad rules", "boardRulesLinkText");
     c.currentPage = page;
     c.omittedPostsText = ts.translate("AbstractBoard", "Posts omitted:", "omittedPostsText");
@@ -656,7 +911,12 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         Tools::log(app, "thread", "fail:" + err, logTarget);
         return;
     }
-    Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber);
+    if (!Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber)) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "board", "fail:" + err, logTarget);
+        return;
+    }
     c.autoUpdateEnabled = !Tools::cookieValue(app.request(), "auto_update").compare("true", Qt::CaseInsensitive);
     c.autoUpdateText = ts.translate("AbstractBoard", "Auto update", "autoUpdateText");
     c.backText = ts.translate("AbstractBoard", "Back", "backText");
@@ -671,34 +931,12 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     Tools::log(app, "thread", "success", logTarget);
 }
 
-bool AbstractBoard::isCaptchaValid(const cppcms::http::request &req, const Tools::PostParameters &params,
-                                   QString &error) const
+bool AbstractBoard::isCaptchaEngineSupported(const QString &id) const
 {
-    QString captcha = params.value("g-recaptcha-response");
-    TranslatorQt tq(req);
-    if (captcha.isEmpty())
-        return bRet(&error, tq.translate("AbstractBoard", "Captcha is empty", "error"), false);
-    try {
-        curlpp::Cleanup curlppCleanup;
-        Q_UNUSED(curlppCleanup)
-        QString url = "https://www.google.com/recaptcha/api/siteverify?secret=%1&response=%2&remoteip=%3";
-        url = url.arg(SettingsLocker()->value("Site/captcha_private_key").toString()).arg(captcha);
-        url = url.arg(Tools::userIp(req));
-        curlpp::Easy request;
-        request.setOpt(curlpp::options::Url(Tools::toStd(url)));
-        std::ostringstream os;
-        os << request;
-        QString result = Tools::fromStd(os.str());
-        result.remove(QRegExp(".*\"success\":\\s*\"?"));
-        result.remove(QRegExp("\"?\\,?\\s+.+"));
-        if (result.compare("true", Qt::CaseInsensitive))
-            return bRet(&error, tq.translate("AbstractBoard", "Captcha is incorrect", "error"), false);
-        return true;
-    } catch (curlpp::RuntimeError &e) {
-        return bRet(&error, Tools::fromStd(e.what()), false);
-    } catch(curlpp::LogicError &e) {
-        return bRet(&error, Tools::fromStd(e.what()), false);
-    }
+    if (id.isEmpty())
+        return false;
+    QStringList ids = supportedCaptchaEngines().split(',');
+    return ids.contains(id, Qt::CaseInsensitive);
 }
 
 bool AbstractBoard::isEnabled() const
@@ -737,6 +975,15 @@ bool AbstractBoard::postingEnabled() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/posting_enabled", s->value("Board/posting_enabled", true)).toBool();
+}
+
+AbstractBoard::PostingSpeed AbstractBoard::postingSpeed() const
+{
+    PostingSpeed s;
+    QMutexLocker locker(&speedMutex);
+    s.postCount = postCount;
+    s.uptimeMsecs = uptimeTimer.elapsed() + uptime;
+    return s;
 }
 
 unsigned int AbstractBoard::postLimit() const
@@ -830,11 +1077,40 @@ bool AbstractBoard::showWhois() const
     return false;
 }
 
+QString AbstractBoard::supportedCaptchaEngines() const
+{
+    SettingsLocker s;
+    return s->value("Board/" + name() + "/supported_captcha_engines",
+                    s->value("Board/supported_captcha_engines",
+                             AbstractCaptchaEngine::engineIds().join(","))).toString();
+}
+
 QString AbstractBoard::supportedFileTypes() const
 {
     SettingsLocker s;
     return s->value("Board/" + name() + "/supported_file_types",
                     s->value("Board/supported_file_types", defaultFileTypes)).toString();
+}
+
+bool AbstractBoard::testAddFileParams(const Tools::PostParameters &params, const Tools::FileList &files,
+                                      const QLocale &l, QString *error) const
+{
+    TranslatorQt tq(l);
+    QStringList fileHashes = params.value("fileHashes").split(',', QString::SkipEmptyParts);
+    int fileCount = files.size() + fileHashes.size();
+    int maxFileSize = Tools::maxInfo(Tools::MaxFileSize, name());
+    int maxFileCount = int(Tools::maxInfo(Tools::MaxFileCount, name()));
+    if (maxFileCount && (fileCount > maxFileCount)) {
+        return bRet(error, tq.translate("AbstractBoard", "Too many files", "error"), false);
+    } else {
+        foreach (const Tools::File &f, files) {
+            if (f.data.size() > maxFileSize)
+                return bRet(error, tq.translate("AbstractBoard", "File is too big", "error"), false);
+            if (!isFileTypeSupported(f.data))
+                return bRet(error, tq.translate("AbstractBoard", "File type is not supported", "error"), false);
+        }
+    }
+    return bRet(error, QString(), true);
 }
 
 bool AbstractBoard::testParams(const Tools::PostParameters &params, const Tools::FileList &files, bool post,
@@ -861,7 +1137,7 @@ bool AbstractBoard::testParams(const Tools::PostParameters &params, const Tools:
     }
     if (params.value("text").isEmpty() && !fileCount)
         return bRet(error, tq.translate("AbstractBoard", "Both file and comment are missing", "error"), false);
-    if (maxFileCount && (fileCount > maxFileCount)) {
+    if (fileCount > maxFileCount) {
         return bRet(error, tq.translate("AbstractBoard", "Too many files", "error"), false);
     } else {
         foreach (const Tools::File &f, files) {
@@ -927,7 +1203,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
                 f.thumbSizeY = fis->thumbHeight();
-                if (f.sizeX >= 0 && f.sizeY >= 0)
+                if (f.sizeX >=0 && f.sizeY > 0)
                     sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);
@@ -1124,169 +1400,8 @@ Content::Thread *AbstractBoard::createThreadController(const cppcms::http::reque
 
 void AbstractBoard::cleanupBoards()
 {
-    QMutexLocker locker(&boardsMutex);
+    QWriteLocker locker(&boardsLock);
     foreach (AbstractBoard *b, boards)
         delete b;
     boards.clear();
-}
-
-void AbstractBoard::initBoards(bool reinit)
-{
-    QMutexLocker locker(&boardsMutex);
-    if (boardsInitialized && !reinit)
-        return;
-    if (reinit) {
-        QSet<QString> boardNames = QSet<QString>::fromList(boards.keys());
-        BSettingsNode *n = BTerminal::rootSettingsNode()->find("Board");
-        foreach (BSettingsNode *nn, n->childNodes()) {
-            if (!boardNames.contains(nn->key()))
-                continue;
-            n->removeChild(nn);
-            delete nn;
-        }
-        foreach (AbstractBoard *b, boards.values())
-            delete b;
-        boards.clear();
-    }
-    ConfigurableBoard *cb = new ConfigurableBoard("a", BTranslation::translate("AbstractBoard", "/a/nime", "title"),
-        BTranslation::translate("AbstractBoard", "Kamina", "defaultUserName"));
-    boards.insert(cb->name(), cb);
-    cb = new ConfigurableBoard("b", BTranslation::translate("AbstractBoard", "/b/rotherhood", "title"));
-    boards.insert(cb->name(), cb);
-    AbstractBoard *b = new cgBoard;
-    boards.insert(b->name(), b);
-    b = new echoBoard;
-    boards.insert(b->name(), b);
-    cb = new ConfigurableBoard("h", BTranslation::translate("AbstractBoard", "/h/entai", "title"));
-    boards.insert(cb->name(), cb);
-    cb = new ConfigurableBoard("int", BTranslation::translate("AbstractBoard", "/int/ernational", "title"),
-                               BTranslation::translate("AbstractBoard", "Vladimir Putin", "defaultUserName"));
-    cb->setShowWhois(true);
-    boards.insert(cb->name(), cb);
-    b = new mlpBoard;
-    boards.insert(b->name(), b);
-    b = new prBoard;
-    boards.insert(b->name(), b);
-    cb = new ConfigurableBoard("rf", BTranslation::translate("AbstractBoard", "Refuge", "title"),
-                               BTranslation::translate("AbstractBoard", "Whiner", "defaultUserName"));
-    boards.insert(cb->name(), cb);
-    cb = new ConfigurableBoard("soc", BTranslation::translate("AbstractBoard", "Social life", "title"),
-                               BTranslation::translate("AbstractBoard", "Life of the party", "defaultUserName"));
-    boards.insert(cb->name(), cb);
-    cb = new ConfigurableBoard("3dpd", BTranslation::translate("AbstractBoard", "3D pron", "title"));
-    boards.insert(cb->name(), cb);
-    cb = new ConfigurableBoard("vg", BTranslation::translate("AbstractBoard", "Video games", "title"),
-                               BTranslation::translate("AbstractBoard", "PC Nobleman", "defaultUserName"));
-    boards.insert(cb->name(), cb);
-    b = new rpgBoard;
-    boards.insert(b->name(), b);
-    foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
-        pw->unload();
-        BCoreApplication::removePlugin(pw);
-    }
-    BCoreApplication::loadPlugins(QStringList() << "board-factory");
-    foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
-        BoardFactoryPluginInterface *i = qobject_cast<BoardFactoryPluginInterface *>(pw->instance());
-        if (!i)
-            continue;
-        foreach (AbstractBoard *b, i->createBoards()) {
-            if (!b)
-                continue;
-            QString nm = b->name();
-            if (nm.isEmpty()) {
-                delete b;
-                continue;
-            }
-            if (boards.contains(nm))
-                delete boards.take(nm);
-            boards.insert(nm, b);
-        }
-    }
-    BSettingsNode *n = BTerminal::rootSettingsNode()->find("Board");
-    foreach (const QString &boardName, boards.keys()) {
-        BSettingsNode *nn = new BSettingsNode(boardName, n);
-        BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "captcha_enabled", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Determines if captcha is enabled on this board.\n"
-                                                    "The default is true."));
-        nnn = new BSettingsNode(QVariant::UInt, "threads_per_page", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Number of threads per one page on this board.\n"
-                                                    "The default is 20."));
-        nnn = new BSettingsNode(QVariant::Bool, "posting_enabled", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Determines if posting is enabled on this board.\n"
-                                                    "The default is true."));
-        nnn = new BSettingsNode(QVariant::Bool, "drafts_enabled", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Determines if drafts are enabled on this board.\n"
-                                                    "The default is true."));
-        nnn = new BSettingsNode(QVariant::UInt, "bump_limit", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum bump count on this board.\n"
-                                                    "When a thread has reached it's bump limit, "
-                                                    "it will not be raised anymore.\n"
-                                                    "The default is 500."));
-        nnn = new BSettingsNode(QVariant::UInt, "post_limit", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum post count per thread on this board.\n"
-                                                    "The default is 1000."));
-        nnn = new BSettingsNode(QVariant::UInt, "thread_limit", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum thread count for this board.\n"
-                                                    "When the limit is reached, the most old threads get deleted.\n"
-                                                    "The default is 200."));
-        nnn = new BSettingsNode(QVariant::UInt, "max_last_posts", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum last posts displayed for each thread at "
-                                                    "this board.\nThe default is 3."));
-        nnn = new BSettingsNode(QVariant::Bool, "hidden", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if this board is hidden.\n"
-                                                    "A hidden board will not appear in navigation bars.\n"
-                                                    "The default is false."));
-        nnn = new BSettingsNode(QVariant::Bool, "enabled", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Determines if this board is enabled.\n"
-                                                    "A disabled board will not be accessible by any means.\n"
-                                                    "The default is true."));
-        nnn = new BSettingsNode(QVariant::UInt, "max_email_length", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Maximum length of the e-mail field for this board.\n"
-                                                    "The default is 150."));
-        nnn = new BSettingsNode(QVariant::UInt, "max_name_length", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Maximum length of the name field for this board.\n"
-                                                    "The default is 50."));
-        nnn = new BSettingsNode(QVariant::UInt, "max_subject_length", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Maximum length of the subject field for this board.\n"
-                                                    "The default is 150."));
-        nnn = new BSettingsNode(QVariant::UInt, "max_text_length", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Maximum length of the text field for this board.\n"
-                                                    "The default is 15000."));
-        nnn = new BSettingsNode(QVariant::UInt, "max_password_length", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Maximum length of the password field for this board.\n"
-                                                    "The default is 150."));
-        nnn = new BSettingsNode(QVariant::UInt, "max_file_size", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Maximum attached file size (in bytes) for this board.\n"
-                                                    "The default is 10485760 (10 MB)."));
-        nnn = new BSettingsNode(QVariant::UInt, "max_file_count", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard",
-                                                    "Maximum attached file count for this board.\n"
-                                                    "The default is 1."));
-        nnn = new BSettingsNode(QVariant::UInt, "archive_limit", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum archived thread count for this board.\n"
-                                                    "The default is 0 (do not archive)."));
-        nnn = new BSettingsNode(QVariant::UInt, "captcha_quota", nn);
-        nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum count of extra posts a user may make "
-                                                    "before solving captcha again on this board.\n"
-                                                    "The default is 0 (solve captcha every time)."));
-        nnn = new BSettingsNode(QVariant::String, "supported_file_types", nn);
-        BTranslation t = BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on "
-                                                 "this board.\n"
-                                                 "Must be separated by commas. Wildcard matching is used.\n"
-                                                 "The default is %1.");
-        t.setArgument(defaultFileTypes);
-        nnn->setDescription(t);
-    }
-    if (!reinit)
-        qAddPostRoutine(&cleanupBoards);
-    boardsInitialized = true;
 }

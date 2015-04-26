@@ -12,6 +12,7 @@
 #include <BCoreApplication>
 #include <BDirTools>
 #include <BLogger>
+#include <BTextTools>
 
 #include <QByteArray>
 #include <QBuffer>
@@ -209,10 +210,18 @@ QString cityName(const QString &ip)
     unsigned int n = ipNum(ip);
     if (!n)
         return "";
+    static QMap<unsigned int, QString> map;
+    QString code = map.value(n);
+    if (!code.isEmpty())
+        return ("-" != code) ? code : "";
     foreach (const IpRange &r, names.keys()) {
-        if (n >= r.start && n <= r.end)
-            return names.value(r);
+        if (n >= r.start && n <= r.end) {
+            QString name = names.value(r);
+            map.insert(n, name);
+            return name;
+        }
     }
+    map.insert(n, "-");
     return "";
 }
 
@@ -251,10 +260,18 @@ QString countryCode(const QString &ip)
     unsigned int n = ipNum(ip);
     if (!n)
         return "";
+    static QMap<unsigned int, QString> map;
+    QString code = map.value(n);
+    if (!code.isEmpty())
+        return ("-" != code) ? code : "";
     foreach (const IpRange &r, codes.keys()) {
-        if (n >= r.start && n <= r.end)
-            return codes.value(r);
+        if (n >= r.start && n <= r.end) {
+            QString code = codes.value(r);
+            map.insert(n, code);
+            return code;
+        }
     }
+    map.insert(n, "-");
     return "";
 }
 
@@ -285,6 +302,26 @@ QString countryName(const QString &countryCode)
     if (countryCode.length() != 2)
         return "";
     return names.value(countryCode);
+}
+
+QString customHomePageContent(const QLocale &l)
+{
+    QString *s = Cache::customHomePageContent(l);
+    if (!s) {
+        QString path = BDirTools::findResource("homepage", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return QString();
+        QString fn = BDirTools::localeBasedFileName(path + "/content.html", l);
+        if (fn.isEmpty())
+            return QString();
+        s = new QString(BDirTools::readTextFile(fn, "UTF-8"));
+        if (!Cache::cacheCustomHomePageContent(l, s)) {
+            QString ss = *s;
+            delete s;
+            return ss;
+        }
+    }
+    return *s;
 }
 
 QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
@@ -489,6 +526,14 @@ void log(const cppcms::http::request &req, const QString &action, const QString 
     bLog("[" + ip + "] [" + action + "] [" + state + "]" + (!target.isEmpty() ? (" " + target) : QString()));
 }
 
+void log(const char *where, const std::exception &e)
+{
+    QString s = "[" + QString::fromLatin1(where) + "] [" + QString::fromLatin1(typeid(e).name()) + "]"
+            + Tools::fromStd(e.what());
+    qDebug() << s;
+    bLog(s);
+}
+
 unsigned int maxInfo(MaxInfo m, const QString &boardName)
 {
     typedef QMap< MaxInfo, QPair<QString, uint> > MaxMap;
@@ -624,6 +669,38 @@ QStringList rules(const QString &prefix, const QLocale &l)
         }
     }
     return *sl;
+}
+
+FriendList siteFriends()
+{
+    FriendList *list = Cache::friendList();
+    if (!list) {
+        QString path = BDirTools::findResource("res/friends.txt", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return FriendList();
+        QStringList sl = BDirTools::readTextFile(path, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+        list = new FriendList;
+        foreach (const QString &s, sl) {
+            bool ok = false;
+            QStringList sll = BTextTools::splitCommand(s, &ok);
+            if (!ok || sll.size() < 2 || sll.size() > 3)
+                continue;
+            Friend f;
+            f.url = sll.first();
+            f.name = sll.at(1);
+            if (sll.size() > 2)
+                f.title = sll.last();
+            if (f.url.isEmpty() || f.name.isEmpty())
+                continue;
+            *list << f;
+        }
+        if (!Cache::cacheFriendList(list)) {
+            FriendList llist = *list;
+            delete list;
+            return llist;
+        }
+    }
+    return *list;
 }
 
 QString storagePath()

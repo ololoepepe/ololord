@@ -57,7 +57,15 @@ struct File
     QString mimeType;
 };
 
+struct Friend
+{
+    QString name;
+    QString title;
+    QString url;
+};
+
 typedef QList<File> FileList;
+typedef QList<Friend> FriendList;
 
 struct OLOLORD_EXPORT IpRange
 {
@@ -121,6 +129,7 @@ OLOLORD_EXPORT QString cookieValue(const cppcms::http::request &req, const QStri
 OLOLORD_EXPORT QString countryCode(const QString &ip);
 OLOLORD_EXPORT QString countryCode(const cppcms::http::request &req);
 OLOLORD_EXPORT QString countryName(const QString &countryCode);
+OLOLORD_EXPORT QString customHomePageContent(const QLocale &l);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
 OLOLORD_EXPORT QString flagName(const QString &countryCode);
 OLOLORD_EXPORT QLocale fromStd(const std::locale &l);
@@ -143,6 +152,7 @@ OLOLORD_EXPORT void log(const cppcms::application &app, const QString &action, c
                         const QString &target =  QString());
 OLOLORD_EXPORT void log(const cppcms::http::request &req, const QString &action, const QString &state,
                         const QString &target =  QString());
+OLOLORD_EXPORT void log(const char *where, const std::exception &e);
 OLOLORD_EXPORT unsigned int maxInfo(MaxInfo m, const QString &boardName = QString());
 OLOLORD_EXPORT QString mimeType(const QByteArray &data, bool *ok = 0);
 OLOLORD_EXPORT QStringList news(const QLocale &l);
@@ -151,6 +161,7 @@ OLOLORD_EXPORT PostParameters postParameters(const cppcms::http::request &reques
 OLOLORD_EXPORT cppcms::json::value readJsonValue(const QString &fileName, bool *ok = 0);
 OLOLORD_EXPORT void resetLoggingSkipIps();
 OLOLORD_EXPORT QStringList rules(const QString &prefix, const QLocale &l);
+OLOLORD_EXPORT FriendList siteFriends();
 OLOLORD_EXPORT QString storagePath();
 OLOLORD_EXPORT QStringList supportedCodeLanguages();
 OLOLORD_EXPORT int timeZoneMinutesOffset(const cppcms::http::request &req);

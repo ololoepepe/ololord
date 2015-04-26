@@ -26,6 +26,7 @@ ActionRoute::ActionRoute(cppcms::application &app) :
 QStringList ActionRoute::availableActions()
 {
     init_once(QStringList, actions, QStringList()) {
+        actions << "add_file";
         actions << "create_post";
         actions << "create_thread";
     }
@@ -49,8 +50,8 @@ void ActionRoute::handle(std::string action)
         Tools::log(application, a, "fail:" + err, logTarget);
         return;
     }
-    AbstractBoard *board = AbstractBoard::board(boardName);
-    if (!board) {
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    if (board.isNull()) {
         err = tq.translate("ActionRoute", "Unknown board", "error");
         Controller::renderError(application, err,
                                 tq.translate("ActionRoute", "There is no such board", "description"));
@@ -61,6 +62,8 @@ void ActionRoute::handle(std::string action)
         board->createPost(application);
     } else if ("create_thread" == action) {
         board->createThread(application);
+    } else if ("add_file" == action) {
+        board->addFile(application);
     } else {
         err = tq.translate("ActionRoute", "Unknown action", "error");
         Controller::renderError(application, err,

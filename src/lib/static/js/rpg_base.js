@@ -43,10 +43,13 @@ lord.customEditFormSet = function(form, post) {
     variants.nextSibling.nextSibling.onclick = function() {
         createInp();
     };
-    if (!lord.nameOne("voteText", post))
-        return;
     var text = lord.nameOne("voteText", form);
     var multiple = lord.nameOne("multipleVoteVariants", form);
+    if (!lord.nameOne("voteText", post)) {
+        var toRemove = variants.parentNode.parentNode;
+        toRemove.parentNode.removeChild(toRemove);
+        return;
+    }
     text.value = lord.nameOne("voteText", post).innerHTML;
     var vv = lord.nameOne("voteVariants", post);
     multiple.checked = ("true" == lord.queryOne("input[type='hidden']", vv).value);
@@ -61,6 +64,8 @@ lord.customEditFormSet = function(form, post) {
 
 lord.customEditFormGet = function(form, params) {
     var text = lord.nameOne("voteText", form);
+    if (!text)
+        return null;
     var multiple = lord.nameOne("multipleVoteVariants", form);
     var variants = lord.nameOne("voteVariants", form);
     var data = {};
@@ -74,11 +79,6 @@ lord.customEditFormGet = function(form, params) {
         data.variants.push(v);
     });
     return data;
-};
-
-lord.addVoteVariant = function(pos) {
-    parent.appendChild(div);
-    lord.id("voteVariantCount" + pos).value = (lastN + 1);
 };
 
 lord.createPostNodeCustom = function(post, res, permanent, boardName) {
@@ -105,7 +105,7 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
                 inp.name = "voteGroup";
                 inp.value = v.id;
             }
-            if (disabled || voted)
+            if (!!res["ownPost"] || disabled || voted)
                 inp.disabled = "true";
             inp.checked = !!v.selected;
             div.appendChild(inp);
@@ -118,18 +118,6 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
         });
         var btnVote = lord.nameOne("buttonVote", tr);
         var btnUnvote = lord.nameOne("buttonUnvote", tr);
-        if (disabled) {
-            btnVote.disabled = "true";
-            btnUnvote.disabled = "true";
-        } else {
-            if (voted) {
-                btnUnvote.onclick = lord.unvote.bind(lord, +res["number"]);
-                btnVote.disabled = "true";
-            } else {
-                btnVote.onclick = lord.vote.bind(lord, +res["number"]);
-                btnUnvote.disabled = "true";
-            }
-        }
         var btnClose = lord.nameOne("buttonSetVoteClosed", tr);
         var btnOpen = lord.nameOne("buttonSetVoteOpened", tr);
         if (!!res["ownPost"]) {
@@ -140,7 +128,21 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
                 btnClose.onclick = lord.setVoteOpened.bind(lord, res["number"], false);
                 btnOpen.parentNode.removeChild(btnOpen);
             }
+            btnVote.parentNode.removeChild(btnVote);
+            btnUnvote.parentNode.removeChild(btnUnvote);
         } else {
+            if (disabled) {
+                btnVote.disabled = "true";
+                btnUnvote.disabled = "true";
+            } else {
+                if (voted) {
+                    btnUnvote.onclick = lord.unvote.bind(lord, +res["number"]);
+                    btnVote.disabled = "true";
+                } else {
+                    btnVote.onclick = lord.vote.bind(lord, +res["number"]);
+                    btnUnvote.disabled = "true";
+                }
+            }
             btnClose.parentNode.removeChild(btnClose);
             btnOpen.parentNode.removeChild(btnOpen);
         }
@@ -150,18 +152,20 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
 };
 
 lord.customResetForm = function(form) {
-    var pos = form.id.replace("postForm", "");
-    var parent = lord.id("voteVariants" + pos);
+    var parent = lord.nameOne("voteVariants", form);
+    if (!parent)
+        return;
     lord.arr(parent.children).forEach(function(el) {
         parent.removeChild(el);
     });
-    lord.id("voteVariantCount" + pos).value = 0;
-    var text = lord.id("voteText" + pos);
+    lord.nameOne("voteVariantCount", form).value = 0;
+    var text = lord.nameOne("voteText", form);
     text.parentNode.replaceChild(text.cloneNode(false), text);
 };
 
-lord.addVoteVariant = function(pos) {
-    var parent = lord.id("voteVariants" + pos);
+lord.addVoteVariant = function() {
+    var form = lord.id("postForm");
+    var parent = lord.nameOne("voteVariants", form);
     var variants = lord.query("div > input", parent);
     var lastN = (variants && variants.length) ? +lord.last(variants).name.replace("voteVariant", "") : 0;
     var div = lord.node("div");
@@ -178,7 +182,7 @@ lord.addVoteVariant = function(pos) {
     a.appendChild(img);
     div.appendChild(a);
     parent.appendChild(div);
-    lord.id("voteVariantCount" + pos).value = (lastN + 1);
+    lord.nameOne("voteVariantCount", form).value = (lastN + 1);
 };
 
 lord.removeVoteVariant = function(div) {

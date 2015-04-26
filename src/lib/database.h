@@ -3,6 +3,13 @@
 
 class Post;
 
+namespace Search
+{
+
+class Query;
+
+}
+
 namespace Tools
 {
 
@@ -254,21 +261,8 @@ public:
     explicit EditPostParameters(const cppcms::http::request &req, const QString &board, quint64 post);
 };
 
-struct OLOLORD_EXPORT FindPostsParameters
-{
-    const QLocale &locale;
-public:
-    QStringList possiblePhrases;
-    QStringList requiredPhrases;
-    QStringList excludedPhrases;
-    QStringList boardNames;
-    bool *ok;
-    QString *error;
-    QString *description;
-public:
-    explicit FindPostsParameters(const QLocale &l = BCoreApplication::locale());
-};
-
+OLOLORD_EXPORT bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &params,
+                            const QList<Tools::File> &files, QString *error = 0, QString *description = 0);
 OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int level = 1,
                             const QString &reason = QString(), const QDateTime &expires = QDateTime(),
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
@@ -291,11 +285,15 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  co
 OLOLORD_EXPORT bool editPost(EditPostParameters &p);
 OLOLORD_EXPORT bool fileExists(const QByteArray &hash, bool *ok = 0);
 OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);
-OLOLORD_EXPORT QList<Post> findPosts(FindPostsParameters &p);
+OLOLORD_EXPORT QList<Post> findPosts(const Search::Query &query, const QString &boardName = QString(), bool *ok = 0,
+                                     QString *error = 0, QString *description = 0,
+                                     const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
                                        quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
                             bool *ok = 0, QString *error = 0);
+OLOLORD_EXPORT QList<Post> getThreadOpPosts(const cppcms::http::request &req, const QString &boardName, bool *ok = 0,
+                                            QString *error = 0);
 OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *error = 0,
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp,
@@ -315,6 +313,7 @@ OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass);
 OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level = RegisteredUser::UserLevel,
                                  const QStringList &boards = QStringList("*"), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT int reloadPostIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT int rerenderPosts(const QStringList boardNames = QStringList(), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, QString *error = 0,

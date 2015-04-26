@@ -29,9 +29,7 @@
         <% end %>
         <% foreach p in thread.lastPosts %>
             <% item %>
-                <div>
-                    <% include post(p, thread.self()) %>
-                </div>
+                <% include post(p, thread.self()) %>
             <% end %>
         <% end %>
         </div>
@@ -84,12 +82,11 @@
         <% include baseHead(1) %>
         <% include boardHead() %>
     </head>
-    <body onload="javascript:lord.initializeOnLoadBaseBoard();">
+    <body>
         <% include baseTexts() %>
         <% include boardTexts() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>
-        <iframe id="kostyleeque" name="kostyleeque" style="display: none;" onload="lord.postedOnBoard();"></iframe>
         <a id="top"></a>
         <% include settings() %>
         <br />
@@ -98,8 +95,8 @@
         <% include searchAction() %>
         <% if ( !content.bannerFileName.empty() ) %>
             <br />
+            <% include banner() %>
         <% end %>
-        <% include banner() %>
         <div class="theTitle">
             <h1>
                 <%= currentBoard.title %>
@@ -107,23 +104,29 @@
                          title="<%= boardRulesLinkText %>">?</a>]</sup>
             </h1>
         </div>
-        <% if ( !content.postingEnabled ) %>
+        <% if ( content.postingEnabled ) %>
+            <hr />
+            <% include createAction("Top") %>
+        <% else %>
             <div class="postingDisabledMessage">
                 <h2><%= postingDisabledText %></h2>
             </div>
-        <% else %>
-            <hr />
         <% end %>
-        <% include createAction("Top") %>
         <% include threads() %>
         <% if ( content.postingEnabled ) %>
             <hr />
+            <% include createAction("Bottom") %>
         <% end %>
-        <% include createAction("Bottom") %>
         <hr />
         <% include pages() %>
         <hr />
         <% include navbar() %>
+        <% if ( content.postingEnabled ) %>
+            <hr />
+            <div class="navbar">
+                <span class="navbarItem">[<%= postingSpeedText %> <%= postingSpeed %>]</span>
+            </div>
+        <% end %>
         <a id="bottom"></a>
     </body>
 </html>

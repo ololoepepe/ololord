@@ -7,18 +7,18 @@
 <% skin my_skin %>
 <% view rpg_board uses Content::rpgBoard extends board %>
 
-<% template customPostFormField4(std::string position) %>
+<% template customPostFormField4() %>
 <tr>
     <td class="postformLabel">
         <b><%= postFormLabelVote %></b>
     </td>
     <td class="postformField">
-        <div><%= voteTextText %> <input id="voteText<%= position %>" type="text" name="voteText" size="36" /></div>
+        <div><%= voteTextText %> <input type="text" name="voteText" size="36" /></div>
         <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
-        <div id="voteVariants<%= position %>"></div>
-        <a href="javascript:lord.addVoteVariant('<%= position %>');">
+        <div name="voteVariants"></div>
+        <a href="javascript:lord.addVoteVariant();">
             <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
-        <input id="voteVariantCount<%= position %>" type="hidden" name="voteVariantCount" value="0" />
+        <input type="hidden" name="voteVariantCount" value="0" />
     </td>
 </tr>
 <% end template %>
@@ -73,7 +73,7 @@
             <% c++     } else { %>
             <% c++         out() << "<input type=\"radio\" name=\"voteGroup\" value=\"" << id << "\" "; %>
             <% c++     } %>
-            <% c++     if (disabled || voted) out() << "disabled=\"true\" "; %>
+            <% c++     if (post.ownPost || disabled || voted) out() << "disabled=\"true\" "; %>
             <% c++     foreach (const QVariant &v, mm.value("users").toList()) { %>
             <% c++         if (v.toUInt() == content.userIp) { out() << "checked=\"true\" "; break; } %>
             <% c++     } %>
@@ -81,16 +81,6 @@
             <% c++     out() << voteCount << ")</span><br>"; %>
             <% c++ } %>
         </div>
-        <% if ( !disabled && !voted ) %>
-            <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
-        <% else %>
-            <button name="buttonVote" disabled="true"><%= voteActionText %></button>
-        <% end %>
-        <% if ( !disabled && voted ) %>
-            <button name="buttonUnvote" onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
-        <% else %>
-            <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
-        <% end %>
         <% if ( post.ownPost ) %>
             <% if ( !disabled ) %>
                 <button name="buttonSetVoteClosed"
@@ -98,6 +88,17 @@
             <% else %>
                 <button name="buttonSetVoteOpened"
                         onclick="lord.setVoteOpened(<%= post.number %>, true);"><%= openVoteActionText %></button>
+            <% end %>
+        <% else %>
+            <% if ( !disabled && !voted ) %>
+                <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
+            <% else %>
+                <button name="buttonVote" disabled="true"><%= voteActionText %></button>
+            <% end %>
+            <% if ( !disabled && voted ) %>
+                <button name="buttonUnvote" onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
+            <% else %>
+                <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
             <% end %>
         <% end %>
     </td>

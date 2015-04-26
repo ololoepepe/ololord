@@ -103,31 +103,6 @@ lord.selectPost = function(post) {
     window.location.href = window.location.href.split("#").shift() + "#" + post;
 };
 
-lord.insertPostNumberInternal = function(postNumber, position) {
-    var field = lord.id("postFormInputText" + position);
-    var value = ">>" + postNumber + "\n";
-    if (document.selection) {
-        field.focus();
-        var sel = document.selection.createRange();
-        sel.text = value;
-    } else if (field.selectionStart || field.selectionStart == "0") {
-        var startPos = field.selectionStart;
-        var endPos = field.selectionEnd;
-        field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
-    } else {
-        field.value += value;
-    }
-    return field;
-};
-
-lord.insertPostNumber = function(postNumber) {
-    var field = lord.insertPostNumberInternal(postNumber, "Top");
-    if (!field.offsetParent)
-        field = lord.insertPostNumberInternal(postNumber, "Bottom");
-    if (field.offsetParent)
-        field.focus();
-};
-
 lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback) {
     if (!boardName || isNaN(+threadNumber))
         return;
@@ -151,6 +126,8 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
         for (var i = 0; i < res.length; ++i) {
             var post = lord.createPostNode(res[i], true);
             if (!post)
+                continue;
+            if (lord.id(post.id))
                 continue;
             document.body.insertBefore(post, before);
         }
@@ -184,37 +161,6 @@ lord.setAutoUpdateEnabled = function(cbox) {
     });
 };
 
-lord.postedInThread = function() {
-    if (!lord.formSubmitted)
-        return;
-    var iframe = lord.id("kostyleeque");
-    var iframeDocument = iframe.contentDocument || iframe.contentWindow.document;
-    var postNumber = lord.queryOne("#postNumber", iframeDocument);
-    var referencedPosts = lord.name("referencedPost", iframeDocument);
-    lord.nameOne("submit", lord.formSubmitted).disabled = false;
-    if (!!postNumber) {
-        lord.formSubmitted.reset();
-        var divs = lord.query(".postformFile", lord.formSubmitted);
-        for (var i = divs.length - 1; i >= 0; --i)
-            lord.removeFile(lord.queryOne("a", divs[i]));
-        if (lord.customResetForm)
-            lord.customResetForm(lord.formSubmitted);
-        lord.formSubmitted = null;
-        var boardName = lord.text("currentBoardName");
-        var threadNumber = lord.text("currentThreadNumber");
-        lord.updateThread(boardName, threadNumber, true, function() {
-            lord.selectPost(postNumber.value);
-        });
-        lord.resetCaptcha();
-    } else {
-        lord.formSubmitted = null;
-        var errmsg = lord.queryOne("#errorMessage", iframeDocument);
-        var errdesc = lord.queryOne("#errorDescription", iframeDocument);
-        lord.showPopup(errmsg.innerHTML + ": " + errdesc.innerHTML, {type: "critical"});
-        lord.resetCaptcha();
-    }
-};
-
 lord.downloadThread = function() {
     if (lord.isDownloading)
         return;
@@ -245,6 +191,7 @@ lord.downloadThread = function() {
     lord.toCenter(progress, progress.offsetWidth, progress.offsetHeight);
     lord.toCenter(cButton, cButton.offsetWidth, cButton.offsetHeight);
     var zip = new JSZip();
+    var last = 0;
     var append = function(i) {
         if (i >= as.length) {
             var content = zip.generate({
@@ -265,6 +212,7 @@ lord.downloadThread = function() {
             return;
         }
         var a = as[i];
+        last = i;
         JSZipUtils.getBinaryContent(a.href, function (err, data) {
             if (!err) {
                 zip.file(a.href.split("/").pop(), data, {
@@ -272,10 +220,12 @@ lord.downloadThread = function() {
                 });
             }
             progress.value = +progress.value + 1;
-            append(i + 1);
+            append(++last);
         });
     };
-    append(0);
+    append(last);
+    if (as.length > 1)
+        append(++last);
 };
 
 lord.initializeOnLoadThread = function() {
@@ -301,3 +251,8 @@ lord.initializeOnLoadThread = function() {
         lord.selectPost(post);
     }
 };
+
+window.addEventListener("load", function load() {
+    window.removeEventListener("load", load, false);
+    lord.initializeOnLoadThread();
+}, false);
