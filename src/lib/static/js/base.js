@@ -14,6 +14,7 @@ lord.Billion = 2 * 1000 * 1000 * 1000;
 /*Variables*/
 
 lord.popups = [];
+lord.unloading = false;
 
 /*Functions*/
 
@@ -343,4 +344,9 @@ lord.initializeOnLoadSettings = function() {
 window.addEventListener("load", function load() {
     window.removeEventListener("load", load, false);
     lord.initializeOnLoadSettings();
+}, false);
+
+window.addEventListener("beforeunload", function unload() {
+    window.removeEventListener("beforeunload", unload, false);
+    lord.unloading = true;
 }, false);

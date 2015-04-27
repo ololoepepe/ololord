@@ -198,7 +198,8 @@ lord.ajaxRequest = function(method, params, id, callback) {
                     return lord.showPopup(err, {type: "critical"});
                 callback(response.result);
             } else {
-                lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+                if (!lord.unloading)
+                    lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
             }
         }
     };
