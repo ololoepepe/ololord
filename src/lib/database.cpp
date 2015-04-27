@@ -1599,7 +1599,7 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
             if (!t)
                 return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
             QString qs = "id IN (";
-            static const int Offset = 1000;
+            static const int Offset = 100;
             foreach (quint64 id, postIds.keys().mid(count, Offset))
                 qs += QString::number(id) + ", ";
             qs.remove(qs.length() - 2, 2);
