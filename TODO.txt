@@ -1,6 +1,7 @@
 [done] Fix posting speed displaying
 [done] Improve URL markup
 [done] Fix quick reply from board
+[done] Add ability to select quick reply action
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

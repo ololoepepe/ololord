@@ -321,6 +321,11 @@ lord.showSettings = function() {
         lord.setCookie("captchaEngine", tm, {
             "expires": lord.Billion, "path": "/"
         });
+        sel = lord.nameOne("quickReplyActionSelect", div);
+        var act = sel.options[sel.selectedIndex].value;
+        lord.setCookie("quickReplyAction", act, {
+            "expires": lord.Billion, "path": "/"
+        });
         lord.reloadPage();
     });
 };

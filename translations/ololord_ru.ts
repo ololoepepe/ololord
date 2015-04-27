@@ -1702,6 +1702,26 @@ Your choice:</source>
         <comment>toMarkupPageText</comment>
         <translation>Разметка</translation>
     </message>
+    <message>
+        <source>Appends a new post</source>
+        <comment>quickReplyActionAppendPostText</comment>
+        <translation>Добавляет новый пост</translation>
+    </message>
+    <message>
+        <source>Leaves page unmodified</source>
+        <comment>quickReplyActionDoNothingText</comment>
+        <translation>Оставляет страницу не измененной</translation>
+    </message>
+    <message>
+        <source>Redirects to thread</source>
+        <comment>quickReplyActionGotoThreadText</comment>
+        <translation>Перенаправляет в тред</translation>
+    </message>
+    <message>
+        <source>Quick reply outside thread:</source>
+        <comment>quickReplyActionLabelText</comment>
+        <translation>Быстрый ответ вне треда:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

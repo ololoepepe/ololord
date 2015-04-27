@@ -45,6 +45,7 @@ public:
     std::string confirmButtonText;
     CaptchaEngine currentCaptchaEngine;
     Locale currentLocale;
+    std::string currentQuickReplyAction;
     std::string currentTime;
     std::string custom;
     std::string localeLabelText;
@@ -57,6 +58,10 @@ public:
     std::string loginPlaceholderText;
     unsigned int maxSearchQueryLength;
     std::string pageTitle;
+    std::string quickReplyActionAppendPostText;
+    std::string quickReplyActionDoNothingText;
+    std::string quickReplyActionGotoThreadText;
+    std::string quickReplyActionLabelText;
     std::string searchButtonText;
     std::string searchInputPlaceholder;
     std::string settingsButtonText;

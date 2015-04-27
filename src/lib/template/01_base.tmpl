@@ -142,6 +142,28 @@
                 </td>
             </tr>
             <tr>
+                <td>
+                    <%= quickReplyActionLabelText %>
+                </td>
+                <td>
+                    <select name="quickReplyActionSelect" class="select">
+                        <% if ( content.currentQuickReplyAction == "do_nothing" ) %>
+                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                            <option value="do_nothing" selected="true"><%= quickReplyActionDoNothingText %></option>
+                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
+                        <% elif ( content.currentQuickReplyAction == "append_post" ) %>
+                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                            <option value="append_post" selected="true"><%= quickReplyActionAppendPostText %></option>
+                        <% else %>
+                            <option value="goto_thread" selected="true"><%= quickReplyActionGotoThreadText %></option>
+                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+            <tr>
                 <td colspan="2">
                     <sup><font color="red">*</font></sup> <%= captchaLabelWarningText %>
                 </td>

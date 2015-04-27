@@ -120,7 +120,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.cancelButtonText = ts.translate("initBase", "Cancel", "cancelButtonText");
     c.confirmButtonText = ts.translate("initBase", "Confirm", "confirmButtonText");
     c.currentLocale = toWithLocale(ts.locale());
-    c.currentTime = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time").value();
+    cppcms::http::request *mreq = const_cast<cppcms::http::request *>(&req);
+    c.currentTime = mreq->cookie_by_name("time").value();
+    c.currentQuickReplyAction = mreq->cookie_by_name("quickReplyAction").value();
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.loggedIn = !Tools::hashpassString(req).isEmpty();
@@ -144,6 +146,13 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.loginPlaceholderText = ts.translate("initBase", "Password/hashpass", "PlaceholderText");
     c.maxSearchQueryLength = 150;
     c.pageTitle = Tools::toStd(pageTitle);
+    c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
+                                                    "quickReplyActionAppendPostText");
+    c.quickReplyActionDoNothingText = ts.translate("initBase", "Leaves page unmodified",
+                                                   "quickReplyActionDoNothingText");
+    c.quickReplyActionGotoThreadText = ts.translate("initBase", "Redirects to thread",
+                                                    "quickReplyActionGotoThreadText");
+    c.quickReplyActionLabelText = ts.translate("initBase", "Quick reply outside thread:", "quickReplyActionLabelText");
     SettingsLocker s;
     c.searchButtonText = ts.translate("initBase", "Search", "searchButtonText");
     c.searchInputPlaceholder = ts.translate("initBase", "Search: possible +required -excluded",
