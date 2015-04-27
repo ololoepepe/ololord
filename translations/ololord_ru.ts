@@ -1336,6 +1336,29 @@ text</source>
     </message>
 </context>
 <context>
+    <name>handleCache</name>
+    <message>
+        <source>Invalid argument count</source>
+        <translation>Неверное количество аргументов</translation>
+    </message>
+    <message>
+        <source>This operation is REALLY heavy and may consume A LOT OF MEMORY. Are you sure?</source>
+        <translation>Эта операция ПО-НАСТОЯЩЕМУ тяжелая и может использовать ОЧЕНЬ МНОГО ПАМЯТИ. Вы уверены?</translation>
+    </message>
+    <message>
+        <source>No such cache</source>
+        <translation>Нет такого кеша</translation>
+    </message>
+    <message>
+        <source>Caching dynamic files</source>
+        <translation>Кеширование динамических файлов</translation>
+    </message>
+    <message>
+        <source>Caching static files</source>
+        <translation>Кеширование статических файлов</translation>
+    </message>
+</context>
+<context>
     <name>handleClearCache</name>
     <message>
         <source>Invalid argument count</source>
@@ -2198,6 +2221,16 @@ If one or more board names are specified, rerenders only posts on those boards.<
     <message>
         <source>Reload all captcha engines: builtin and provided by plugins.</source>
         <translation>Перезагрузить все движки капчи: встроенные и предоставленные плагинами.</translation>
+    </message>
+    <message>
+        <source>Cache all dynamic/static files.
+[cache-name] may be one of the following: 
+dynamic_files, static_files.
+If no argument is passed, everything is cached.</source>
+        <translation>Кеширует все динамические/статические файлы.
+[cache-name] может быть одним из следующих:
+dynamic_files, static_files.
+Если не указан аргумент, кешируется все.</translation>
     </message>
 </context>
 <context>
