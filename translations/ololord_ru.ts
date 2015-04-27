@@ -1516,16 +1516,16 @@ Your choice:</source>
 <context>
     <name>handleRerenderPosts</name>
     <message>
-        <source>Are you sure?</source>
-        <translation>Вы уверены?</translation>
-    </message>
-    <message>
         <source>Error:</source>
         <translation>Ошибка:</translation>
     </message>
     <message>
         <source>Rerendered posts:</source>
         <translation>Заново отрендерено постов:</translation>
+    </message>
+    <message>
+        <source>This operation is REALLY heavey and may take a long time. Are you sure?</source>
+        <translation>Эта операция ПО-НАСТОЯЩЕМУ тяжелая и может занять много времени. Вы уверены?</translation>
     </message>
 </context>
 <context>

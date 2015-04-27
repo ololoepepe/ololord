@@ -638,6 +638,8 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
         foreach (Post p, referenced) {
             if (thread && p.thread().load()->id() == thread->id())
                 continue;
+            if (p.rawHtml())
+                continue;
             p.setText(postIds.value(p.id()).text);
             Cache::removePost(p.board(), p.number());
             t->update(p);
@@ -1607,6 +1609,8 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                 Post &post = posts[i];
                 if (!post.draft() && !removeFromReferencedPosts(post.id(), error))
                     return -1;
+                if (post.rawHtml())
+                    continue;
                 const PostTmpInfo &tmp = postIds.value(post.id());
                 post.setText(tmp.text);
                 QSharedPointer<Post> sp(new Post(post));

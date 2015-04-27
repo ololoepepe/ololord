@@ -440,7 +440,8 @@ bool handleReloadPostIndex(const QString &, const QStringList &)
 
 bool handleRerenderPosts(const QString &, const QStringList &args)
 {
-    QString s = bReadLine(translate("handleRerenderPosts", "Are you sure?") + " [yN] ");
+    QString s = bReadLine(translate("handleRerenderPosts", "This operation is REALLY heavey and may take a long time. "
+                                    "Are you sure?") + " [yN] ");
     if (s.compare("y", Qt::CaseInsensitive))
         return true;
     QStringList boardNames = args;
