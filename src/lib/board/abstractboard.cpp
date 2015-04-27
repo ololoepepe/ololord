@@ -917,7 +917,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
-    c.autoUpdateEnabled = !Tools::cookieValue(app.request(), "auto_update").compare("true", Qt::CaseInsensitive);
+    QString au = "auto_update" + QString::number(threadNumber);
+    c.autoUpdateEnabled = !Tools::cookieValue(app.request(), au).compare("true", Qt::CaseInsensitive);
     c.autoUpdateText = ts.translate("AbstractBoard", "Auto update", "autoUpdateText");
     c.backText = ts.translate("AbstractBoard", "Back", "backText");
     c.bumpLimit = bumpLimit();

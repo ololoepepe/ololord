@@ -4,6 +4,11 @@ var lord = lord || {};
 
 /*Constants*/
 
+lord.Second = 1000;
+lord.Minute = 60 * lord.Second;
+lord.Hour = 60 * lord.Minute;
+lord.Day = 24 * lord.Hour;
+lord.Year = 365 * lord.Day;
 lord.Billion = 2 * 1000 * 1000 * 1000;
 
 /*Variables*/

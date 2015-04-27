@@ -156,8 +156,8 @@ lord.setAutoUpdateEnabled = function(cbox) {
             lord.autoUpdateTimer = null;
         }
     }
-    lord.setCookie("auto_update", enabled, {
-        "expires": lord.Billion
+    lord.setCookie("auto_update" + lord.text("currentThreadNumber"), enabled, {
+        "expires": lord.Year
     });
 };
 
@@ -232,7 +232,7 @@ lord.initializeOnLoadThread = function() {
     lord.initializeOnLoadBaseBoard();
     lord.addVisibilityChangeListener(lord.visibilityChangeListener);
     lord.addAnchorChangeListener(lord.anchorChangeListener);
-    if (lord.getCookie("auto_update") === "true") {
+    if (lord.getCookie("auto_update" + lord.text("currentThreadNumber")) === "true") {
         var cbox = lord.id("autoUpdate_top");
         cbox.checked = true;
         lord.setAutoUpdateEnabled(cbox);
