@@ -290,7 +290,10 @@ static bool handleCache(const QString &, const QStringList &args)
             bWriteLine(translate("handleCache", "Caching static files"));
         foreach (QString fn, files) {
             QString p = fn;
-            p.remove(path1 + "/static/").remove(path2 + "/static/");
+            if (!path1.isEmpty())
+                p.remove(path1 + "/static/");
+            if (!path2.isEmpty())
+                p.remove(path2 + "/static/");
             bWriteLine(QString::number(curr) + "/" + QString::number(files.size()) + ": " + p);
             ++curr;
             bool ok = false;

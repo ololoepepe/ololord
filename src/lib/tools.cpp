@@ -758,7 +758,8 @@ int timeZoneMinutesOffset(const cppcms::http::request &req)
             timezones.insert(QStringList(sll.mid(0, sll.size() - 1)).join(" "), offset);
         }
     }
-    return timezones.value(cityName(req), -1000);
+    return SettingsLocker()->value("Board/guess_city_name", true).toBool() ? timezones.value(cityName(req), -1000) :
+                                                                             -1000;
 }
 
 QByteArray toHashpass(const QString &s, bool *ok)
