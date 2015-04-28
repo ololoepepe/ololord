@@ -48,6 +48,7 @@
 #include <QMutexLocker>
 #include <QReadLocker>
 #include <QReadWriteLock>
+#include <QRegExp>
 #include <QScopedPointer>
 #include <QSet>
 #include <QSettings>
@@ -969,7 +970,7 @@ bool AbstractBoard::isHidden() const
 
 QStringList AbstractBoard::postformRules(const QLocale &l) const
 {
-    return Tools::rules("rules/postform", l) + Tools::rules("rules/postform/" + name(), l);
+    return rulesImplementation(l, "postform");
 }
 
 bool AbstractBoard::postingEnabled() const
@@ -995,7 +996,7 @@ unsigned int AbstractBoard::postLimit() const
 
 QStringList AbstractBoard::rules(const QLocale &l) const
 {
-    return Tools::rules("rules/board", l) + Tools::rules("rules/board/" + name(), l);
+    return rulesImplementation(l, "board");
 }
 
 bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
@@ -1405,4 +1406,26 @@ void AbstractBoard::cleanupBoards()
     foreach (AbstractBoard *b, boards)
         delete b;
     boards.clear();
+}
+
+QStringList AbstractBoard::rulesImplementation(const QLocale &l, const QString &type) const
+{
+    if (type.isEmpty())
+        return QStringList();
+    QStringList common = Tools::rules("rules/" + type, l);
+    QStringList specific = Tools::rules("rules/" + type + "/" + name(), l);
+    if (specific.isEmpty())
+        return common;
+    foreach (int i, bRangeR(specific.size() - 1, 0)) {
+        const QString &s = specific.at(i);
+        QRegExp rx("#include\\s+\\d+");
+        if ("#include all" == s) {
+            specific = specific.mid(0, i) + common + specific.mid(i + 1);
+        } else if (rx.exactMatch(s)) {
+            int n = rx.cap().remove(QRegExp("#include\\d+")).toInt();
+            if (n >= 0 && n < common.size())
+                specific.replace(i, common.at(n));
+        }
+    }
+    return specific;
 }

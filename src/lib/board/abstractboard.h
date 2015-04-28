@@ -204,6 +204,8 @@ protected:
 private:
     static void cleanupBoards();
 private:
+    QStringList rulesImplementation(const QLocale &l, const QString &type) const;
+private:
     friend class LockingWrapper;
 };
 

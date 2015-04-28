@@ -5,6 +5,7 @@
 [done] Catch thread exceptions
 [done] Fix auto thread update system
 [done] Add ability to cache posts and dynamic/static files manually
+[done] Improve rules system
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
