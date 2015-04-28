@@ -626,6 +626,6 @@ a.progressBlocking {
 /* Settings dialog */
 
 .settingsDialog {
-    width: 400px;
-    height: 200px;
+    /*width: 400px;
+    height: 200px;*/
 }
