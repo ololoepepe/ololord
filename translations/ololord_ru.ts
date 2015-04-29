@@ -371,11 +371,6 @@ By default all captcha engines are supported.</source>
 Пример: google-recaptcha,codecha
 По умолчанию поддерживаются все движки капчи.</translation>
     </message>
-    <message>
-        <source>Board /d/iscussion</source>
-        <comment>title</comment>
-        <translation>/d/искуссии о борде</translation>
-    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -990,6 +985,24 @@ text</source>
         <source>Internal logic error</source>
         <comment>description</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+</context>
+<context>
+    <name>dBoard</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Board /d/iscussion</source>
+        <comment>board title</comment>
+        <translation>/d/искуссии о борде</translation>
     </message>
 </context>
 <context>

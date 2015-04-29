@@ -2,6 +2,7 @@
 
 #include "board/cgboard.h"
 #include "board/configurableboard.h"
+#include "board/dboard.h"
 #include "board/echoboard.h"
 #include "board/mlpboard.h"
 #include "board/prboard.h"
@@ -315,8 +316,8 @@ void AbstractBoard::reloadBoards()
     boards.insert(cb->name(), cb);
     b = new rpgBoard;
     boards.insert(b->name(), b);
-    cb = new ConfigurableBoard("d", BTranslation::translate("AbstractBoard", "Board /d/iscussion", "title"));
-    boards.insert(cb->name(), cb);
+    b = new dBoard;
+    boards.insert(b->name(), b);
     foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
         pw->unload();
         BCoreApplication::removePlugin(pw);
