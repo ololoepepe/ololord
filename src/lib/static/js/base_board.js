@@ -17,6 +17,7 @@ lord.postForm = {
     "last": "",
     "quickReply": false
 };
+lord.complainVideo = null;
 
 /*Functions*/
 
@@ -1409,6 +1410,16 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
 
 lord.complain = function() {
     lord.showPopup(lord.text("complainMessage"), {type: "critical"});
+    if (!lord.complainVideo) {
+        lord.complainVideo = lord.node("video");
+        var src = lord.node("source");
+        src.src = "/" + lord.text("sitePathPrefix") + "video/fail.webm";
+        src.type = "video/webm";
+        lord.complainVideo.appendChild(src);
+        lord.complainVideo.volume = 0.5;
+        document.body.appendChild(lord.complainVideo);
+    }
+    lord.complainVideo.play();
 };
 
 lord.submitted = function(form) {

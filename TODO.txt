@@ -7,6 +7,7 @@
 [done] Add ability to cache posts and dynamic/static files manually
 [done] Improve rules system
 [done] Show user agent at /d/
+[done] Improve complain button surprize
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
