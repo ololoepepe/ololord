@@ -8,7 +8,7 @@
 [done] Improve rules system
 [done] Show user agent at /d/
 [done] Improve complain button surprize
-* Improve file server
+[done] Implement partial GET request support
 * Implement playlist for audio files
 * Implement YouTube video embedding
 * Implement favorite threads system
