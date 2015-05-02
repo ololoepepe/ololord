@@ -229,7 +229,6 @@ lord.downloadThread = function() {
 };
 
 lord.initializeOnLoadThread = function() {
-    lord.initializeOnLoadBaseBoard();
     lord.addVisibilityChangeListener(lord.visibilityChangeListener);
     lord.addAnchorChangeListener(lord.anchorChangeListener);
     if (lord.getCookie("auto_update" + lord.text("currentThreadNumber")) === "true") {

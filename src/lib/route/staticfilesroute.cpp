@@ -29,8 +29,8 @@ void StaticFilesRoute::handle(std::string p)
     QString logAction = QString(StaticFilesMode == mode ? "static" : "dynamic") + "_file";
     QString logTarget = path;
     Tools::log(application, logAction, "begin", logTarget);
-    typedef QByteArray *(*GetCacheFunction)(const QString &path);
-    typedef bool (*SetCacheFunction)(const QString &path, QByteArray *data);
+    typedef Tools::StaticFile *(*GetCacheFunction)(const QString &path);
+    typedef bool (*SetCacheFunction)(const QString &path, Tools::StaticFile *file);
     QString err;
     if (!Controller::testRequest(application, Controller::GetRequest, &err))
         return Tools::log(application, logAction, "fail:" + err, logTarget);
@@ -41,10 +41,9 @@ void StaticFilesRoute::handle(std::string p)
     }
     GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
     SetCacheFunction setCache = (StaticFilesMode == mode) ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
-    QByteArray *data = getCache(path);
-    if (data) {
-        application.response().content_type("");
-        application.response().out().write(data->data(), data->size());
+    Tools::StaticFile *file = getCache(path);
+    if (file) {
+        write(file->data, file->mimeType);
         Tools::log(application, logAction, "success:cache", logTarget);
         return;
     }
@@ -57,22 +56,22 @@ void StaticFilesRoute::handle(std::string p)
             Tools::log(application, logAction, "fail:not_found", logTarget);
             return;
         }
-        application.response().content_type("");
-        application.response().out().write(ba.data(), ba.size());
+        write(ba, Tools::toStd(Tools::mimeType(ba)));
         Tools::log(application, logAction, "success:in_memory", logTarget);
         return;
     }
     bool ok = false;
-    data = new QByteArray(BDirTools::readFile(fn, -1, &ok));
+    file = new Tools::StaticFile;
+    file->data = BDirTools::readFile(fn, -1, &ok);
+    file->mimeType = Tools::toStd(Tools::mimeType(file->data));
     if (!ok) {
         Controller::renderNotFound(application);
         Tools::log(application, logAction, "fail:not_found", logTarget);
         return;
     }
-    application.response().content_type("");
-    application.response().out().write(data->data(), data->size());
-    if (!setCache(path, data))
-        delete data;
+    write(file->data, file->mimeType);
+    if (!setCache(path, file))
+        delete file;
     Tools::log(application, logAction, "success", logTarget);
 }
 
@@ -105,4 +104,14 @@ std::string StaticFilesRoute::regex() const
 std::string StaticFilesRoute::url() const
 {
     return (StaticFilesMode == mode) ? "/{1}" : "/{1}/{2}";
+}
+
+void StaticFilesRoute::write(const QByteArray &data, const std::string &contentType)
+{
+    application.response().content_length(data.size());
+    if ("text/plain" == contentType)
+        application.response().content_type("");
+    else
+        application.response().content_type(contentType);
+    application.response().out().write(data.data(), data.size());
 }

@@ -1552,7 +1552,6 @@ lord.globalOnmouseout = function(e) {
 };
 
 lord.initializeOnLoadBaseBoard = function() {
-    lord.initializeOnLoadSettings();
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;

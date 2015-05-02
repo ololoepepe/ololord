@@ -64,6 +64,12 @@ struct Friend
     QString url;
 };
 
+struct StaticFile
+{
+    QByteArray data;
+    std::string mimeType;
+};
+
 typedef QList<File> FileList;
 typedef QList<Friend> FriendList;
 

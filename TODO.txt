@@ -8,6 +8,10 @@
 [done] Improve rules system
 [done] Show user agent at /d/
 [done] Improve complain button surprize
+* Improve file server
+* Implement playlist for audio files
+* Implement YouTube video embedding
+* Implement favorite threads system
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

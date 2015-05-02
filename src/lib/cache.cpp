@@ -23,7 +23,7 @@ namespace Cache
 
 static QCache<QString, QString> customHomePageContents;
 static QMutex customHomePageContentsMutex(QMutex::Recursive);
-static QCache<QString, QByteArray> dynamicFiles;
+static QCache<QString, Tools::StaticFile> dynamicFiles;
 static QMutex dynamicFilesMutex(QMutex::Recursive);
 static QCache<QString, Tools::FriendList> theFriendList;
 static QMutex friendListMutex(QMutex::Recursive);
@@ -35,7 +35,7 @@ static QCache<QString, Content::Post> thePosts;
 static QMutex postsMutex(QMutex::Recursive);
 static QCache<QString, QStringList> theRules;
 static QMutex rulesMutex(QMutex::Recursive);
-static QCache<QString, QByteArray> staticFiles;
+static QCache<QString, Tools::StaticFile> staticFiles;
 static QMutex staticFilesMutex(QMutex::Recursive);
 static QCache<QString, BTranslator> translators;
 static QMutex translatorsMutex(QMutex::Recursive);
@@ -113,16 +113,17 @@ bool cacheCustomHomePageContent(const QLocale &l, QString *content)
     return true;
 }
 
-bool cacheDynamicFile(const QString &path, QByteArray *data)
+bool cacheDynamicFile(const QString &path, Tools::StaticFile *file)
 {
-    if (path.isEmpty() || !data)
+    if (path.isEmpty() || !file)
         return false;
     QMutexLocker locker(&dynamicFilesMutex);
     do_once(init)
         initCache(dynamicFiles, "dynamic_files", defaultDynamicFilesCacheSize);
-    if (dynamicFiles.maxCost() < data->size())
+    int sz = file->data.size() + file->mimeType.size();
+    if (dynamicFiles.maxCost() < sz)
         return false;
-    dynamicFiles.insert(path, data, data->size());
+    dynamicFiles.insert(path, file, sz);
     return true;
 }
 
@@ -201,16 +202,17 @@ bool cacheRules(const QString &prefix, const QLocale &locale, QStringList *rules
     return true;
 }
 
-bool cacheStaticFile(const QString &path, QByteArray *data)
+bool cacheStaticFile(const QString &path, Tools::StaticFile *file)
 {
-    if (path.isEmpty() || !data)
+    if (path.isEmpty() || !file)
         return false;
     QMutexLocker locker(&staticFilesMutex);
     do_once(init)
         initCache(staticFiles, "static_files", defaultStaticFilesCacheSize);
-    if (staticFiles.maxCost() < data->size())
+    int sz = file->data.size() + file->mimeType.size();
+    if (staticFiles.maxCost() < sz)
         return false;
-    staticFiles.insert(path, data, data->size());
+    staticFiles.insert(path, file, sz);
     return true;
 }
 
@@ -313,7 +315,7 @@ int defaultCacheSize(const QString &name)
     return map.value(name);
 }
 
-QByteArray *dynamicFile(const QString &path)
+Tools::StaticFile *dynamicFile(const QString &path)
 {
     if (path.isEmpty())
         return 0;
@@ -448,7 +450,7 @@ void setTranslatorsMaxCacheSize(int size)
     translators.setMaxCost(size);
 }
 
-QByteArray *staticFile(const QString &path)
+Tools::StaticFile *staticFile(const QString &path)
 {
     if (path.isEmpty())
         return 0;
