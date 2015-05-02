@@ -571,18 +571,22 @@ unsigned int maxInfo(MaxInfo m, const QString &boardName)
 
 QString mimeType(const QByteArray &data, bool *ok)
 {
-    if (data.isEmpty())
-        return bRet(ok, false, QString());
-    magic_t magicMimePredictor;
-    magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
-    if (!magicMimePredictor)
-        return bRet(ok, false, QString());
-    if (magic_load(magicMimePredictor, 0)) {
-        magic_close(magicMimePredictor);
+    try {
+        if (data.isEmpty())
+            return bRet(ok, false, QString());
+        magic_t magicMimePredictor;
+        magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
+        if (!magicMimePredictor)
+            return bRet(ok, false, QString());
+        if (magic_load(magicMimePredictor, 0)) {
+            magic_close(magicMimePredictor);
+            return bRet(ok, false, QString());
+        }
+        QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
+        return bRet(ok, !result.isEmpty(), result);
+    } catch (...) {
         return bRet(ok, false, QString());
     }
-    QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
-    return bRet(ok, !result.isEmpty(), result);
 }
 
 QStringList news(const QLocale &l)
