@@ -71,6 +71,9 @@ void ActionAjaxHandler::banUser(const cppcms::json::object &params)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_ban_user", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_ban_user", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -95,6 +98,9 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_delete_post", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_delete_post", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -119,6 +125,9 @@ void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, 
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_delete_file", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_delete_file", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -166,6 +175,9 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_edit_post", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_edit_post", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -187,6 +199,9 @@ void ActionAjaxHandler::getBoards()
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_boards", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_get_posts", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -212,6 +227,9 @@ void ActionAjaxHandler::getCaptchaQuota(std::string boardName)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_captcha_quota", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_get_captcha_quota", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -239,6 +257,9 @@ void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_file_existence", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_get_file_existence", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -277,6 +298,9 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_new_posts", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_get_new_posts", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -311,6 +335,9 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_post", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_get_post", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -346,6 +373,9 @@ void ActionAjaxHandler::getThreadOpPosts(std::string boardName)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_thread_op_posts", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_get_thread_op_posts", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -433,6 +463,9 @@ void ActionAjaxHandler::getYandexCaptchaImage(std::string type)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_get_yandex_captcha_image", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -486,6 +519,9 @@ void ActionAjaxHandler::setThreadFixed(std::string boardName, long long threadNu
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_set_thread_fixed", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_set_thread_fixed", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -510,6 +546,9 @@ void ActionAjaxHandler::setThreadOpened(std::string boardName, long long threadN
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_set_thread_opened", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_set_thread_opened", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -533,6 +572,9 @@ void ActionAjaxHandler::setVoteOpened(long long postNumber, bool opened)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_set_vote_opened", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_set_vote_opened", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -556,6 +598,9 @@ void ActionAjaxHandler::unvote(long long postNumber)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_unvote", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_unvote", "fail:UNKNOWN_ERROR_TYPE");
     }
 }
 
@@ -586,5 +631,8 @@ void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &vo
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_vote", "fail:" + err);
+    } catch (...) {
+        server.return_error("UNKNOWN_ERROR_TYPE");
+        Tools::log(server, "ajax_vote", "fail:UNKNOWN_ERROR_TYPE");
     }
 }

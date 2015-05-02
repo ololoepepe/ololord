@@ -546,6 +546,13 @@ void log(const char *where, const std::exception &e)
     bLog(s);
 }
 
+void log(const char *where)
+{
+    QString s = "[" + QString::fromLatin1(where) + "] [UNKNOWN_EXCEPTION_TYPE]";
+    qDebug() << s;
+    bLog(s);
+}
+
 unsigned int maxInfo(MaxInfo m, const QString &boardName)
 {
     typedef QMap< MaxInfo, QPair<QString, uint> > MaxMap;
