@@ -9,8 +9,8 @@
 [done] Show user agent at /d/
 [done] Improve complain button surprize
 [done] Implement partial GET request support
+[done] Implement YouTube video embedding
 * Implement playlist for audio files
-* Implement YouTube video embedding
 * Implement favorite threads system
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page

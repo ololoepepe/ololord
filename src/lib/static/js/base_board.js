@@ -552,6 +552,7 @@ lord.updatePost = function(boardName, postNumber, post) {
                 postHeader.appendChild(bumpLimit.cloneNode(true));
         }
         post.parentNode.replaceChild(newPost, post);
+        lord.postNodeInserted(newPost);
     });
 };
 
@@ -635,6 +636,76 @@ lord.globalOnclick = function(e) {
         t = t.parentNode;
     }
     lord.hideImage();
+};
+
+lord.addYoutubeButton = function(post) {
+    if (!post)
+        return;
+    var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
+        + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
+    lord.query(q, post).forEach(function(link) {
+        if (link.href.replace("/watch?v=", "") == link.href)
+            return;
+        var img = lord.node("img");
+        img.src = "https://youtube.com/favicon.ico";
+        imt.title = "YouTube";
+        link.parentNode.insertBefore(img, link);
+        var a = lord.node("a");
+        a.className = "expandCollapse";
+        a.lordExpanded = false;
+        (function (a, link) {
+            a.onclick = function() {
+                if (a.lordExpanded) {
+                    a.parentNode.removeChild(a.nextSibling);
+                    a.parentNode.removeChild(a.nextSibling);
+                    a.replaceChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"), a.childNodes[0]);
+                } else {
+                    var iframe = lord.node("iframe");
+                    var src = link.href.replace("http://", "//").replace("https://", "//");
+                    src = src.replace("youtube.com/watch?v=", "youtube.com/embed/");
+                    var options = src.split("&").slice(1);
+                    src = src.split("&").shift();
+                    src += "?autoplay=1";
+                    if (options.length)
+                        src += "&" + options.join("&");
+                    iframe.src = src;
+                    iframe.allowfullscreen = true;
+                    iframe.frameborder = "0px";
+                    iframe.height = "360";
+                    iframe.width = "640";
+                    iframe.display = "block";
+                    var parent = a.parentNode;
+                    var el = a.nextSibling;
+                    if (el) {
+                        parent.insertBefore(lord.node("br"), el);
+                        parent.insertBefore(iframe, el);
+                    }
+                    else {
+                        parent.appendChild(lord.node("br"));
+                        parent.appendChild(iframe);
+                    }
+                    a.replaceChild(lord.node("text", "[" + lord.text("collapseVideoText") + "]"), a.childNodes[0]);
+                }
+                a.lordExpanded = !a.lordExpanded;
+            };
+        })(a, link);
+        a.appendChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"));
+        var el = link.nextSibling;
+        var parent = link.parentNode;
+        if (el) {
+            parent.insertBefore(lord.node("text", " "), el);
+            parent.insertBefore(a, el);
+        } else {
+            parent.appendChild(lord.node("text", " "));
+            parent.appendChild(a);
+        }
+    });
+};
+
+lord.postNodeInserted = function(post) {
+    if (!post)
+        return;
+    lord.addYoutubeButton(post);
 };
 
 lord.showPasswordDialog = function(title, label, callback) {
@@ -1501,8 +1572,10 @@ lord.posted = function(response) {
                     parent = parent.nextSibling;
                 lord.ajaxRequest("get_post", [boardName, postNumber], 6, function(res) {
                     var newPost = lord.createPostNode(res, true);
-                    if (newPost)
+                    if (newPost) {
                         parent.appendChild(newPost, parent.lastChild);
+                        lord.postNodeInserted(newPost);
+                    }
                 });
             } else {
                 //The default
@@ -1555,6 +1628,9 @@ lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
+    lord.query(".post").forEach(function(post) {
+        lord.addYoutubeButton(post);
+    });
 };
 
 window.addEventListener("load", function load() {

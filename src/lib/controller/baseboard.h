@@ -105,6 +105,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string captchaWidgetHtml;
     std::string closedText;
     std::string closeThreadText;
+    std::string collapseVideoText;
     std::string complainMessage;
     std::string complainText;
     AbstractBoard::BoardInfo currentBoard;
@@ -117,6 +118,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string editPostText;
     std::string enterPasswordText;
     std::string enterPasswordTitle;
+    std::string expandVideoText;
     std::string findSourceWithGoogleText;
     std::string findSourceWithIqdbText;
     std::string fixedText;

@@ -130,6 +130,7 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
             if (lord.id(post.id))
                 continue;
             document.body.insertBefore(post, before);
+            lord.postNodeInserted(post);
         }
         if (!lord.blinkTimer && "hidden" == lord.pageVisible) {
             lord.blinkTimer = setInterval(lord.blinkFaviconNewMessage, 500);

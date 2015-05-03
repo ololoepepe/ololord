@@ -248,6 +248,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
     c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
+    c.collapseVideoText = ts.translate("initBaseBoard", "Collapse video", "collapseVideoText");
     c.complainText = ts.translate("initBaseBoard", "Complain", "complainText");
     c.complainMessage = ts.translate("initBaseBoard", "Go complain to your mum, you whiner!", "complainMessage");
     c.currentBoard.name = Tools::toStd(board->name());
@@ -263,6 +264,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");
     c.enterPasswordTitle = ts.translate("initBaseBoard", "Enter password", "enterPasswordTitle");
+    c.expandVideoText = ts.translate("initBaseBoard", "Expand video", "expandVideoText");
     c.findSourceWithGoogleText = ts.translate("initBaseBoard", "Find source with Google", "findSourceWithGoogleText");
     c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");

@@ -2106,6 +2106,16 @@ Your choice:</source>
         <comment>postingSpeed</comment>
         <translation>п./год.</translation>
     </message>
+    <message>
+        <source>Collapse video</source>
+        <comment>collapseVideoText</comment>
+        <translation>Свернуть видео</translation>
+    </message>
+    <message>
+        <source>Expand video</source>
+        <comment>expandVideoText</comment>
+        <translation>Развернуть видео</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
