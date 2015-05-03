@@ -663,8 +663,8 @@ lord.addYoutubeButton = function(post) {
                     var iframe = lord.node("iframe");
                     var src = link.href.replace("http://", "//").replace("https://", "//");
                     src = src.replace("youtube.com/watch?v=", "youtube.com/embed/");
-                    var options = src.split("&").slice(1);
-                    src = src.split("&").shift();
+                    var options = src.split(/&|#/).slice(1);
+                    src = src.split(/&|#/).shift();
                     src += "?autoplay=1";
                     if (options.length)
                         src += "&" + options.join("&");
