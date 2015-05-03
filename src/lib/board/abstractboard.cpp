@@ -179,6 +179,13 @@ void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
     fi.thumbWidth = width;
 }
 
+void AbstractBoard::FileTransaction::setMetaData(const QVariant &metaData)
+{
+    if (minfos.isEmpty())
+        return;
+    minfos.last().metaData = metaData;
+}
+
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QReadWriteLock AbstractBoard::boardsLock(QReadWriteLock::Recursive);
@@ -1044,6 +1051,18 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         ft.setMainFileSize(0, 0);
         ft.setThumbFile(mimeType);
         ft.setThumbFileSize(200, 200);
+        Tools::AudioTags tags = Tools::audioTags(sfn);
+        QVariantMap m;
+        if (!tags.album.isEmpty())
+            m.insert("album", tags.album);
+        if (!tags.artist.isEmpty())
+            m.insert("artist", tags.album);
+        if (!tags.title.isEmpty())
+            m.insert("title", tags.album);
+        if (!tags.year.isEmpty())
+            m.insert("year", tags.album);
+        if (!m.isEmpty())
+            ft.setMetaData(m);
     } else if (Tools::isVideoType(mimeType)) {
         QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
@@ -1206,8 +1225,26 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
                 f.thumbSizeY = fis->thumbHeight();
-                if (f.sizeX >=0 && f.sizeY > 0)
-                    sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
+                if (fis->mimeType().startsWith("image/") || fis->mimeType().startsWith("video/")) {
+                    if (f.sizeX > 0 && f.sizeY > 0)
+                        sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
+                } else if (fis->mimeType().startsWith("audio")) {
+                    /*QVariantMap m = fis->metaData().toMap();
+                    QString album = m.value("album").toString();
+                    QString artist = m.value("artist").toString();
+                    QString title = m.value("title").toString();
+                    QString year = m.value("year").toString();
+                    QString szz = artist;
+                    if (!artist.isEmpty() && !title.isEmpty())
+                        szz += " - ";
+                    szz += title;
+                    if (!szz.isEmpty() && !album.isEmpty())
+                        szz += " (" + album + ")";
+                    if (!szz.isEmpty() && !year.isEmpty())
+                        szz += " (" + year + ")";
+                    if (!szz.isEmpty())
+                        sz += " " + szz;*/
+                }
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);
                 p->files.push_back(f);

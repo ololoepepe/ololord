@@ -288,6 +288,7 @@ static bool copyFile(const QString &hashString, AbstractBoard::FileTransaction &
         ft.setMainFileSize(info.height(), info.width());
         ft.setThumbFile(pfn);
         ft.setThumbFileSize(info.thumbHeight(), info.thumbWidth());
+        ft.setMetaData(info.metaData());
         if (!QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn)) {
             return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
                         tq.translate("copyFileHash", "Internal file system error", "description"), false);
@@ -536,7 +537,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         t->persist(ps);
         foreach (const AbstractBoard::FileInfo &fi, p.fileTransaction.fileInfos()) {
             FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
-                              fi.thumbHeight, fi.thumbWidth, ps);
+                              fi.thumbHeight, fi.thumbWidth, fi.metaData, ps);
             t->persist(fileInfo);
         }
         if (!raw && !ps->draft() && !addToReferencedPosts(ps, refs, p.error, p.description))
@@ -753,7 +754,7 @@ bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &par
         }
         foreach (const AbstractBoard::FileInfo &fi, infos) {
             FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
-                              fi.thumbHeight, fi.thumbWidth, post.data);
+                              fi.thumbHeight, fi.thumbWidth, fi.metaData, post.data);
             t->persist(fileInfo);
         }
         t.commit();

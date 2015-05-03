@@ -31,6 +31,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QTextCodec>
 #include <QTime>
 #include <QVariant>
 
@@ -40,6 +41,8 @@
 #include <cppcms/json.h>
 
 #include <magic.h>
+
+#include <id3/tag.h>
 
 #include <cmath>
 #include <istream>
@@ -174,10 +177,38 @@ static QTime time(int msecs)
     return QTime(h, m, s, msecs % BeQt::Second);
 }
 
+static QString audioTag(const ID3_Tag &tag, ID3_FrameID id)
+{
+    ID3_Frame *frame = tag.Find(id);
+    if (!frame)
+        return "";
+    ID3_Field *text = frame->GetField(ID3FN_TEXT);
+    if (!text)
+        return "";
+    QByteArray ba(text->GetRawText());
+    QTextCodec *codec = BTextTools::guessTextCodec(ba);
+    if (!codec)
+        codec = QTextCodec::codecForName("UTF-8");
+    return codec->toUnicode(ba);
+}
+
 QStringList acceptedExternalBoards()
 {
     QString fn = BDirTools::findResource("res/echo.txt", BDirTools::UserOnly);
     return BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+}
+
+AudioTags audioTags(const QString &fileName)
+{
+    if (fileName.isEmpty())
+        return AudioTags();
+    ID3_Tag tag(toStd(fileName).data());
+    AudioTags a;
+    a.album = audioTag(tag, ID3FID_ALBUM);
+    a.artist = audioTag(tag, ID3FID_LEADARTIST);
+    a.title = audioTag(tag, ID3FID_TITLE);
+    a.year = audioTag(tag, ID3FID_YEAR);
+    return a;
 }
 
 bool captchaEnabled(const QString &boardName)

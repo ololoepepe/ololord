@@ -10,8 +10,10 @@
 [done] Improve complain button surprize
 [done] Implement partial GET request support
 [done] Implement YouTube video embedding
-* Implement playlist for audio files
+[done] Improve file information storing
 * Implement favorite threads system
+* Store audio metadata
+* Implement playlist for audio files
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

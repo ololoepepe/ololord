@@ -75,6 +75,7 @@ public:
         QString thumbName;
         int thumbHeight;
         int thumbWidth;
+        QVariant metaData;
     };
     class OLOLORD_EXPORT FileTransaction
     {
@@ -95,6 +96,7 @@ public:
         void setMainFileSize(int height, int width);
         void setThumbFile(const QString &fn);
         void setThumbFileSize(int height, int width);
+        void setMetaData(const QVariant &metaData);
     };
     class OLOLORD_EXPORT LockingWrapper
     {
