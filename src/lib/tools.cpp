@@ -546,13 +546,6 @@ void log(const char *where, const std::exception &e)
     bLog(s);
 }
 
-void log(const char *where)
-{
-    QString s = "[" + QString::fromLatin1(where) + "] [UNKNOWN_EXCEPTION_TYPE]";
-    qDebug() << s;
-    bLog(s);
-}
-
 unsigned int maxInfo(MaxInfo m, const QString &boardName)
 {
     typedef QMap< MaxInfo, QPair<QString, uint> > MaxMap;
@@ -578,24 +571,20 @@ unsigned int maxInfo(MaxInfo m, const QString &boardName)
 
 QString mimeType(const QByteArray &data, bool *ok)
 {
-    try {
-        if (data.isEmpty())
-            return bRet(ok, false, QString());
-        qDebug() << "MIME" << data.size();
-        BDirTools::writeFile("/home/darkangel/tmp/debug-mime", data);
-        magic_t magicMimePredictor;
-        magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
-        if (!magicMimePredictor)
-            return bRet(ok, false, QString());
-        if (magic_load(magicMimePredictor, 0)) {
-            magic_close(magicMimePredictor);
-            return bRet(ok, false, QString());
-        }
-        QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
-        return bRet(ok, !result.isEmpty(), result);
-    } catch (...) {
+    if (data.isEmpty())
+        return bRet(ok, false, QString());
+    qDebug() << "MIME" << data.size();
+    BDirTools::writeFile("/home/darkangel/tmp/debug-mime", data);
+    magic_t magicMimePredictor;
+    magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
+    if (!magicMimePredictor)
+        return bRet(ok, false, QString());
+    if (magic_load(magicMimePredictor, 0)) {
+        magic_close(magicMimePredictor);
         return bRet(ok, false, QString());
     }
+    QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
+    return bRet(ok, !result.isEmpty(), result);
 }
 
 QStringList news(const QLocale &l)

@@ -154,7 +154,6 @@ OLOLORD_EXPORT void log(const cppcms::application &app, const QString &action, c
 OLOLORD_EXPORT void log(const cppcms::http::request &req, const QString &action, const QString &state,
                         const QString &target =  QString());
 OLOLORD_EXPORT void log(const char *where, const std::exception &e);
-OLOLORD_EXPORT void log(const char *where);
 OLOLORD_EXPORT unsigned int maxInfo(MaxInfo m, const QString &boardName = QString());
 OLOLORD_EXPORT QString mimeType(const QByteArray &data, bool *ok = 0);
 OLOLORD_EXPORT QStringList news(const QLocale &l);

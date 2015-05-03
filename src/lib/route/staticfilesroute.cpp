@@ -137,22 +137,27 @@ void StaticFilesRoute::write(const QByteArray &data)
         }
     }
     QByteArray ba;
-    int l = 0;
-    if (list.size() > 1)
-        list.clear(); //TODO: Support more than one range
-    if (!list.isEmpty()) {
+    if (list.size() > 1) {
         r.status(206);
-        QString s = "bytes ";
+        static const QByteArray Boundary = "--------------------ololo----------epepe--------------------";
+        r.content_type(("multipart/byteranges; boundary=" + Boundary).constData());
         foreach (const Range &p, list) {
-            l += (p.second - p.first) + 1;
-            ba += data.mid(p.first, (p.second - p.first) + 1);
-            s += QString::number(p.first) + "-" + QString::number(p.second) + "/" + QString::number(data.size());
+            ba += Boundary + "\r\n";
+            ba += "Content-Range: bytes " + QString::number(p.first).toLatin1() + "-"
+                    + QString::number(p.second).toLatin1() + "/" + QString::number(data.size()).toLatin1()
+                    + "\r\n\r\n";
+            ba += data.mid(p.first, (p.second - p.first) + 1) + "\r\n" + Boundary + "\r\n";
         }
+    } else if (!list.isEmpty()) {
+        r.status(206);
+        const Range &p = list.first();
+        ba = data.mid(p.first, (p.second - p.first) + 1);
+        QString s = "bytes " + QString::number(p.first) + "-" + QString::number(p.second) + "/"
+                + QString::number(data.size());
         r.content_range(Tools::toStd(s));
     } else {
         ba = data;
-        l = data.size();
     }
-    r.content_length(l);
-    r.out().write(ba, l);
+    r.content_length(ba.size());
+    r.out().write(ba, ba.size());
 }

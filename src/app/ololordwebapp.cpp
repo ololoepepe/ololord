@@ -144,7 +144,5 @@ void OlolordWebApp::main(std::string url)
         Tools::log(*this, Tools::fromStd(url), "fail:not_found:handled_by_main");
     } catch (const std::exception &e) {
         Tools::log("OlolordWebApp::main", e);
-    } catch (...) {
-        Tools::log("OlolordWebApp::main");
     }
 }

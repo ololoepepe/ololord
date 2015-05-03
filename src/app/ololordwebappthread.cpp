@@ -30,8 +30,6 @@ void OlolordWebAppThread::run()
             service.run();
         } catch(std::exception const &e) {
             Tools::log("OlolordWebAppThread::run", e);
-        } catch (...) {
-            Tools::log("OlolordWebAppThread::run");
         }
         mservice = 0;
     }
