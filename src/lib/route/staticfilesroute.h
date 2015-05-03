@@ -38,7 +38,7 @@ public:
     std::string regex() const;
     std::string url() const;
 private:
-    void write(const QByteArray &data, const std::string &contentType);
+    void write(const QByteArray &data);
 };
 
 #endif // STATICFILESROUTE_H

@@ -32,8 +32,8 @@ void StaticFilesRoute::handle(std::string p)
     QString logAction = QString(StaticFilesMode == mode ? "static" : "dynamic") + "_file";
     QString logTarget = path;
     Tools::log(application, logAction, "begin", logTarget);
-    typedef Tools::StaticFile *(*GetCacheFunction)(const QString &path);
-    typedef bool (*SetCacheFunction)(const QString &path, Tools::StaticFile *file);
+    typedef QByteArray *(*GetCacheFunction)(const QString &path);
+    typedef bool (*SetCacheFunction)(const QString &path, QByteArray *file);
     QString err;
     if (!Controller::testRequest(application, Controller::GetRequest, &err))
         return Tools::log(application, logAction, "fail:" + err, logTarget);
@@ -44,9 +44,9 @@ void StaticFilesRoute::handle(std::string p)
     }
     GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
     SetCacheFunction setCache = (StaticFilesMode == mode) ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
-    Tools::StaticFile *file = getCache(path);
+    QByteArray *file = getCache(path);
     if (file) {
-        write(file->data, file->mimeType);
+        write(*file);
         Tools::log(application, logAction, "success:cache", logTarget);
         return;
     }
@@ -59,20 +59,18 @@ void StaticFilesRoute::handle(std::string p)
             Tools::log(application, logAction, "fail:not_found", logTarget);
             return;
         }
-        write(ba, Tools::toStd(Tools::mimeType(ba)));
+        write(ba);
         Tools::log(application, logAction, "success:in_memory", logTarget);
         return;
     }
     bool ok = false;
-    file = new Tools::StaticFile;
-    file->data = BDirTools::readFile(fn, -1, &ok);
-    file->mimeType = Tools::toStd(Tools::mimeType(file->data));
+    file = new QByteArray(BDirTools::readFile(fn, -1, &ok));
     if (!ok) {
         Controller::renderNotFound(application);
         Tools::log(application, logAction, "fail:not_found", logTarget);
         return;
     }
-    write(file->data, file->mimeType);
+    write(*file);
     if (!setCache(path, file))
         delete file;
     Tools::log(application, logAction, "success", logTarget);
@@ -109,11 +107,11 @@ std::string StaticFilesRoute::url() const
     return (StaticFilesMode == mode) ? "/{1}" : "/{1}/{2}";
 }
 
-void StaticFilesRoute::write(const QByteArray &data, const std::string &contentType)
+void StaticFilesRoute::write(const QByteArray &data)
 {
     typedef QPair<uint, uint> Range;
     cppcms::http::response &r = application.response();
-    r.content_type(("text/plain" != contentType) ? contentType : "");
+    r.content_type("");
     r.accept_ranges("bytes");
     QString range = Tools::fromStd(application.request().http_range());
     QList<Range> list;
