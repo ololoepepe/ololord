@@ -648,7 +648,7 @@ lord.addYoutubeButton = function(post) {
             return;
         var img = lord.node("img");
         img.src = "https://youtube.com/favicon.ico";
-        imt.title = "YouTube";
+        img.title = "YouTube";
         link.parentNode.insertBefore(img, link);
         var a = lord.node("a");
         a.className = "expandCollapse";
