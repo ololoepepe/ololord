@@ -654,6 +654,27 @@ lord.addYoutubeButton = function(post) {
         a.className = "expandCollapse";
         a.lordExpanded = false;
         (function (a, link) {
+            var videoId = link.href.split("v=").pop();
+            var ampPos = videoId.indexOf("&");
+            if (ampPos > -1)
+                videoId = videoId.substring(0, ampPos);
+            var xhr = new XMLHttpRequest();
+            xhr.open("get", "https://gdata.youtube.com/feeds/api/videos/" + videoId + "?v=2&alt=jsonc");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status != 200)
+                        return;
+                    var response;
+                    try {
+                        response = JSON.parse(xhr.responseText);
+                    } catch (ex) {
+                        return;
+                    }
+                    var title = response.data.title;
+                    link.replaceChild(lord.node("text", title), link.firstChild);
+                }
+            };
+            xhr.send(null);
             a.onclick = function() {
                 if (a.lordExpanded) {
                     a.parentNode.removeChild(a.nextSibling);

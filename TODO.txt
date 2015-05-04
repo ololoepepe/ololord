@@ -10,6 +10,7 @@
 [done] Improve complain button surprize
 [done] Implement partial GET request support
 [done] Implement YouTube video embedding
+[done] Replace YouTube link text with video title
 [done] Improve file information storing
 [done] Store audio/video metadata (duration, bitrate, tags)
 * Implement favorite threads system
