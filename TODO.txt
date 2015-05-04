@@ -13,6 +13,7 @@
 [done] Replace YouTube link text with video title
 [done] Improve file information storing
 [done] Store audio/video metadata (duration, bitrate, tags)
+[done] Fix post form rules including system
 * Implement favorite threads system
 * Implement playlist for audio files
 ? Add ability to set limits for each thread

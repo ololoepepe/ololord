@@ -1485,7 +1485,7 @@ QStringList AbstractBoard::rulesImplementation(const QLocale &l, const QString &
         if ("#include all" == s) {
             specific = specific.mid(0, i) + common + specific.mid(i + 1);
         } else if (rx.exactMatch(s)) {
-            int n = rx.cap().remove(QRegExp("#include\\d+")).toInt();
+            int n = rx.cap().remove(QRegExp("#include\\s+")).toInt();
             if (n >= 0 && n < common.size())
                 specific.replace(i, common.at(n));
         }
