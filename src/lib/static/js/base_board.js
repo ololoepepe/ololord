@@ -471,6 +471,9 @@ lord.createPostNode = function(res, permanent, boardName) {
     var banButton = lord.nameOne("banButton", post);
     var downloadButton = lord.nameOne("downloadButton", post);
     var rawText = lord.nameOne("rawText", post);
+    var rawHtml = lord.nameOne("rawHtml", post);
+    if (res["rawHtml"])
+        rawHtml.value = "true";
     lord.nameOne("draft", post).value = res["draft"];
     if ((moder || res["draft"]) && (res["files"].length < +lord.text("maxFileCount"))) {
         addFileButton.href = addFileButton.href.replace("%postNumber%", res["number"]);
@@ -650,6 +653,7 @@ lord.addYoutubeButton = function(post) {
         img.src = "https://youtube.com/favicon.ico";
         img.title = "YouTube";
         link.parentNode.insertBefore(img, link);
+        link.parentNode.insertBefore(lord.node("text", " "), link);
         var a = lord.node("a");
         a.className = "expandCollapse";
         a.lordExpanded = false;

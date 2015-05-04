@@ -1418,6 +1418,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["rawSubject"] = post.rawSubject;
     o["text"] = post.text;
     o["rawPostText"] = post.rawPostText;
+    o["rawHtml"] = post.rawHtml;
     o["tripcode"] = post.tripcode;
     o["ownPost"] = post.ownPost;
     cppcms::json::array refs;
