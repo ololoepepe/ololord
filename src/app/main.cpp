@@ -844,6 +844,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::String, "ffprobe_commande", n);
+    nn->setDescription(BTranslation::translate("initSettings", "ffprobe utility command (possibly full path).\n"
+                                               "The default is ffprobe (UNIX) or ffprobe.exe (Windows)."));
     nn = new BSettingsNode(QVariant::String, "logging_skip_ip", n);
     nn->setUserSetFunction(&setLoggingSkipIp);
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"

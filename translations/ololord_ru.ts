@@ -371,6 +371,11 @@ By default all captcha engines are supported.</source>
 Пример: google-recaptcha,codecha
 По умолчанию поддерживаются все движки капчи.</translation>
     </message>
+    <message>
+        <source>kbps</source>
+        <comment>fileSize</comment>
+        <translation>кбит/с</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -2481,6 +2486,12 @@ By default all captcha engines are supported.</source>
 Идентификаторы должны разделяться запятыми.
 Пример: google-recaptcha,codecha
 По умолчанию поддерживаются все движки капчи.</translation>
+    </message>
+    <message>
+        <source>ffprobe utility command (possibly full path).
+The default is ffprobe (UNIX) or ffprobe.exe (Windows).</source>
+        <translation>Команда вызова утилиты ffprobe (возможно, полный путь).
+По умолчанию ffprobe (UNIX) или ffprobe.exe (Windows).</translation>
     </message>
 </context>
 <context>

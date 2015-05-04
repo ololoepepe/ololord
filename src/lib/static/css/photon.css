@@ -365,6 +365,11 @@ span.spoiler:hover a {
     white-space: nowrap;
 }
 
+.postFileSize {
+    font-size: 0.8em;
+    color: #444444;
+}
+
 .postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img {
     opacity: 0.65;
     filter: alpha(opacity=65);

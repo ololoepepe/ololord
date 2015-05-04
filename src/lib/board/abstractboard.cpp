@@ -1011,8 +1011,10 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
 {
 #if defined(Q_OS_WIN)
     static const QString FfmpegDefault = "ffmpeg.exe";
+    static const QString FfprobeDefault = "ffprobe.exe";
 #elif defined(Q_OS_UNIX)
     static const QString FfmpegDefault = "ffmpeg";
+    static const QString FfprobeDefault = "ffprobe";
 #endif
     typedef QMap<QString, QString> StringMap;
     init_once(StringMap, suffixes, StringMap()) {
@@ -1047,12 +1049,24 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
+    SettingsLocker sl;
+    QString ffmpeg = sl->value("System/ffmpeg_command", FfmpegDefault).toString();
+    QString ffprobe = sl->value("System/ffprobe_command", FfprobeDefault).toString();
+    QStringList ffprobeArgs = QStringList() << "-i" << QDir::toNativeSeparators(sfn);
+    QRegExp rxd("Duration\\: (\\d\\d\\:\\d\\d\\:\\d\\d).+bitrate\\: (\\d+) kb/s");
+    QString out;
     if (Tools::isAudioType(mimeType)) {
         ft.setMainFileSize(0, 0);
         ft.setThumbFile(mimeType);
         ft.setThumbFileSize(200, 200);
         Tools::AudioTags tags = Tools::audioTags(sfn);
         QVariantMap m;
+        if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
+            if (rxd.indexIn(out) >= 0) {
+                m.insert("duration", rxd.cap(1));
+                m.insert("bitrate", rxd.cap(2));
+            }
+        }
         if (!tags.album.isEmpty())
             m.insert("album", tags.album);
         if (!tags.artist.isEmpty())
@@ -1064,7 +1078,6 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         if (!m.isEmpty())
             ft.setMetaData(m);
     } else if (Tools::isVideoType(mimeType)) {
-        QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
@@ -1078,6 +1091,15 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
             ft.setThumbFile(mimeType);
             ft.setThumbFileSize(200, 200);
         }
+        QVariantMap m;
+        if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
+            if (rxd.indexIn(out) >= 0) {
+                m.insert("duration", rxd.cap(1));
+                m.insert("bitrate", rxd.cap(2));
+            }
+        }
+        if (!m.isEmpty())
+            ft.setMetaData(m);
     } else {
         QByteArray data = f.data;
         QBuffer buff(&data);
@@ -1228,22 +1250,21 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 if (fis->mimeType().startsWith("image/") || fis->mimeType().startsWith("video/")) {
                     if (f.sizeX > 0 && f.sizeY > 0)
                         sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
-                } else if (fis->mimeType().startsWith("audio")) {
-                    /*QVariantMap m = fis->metaData().toMap();
-                    QString album = m.value("album").toString();
-                    QString artist = m.value("artist").toString();
-                    QString title = m.value("title").toString();
-                    QString year = m.value("year").toString();
-                    QString szz = artist;
-                    if (!artist.isEmpty() && !title.isEmpty())
-                        szz += " - ";
-                    szz += title;
-                    if (!szz.isEmpty() && !album.isEmpty())
-                        szz += " (" + album + ")";
-                    if (!szz.isEmpty() && !year.isEmpty())
-                        szz += " (" + year + ")";
+                }
+                if (fis->mimeType().startsWith("audio/") || fis->mimeType().startsWith("video/")) {
+                    QVariantMap m = fis->metaData().toMap();
+                    QString duration = m.value("duration").toString();
+                    QString bitrate = m.value("bitrate").toString();
+                    QString szz = duration;
+                    if (fis->mimeType().startsWith("audio/")) {
+                        if (!szz.isEmpty())
+                            szz += ", ";
+                        szz += bitrate;
+                        if (!bitrate.isEmpty())
+                            szz += "kbps";
+                    }
                     if (!szz.isEmpty())
-                        sz += " " + szz;*/
+                        sz += ", " + szz;
                 }
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);
@@ -1299,8 +1320,11 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         delete p;
     TranslatorStd ts(req);
     QLocale l = tq.locale();
-    for (std::list<Content::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i)
+    for (std::list<Content::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i) {
+        i->size = Tools::toStd(Tools::fromStd(i->size).replace("kbps", tq.translate("AbstractBoard", "kbps",
+                                                                                    "fileSize")));
         i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("AbstractBoard", "KB", "fileSize")));
+    }
     if (showWhois() && "Unknown country" == pp.countryName)
         pp.countryName = ts.translate("AbstractBoard", "Unknown country", "countryName");
     int regLvl = Database::registeredUserLevel(req);

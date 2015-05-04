@@ -11,8 +11,8 @@
 [done] Implement partial GET request support
 [done] Implement YouTube video embedding
 [done] Improve file information storing
+[done] Store audio/video metadata (duration, bitrate, tags)
 * Implement favorite threads system
-* Store audio metadata
 * Implement playlist for audio files
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
