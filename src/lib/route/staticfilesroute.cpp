@@ -160,4 +160,5 @@ void StaticFilesRoute::write(const QByteArray &data)
     }
     r.content_length(ba.size());
     r.out().write(ba, ba.size());
+    r.out().flush();
 }

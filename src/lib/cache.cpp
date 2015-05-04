@@ -11,34 +11,35 @@
 #include <QCache>
 #include <QLocale>
 #include <QMap>
-#include <QMutex>
-#include <QMutexLocker>
+#include <QReadLocker>
+#include <QReadWriteLock>
 #include <QSettings>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <QWriteLocker>
 
 namespace Cache
 {
 
 static QCache<QString, QString> customHomePageContents;
-static QMutex customHomePageContentsMutex(QMutex::Recursive);
+static QReadWriteLock customHomePageContentsLock(QReadWriteLock::Recursive);
 static QCache<QString, QByteArray> dynamicFiles;
-static QMutex dynamicFilesMutex(QMutex::Recursive);
+static QReadWriteLock dynamicFilesLock(QReadWriteLock::Recursive);
 static QCache<QString, Tools::FriendList> theFriendList;
-static QMutex friendListMutex(QMutex::Recursive);
+static QReadWriteLock friendListLock(QReadWriteLock::Recursive);
 static QCache<QString, IpBanInfoList> theIpBanInfoList;
-static QMutex ipBanInfoListMutex(QMutex::Recursive);
+static QReadWriteLock ipBanInfoListLock(QReadWriteLock::Recursive);
 static QCache<QString, QStringList> theNews;
-static QMutex newsMutex(QMutex::Recursive);
+static QReadWriteLock newsLock(QReadWriteLock::Recursive);
 static QCache<QString, Content::Post> thePosts;
-static QMutex postsMutex(QMutex::Recursive);
+static QReadWriteLock postsLock(QReadWriteLock::Recursive);
 static QCache<QString, QStringList> theRules;
-static QMutex rulesMutex(QMutex::Recursive);
+static QReadWriteLock rulesLock(QReadWriteLock::Recursive);
 static QCache<QString, QByteArray> staticFiles;
-static QMutex staticFilesMutex(QMutex::Recursive);
+static QReadWriteLock staticFilesLock(QReadWriteLock::Recursive);
 static QCache<QString, BTranslator> translators;
-static QMutex translatorsMutex(QMutex::Recursive);
+static QReadWriteLock translatorsLock(QReadWriteLock::Recursive);
 
 template <typename T>
 void initCache(T &cache, const QString &name, int defaultSize)
@@ -103,7 +104,7 @@ bool cacheCustomHomePageContent(const QLocale &l, QString *content)
 {
     if (!content)
         return false;
-    QMutexLocker locker(&customHomePageContentsMutex);
+    QWriteLocker locker(&customHomePageContentsLock);
     do_once(init)
         initCache(customHomePageContents, "custom_home_page_content", defaultCustomHomePageContentsCacheSize);
     int sz = content->length() * 2;
@@ -117,7 +118,7 @@ bool cacheDynamicFile(const QString &path, QByteArray *file)
 {
     if (path.isEmpty() || !file)
         return false;
-    QMutexLocker locker(&dynamicFilesMutex);
+    QWriteLocker locker(&dynamicFilesLock);
     do_once(init)
         initCache(dynamicFiles, "dynamic_files", defaultDynamicFilesCacheSize);
     if (dynamicFiles.maxCost() < file->size())
@@ -130,7 +131,7 @@ bool cacheFriendList(Tools::FriendList *list)
 {
     if (!list)
         return false;
-    QMutexLocker locker(&friendListMutex);
+    QWriteLocker locker(&friendListLock);
     do_once(init)
         initCache(theFriendList, "friend_list", defaultFriendListCacheSize);
     int sz = 0;
@@ -146,7 +147,7 @@ bool cacheIpBanInfoList(IpBanInfoList *list)
 {
     if (!list)
         return false;
-    QMutexLocker locker(&ipBanInfoListMutex);
+    QWriteLocker locker(&ipBanInfoListLock);
     do_once(init)
         initCache(theIpBanInfoList, "ip_ban_info_list", defaultIpBanInfoListCacheSize);
     int sz = list->size() * 2 * sizeof(int);
@@ -160,7 +161,7 @@ bool cacheNews(const QLocale &locale, QStringList *news)
 {
     if (!news)
         return false;
-    QMutexLocker locker(&newsMutex);
+    QWriteLocker locker(&newsLock);
     do_once(init)
         initCache(theNews, "news", defaultNewsCacheSize);
     int sz = 0;
@@ -176,7 +177,7 @@ bool cachePost(const QString &boardName, quint64 postNumber, Content::Post *post
 {
     if (boardName.isEmpty() || !postNumber || !post)
         return false;
-    QMutexLocker locker(&postsMutex);
+    QWriteLocker locker(&postsLock);
     do_once(init)
         initCache(thePosts, "posts", defaultPostsCacheSize);
     if (thePosts.maxCost() < 1)
@@ -189,7 +190,7 @@ bool cacheRules(const QString &prefix, const QLocale &locale, QStringList *rules
 {
     if (prefix.isEmpty() || !rules)
         return false;
-    QMutexLocker locker(&rulesMutex);
+    QWriteLocker locker(&rulesLock);
     do_once(init)
         initCache(theRules, "rules", defaultRulesCacheSize);
     int sz = 0;
@@ -205,7 +206,7 @@ bool cacheStaticFile(const QString &path, QByteArray *file)
 {
     if (path.isEmpty() || !file)
         return false;
-    QMutexLocker locker(&staticFilesMutex);
+    QWriteLocker locker(&staticFilesLock);
     do_once(init)
         initCache(staticFiles, "static_files", defaultStaticFilesCacheSize);
     if (staticFiles.maxCost() < file->size())
@@ -218,7 +219,7 @@ bool cacheTranslator(const QString &name, const QLocale &locale, BTranslator *t)
 {
     if (name.isEmpty() || !t)
         return false;
-    QMutexLocker locker(&translatorsMutex);
+    QWriteLocker locker(&translatorsLock);
     do_once(init)
         initCache(translators, "translators", defaultTranslationsCacheSize);
     if (translators.maxCost() < 1)
@@ -239,61 +240,61 @@ bool clearCache(const QString &name, QString *err, const QLocale &l)
 
 void clearCustomHomePageContent()
 {
-    QMutexLocker locker(&customHomePageContentsMutex);
+    QWriteLocker locker(&customHomePageContentsLock);
     customHomePageContents.clear();
 }
 
 void clearDynamicFilesCache()
 {
-    QMutexLocker locker(&dynamicFilesMutex);
+    QWriteLocker locker(&dynamicFilesLock);
     dynamicFiles.clear();
 }
 
 void clearFriendListCache()
 {
-    QMutexLocker locker(&friendListMutex);
+    QWriteLocker locker(&friendListLock);
     theFriendList.clear();
 }
 
 void clearIpBanInfoListCache()
 {
-    QMutexLocker locker(&ipBanInfoListMutex);
+    QWriteLocker locker(&ipBanInfoListLock);
     theIpBanInfoList.clear();
 }
 
 void clearNewsCache()
 {
-    QMutexLocker locker(&newsMutex);
+    QWriteLocker locker(&newsLock);
     theNews.clear();
 }
 
 void clearPostsCache()
 {
-    QMutexLocker locker(&postsMutex);
+    QWriteLocker locker(&postsLock);
     thePosts.clear();
 }
 
 void clearRulesCache()
 {
-    QMutexLocker locker(&rulesMutex);
+    QWriteLocker locker(&rulesLock);
     theRules.clear();
 }
 
 void clearStaticFilesCache()
 {
-    QMutexLocker locker(&staticFilesMutex);
+    QWriteLocker locker(&staticFilesLock);
     staticFiles.clear();
 }
 
 void clearTranslatorsCache()
 {
-    QMutexLocker locker(&translatorsMutex);
+    QWriteLocker locker(&translatorsLock);
     translators.clear();
 }
 
 QString *customHomePageContent(const QLocale &l)
 {
-    QMutexLocker locker(&customHomePageContentsMutex);
+    QReadLocker locker(&customHomePageContentsLock);
     return customHomePageContents.object(l.name());
 }
 
@@ -317,25 +318,25 @@ QByteArray *dynamicFile(const QString &path)
 {
     if (path.isEmpty())
         return 0;
-    QMutexLocker locker(&dynamicFilesMutex);
+    QReadLocker locker(&dynamicFilesLock);
     return dynamicFiles.object(path);
 }
 
 Tools::FriendList *friendList()
 {
-    QMutexLocker locker(&friendListMutex);
+    QReadLocker locker(&friendListLock);
     return theFriendList.object("x");
 }
 
 IpBanInfoList *ipBanInfoList()
 {
-    QMutexLocker locker(&ipBanInfoListMutex);
+    QReadLocker locker(&ipBanInfoListLock);
     return theIpBanInfoList.object("x");
 }
 
 QStringList *news(const QLocale &locale)
 {
-    QMutexLocker locker(&newsMutex);
+    QReadLocker locker(&newsLock);
     return theNews.object(locale.name());
 }
 
@@ -343,7 +344,7 @@ Content::Post *post(const QString &boardName, quint64 postNumber)
 {
     if (boardName.isEmpty() || !postNumber)
         return 0;
-    QMutexLocker locker(&postsMutex);
+    QReadLocker locker(&postsLock);
     return thePosts.object(boardName + "/" + QString::number(postNumber));
 }
 
@@ -351,7 +352,7 @@ void removePost(const QString &boardName, quint64 postNumber)
 {
     if (boardName.isEmpty() || !postNumber)
         return;
-    QMutexLocker locker(&postsMutex);
+    QWriteLocker locker(&postsLock);
     thePosts.remove(boardName + "/" + QString::number(postNumber));
 }
 
@@ -359,7 +360,7 @@ QStringList *rules(const QLocale &locale, const QString &prefix)
 {
     if (prefix.isEmpty())
         return 0;
-    QMutexLocker locker(&rulesMutex);
+    QReadLocker locker(&rulesLock);
     return theRules.object(prefix + "/" + locale.name());
 }
 
@@ -367,7 +368,7 @@ void setCustomHomePageContentMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&customHomePageContentsMutex);
+    QWriteLocker locker(&customHomePageContentsLock);
     customHomePageContents.setMaxCost(size);
 }
 
@@ -375,7 +376,7 @@ void setDynamicFilesMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&dynamicFilesMutex);
+    QWriteLocker locker(&dynamicFilesLock);
     dynamicFiles.setMaxCost(size);
 }
 
@@ -383,7 +384,7 @@ void setFriendListMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&friendListMutex);
+    QWriteLocker locker(&friendListLock);
     theFriendList.setMaxCost(size);
 }
 
@@ -391,7 +392,7 @@ void setIpBanInfoListMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&ipBanInfoListMutex);
+    QWriteLocker locker(&ipBanInfoListLock);
     theIpBanInfoList.setMaxCost(size);
 }
 
@@ -411,7 +412,7 @@ void setNewsMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&newsMutex);
+    QWriteLocker locker(&newsLock);
     theNews.setMaxCost(size);
 }
 
@@ -420,7 +421,7 @@ void setPostsMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&postsMutex);
+    QWriteLocker locker(&postsLock);
     thePosts.setMaxCost(size);
 }
 
@@ -428,7 +429,7 @@ void setRulesMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&rulesMutex);
+    QWriteLocker locker(&rulesLock);
     theRules.setMaxCost(size);
 }
 
@@ -436,7 +437,7 @@ void setStaticFilesMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&staticFilesMutex);
+    QWriteLocker locker(&staticFilesLock);
     staticFiles.setMaxCost(size);
 }
 
@@ -444,7 +445,7 @@ void setTranslatorsMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QMutexLocker locker(&translatorsMutex);
+    QWriteLocker locker(&translatorsLock);
     translators.setMaxCost(size);
 }
 
@@ -452,7 +453,7 @@ QByteArray *staticFile(const QString &path)
 {
     if (path.isEmpty())
         return 0;
-    QMutexLocker locker(&staticFilesMutex);
+    QReadLocker locker(&staticFilesLock);
     return staticFiles.object(path);
 }
 
@@ -460,7 +461,7 @@ BTranslator *translator(const QString &name, const QLocale &locale)
 {
     if (name.isEmpty())
         return 0;
-    QMutexLocker locker(&translatorsMutex);
+    QReadLocker locker(&translatorsLock);
     return translators.object(name + "_" + locale.name());
 }
 
