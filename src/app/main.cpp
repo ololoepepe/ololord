@@ -826,6 +826,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "ssl_proxy_query", n);
     nn->setDescription(BTranslation::translate("initSettings", "Query used to proxy non-SSL links inside iframes.\n"
                                                "Must contain \"%1\" (without quotes) - it is replaced by URL."));
+    nn = new BSettingsNode(QVariant::String, "youtube_api_key", n);
+    nn->setDescription(BTranslation::translate("initSettings", "The key required to access YouTube API.\n"
+                                               "It will appear in HTML."));
     n = new BSettingsNode("Captcha", root);
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);

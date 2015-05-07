@@ -2493,6 +2493,12 @@ The default is ffprobe (UNIX) or ffprobe.exe (Windows).</source>
         <translation>Команда вызова утилиты ffprobe (возможно, полный путь).
 По умолчанию ffprobe (UNIX) или ffprobe.exe (Windows).</translation>
     </message>
+    <message>
+        <source>The key required to access YouTube API.
+It will appear in HTML.</source>
+        <translation>Ключ, необходимый для доступа к YouTube API.
+Появляется в HTML-страницах.</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>

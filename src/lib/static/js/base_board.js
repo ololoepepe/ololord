@@ -644,6 +644,9 @@ lord.globalOnclick = function(e) {
 lord.addYoutubeButton = function(post) {
     if (!post)
         return;
+    var key = lord.text("youtubeApiKey");
+    if (!key)
+        return;
     var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
         + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
     lord.query(q, post).forEach(function(link) {
@@ -663,7 +666,8 @@ lord.addYoutubeButton = function(post) {
             if (ampPos > -1)
                 videoId = videoId.substring(0, ampPos);
             var xhr = new XMLHttpRequest();
-            xhr.open("get", "https://gdata.youtube.com/feeds/api/videos/" + videoId + "?v=2&alt=jsonc");
+            xhr.open("get", "https://www.googleapis.com/youtube/v3/videos?id=" + videoId + "&key=" + key
+                + "&part=snippet");
             xhr.onreadystatechange = function() {
                 if (xhr.readyState === 4) {
                     if (xhr.status != 200)
@@ -674,7 +678,7 @@ lord.addYoutubeButton = function(post) {
                     } catch (ex) {
                         return;
                     }
-                    var title = response.data.title;
+                    var title = response.items[0].snippet.title;
                     link.replaceChild(lord.node("text", title), link.firstChild);
                 }
             };

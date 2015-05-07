@@ -167,6 +167,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string toThread;
     std::string toTopText;
     std::string unfixThreadText;
+    std::string youtubeApiKey;
 public:
     static bool isAudioType(const std::string &mimeType)
     {
