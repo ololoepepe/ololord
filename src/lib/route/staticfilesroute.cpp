@@ -11,6 +11,7 @@
 #include <QByteArray>
 #include <QDebug>
 #include <QList>
+#include <QMap>
 #include <QPair>
 #include <QRegExp>
 #include <QString>
@@ -19,6 +20,8 @@
 #include <cppcms/application.h>
 #include <cppcms/http_request.h>
 #include <cppcms/http_response.h>
+
+#include <ctime>
 
 StaticFilesRoute::StaticFilesRoute(cppcms::application &app, Mode m) :
     AbstractRoute(app), mode(m), Prefix((StaticFilesMode == m) ? "static" : "storage/img")
@@ -32,8 +35,8 @@ void StaticFilesRoute::handle(std::string p)
     QString logAction = QString(StaticFilesMode == mode ? "static" : "dynamic") + "_file";
     QString logTarget = path;
     Tools::log(application, logAction, "begin", logTarget);
-    typedef QByteArray *(*GetCacheFunction)(const QString &path);
-    typedef bool (*SetCacheFunction)(const QString &path, QByteArray *file);
+    typedef Cache::File *(*GetCacheFunction)(const QString &path);
+    typedef Cache::File *(*SetCacheFunction)(const QString &path, const QByteArray &file);
     QString err;
     if (!Controller::testRequest(application, Controller::GetRequest, &err))
         return Tools::log(application, logAction, "fail:" + err, logTarget);
@@ -44,35 +47,26 @@ void StaticFilesRoute::handle(std::string p)
     }
     GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
     SetCacheFunction setCache = (StaticFilesMode == mode) ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
-    QByteArray *file = getCache(path);
+    Cache::File *file = getCache(path);
     if (file) {
-        write(*file);
+        write(file->data, file->msecsSinceEpoch);
         Tools::log(application, logAction, "success:cache", logTarget);
         return;
     }
     QString fn = BDirTools::findResource(Prefix + "/" + path, BDirTools::AllResources);
-    if (fn.startsWith(":")) { //NOTE: No need to cache files stored in memory
-        bool ok = false;
-        QByteArray ba = BDirTools::readFile(fn, -1, &ok);
-        if (!ok) {
-            Controller::renderNotFound(application);
-            Tools::log(application, logAction, "fail:not_found", logTarget);
-            return;
-        }
-        write(ba);
-        Tools::log(application, logAction, "success:in_memory", logTarget);
-        return;
-    }
+    //NOTE: Files stored in memory are also cached. It's OK (think of If-Modified-Since).
     bool ok = false;
-    file = new QByteArray(BDirTools::readFile(fn, -1, &ok));
+    QByteArray ba = BDirTools::readFile(fn, -1, &ok);
     if (!ok) {
         Controller::renderNotFound(application);
         Tools::log(application, logAction, "fail:not_found", logTarget);
         return;
     }
-    write(*file);
-    if (!setCache(path, file))
-        delete file;
+    file = setCache(path, ba);
+    if (file)
+        write(file->data, file->msecsSinceEpoch);
+    else
+        write(ba);
     Tools::log(application, logAction, "success", logTarget);
 }
 
@@ -107,12 +101,33 @@ std::string StaticFilesRoute::url() const
     return (StaticFilesMode == mode) ? "/{1}" : "/{1}/{2}";
 }
 
-void StaticFilesRoute::write(const QByteArray &data)
+void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
 {
     typedef QPair<uint, uint> Range;
     cppcms::http::response &r = application.response();
+    QString s = Tools::fromStd(application.request().getenv("HTTP_IF_MODIFIED_SINCE"));
+    s.remove(" GMT").remove(QRegExp("^\\S+\\s+"));
+    if (msecsSinceEpoch > 0 && !s.isEmpty()) {
+        QLocale l = QLocale::c();
+        foreach (int i, bRangeD(1, 12)) {
+            QString m = QString::number(i);
+            if (m.length() < 2)
+                m.prepend('0');
+            s.replace(l.monthName(i, QLocale::ShortFormat), m);
+        }
+        QDateTime dt = QDateTime::fromString(s, "dd MM yyyy hh:mm:ss");
+        if (!dt.isValid())
+            dt = QDateTime::fromString(s, "dd-MM-yy hh:mm:ss");
+        if (!dt.isValid())
+            dt = QDateTime::fromString(s, "MM dd hh:mm:ss yyyy");
+        dt.setTimeSpec(Qt::UTC);
+        if (dt.isValid() && dt.toLocalTime() >= QDateTime::fromMSecsSinceEpoch(msecsSinceEpoch))
+            return r.status(304);
+    }
     r.content_type("");
     r.accept_ranges("bytes");
+    if (msecsSinceEpoch > 0)
+        r.last_modified(QDateTime::fromMSecsSinceEpoch(msecsSinceEpoch).toTime_t());
     QString range = Tools::fromStd(application.request().http_range());
     QList<Range> list;
     if (!range.isEmpty() && range.startsWith("bytes=", Qt::CaseInsensitive)) {

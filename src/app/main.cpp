@@ -269,9 +269,10 @@ static bool handleCache(const QString &, const QStringList &args)
             bWriteLine(QString::number(curr) + "/" + QString::number(files.size()) + ": " + p);
             ++curr;
             bool ok = false;
-            QByteArray *file = new QByteArray(BDirTools::readFile(fn, -1, &ok));
-            if (!ok || !Cache::cacheDynamicFile(p, file))
-                delete file;
+            QByteArray file = BDirTools::readFile(fn, -1, &ok);
+            if (!ok)
+                continue;
+            Cache::cacheDynamicFile(p, file);
         }
     }
     if (bstaticFiles) {
@@ -295,9 +296,10 @@ static bool handleCache(const QString &, const QStringList &args)
             bWriteLine(QString::number(curr) + "/" + QString::number(files.size()) + ": " + p);
             ++curr;
             bool ok = false;
-            QByteArray *file = new QByteArray(BDirTools::readFile(fn, -1, &ok));
-            if (!ok || !Cache::cacheStaticFile(p, file))
-                delete file;
+            QByteArray file = BDirTools::readFile(fn, -1, &ok);
+            if (!ok)
+                continue;
+            Cache::cacheStaticFile(p, file);
         }
     }
     bWriteLine(translate("handleClearCache", "OK"));

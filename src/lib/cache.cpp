@@ -9,6 +9,7 @@
 
 #include <QByteArray>
 #include <QCache>
+#include <QDateTime>
 #include <QLocale>
 #include <QMap>
 #include <QReadLocker>
@@ -24,7 +25,7 @@ namespace Cache
 
 static QCache<QString, QString> customHomePageContents;
 static QReadWriteLock customHomePageContentsLock(QReadWriteLock::Recursive);
-static QCache<QString, QByteArray> dynamicFiles;
+static QCache<QString, File> dynamicFiles;
 static QReadWriteLock dynamicFilesLock(QReadWriteLock::Recursive);
 static QCache<QString, Tools::FriendList> theFriendList;
 static QReadWriteLock friendListLock(QReadWriteLock::Recursive);
@@ -36,7 +37,7 @@ static QCache<QString, Content::Post> thePosts;
 static QReadWriteLock postsLock(QReadWriteLock::Recursive);
 static QCache<QString, QStringList> theRules;
 static QReadWriteLock rulesLock(QReadWriteLock::Recursive);
-static QCache<QString, QByteArray> staticFiles;
+static QCache<QString, File> staticFiles;
 static QReadWriteLock staticFilesLock(QReadWriteLock::Recursive);
 static QCache<QString, BTranslator> translators;
 static QReadWriteLock translatorsLock(QReadWriteLock::Recursive);
@@ -114,17 +115,20 @@ bool cacheCustomHomePageContent(const QLocale &l, QString *content)
     return true;
 }
 
-bool cacheDynamicFile(const QString &path, QByteArray *file)
+File *cacheDynamicFile(const QString &path, const QByteArray &file)
 {
-    if (path.isEmpty() || !file)
-        return false;
+    if (path.isEmpty())
+        return 0;
     QWriteLocker locker(&dynamicFilesLock);
     do_once(init)
         initCache(dynamicFiles, "dynamic_files", defaultDynamicFilesCacheSize);
-    if (dynamicFiles.maxCost() < file->size())
-        return false;
-    dynamicFiles.insert(path, file, file->size());
-    return true;
+    if (dynamicFiles.maxCost() < (file.size() + 8))
+        return 0;
+    File *f = new File;
+    f->data = file;
+    f->msecsSinceEpoch = (QDateTime::currentMSecsSinceEpoch() / 1000) * 1000;
+    dynamicFiles.insert(path, f, file.size() + 8);
+    return f;
 }
 
 bool cacheFriendList(Tools::FriendList *list)
@@ -202,17 +206,20 @@ bool cacheRules(const QString &prefix, const QLocale &locale, QStringList *rules
     return true;
 }
 
-bool cacheStaticFile(const QString &path, QByteArray *file)
+File *cacheStaticFile(const QString &path, const QByteArray &file)
 {
-    if (path.isEmpty() || !file)
-        return false;
+    if (path.isEmpty())
+        return 0;
     QWriteLocker locker(&staticFilesLock);
     do_once(init)
         initCache(staticFiles, "static_files", defaultStaticFilesCacheSize);
-    if (staticFiles.maxCost() < file->size())
-        return false;
-    staticFiles.insert(path, file, file->size());
-    return true;
+    if (staticFiles.maxCost() < (file.size() + 8))
+        return 0;
+    File *f = new File;
+    f->data = file;
+    f->msecsSinceEpoch = (QDateTime::currentMSecsSinceEpoch() / 1000) * 1000;
+    staticFiles.insert(path, f, file.size() + 8);
+    return f;
 }
 
 bool cacheTranslator(const QString &name, const QLocale &locale, BTranslator *t)
@@ -314,7 +321,7 @@ int defaultCacheSize(const QString &name)
     return map.value(name);
 }
 
-QByteArray *dynamicFile(const QString &path)
+File *dynamicFile(const QString &path)
 {
     if (path.isEmpty())
         return 0;
@@ -449,7 +456,7 @@ void setTranslatorsMaxCacheSize(int size)
     translators.setMaxCost(size);
 }
 
-QByteArray *staticFile(const QString &path)
+File *staticFile(const QString &path)
 {
     if (path.isEmpty())
         return 0;

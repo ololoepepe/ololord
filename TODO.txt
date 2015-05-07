@@ -14,6 +14,9 @@
 [done] Improve file information storing
 [done] Store audio/video metadata (duration, bitrate, tags)
 [done] Fix post form rules including system
+[done] Implement Last-Modified/If-Modified-Since support
+* Implement Drag and Drop file upload
+* Improve URL detection
 * Implement favorite threads system
 * Implement playlist for audio files
 ? Add ability to set limits for each thread
