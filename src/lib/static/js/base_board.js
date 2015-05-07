@@ -662,9 +662,7 @@ lord.addYoutubeButton = function(post) {
         a.lordExpanded = false;
         (function (a, link) {
             var videoId = link.href.split("v=").pop();
-            var ampPos = videoId.indexOf("&");
-            if (ampPos > -1)
-                videoId = videoId.substring(0, ampPos);
+            videoId = videoId.match(/[a-zA-Z0-9_\-]{11}/)[0];
             var xhr = new XMLHttpRequest();
             xhr.open("get", "https://www.googleapis.com/youtube/v3/videos?id=" + videoId + "&key=" + key
                 + "&part=snippet");
