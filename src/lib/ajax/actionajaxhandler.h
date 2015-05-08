@@ -36,7 +36,7 @@ public:
     void getFileExistence(std::string boardName, std::string hash);
     void getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber);
     void getPost(std::string boardName, long long postNumber);
-    void getThreadOpPosts(std::string boardName);
+    void getThreadNumbers(std::string boardName);
     void getYandexCaptchaImage(std::string type);
     QList<Handler> handlers() const;
     void setThreadFixed(std::string boardName, long long threadNumber, bool fixed);

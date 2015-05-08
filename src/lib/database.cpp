@@ -1217,8 +1217,6 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
         return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"), QList<Post>());
     if (!threadNumber)
         return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid thread number", "error"), QList<Post>());
-    if (!lastPostNumber)
-        return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid post number", "error"), QList<Post>());
     try {
         Transaction t;
         if (!t) {
@@ -1242,8 +1240,9 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
             return bRet(ok, false, error, tq.translate("getNewPosts", "No such thread", "error"), QList<Post>());
         }
         quint64 threadId = thread->id();
-        odb::query<Post> qq = odb::query<Post>::board == boardName && odb::query<Post>::thread == threadId
-                && odb::query<Post>::number > lastPostNumber;
+        odb::query<Post> qq = odb::query<Post>::board == boardName && odb::query<Post>::thread == threadId;
+        if (lastPostNumber)
+            qq = qq && odb::query<Post>::number > lastPostNumber;
         QList<Post> posts = query<Post, Post>(qq);
         foreach (int i, bRangeR(posts.size() - 1, 0)) {
             if (posts.at(i).draft() && hashpass != posts.at(i).hashpass()
@@ -1289,35 +1288,37 @@ Post getPost(const cppcms::http::request &req, const QString &boardName, quint64
     }
 }
 
-QList<Post> getThreadOpPosts(const cppcms::http::request &req, const QString &boardName, bool *ok, QString *error)
+QList<quint64> getThreadNumbers(const cppcms::http::request &req, const QString &boardName, bool *ok, QString *error)
 {
     AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
     TranslatorQt tq(req);
-    if (board.isNull())
-        return bRet(ok, false, error, tq.translate("getThreadOpPosts", "Invalid board name", "error"), QList<Post>());
+    if (board.isNull()) {
+        return bRet(ok, false, error, tq.translate("getThreadNumbers", "Invalid board name", "error"),
+                    QList<quint64>());
+    }
     try {
         Transaction t;
         if (!t) {
-            return bRet(ok, false, error, tq.translate("getThreadOpPosts", "Internal database error", "error"),
-                        QList<Post>());
+            return bRet(ok, false, error, tq.translate("getThreadNumbers", "Internal database error", "error"),
+                        QList<quint64>());
         }
         QByteArray hashpass = Tools::hashpass(req);
         bool modOnBoard = moderOnBoard(req, boardName);
         int lvl = registeredUserLevel(req);
         QList<Thread> threads = query<Thread, Thread>(odb::query<Thread>::board == boardName);
-        QList<Post> list;
+        QList<quint64> list;
         foreach (Thread t, threads) {
             QSharedPointer<Post> post = t.posts().first().load();
             if (post->draft() && hashpass != post->hashpass()
                     && (!modOnBoard || registeredUserLevel(post->hashpass()) >= lvl)) {
                 continue;
             }
-            list << *post;
+            list << t.number();
         }
         t.commit();
         return bRet(ok, true, error, QString(), list);
     }  catch (const odb::exception &e) {
-        return bRet(ok, false, error, Tools::fromStd(e.what()), QList<Post>());
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QList<quint64>());
     }
 }
 

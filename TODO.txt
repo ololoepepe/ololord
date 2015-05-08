@@ -16,7 +16,8 @@
 [done] Fix post form rules including system
 [done] Implement Last-Modified/If-Modified-Since support
 [done] Fix thread files downloading
-* In get_new_posts AJAX request, get all posts if last post number is 0
+[done] In get_new_posts AJAX request, get all posts if last post number is 0
+[done] Replace get_thread_op_posts AJAX request with get_thread_numbers
 * Implement Drag and Drop file upload
 * Improve URL detection
 * Implement favorite threads system

@@ -314,38 +314,31 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
     }
 }
 
-void ActionAjaxHandler::getThreadOpPosts(std::string boardName)
+void ActionAjaxHandler::getThreadNumbers(std::string boardName)
 {
     try {
         QString bn = Tools::fromStd(boardName);
         QString logTarget = bn;
-        Tools::log(server, "ajax_get_thread_op_posts", "begin", logTarget);
-        AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
-        if (board.isNull()) {
-            TranslatorQt tq(server.request());
-            QString err = tq.translate("ActionAjaxHandler", "No such board", "error");
-            Tools::log(server, "ajax_get_thread_op_posts", "fail:" + err, logTarget);
-            server.return_error(Tools::toStd(err));
-        }
+        Tools::log(server, "ajax_get_thread_numbers", "begin", logTarget);
         if (!testBan(bn, true))
-            return Tools::log(server, "ajax_get_thread_op_posts", "fail:ban", logTarget);
+            return Tools::log(server, "ajax_get_thread_numbers", "fail:ban", logTarget);
         bool ok = false;
         QString err;
-        QList<Content::Post> list = Controller::getThreadOpPosts(server.request(), bn, &ok, &err);
+        QList<quint64> list = Database::getThreadNumbers(server.request(), bn, &ok, &err);
         if (!ok) {
             server.return_error(Tools::toStd(err));
-            Tools::log(server, "ajax_get_thread_op_posts", "fail:" + err, logTarget);
+            Tools::log(server, "ajax_get_thread_numbers", "fail:" + err, logTarget);
             return;
         }
         cppcms::json::array arr;
-        foreach (const Content::Post &p, list)
-            arr.push_back(board->toJson(p, server.request()));
+        foreach (quint64 pn, list)
+            arr.push_back(pn);
         server.return_result(arr);
-        Tools::log(server, "ajax_get_thread_op_posts", "success", logTarget);
+        Tools::log(server, "ajax_get_thread_numbers", "success", logTarget);
     } catch (const std::exception &e) {
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
-        Tools::log(server, "ajax_get_thread_op_posts", "fail:" + err);
+        Tools::log(server, "ajax_get_thread_numbers", "fail:" + err);
     }
 }
 
@@ -451,7 +444,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
                     method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);
-    list << Handler("get_thread_op_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getThreadOpPosts, self),
+    list << Handler("get_thread_numbers", cppcms::rpc::json_method(&ActionAjaxHandler::getThreadNumbers, self),
                     method_role);
     list << Handler("get_yandex_captcha_image",
                     cppcms::rpc::json_method(&ActionAjaxHandler::getYandexCaptchaImage, self), method_role);

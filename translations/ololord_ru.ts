@@ -1266,11 +1266,6 @@ text</source>
         <translation>Неверный номер треда</translation>
     </message>
     <message>
-        <source>Invalid post number</source>
-        <comment>error</comment>
-        <translation>Неверный номер поста</translation>
-    </message>
-    <message>
         <source>Internal database error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
@@ -1310,16 +1305,11 @@ text</source>
     </message>
 </context>
 <context>
-    <name>getThreadOpPosts</name>
+    <name>getThreadNumbers</name>
     <message>
         <source>Invalid board name</source>
         <comment>error</comment>
         <translation>Неверное имя доски</translation>
-    </message>
-    <message>
-        <source>Internal logic error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal database error</source>

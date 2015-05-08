@@ -772,30 +772,4 @@ Content::Post getPost(const cppcms::http::request &req, const QString &boardName
     return bRet(ok, true, error, QString(), p);
 }
 
-QList<Content::Post> getThreadOpPosts(const cppcms::http::request &req, const QString &boardName, bool *ok,
-                                      QString *error)
-{
-    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
-    TranslatorQt tq(req);
-    if (board.isNull()) {
-        return bRet(ok, false, error, tq.translate("getThreadOpPosts", "Invalid board name", "error"),
-                    QList<Content::Post>());
-    }
-    bool b = false;
-    QList<Post> posts = Database::getThreadOpPosts(req, boardName, &b, error);
-    if (!b)
-        return bRet(ok, false, QList<Content::Post>());
-    QList<Content::Post> list;
-    foreach (const Post &p, posts) {
-        list << board->toController(p, req, &b, error);
-        if (!b)
-            return bRet(ok, false, QList<Content::Post>());
-        if (!list.last().number) {
-            return bRet(ok, false, error, tq.translate("getThreadOpPosts", "Internal logic error", "error"),
-                        QList<Content::Post>());
-        }
-    }
-    return bRet(ok, true, error, QString(), list);
-}
-
 }
