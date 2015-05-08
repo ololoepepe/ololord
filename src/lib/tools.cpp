@@ -363,15 +363,15 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
-QString externalLinkRegexpPattern()
+QString externalLinkRegexpPattern(bool simple)
 {
-    init_once(QString, pattern, QString()) {
+    init_once(QString, zones, QString()) {
         QString fn = BDirTools::findResource("res/root-zones.txt", BDirTools::GlobalOnly);
-        QString s = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts).join("|");
-        if (s.isEmpty())
-            s = "[a-z]{2,6}\\.?";
-        pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.(" + s + ")(\\/[\\w\\.\\-\\?\\=#~&%]*)*\\/?(?!\\S)";
+        zones = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts).join("|");
     }
+    QString pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.(";
+    pattern += (!simple && !zones.isEmpty()) ? zones : "[a-z]{2,6}\\.?";
+    pattern += ")(\\/[\\w\\.\\-\\?\\=#~&%\\,\\(\\)]*)*\\/?(?!\\S)";
     return pattern;
 }
 

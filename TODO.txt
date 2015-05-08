@@ -18,8 +18,10 @@
 [done] Fix thread files downloading
 [done] In get_new_posts AJAX request, get all posts if last post number is 0
 [done] Replace get_thread_op_posts AJAX request with get_thread_numbers
+[done] Improve URL markup
+[done] Add [url] tag
+[done] Add e-mail markup
 * Implement Drag and Drop file upload
-* Improve URL detection
 * Implement favorite threads system
 * Implement playlist for audio files
 ? Add ability to set limits for each thread

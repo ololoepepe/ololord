@@ -104,9 +104,6 @@ public:
     }
 };
 
-static const QString ExternalLinkRegexpLightPattern =
-        "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,6}\\.?)(\\/[\\w\\.\\-\\?\\=~&%]*)*\\/?";
-
 static QString tagName(const QRegExp &rx)
 {
     QString cl = rx.cap();
@@ -119,7 +116,7 @@ static QString tagName(const QRegExp &rx)
 
 static SkipList externalLinks(const QString &s)
 {
-    QRegExp rx(Tools::externalLinkRegexpPattern());
+    QRegExp rx(Tools::externalLinkRegexpPattern(false));
     int ind = rx.indexIn(s);
     SkipList skip;
     while (ind >= 0) {
@@ -271,7 +268,7 @@ static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
         return;
     SkipList skip;
     QString t = c.mid();
-    QRegExp rx(Tools::externalLinkRegexpPattern());
+    QRegExp rx(Tools::externalLinkRegexpPattern(false));
     int ind = rx.indexIn(t);
     while (ind >= 0) {
         QString cap = rx.cap();
@@ -327,6 +324,29 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkExternalLink);
 }
 
+static void processWakabaMarMailto(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("[\\w\\.\\-]+@([\\w\\.\\-]+\\.[a-z]{2,6})");
+    QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
+    int ind = rx.indexIn(t);
+    while (ind >= 0) {
+        QString mail = rx.cap();
+        if (!rxLink.exactMatch(rx.cap(1))) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
+        QString result = "<a href=\"mailto:" + mail + "\">" + BTextTools::toHtml(mail) + "</a>";
+        t.replace(ind, rx.matchedLength(), result);
+        skip << qMakePair(ind, result.length());
+        ind = rx.indexIn(t, ind + result.length());
+    }
+    c.process(t, skip, &processWakabaMarkLink);
+}
+
 static void processWakabaMarkStrikeoutShitty(ProcessPostTextContext &c)
 {
     if (!c.isValid())
@@ -345,7 +365,7 @@ static void processWakabaMarkStrikeoutShitty(ProcessPostTextContext &c)
         skip << qMakePair(ind + 3, 4);
         ind = rx.indexIn(t, ind + 7);
     }
-    c.process(t, skip, &processWakabaMarkLink);
+    c.process(t, skip, &processWakabaMarMailto);
 }
 
 static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
@@ -548,9 +568,32 @@ static void processTags(ProcessPostTextContext &c)
     c.process(t, skip, next);
 }
 
+static void processTagUrl(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\[url\\](.+)\\[/url\\]");
+    QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
+    int ind = rx.indexIn(t);
+    while (ind >= 0) {
+        QString href = rx.cap(1);
+        if (!rxLink.exactMatch(href)) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
+        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(href) + "</a>";
+        t.replace(ind, rx.matchedLength(), result);
+        skip << qMakePair(ind, result.length());
+        ind = rx.indexIn(t, ind + result.length());
+    }
+    c.process(t, skip, &processTags);
+}
+
 static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processTags, "`", "", "font", "<font face=\"monospace\">", true);
+    processSimmetric(c, &processTagUrl, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
 static void processTagCode(ProcessPostTextContext &c)
@@ -562,6 +605,7 @@ static void processTagCode(ProcessPostTextContext &c)
     QString srchighlightPath = BDirTools::findResource("srchilite", BDirTools::AllResources);
     if (!srchighlightPath.isEmpty()) {
         QStringList langs = Tools::supportedCodeLanguages();
+        langs.removeAll("url");
         QString tags;
         foreach (const QString &s, langs)
             tags += "|\\[" + s + "\\]";
@@ -628,6 +672,7 @@ static void processWakabaMarkCode(ProcessPostTextContext &c)
     QString srchighlightPath = BDirTools::findResource("srchilite", BDirTools::AllResources);
     if (!srchighlightPath.isEmpty()) {
         QStringList langs = Tools::supportedCodeLanguages();
+        langs.removeAll("url");
         QRegExp rx("/\\-\\-code\\s+(" + langs.join("|").replace("+", "\\+") + ")\\s+");
         int indStart = rx.indexIn(t);
         QRegExp rxe("\\s+\\\\\\-\\-");
@@ -712,7 +757,7 @@ void toHtml(QString *s)
     if (!s)
         return;
     SkipList skip;
-    QRegExp rx(ExternalLinkRegexpLightPattern);
+    QRegExp rx(Tools::externalLinkRegexpPattern(true));
     int ind = rx.indexIn(*s);
     while (ind >= 0) {
         s->insert(ind + rx.matchedLength(), "</a>");
