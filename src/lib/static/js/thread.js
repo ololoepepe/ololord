@@ -10,6 +10,8 @@ lord.blinkTimer = null;
 lord.pageVisible = "visible";
 lord.isDownloading = false;
 
+/*Functions*/
+
 lord.addAnchorChangeListener = function(callback) {
     if ("onhashchange" in window) {
         window.onhashchange = function() {
@@ -130,6 +132,7 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
             if (lord.id(post.id))
                 continue;
             document.body.insertBefore(post, before);
+            lord.postNodeInserted(post);
         }
         if (!lord.blinkTimer && "hidden" == lord.pageVisible) {
             lord.blinkTimer = setInterval(lord.blinkFaviconNewMessage, 500);
@@ -156,8 +159,8 @@ lord.setAutoUpdateEnabled = function(cbox) {
             lord.autoUpdateTimer = null;
         }
     }
-    lord.setCookie("auto_update", enabled, {
-        "expires": lord.Billion
+    lord.setCookie("auto_update" + lord.text("currentThreadNumber"), enabled, {
+        "expires": lord.Year
     });
 };
 
@@ -192,8 +195,9 @@ lord.downloadThread = function() {
     lord.toCenter(cButton, cButton.offsetWidth, cButton.offsetHeight);
     var zip = new JSZip();
     var last = 0;
+    var completed = 0;
     var append = function(i) {
-        if (i >= as.length) {
+        if (completed >= as.length) {
             var content = zip.generate({
                 "type": "blob"
             });
@@ -219,6 +223,7 @@ lord.downloadThread = function() {
                     "binary": true
                 });
             }
+            ++completed;
             progress.value = +progress.value + 1;
             append(++last);
         });
@@ -229,10 +234,9 @@ lord.downloadThread = function() {
 };
 
 lord.initializeOnLoadThread = function() {
-    lord.initializeOnLoadBaseBoard();
     lord.addVisibilityChangeListener(lord.visibilityChangeListener);
     lord.addAnchorChangeListener(lord.anchorChangeListener);
-    if (lord.getCookie("auto_update") === "true") {
+    if (lord.getCookie("auto_update" + lord.text("currentThreadNumber")) === "true") {
         var cbox = lord.id("autoUpdate_top");
         cbox.checked = true;
         lord.setAutoUpdateEnabled(cbox);

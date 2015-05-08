@@ -42,11 +42,14 @@ public:
     std::list<CaptchaEngine> captchaEngines;
     std::string captchaLabelText;
     std::string captchaLabelWarningText;
+    std::string closeButtonText;
     std::string confirmButtonText;
     CaptchaEngine currentCaptchaEngine;
     Locale currentLocale;
+    std::string currentQuickReplyAction;
     std::string currentTime;
     std::string custom;
+    std::string favoriteThreadsText;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;
@@ -57,10 +60,16 @@ public:
     std::string loginPlaceholderText;
     unsigned int maxSearchQueryLength;
     std::string pageTitle;
+    std::string quickReplyActionAppendPostText;
+    std::string quickReplyActionDoNothingText;
+    std::string quickReplyActionGotoThreadText;
+    std::string quickReplyActionLabelText;
+    std::string removeFromFavoritesText;
     std::string searchButtonText;
     std::string searchInputPlaceholder;
     std::string settingsButtonText;
     std::string settingsDialogTitle;
+    std::string showFavoriteText;
     std::string showPasswordText;
     std::string showTripcodeText;
     std::string siteDomain;
@@ -73,6 +82,7 @@ public:
     std::string timeLocalText;
     std::string timeServerText;
     std::string toHomePageText;
+    std::string toPlaylistPageText;
     std::string toMarkupPageText;
 };
 

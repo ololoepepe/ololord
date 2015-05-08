@@ -47,6 +47,7 @@ class request;
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 
 #include <cppcms/json.h>
 
@@ -288,12 +289,14 @@ OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);
 OLOLORD_EXPORT QList<Post> findPosts(const Search::Query &query, const QString &boardName = QString(), bool *ok = 0,
                                      QString *error = 0, QString *description = 0,
                                      const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT QVariant getFileMetaData(const QString &fileName, bool *ok = 0, QString *error = 0,
+                                        const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
                                        quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
                             bool *ok = 0, QString *error = 0);
-OLOLORD_EXPORT QList<Post> getThreadOpPosts(const cppcms::http::request &req, const QString &boardName, bool *ok = 0,
-                                            QString *error = 0);
+OLOLORD_EXPORT QList<quint64> getThreadNumbers(const cppcms::http::request &req, const QString &boardName,
+                                               bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *error = 0,
                                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp,

@@ -1,3 +1,31 @@
+=== ololord 0.1.0-rc6 (8 May 2015) ===
+    * Fix posting speed displaying
+    * Improve URL markup
+    * Fix quick reply from board
+    * Add ability to select quick reply action
+    * Catch thread exceptions
+    * Fix auto thread update system
+    * Add ability to cache posts and dynamic/static files manually
+    * Improve rules system
+    * Show user agent at /d/
+    * Improve complain button surprize
+    * Implement partial GET request support
+    * Implement YouTube video embedding
+    * Replace YouTube link text with video title
+    * Improve file information storing
+    * Store audio/video metadata (duration, bitrate, tags)
+    * Fix post form rules including system
+    * Implement Last-Modified/If-Modified-Since support
+    * Fix thread files downloading
+    * In get_new_posts AJAX request, get all posts if last post number is 0
+    * Replace get_thread_op_posts AJAX request with get_thread_numbers
+    * Improve URL markup
+    * Add [url] tag
+    * Add e-mail markup
+    * Add get_file_meta_data AJAX request
+    * Implement playlist for audio files
+    * Implement favorite threads system
+
 === ololord 0.1.0-rc5 (26 April 2015) ===
     * Fix vote system
     * Implement index-based search

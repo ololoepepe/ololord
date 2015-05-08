@@ -44,6 +44,7 @@ static const QString DateTimeFormat = "dd.MM.yyyy:hh";
 static bool checkParsingError(BTextTools::OptionsParsingError error, const QString &errorData);
 static bool handleBanPoster(const QString &cmd, const QStringList &args);
 static bool handleBanUser(const QString &cmd, const QStringList &args);
+static bool handleCache(const QString &cmd, const QStringList &args);
 static bool handleClearCache(const QString &cmd, const QStringList &args);
 static bool handleCloseThread(const QString &cmd, const QStringList &args);
 static bool handleDeletePost(const QString &cmd, const QStringList &args);
@@ -76,7 +77,7 @@ int main(int argc, char **argv)
     if (!s.testServer()) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         s.listen();
-        app.setApplicationVersion("0.1.0-rc5");
+        app.setApplicationVersion("0.1.0-rc6");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -236,6 +237,72 @@ bool handleBanUser(const QString &, const QStringList &args)
         bWriteLine(err);
     else
         bWriteLine(translate("handleBanUser", "OK"));
+    return true;
+}
+
+static bool handleCache(const QString &, const QStringList &args)
+{
+    if (args.size() > 1) {
+        bWriteLine(translate("handleCache", "Invalid argument count"));
+        return false;
+    }
+    QString s = bReadLine(translate("handleCache", "This operation is REALLY heavy and may consume A LOT OF MEMORY. "
+                                    "Are you sure?") + " [yN] ");
+    if (s.compare("y", Qt::CaseInsensitive))
+        return true;
+    static const QStringList List = QStringList() << "dynamic_files" << "static_files";
+    if (args.size() && !List.contains(args.first())) {
+        bWriteLine(translate("handleCache", "No such cache"));
+        return false;
+    }
+    bool bdynamicFiles = args.isEmpty() || !args.first().compare("dynamic_files");
+    bool bstaticFiles = args.isEmpty() || !args.first().compare("static_files");
+    if (bdynamicFiles) {
+        QString path = BCoreApplication::location("storage/img", BCoreApplication::UserResource);
+        QStringList files = !path.isEmpty() ? BDirTools::entryListRecursive(path, QDir::Files) : QStringList();
+        int curr = 1;
+        if (files.size())
+            bWriteLine(translate("handleCache", "Caching dynamic files"));
+        foreach (QString fn, files) {
+            QString p = fn;
+            p.remove(path + "/");
+            bWriteLine(QString::number(curr) + "/" + QString::number(files.size()) + ": " + p);
+            ++curr;
+            bool ok = false;
+            QByteArray file = BDirTools::readFile(fn, -1, &ok);
+            if (!ok)
+                continue;
+            Cache::cacheDynamicFile(p, file);
+        }
+    }
+    if (bstaticFiles) {
+        QString path1 = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::SharedResource);
+        QString path2 = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource);
+        //No need to cache builtin resources
+        QStringList files;
+        if (!path1.isEmpty())
+            files << BDirTools::entryListRecursive(path1 + "/static", QDir::Files);
+        if (!path2.isEmpty())
+            files << BDirTools::entryListRecursive(path2 + "/static", QDir::Files);
+        int curr = 1;
+        if (files.size())
+            bWriteLine(translate("handleCache", "Caching static files"));
+        foreach (QString fn, files) {
+            QString p = fn;
+            if (!path1.isEmpty())
+                p.remove(path1 + "/static/");
+            if (!path2.isEmpty())
+                p.remove(path2 + "/static/");
+            bWriteLine(QString::number(curr) + "/" + QString::number(files.size()) + ": " + p);
+            ++curr;
+            bool ok = false;
+            QByteArray file = BDirTools::readFile(fn, -1, &ok);
+            if (!ok)
+                continue;
+            Cache::cacheStaticFile(p, file);
+        }
+    }
+    bWriteLine(translate("handleClearCache", "OK"));
     return true;
 }
 
@@ -440,7 +507,8 @@ bool handleReloadPostIndex(const QString &, const QStringList &)
 
 bool handleRerenderPosts(const QString &, const QStringList &args)
 {
-    QString s = bReadLine(translate("handleRerenderPosts", "Are you sure?") + " [yN] ");
+    QString s = bReadLine(translate("handleRerenderPosts", "This operation is REALLY heavey and may take a long time. "
+                                    "Are you sure?") + " [yN] ");
     if (s.compare("y", Qt::CaseInsensitive))
         return true;
     QStringList boardNames = args;
@@ -607,6 +675,14 @@ void initCommands()
         "Make a thread <thread-number> at <board> not fixed (regular thread).");
     BTerminal::setCommandHelp("unfix-thread", ch);
     //
+    BTerminal::installHandler("cache", &handleCache);
+    ch.usage = "cache [cache-name]";
+    ch.description = BTranslation::translate("initCommands", "Cache all dynamic/static files.\n"
+                                             "[cache-name] may be one of the following: \n"
+                                             "dynamic_files, static_files.\n"
+                                             "If no argument is passed, everything is cached.");
+    BTerminal::setCommandHelp("cache", ch);
+    //
     BTerminal::installHandler("clear-cache", &handleClearCache);
     ch.usage = "clear-cache [cache-name]";
     BTranslation t = BTranslation::translate("initCommands", "Clear the cache specified by [cache-name].\n"
@@ -619,11 +695,13 @@ void initCommands()
     BTerminal::installHandler("reload-boards", &handleReloadBoards);
     ch.usage = "reload-boards";
     ch.description = BTranslation::translate("initCommands", "Reload all boards: builtin and provided by plugins.");
+    BTerminal::setCommandHelp("reload-boards", ch);
     //
     BTerminal::installHandler("reload-captcha-engines", &handleReloadCaptchaEngines);
     ch.usage = "reload-captcha-engines";
     ch.description = BTranslation::translate("initCommands", "Reload all captcha engines: builtin and provided by "
                                              "plugins.");
+    BTerminal::setCommandHelp("reload-captcha-engines", ch);
     //
     BTerminal::installHandler("reload-post-index", &handleReloadPostIndex);
     ch.usage = "reload-post-index";
@@ -748,6 +826,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "ssl_proxy_query", n);
     nn->setDescription(BTranslation::translate("initSettings", "Query used to proxy non-SSL links inside iframes.\n"
                                                "Must contain \"%1\" (without quotes) - it is replaced by URL."));
+    nn = new BSettingsNode(QVariant::String, "youtube_api_key", n);
+    nn->setDescription(BTranslation::translate("initSettings", "The key required to access YouTube API.\n"
+                                               "It will appear in HTML."));
     n = new BSettingsNode("Captcha", root);
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);
@@ -768,6 +849,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::String, "ffprobe_commande", n);
+    nn->setDescription(BTranslation::translate("initSettings", "ffprobe utility command (possibly full path).\n"
+                                               "The default is ffprobe (UNIX) or ffprobe.exe (Windows)."));
     nn = new BSettingsNode(QVariant::String, "logging_skip_ip", n);
     nn->setUserSetFunction(&setLoggingSkipIp);
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"

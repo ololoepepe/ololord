@@ -331,7 +331,8 @@ FileInfo::FileInfo()
 }
 
 FileInfo::FileInfo(const QString &name, const QByteArray &hash, const QString &mimeType, int size, int height,
-                   int width, const QString &thumbName, int thumbHeight, int thumbWidth, QSharedPointer<Post> post)
+                   int width, const QString &thumbName, int thumbHeight, int thumbWidth, const QVariant &metaData,
+                   QSharedPointer<Post> post)
 {
     name_ = name;
     hash_ = hash;
@@ -342,6 +343,7 @@ FileInfo::FileInfo(const QString &name, const QByteArray &hash, const QString &m
     thumbName_ = thumbName;
     thumbHeight_ = thumbHeight;
     thumbWidth_ = thumbWidth;
+    metaData_ = BeQt::serialize(metaData);
     post_ = post;
 }
 
@@ -388,6 +390,11 @@ int FileInfo::thumbHeight() const
 int FileInfo::thumbWidth() const
 {
     return thumbWidth_;
+}
+
+QVariant FileInfo::metaData() const
+{
+    return BeQt::deserialize(metaData_);
 }
 
 QLazySharedPointer<Post> FileInfo::post() const

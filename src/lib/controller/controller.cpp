@@ -42,11 +42,19 @@ namespace Controller
 
 static QMutex localeMutex(QMutex::Recursive);
 
-static std::string speedString(const AbstractBoard::PostingSpeed &s)
+static std::string speedString(const AbstractBoard::PostingSpeed &s, qint64 uptime)
 {
-    double d = double(s.postCount) / double(s.uptimeMsecs);
+    double d = double(s.postCount) / double(uptime);
     QString ss = QString::number(d, 'f', 1);
     return Tools::toStd((ss.split('.').last() != "0") ? ss : ss.split('.').first());
+}
+
+static std::string zeroSpeedString(const AbstractBoard::PostingSpeed &s, const std::string &nonZero, const QLocale &l)
+{
+    if (s.postCount && s.uptimeMsecs)
+        return "1 " + nonZero;
+    else
+        return "0 " + TranslatorStd(l).translate("zeroSpeedString", "post(s) per hour.", "postingSpeed");
 }
 
 static Content::Base::Locale toWithLocale(const QLocale &l)
@@ -110,9 +118,13 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         c.currentCaptchaEngine.title = eilist.first().title;
     }
     c.cancelButtonText = ts.translate("initBase", "Cancel", "cancelButtonText");
+    c.closeButtonText = ts.translate("initBase", "Close", "closeButtonText");
     c.confirmButtonText = ts.translate("initBase", "Confirm", "confirmButtonText");
     c.currentLocale = toWithLocale(ts.locale());
-    c.currentTime = const_cast<cppcms::http::request *>(&req)->cookie_by_name("time").value();
+    cppcms::http::request *mreq = const_cast<cppcms::http::request *>(&req);
+    c.currentTime = mreq->cookie_by_name("time").value();
+    c.currentQuickReplyAction = mreq->cookie_by_name("quickReplyAction").value();
+    c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.loggedIn = !Tools::hashpassString(req).isEmpty();
@@ -136,12 +148,21 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.loginPlaceholderText = ts.translate("initBase", "Password/hashpass", "PlaceholderText");
     c.maxSearchQueryLength = 150;
     c.pageTitle = Tools::toStd(pageTitle);
+    c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
+                                                    "quickReplyActionAppendPostText");
+    c.quickReplyActionDoNothingText = ts.translate("initBase", "Leaves page unmodified",
+                                                   "quickReplyActionDoNothingText");
+    c.quickReplyActionGotoThreadText = ts.translate("initBase", "Redirects to thread",
+                                                    "quickReplyActionGotoThreadText");
+    c.quickReplyActionLabelText = ts.translate("initBase", "Quick reply outside thread:", "quickReplyActionLabelText");
+    c.removeFromFavoritesText = ts.translate("initBase", "Remove from favorites", "removeFromFavoritesText");
     SettingsLocker s;
     c.searchButtonText = ts.translate("initBase", "Search", "searchButtonText");
     c.searchInputPlaceholder = ts.translate("initBase", "Search: possible +required -excluded",
                                             "searchInputPlaceholder");
     c.settingsButtonText = ts.translate("initBase", "Settings", "settingsButtonText");
     c.settingsDialogTitle = ts.translate("initBase", "Settings", "settingsDialogTitle");
+    c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
@@ -164,6 +185,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
+    c.toPlaylistPageText = ts.translate("initBase", "Playlist", "toPlaylistPageText");
     c.toMarkupPageText = ts.translate("initBase", "Markup", "toMarkupPageText");
 }
 
@@ -189,6 +211,8 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     }
     c.action = currentThread ? "create_post" : "create_thread";
     c.addFileText = ts.translate("initBaseBoard", "Add file", "addFileText");
+    c.addToPlaylistText = ts.translate("initBaseBoard", "Add to playlist", "addToPlaylistText");
+    c.addThreadToFavoritesText = ts.translate("initBaseBoard", "Add thread to favorites", "addThreadToFavoritesText");
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");
@@ -231,6 +255,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
     c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
+    c.collapseVideoText = ts.translate("initBaseBoard", "Collapse video", "collapseVideoText");
     c.complainText = ts.translate("initBaseBoard", "Complain", "complainText");
     c.complainMessage = ts.translate("initBaseBoard", "Go complain to your mum, you whiner!", "complainMessage");
     c.currentBoard.name = Tools::toStd(board->name());
@@ -246,6 +271,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");
     c.enterPasswordTitle = ts.translate("initBaseBoard", "Enter password", "enterPasswordTitle");
+    c.expandVideoText = ts.translate("initBaseBoard", "Expand video", "expandVideoText");
     c.findSourceWithGoogleText = ts.translate("initBaseBoard", "Find source with Google", "findSourceWithGoogleText");
     c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
@@ -290,34 +316,35 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postingEnabled = postingEnabled;
     c.postingSpeedText = ts.translate("initBaseBoard", "Posting speed:", "postingSpeedText");
     AbstractBoard::PostingSpeed speed = board->postingSpeed();
-    speed.uptimeMsecs /= BeQt::Hour;
-    if (!speed.uptimeMsecs) {
-        c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
-    } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
-        c.postingSpeed = speedString(speed) + " " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+    qint64 uptime = speed.uptimeMsecs / BeQt::Hour;
+    std::string shour = ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+    if (!uptime) {
+        c.postingSpeed = zeroSpeedString(speed, shour, ts.locale());
+    } else if ((speed.postCount / uptime) > 0) {
+        c.postingSpeed = speedString(speed, uptime) + " " + shour;
     } else {
-        speed.uptimeMsecs /= 24;
-        if (!speed.uptimeMsecs) {
-            c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
-        } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
-            c.postingSpeed = speedString(speed) + " "
-                    + ts.translate("initBaseBoard", "post(s) per day.", "postingSpeed");
+        uptime /= 24;
+        std::string sday = ts.translate("initBaseBoard", "post(s) per day.", "postingSpeed");
+        if (!uptime) {
+            c.postingSpeed = zeroSpeedString(speed, sday, ts.locale());
+        } else if ((speed.postCount / uptime) > 0) {
+            c.postingSpeed = speedString(speed, uptime) + " " + sday;
         } else {
-            speed.uptimeMsecs /= 30;
-            if (!speed.uptimeMsecs) {
-                c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
-            } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
-                c.postingSpeed = speedString(speed) + " "
-                        + ts.translate("initBaseBoard", "post(s) per month.", "postingSpeed");
+            uptime /= 30;
+            std::string smonth = ts.translate("initBaseBoard", "post(s) per month.", "postingSpeed");
+            if (!uptime) {
+                c.postingSpeed = zeroSpeedString(speed, smonth, ts.locale());
+            } else if ((speed.postCount / uptime) > 0) {
+                c.postingSpeed = speedString(speed, uptime) + " " + smonth;
             } else {
-                speed.uptimeMsecs /= 12;
-                if (!speed.uptimeMsecs) {
-                    c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
-                } else if ((speed.postCount / speed.uptimeMsecs) > 0) {
-                    c.postingSpeed = speedString(speed) + " "
-                            + ts.translate("initBaseBoard", "post(s) per year.", "postingSpeed");
+                uptime /= 12;
+                std::string syear = ts.translate("initBaseBoard", "post(s) per year.", "postingSpeed");
+                if (!uptime) {
+                    c.postingSpeed = zeroSpeedString(speed, syear, ts.locale());
+                } else if ((speed.postCount / uptime) > 0) {
+                    c.postingSpeed = speedString(speed, uptime) + " " + syear;
                 } else {
-                    c.postingSpeed = "0 " + ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
+                    c.postingSpeed = "0 " + syear;
                 }
             }
         }
@@ -339,6 +366,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.toThread = ts.translate("initBaseBoard", "Answer", "toThread");
     c.toTopText = ts.translate("initBaseBoard", "Scroll to the top", "toTopText");
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
+    c.youtubeApiKey = Tools::toStd(s->value("Site/youtube_api_key").toString());
     return true;
 }
 

@@ -2,6 +2,7 @@
 
 #include "board/cgboard.h"
 #include "board/configurableboard.h"
+#include "board/dboard.h"
 #include "board/echoboard.h"
 #include "board/mlpboard.h"
 #include "board/prboard.h"
@@ -48,6 +49,7 @@
 #include <QMutexLocker>
 #include <QReadLocker>
 #include <QReadWriteLock>
+#include <QRegExp>
 #include <QScopedPointer>
 #include <QSet>
 #include <QSettings>
@@ -175,6 +177,13 @@ void AbstractBoard::FileTransaction::setThumbFileSize(int height, int width)
     FileInfo &fi = minfos.last();
     fi.thumbHeight = height;
     fi.thumbWidth = width;
+}
+
+void AbstractBoard::FileTransaction::setMetaData(const QVariant &metaData)
+{
+    if (minfos.isEmpty())
+        return;
+    minfos.last().metaData = metaData;
 }
 
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
@@ -314,8 +323,8 @@ void AbstractBoard::reloadBoards()
     boards.insert(cb->name(), cb);
     b = new rpgBoard;
     boards.insert(b->name(), b);
-    cb = new ConfigurableBoard("d", BTranslation::translate("AbstractBoard", "Board /d/iscussion", "title"));
-    boards.insert(cb->name(), cb);
+    b = new dBoard;
+    boards.insert(b->name(), b);
     foreach (BPluginWrapper *pw, BCoreApplication::pluginWrappers("board-factory")) {
         pw->unload();
         BCoreApplication::removePlugin(pw);
@@ -917,7 +926,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
-    c.autoUpdateEnabled = !Tools::cookieValue(app.request(), "auto_update").compare("true", Qt::CaseInsensitive);
+    QString au = "auto_update" + QString::number(threadNumber);
+    c.autoUpdateEnabled = !Tools::cookieValue(app.request(), au).compare("true", Qt::CaseInsensitive);
     c.autoUpdateText = ts.translate("AbstractBoard", "Auto update", "autoUpdateText");
     c.backText = ts.translate("AbstractBoard", "Back", "backText");
     c.bumpLimit = bumpLimit();
@@ -968,7 +978,7 @@ bool AbstractBoard::isHidden() const
 
 QStringList AbstractBoard::postformRules(const QLocale &l) const
 {
-    return Tools::rules("rules/postform", l) + Tools::rules("rules/postform/" + name(), l);
+    return rulesImplementation(l, "postform");
 }
 
 bool AbstractBoard::postingEnabled() const
@@ -994,15 +1004,17 @@ unsigned int AbstractBoard::postLimit() const
 
 QStringList AbstractBoard::rules(const QLocale &l) const
 {
-    return Tools::rules("rules/board", l) + Tools::rules("rules/board/" + name(), l);
+    return rulesImplementation(l, "board");
 }
 
 bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
 {
 #if defined(Q_OS_WIN)
     static const QString FfmpegDefault = "ffmpeg.exe";
+    static const QString FfprobeDefault = "ffprobe.exe";
 #elif defined(Q_OS_UNIX)
     static const QString FfmpegDefault = "ffmpeg";
+    static const QString FfprobeDefault = "ffprobe";
 #endif
     typedef QMap<QString, QString> StringMap;
     init_once(StringMap, suffixes, StringMap()) {
@@ -1037,12 +1049,35 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
+    SettingsLocker sl;
+    QString ffmpeg = sl->value("System/ffmpeg_command", FfmpegDefault).toString();
+    QString ffprobe = sl->value("System/ffprobe_command", FfprobeDefault).toString();
+    QStringList ffprobeArgs = QStringList() << "-i" << QDir::toNativeSeparators(sfn);
+    QRegExp rxd("Duration\\: (\\d\\d\\:\\d\\d\\:\\d\\d).+bitrate\\: (\\d+) kb/s");
+    QString out;
     if (Tools::isAudioType(mimeType)) {
         ft.setMainFileSize(0, 0);
         ft.setThumbFile(mimeType);
         ft.setThumbFileSize(200, 200);
+        Tools::AudioTags tags = Tools::audioTags(sfn);
+        QVariantMap m;
+        if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
+            if (rxd.indexIn(out) >= 0) {
+                m.insert("duration", rxd.cap(1));
+                m.insert("bitrate", rxd.cap(2));
+            }
+        }
+        if (!tags.album.isEmpty())
+            m.insert("album", tags.album);
+        if (!tags.artist.isEmpty())
+            m.insert("artist", tags.artist);
+        if (!tags.title.isEmpty())
+            m.insert("title", tags.title);
+        if (!tags.year.isEmpty())
+            m.insert("year", tags.year);
+        if (!m.isEmpty())
+            ft.setMetaData(m);
     } else if (Tools::isVideoType(mimeType)) {
-        QString ffmpeg = SettingsLocker()->value("System/ffmpeg_command", FfmpegDefault).toString();
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
@@ -1056,6 +1091,15 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
             ft.setThumbFile(mimeType);
             ft.setThumbFileSize(200, 200);
         }
+        QVariantMap m;
+        if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
+            if (rxd.indexIn(out) >= 0) {
+                m.insert("duration", rxd.cap(1));
+                m.insert("bitrate", rxd.cap(2));
+            }
+        }
+        if (!m.isEmpty())
+            ft.setMetaData(m);
     } else {
         QByteArray data = f.data;
         QBuffer buff(&data);
@@ -1203,8 +1247,25 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
                 f.thumbSizeY = fis->thumbHeight();
-                if (f.sizeX >=0 && f.sizeY > 0)
-                    sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
+                if (fis->mimeType().startsWith("image/") || fis->mimeType().startsWith("video/")) {
+                    if (f.sizeX > 0 && f.sizeY > 0)
+                        sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
+                }
+                if (fis->mimeType().startsWith("audio/") || fis->mimeType().startsWith("video/")) {
+                    QVariantMap m = fis->metaData().toMap();
+                    QString duration = m.value("duration").toString();
+                    QString bitrate = m.value("bitrate").toString();
+                    QString szz = duration;
+                    if (fis->mimeType().startsWith("audio/")) {
+                        if (!szz.isEmpty())
+                            szz += ", ";
+                        szz += bitrate;
+                        if (!bitrate.isEmpty())
+                            szz += "kbps";
+                    }
+                    if (!szz.isEmpty())
+                        sz += ", " + szz;
+                }
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);
                 p->files.push_back(f);
@@ -1259,8 +1320,11 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         delete p;
     TranslatorStd ts(req);
     QLocale l = tq.locale();
-    for (std::list<Content::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i)
+    for (std::list<Content::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i) {
+        i->size = Tools::toStd(Tools::fromStd(i->size).replace("kbps", tq.translate("AbstractBoard", "kbps",
+                                                                                    "fileSize")));
         i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("AbstractBoard", "KB", "fileSize")));
+    }
     if (showWhois() && "Unknown country" == pp.countryName)
         pp.countryName = ts.translate("AbstractBoard", "Unknown country", "countryName");
     int regLvl = Database::registeredUserLevel(req);
@@ -1354,6 +1418,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["rawSubject"] = post.rawSubject;
     o["text"] = post.text;
     o["rawPostText"] = post.rawPostText;
+    o["rawHtml"] = post.rawHtml;
     o["tripcode"] = post.tripcode;
     o["ownPost"] = post.ownPost;
     cppcms::json::array refs;
@@ -1404,4 +1469,26 @@ void AbstractBoard::cleanupBoards()
     foreach (AbstractBoard *b, boards)
         delete b;
     boards.clear();
+}
+
+QStringList AbstractBoard::rulesImplementation(const QLocale &l, const QString &type) const
+{
+    if (type.isEmpty())
+        return QStringList();
+    QStringList common = Tools::rules("rules/" + type, l);
+    QStringList specific = Tools::rules("rules/" + type + "/" + name(), l);
+    if (specific.isEmpty())
+        return common;
+    foreach (int i, bRangeR(specific.size() - 1, 0)) {
+        const QString &s = specific.at(i);
+        QRegExp rx("#include\\s+\\d+");
+        if ("#include all" == s) {
+            specific = specific.mid(0, i) + common + specific.mid(i + 1);
+        } else if (rx.exactMatch(s)) {
+            int n = rx.cap().remove(QRegExp("#include\\s+")).toInt();
+            if (n >= 0 && n < common.size())
+                specific.replace(i, common.at(n));
+        }
+    }
+    return specific;
 }

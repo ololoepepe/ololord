@@ -20,8 +20,22 @@ a {
     color: #FF6600;
 }
 
+a.expandCollapse {
+    color: #444444;
+    cursor: pointer;
+}
+
 a:hover {
     color: #0066FF;
+}
+
+a.expandCollapse:hover {
+    color: #666666;
+    cursor: pointer
+}
+
+audio {
+    width: 500px;
 }
 
 hr {
@@ -75,6 +89,30 @@ hr {
     color: orange;
     border: 1px dotted orange;
 }
+
+.favorites {
+    background-color: #CCCCCC;
+    border: 1px solid #AAAAAA;
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    z-index: 9980;
+}
+
+.favorites > div {
+    background-color: #DDDDDD;
+    border: 1px solid #CCCCCC;
+}
+
+/*.favorites > span {
+    position: absolute;
+    bottom: 5px;
+}
+
+.favorites > span > button {
+    position: absolute;
+    right: 10px;
+}*/
 
 /*
     Ban
@@ -355,6 +393,11 @@ span.spoiler:hover a {
     white-space: nowrap;
 }
 
+.postFileSize {
+    font-size: 0.8em;
+    color: #444444;
+}
+
 .postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img {
     opacity: 0.65;
     filter: alpha(opacity=65);
@@ -626,6 +669,21 @@ a.progressBlocking {
 /* Settings dialog */
 
 .settingsDialog {
-    width: 400px;
-    height: 200px;
+    /*width: 400px;
+    height: 200px;*/
+}
+
+/* Playlist */
+
+.track {
+    background-color: #DDDDDD;
+    border: 1px solid #CCCCCC;
+}
+
+.track ~ .track {
+    margin-top: 5px;
+}
+
+.track > audio {
+    width: 600px;
 }

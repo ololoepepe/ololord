@@ -4,11 +4,17 @@ var lord = lord || {};
 
 /*Constants*/
 
+lord.Second = 1000;
+lord.Minute = 60 * lord.Second;
+lord.Hour = 60 * lord.Minute;
+lord.Day = 24 * lord.Hour;
+lord.Year = 365 * lord.Day;
 lord.Billion = 2 * 1000 * 1000 * 1000;
 
 /*Variables*/
 
 lord.popups = [];
+lord.unloading = false;
 
 /*Functions*/
 
@@ -41,6 +47,41 @@ lord.setCookie = function(name, value, options) {
 
 lord.deleteCookie = function(name) {
     lord.setCookie(name, "", {expires: -1});
+};
+
+lord.getLocalObject = function(key, defValue) {
+    if (!key || typeof key != "string")
+        return null;
+    try {
+        var val = localStorage.getItem(key);
+        return (null != val) ? JSON.parse(val) : defValue;
+    } catch (ex) {
+        return null;
+    }
+};
+
+lord.setLocalObject = function(key, value) {
+    if (!key || typeof key != "string")
+        return false;
+    try {
+        if (null != value && typeof value != "undefined")
+            localStorage.setItem(key, JSON.stringify(value));
+        else
+            localStorage.setItem(key, null);
+        return true;
+    } catch (ex) {
+        return false;
+    }
+};
+
+lord.removeLocalObject = function(key) {
+    if (!key || typeof key != "string")
+        return;
+    try {
+        return localStorage.removeItem(key);
+    } catch (ex) {
+        //
+    }
 };
 
 lord.in = function(arr, obj, strict) {
@@ -135,6 +176,16 @@ lord.node = function(type, text) {
     return ("TEXT" == type) ? document.createTextNode(text ? text : "") : document.createElement(type);
 };
 
+lord.toCenter = function(element, sizeHintX, sizeHintY) {
+    var doc = document.documentElement;
+    if (!sizeHintX || sizeHintX <= 0)
+        sizeHintX = +element.offsetWidth;
+    if (!sizeHintY  || sizeHintY <= 0)
+        sizeHintY = +element.offsetHeight;
+    element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
+    element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
+};
+
 lord.reloadPage = function() {
     document.location.reload(true);
 };
@@ -221,6 +272,34 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
         modal.destroy();
     });
     dialog.show();
+};
+
+lord.ajaxRequest = function(method, params, id, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    var prefix = lord.text("sitePathPrefix");
+    xhr.open("post", "/" + prefix + "api");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    var request = {
+        "method": method,
+        "params": params,
+        "id": id
+    };
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                var err = response.error;
+                if (!!err)
+                    return lord.showPopup(err, {type: "critical"});
+                callback(response.result);
+            } else {
+                if (!lord.unloading)
+                    lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+            }
+        }
+    };
+    xhr.send(JSON.stringify(request));
 };
 
 lord.changeLocale = function() {
@@ -321,8 +400,127 @@ lord.showSettings = function() {
         lord.setCookie("captchaEngine", tm, {
             "expires": lord.Billion, "path": "/"
         });
+        sel = lord.nameOne("quickReplyActionSelect", div);
+        var act = sel.options[sel.selectedIndex].value;
+        lord.setCookie("quickReplyAction", act, {
+            "expires": lord.Billion, "path": "/"
+        });
         lord.reloadPage();
     });
+};
+
+lord.showFavorites = function() {
+    var div = lord.id("favorites");
+    if (div)
+        return;
+    div = lord.node("div");
+    div.id = "favorites";
+    div.className = "favorites";
+    var h = lord.node("h1");
+    h.appendChild(lord.node("text", lord.text("favoriteThreadsText")));
+    div.appendChild(h);
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    var span = lord.node("span");
+    var clBtn = lord.node("button");
+    clBtn.appendChild(lord.node("text", lord.text("closeButtonText")));
+    clBtn.onclick = function() {
+        fav = lord.getLocalObject("favoriteThreads", {});
+        lord.forIn(fav, function(o, x) {
+            o.previousLastPostNumber = o.lastPostNumber;
+            fav[x] = o;
+        });
+        lord.setLocalObject("favoriteThreads", fav);
+        document.body.removeChild(div);
+    };
+    span.appendChild(clBtn);
+    div.appendChild(span);
+    var sitePathPrefix = lord.text("sitePathPrefix");
+    var f = function(res, x) {
+        var postDiv = lord.node("div");
+        postDiv.id = "favorite/" + x;
+        var a = lord.node("a");
+        var boardName = x.split("/").shift();
+        var threadNumber = x.split("/").pop();
+        a.href = "/" + sitePathPrefix + boardName + "/thread/" + threadNumber + ".html";
+        var txt = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+        a.appendChild(lord.node("text", "[" + x + "] " + txt.substring(0, 50)));
+        a.title = txt;
+        a.target = "_blank";
+        postDiv.appendChild(a);
+        postDiv.appendChild(lord.node("text", " "));
+        var fnt = lord.node("font");
+        fnt.color = "green";
+        postDiv.appendChild(fnt);
+        div.insertBefore(postDiv, span);
+        var p = fav[x];
+        if (p["lastPostNumber"] > p["previousLastPostNumber"]) {
+            fnt.appendChild(lord.node("text", "+" + (p["lastPostNumber"] - p["previousLastPostNumber"])));
+        }
+        var rmBtn = lord.node("a");
+        rmBtn.onclick = function() {
+            postDiv.parentNode.removeChild(postDiv);
+            var fav = lord.getLocalObject("favoriteThreads", {});
+            delete fav[x];
+            lord.setLocalObject("favoriteThreads", fav);
+        };
+        rmBtn.title = lord.text("removeFromFavoritesText");
+        var img = lord.node("img");
+        img.src = "/" + sitePathPrefix + "img/delete.png";
+        rmBtn.appendChild(img);
+        postDiv.appendChild(rmBtn);
+    };
+    lord.forIn(fav, function(_, x) {
+        var boardName = x.split("/").shift();
+        var threadNumber = x.split("/").pop();
+        lord.ajaxRequest("get_post", [boardName, +threadNumber], 6, function(res) {
+            f(res, x);
+        });
+    });
+    document.body.appendChild(div);
+    lord.toCenter(div);
+};
+
+lord.checkFavoriteThreads = function() {
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    var nfav = {};
+    lord.forIn(fav, function(o, x) {
+        var boardName = x.split("/").shift();
+        var threadNumber = x.split("/").pop();
+        lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, o.lastPostNumber], 7, function(res) {
+            if (!res || res.length < 1)
+                return;
+            o.lastPostNumber = res.pop()["number"];
+            nfav[x] = o;
+        });
+    });
+    setTimeout(function() {
+        fav = lord.getLocalObject("favoriteThreads", {});
+        lord.forIn(nfav, function(o, x) {
+            fav[x].lastPostNumber = o.lastPostNumber;
+        });
+        lord.setLocalObject("favoriteThreads", fav);
+        var div = lord.id("favorites");
+        if (div) {
+            lord.forIn(fav, function(o, x) {
+                var postDiv = lord.id("favorite/" + x);
+                var fnt = lord.queryOne("font", postDiv);
+                if (fnt.childNodes.length > 0)
+                    fnt.removeChild(fnt.childNodes[0]);
+                if (o.lastPostNumber > o.previousLastPostNumber)
+                    fnt.appendChild(lord.node("text", "+" + (o.lastPostNumber - o.previousLastPostNumber)));
+            });
+        } else {
+            var threadNumber = lord.text("currentThreadNumber");
+            lord.forIn(fav, function(o, x) {
+                if (o.lastPostNumber > o.previousLastPostNumber) {
+                    if (threadNumber && x.split("/").pop() == threadNumber)
+                        return;
+                    lord.showFavorites();
+                }
+            });
+        }
+        setTimeout(lord.checkFavoriteThreads, 15 * lord.Second);
+    }, 5 * lord.Second);
 };
 
 lord.initializeOnLoadSettings = function() {
@@ -333,4 +531,10 @@ lord.initializeOnLoadSettings = function() {
 window.addEventListener("load", function load() {
     window.removeEventListener("load", load, false);
     lord.initializeOnLoadSettings();
+    lord.checkFavoriteThreads();
+}, false);
+
+window.addEventListener("beforeunload", function unload() {
+    window.removeEventListener("beforeunload", unload, false);
+    lord.unloading = true;
 }, false);

@@ -1,6 +1,8 @@
 #ifndef STATICFILESROUTE_H
 #define STATICFILESROUTE_H
 
+class QByteArray;
+
 namespace cppcms
 {
 
@@ -35,6 +37,8 @@ public:
     int priority() const;
     std::string regex() const;
     std::string url() const;
+private:
+    void write(const QByteArray &data, qint64 msecsSinceEpoch = 0);
 };
 
 #endif // STATICFILESROUTE_H

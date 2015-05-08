@@ -17,6 +17,7 @@ lord.postForm = {
     "last": "",
     "quickReply": false
 };
+lord.complainVideo = null;
 
 /*Functions*/
 
@@ -34,16 +35,6 @@ lord.isVideoType = function(type) {
 
 lord.isSpecialThumbName = function(thumbName) {
     return lord.isAudioType(thumbName) || lord.isImageType(thumbName) || lord.isVideoType(thumbName);
-};
-
-lord.toCenter = function(element, sizeHintX, sizeHintY) {
-    var doc = document.documentElement;
-    if (!sizeHintX || sizeHintX <= 0)
-        sizeHintX = 300;
-    if (!sizeHintY  || sizeHintY <= 0)
-        sizeHintY = 150;
-    element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
-    element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
 };
 
 lord.resetScale = function(image) {
@@ -178,33 +169,6 @@ lord.traverseChildren = function(elem) {
     return children;
 };
 
-lord.ajaxRequest = function(method, params, id, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
-    var prefix = lord.text("sitePathPrefix");
-    xhr.open("post", "/" + prefix + "api");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    var request = {
-        "method": method,
-        "params": params,
-        "id": id
-    };
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
-                var err = response.error;
-                if (!!err)
-                    return lord.showPopup(err, {type: "critical"});
-                callback(response.result);
-            } else {
-                lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
-            }
-        }
-    };
-    xhr.send(JSON.stringify(request));
-};
-
 lord.createPostFile = function(f, boardName, postNumber) {
     if (!f || !boardName || isNaN(+postNumber))
         return null;
@@ -256,6 +220,16 @@ lord.createPostFile = function(f, boardName, postNumber) {
             divFileSearch.appendChild(lord.node("text", " "));
             divFileSearch.appendChild(a);
         });
+    }
+    if (lord.isAudioType(f["type"])) {
+        var a = lord.node("a");
+        a.href = "javascript:lord.addToPlaylist('" + boardName + "', '" + f["sourceName"] + "');";
+        a.title = lord.text("addToPlaylistText");
+        var logo = lord.node("img");
+        logo.src = "/" + sitePrefix + "img/playlist_add.png";
+        a.appendChild(logo);
+        divFileSearch.appendChild(lord.node("text", " "));
+        divFileSearch.appendChild(a);
     }
     file.appendChild(divFileSearch);
     var divImage = lord.node("div");
@@ -468,7 +442,11 @@ lord.createPostNode = function(res, permanent, boardName) {
     var closeButton = lord.nameOne("closeButton", post);
     var banButton = lord.nameOne("banButton", post);
     var downloadButton = lord.nameOne("downloadButton", post);
+    var favButton = lord.nameOne("addToFavoritesButton", post);
     var rawText = lord.nameOne("rawText", post);
+    var rawHtml = lord.nameOne("rawHtml", post);
+    if (res["rawHtml"])
+        rawHtml.value = "true";
     lord.nameOne("draft", post).value = res["draft"];
     if ((moder || res["draft"]) && (res["files"].length < +lord.text("maxFileCount"))) {
         addFileButton.href = addFileButton.href.replace("%postNumber%", res["number"]);
@@ -486,6 +464,10 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     if (res["number"] != res["threadNumber"] || !inp || +inp.value !== res["threadNumber"])
         downloadButton.parentNode.removeChild(downloadButton);
+    if (res["number"] == res["threadNumber"])
+        favButton.href = favButton.href.replace("%postNumber%", res["number"]);
+    else
+        favButton.parentNode.removeChild(favButton);
     if (!moder) {
         fixButton.parentNode.removeChild(fixButton);
         unfixButton.parentNode.removeChild(unfixButton);
@@ -550,6 +532,7 @@ lord.updatePost = function(boardName, postNumber, post) {
                 postHeader.appendChild(bumpLimit.cloneNode(true));
         }
         post.parentNode.replaceChild(newPost, post);
+        lord.postNodeInserted(newPost);
     });
 };
 
@@ -633,6 +616,100 @@ lord.globalOnclick = function(e) {
         t = t.parentNode;
     }
     lord.hideImage();
+};
+
+lord.addYoutubeButton = function(post) {
+    if (!post)
+        return;
+    var key = lord.text("youtubeApiKey");
+    if (!key)
+        return;
+    var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
+        + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
+    lord.query(q, post).forEach(function(link) {
+        if (link.href.replace("/watch?v=", "") == link.href)
+            return;
+        var img = lord.node("img");
+        img.src = "https://youtube.com/favicon.ico";
+        img.title = "YouTube";
+        link.parentNode.insertBefore(img, link);
+        link.parentNode.insertBefore(lord.node("text", " "), link);
+        var a = lord.node("a");
+        a.className = "expandCollapse";
+        a.lordExpanded = false;
+        (function (a, link) {
+            var videoId = link.href.split("v=").pop();
+            videoId = videoId.match(/[a-zA-Z0-9_\-]{11}/)[0];
+            var xhr = new XMLHttpRequest();
+            xhr.open("get", "https://www.googleapis.com/youtube/v3/videos?id=" + videoId + "&key=" + key
+                + "&part=snippet");
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4) {
+                    if (xhr.status != 200)
+                        return;
+                    var response;
+                    try {
+                        response = JSON.parse(xhr.responseText);
+                    } catch (ex) {
+                        return;
+                    }
+                    var title = response.items[0].snippet.title;
+                    link.replaceChild(lord.node("text", title), link.firstChild);
+                }
+            };
+            xhr.send(null);
+            a.onclick = function() {
+                if (a.lordExpanded) {
+                    a.parentNode.removeChild(a.nextSibling);
+                    a.parentNode.removeChild(a.nextSibling);
+                    a.replaceChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"), a.childNodes[0]);
+                } else {
+                    var iframe = lord.node("iframe");
+                    var src = link.href.replace("http://", "//").replace("https://", "//");
+                    src = src.replace("youtube.com/watch?v=", "youtube.com/embed/");
+                    var options = src.split(/&|#/).slice(1);
+                    src = src.split(/&|#/).shift();
+                    src += "?autoplay=1";
+                    if (options.length)
+                        src += "&" + options.join("&");
+                    iframe.src = src;
+                    iframe.allowfullscreen = true;
+                    iframe.frameborder = "0px";
+                    iframe.height = "360";
+                    iframe.width = "640";
+                    iframe.display = "block";
+                    var parent = a.parentNode;
+                    var el = a.nextSibling;
+                    if (el) {
+                        parent.insertBefore(lord.node("br"), el);
+                        parent.insertBefore(iframe, el);
+                    }
+                    else {
+                        parent.appendChild(lord.node("br"));
+                        parent.appendChild(iframe);
+                    }
+                    a.replaceChild(lord.node("text", "[" + lord.text("collapseVideoText") + "]"), a.childNodes[0]);
+                }
+                a.lordExpanded = !a.lordExpanded;
+            };
+        })(a, link);
+        a.appendChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"));
+        var el = link.nextSibling;
+        var parent = link.parentNode;
+        if (el) {
+            parent.insertBefore(lord.node("text", " "), el);
+            parent.insertBefore(a, el);
+        } else {
+            parent.appendChild(lord.node("text", " "));
+            parent.appendChild(a);
+        }
+    });
+};
+
+lord.postNodeInserted = function(post) {
+    if (!post)
+        return;
+    lord.addYoutubeButton(post);
 };
 
 lord.showPasswordDialog = function(title, label, callback) {
@@ -1031,6 +1108,16 @@ lord.deleteFile = function(boardName, postNumber, fileName) {
     });
 };
 
+lord.addToPlaylist = function(boardName, fileName) {
+    if (!boardName || !fileName)
+        return;
+    var tracks = lord.getLocalObject("playlist/tracks", {});
+    if (tracks[boardName + "/" + fileName])
+        return;
+    tracks[boardName + "/" + fileName] = {};
+    lord.setLocalObject("playlist/tracks", tracks);
+};
+
 lord.viewPostStage2 = function(link, boardName, postNumber, post) {
     post.onmouseout = function(event) {
         var next = post;
@@ -1406,8 +1493,37 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     return false;
 };
 
+lord.addThreadToFavorites = function(boardName, threadNumber) {
+    threadNumber = +threadNumber;
+    if (!boardName || isNaN(threadNumber))
+        return;
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    if (fav.hasOwnProperty(boardName + "/" + threadNumber))
+        return;
+    lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], 7, function(res) {
+        if (!res || res.length < 1)
+            return;
+        var pn = res.pop()["number"];
+        fav[boardName + "/" + threadNumber] = {
+            "lastPostNumber": pn,
+            "previousLastPostNumber": pn
+        };
+        lord.setLocalObject("favoriteThreads", fav);
+    });
+};
+
 lord.complain = function() {
     lord.showPopup(lord.text("complainMessage"), {type: "critical"});
+    if (!lord.complainVideo) {
+        lord.complainVideo = lord.node("video");
+        var src = lord.node("source");
+        src.src = "/" + lord.text("sitePathPrefix") + "video/fail.webm";
+        src.type = "video/webm";
+        lord.complainVideo.appendChild(src);
+        lord.complainVideo.volume = 0.5;
+        document.body.appendChild(lord.complainVideo);
+    }
+    lord.complainVideo.play();
 };
 
 lord.submitted = function(form) {
@@ -1425,8 +1541,10 @@ lord.submitted = function(form) {
             if (xhr.status === 200) {
                 var response = xhr.responseText;
                 var err = response.error;
-                if (!!err)
-                    return lord.showPopup(err, {type: "critical"});
+                if (!!err) {
+                    lord.showPopup(err, {type: "critical"});
+                    return false;
+                }
                 lord.posted(response);
             } else {
                 lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
@@ -1451,6 +1569,16 @@ lord.removeQuickReply = function() {
         lord.showHidePostForm(lord.postForm.last);
 };
 
+lord.resetPostForm = function() {
+    var postForm = lord.id("postForm");
+    postForm.reset();
+    var divs = lord.query(".postformFile", postForm);
+    for (var i = divs.length - 1; i >= 0; --i)
+    lord.removeFile(lord.queryOne("a", divs[i]));
+    if (lord.customResetForm)
+        lord.customResetForm(postForm);
+};
+
 lord.posted = function(response) {
     var postForm = lord.id("postForm");
     var o = {};
@@ -1466,33 +1594,33 @@ lord.posted = function(response) {
     var btn = postForm.querySelector("[name='submit']");
     btn.disabled = false;
     btn.value = lord.text("postFormButtonSubmit");
-    if (lord.postForm.quickReply) {
-        var postNumber = o.postNumber;
-        if (postNumber) {
-            if (currentThreadNumber) {
-                postForm.reset();
-                lord.updateThread(boardName, currentThreadNumber, true, function() {
-                    lord.selectPost(postNumber);
-                });
-                lord.removeQuickReply();
-                lord.resetCaptcha();
-            } else {
-                var href = window.location.href.split("#").shift();
-                href += "/thread/" + lord.nameOne("thread", lord.id("postForm")).value + ".html#" + postNumber;
-            }
-            return;
-        }
-    }
     if (postNumber) {
-        postForm.reset();
-        var divs = lord.query(".postformFile", postForm);
-        for (var i = divs.length - 1; i >= 0; --i)
-            lord.removeFile(lord.queryOne("a", divs[i]));
-        if (lord.customResetForm)
-            lord.customResetForm(postForm);
-        lord.updateThread(boardName, currentThreadNumber, true, function() {
-            lord.selectPost(postNumber);
-        });
+        if (lord.postForm.quickReply && !currentThreadNumber) {
+            var action = lord.getCookie("quickReplyAction");
+            if ("do_nothing" === action) {
+                //Do nothing
+            } else if ("append_post" == action) {
+                var parent = postForm.parentNode;
+                if ("threadPosts" != parent.className)
+                    parent = parent.nextSibling;
+                lord.ajaxRequest("get_post", [boardName, postNumber], 6, function(res) {
+                    var newPost = lord.createPostNode(res, true);
+                    if (newPost) {
+                        parent.appendChild(newPost, parent.lastChild);
+                        lord.postNodeInserted(newPost);
+                    }
+                });
+            } else {
+                //The default
+                var href = window.location.href.split("#").shift();
+                href += "/thread/" + lord.nameOne("thread", postForm).value + ".html#" + postNumber;
+                window.location.href = href;
+                return;
+            }
+        }
+        lord.resetPostForm();
+        if (currentThreadNumber)
+            lord.updateThread(boardName, currentThreadNumber, true, lord.selectPost.bind(lord, postNumber));
         lord.removeQuickReply();
         lord.resetCaptcha();
     } else if (threadNumber) {
@@ -1530,10 +1658,12 @@ lord.globalOnmouseout = function(e) {
 };
 
 lord.initializeOnLoadBaseBoard = function() {
-    lord.initializeOnLoadSettings();
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
+    lord.query(".post").forEach(function(post) {
+        lord.addYoutubeButton(post);
+    });
 };
 
 window.addEventListener("load", function load() {

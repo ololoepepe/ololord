@@ -9,6 +9,7 @@
 #include <route/BoardRoute>
 #include <route/HomeRoute>
 #include <route/MarkupRoute>
+#include <route/PlaylistRoute>
 #include <route/SearchRoute>
 #include <route/StaticFilesRoute>
 #include <route/ThreadRoute>
@@ -56,6 +57,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new HomeRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new MarkupRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new PlaylistRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new SearchRoute(*this);
     routesMap.insert(r->regex(), r);
@@ -137,8 +140,12 @@ OlolordWebApp::~OlolordWebApp()
 
 void OlolordWebApp::main(std::string url)
 {
-    if (dispatcher().dispatch(url))
-        return;
-    Controller::renderNotFound(*this);
-    Tools::log(*this, Tools::fromStd(url), "fail:not_found:handled_by_main");
+    try {
+        if (dispatcher().dispatch(url))
+            return;
+        Controller::renderNotFound(*this);
+        Tools::log(*this, Tools::fromStd(url), "fail:not_found:handled_by_main");
+    } catch (const std::exception &e) {
+        Tools::log("OlolordWebApp::main", e);
+    }
 }

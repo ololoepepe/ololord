@@ -64,6 +64,14 @@ struct Friend
     QString url;
 };
 
+struct AudioTags
+{
+    QString album;
+    QString artist;
+    QString title;
+    QString year;
+};
+
 typedef QList<File> FileList;
 typedef QList<Friend> FriendList;
 
@@ -122,6 +130,7 @@ typedef QMap<QString, QString> GetParameters;
 typedef QMap<QString, QString> PostParameters;
 
 OLOLORD_EXPORT QStringList acceptedExternalBoards();
+OLOLORD_EXPORT AudioTags audioTags(const QString &fileName);
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
 OLOLORD_EXPORT QString cityName(const QString &ip);
 OLOLORD_EXPORT QString cityName(const cppcms::http::request &req);
@@ -131,6 +140,7 @@ OLOLORD_EXPORT QString countryCode(const cppcms::http::request &req);
 OLOLORD_EXPORT QString countryName(const QString &countryCode);
 OLOLORD_EXPORT QString customHomePageContent(const QLocale &l);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
+OLOLORD_EXPORT QString externalLinkRegexpPattern(bool simple = true);
 OLOLORD_EXPORT QString flagName(const QString &countryCode);
 OLOLORD_EXPORT QLocale fromStd(const std::locale &l);
 OLOLORD_EXPORT QString fromStd(const std::string &s);

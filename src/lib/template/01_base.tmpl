@@ -24,6 +24,9 @@
         <button class="button" onclick="javascript:lord.showSettings();"><%= settingsButtonText %></button>
     </span>
     <span>
+        <button class="button" onclick="javascript:lord.showFavorites();"><%= showFavoriteText %></button>
+    </span>
+    <span>
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
             <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
@@ -53,6 +56,7 @@
                   title="<%= board.title %>"><%= board.name %></a>] </span>
         <% end %>
     <% end %>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>playlist"><%= toPlaylistPageText %></a>]</span>
     <span class="navbarItem">[<a href="/<%= sitePathPrefix %>markup"><%= toMarkupPageText %></a>]</span>
     <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"><%= toHomePageText %></a>]</span>
 </div>
@@ -80,7 +84,10 @@
 <input type="hidden" id="siteProtocol" value="<%= siteProtocol %>" />
 <input type="hidden" id="showPasswordText" value="<%= showPasswordText %>" />
 <input type="hidden" id="cancelButtonText" value="<%= cancelButtonText %>" />
+<input type="hidden" id="closeButtonText" value="<%= closeButtonText %>" />
 <input type="hidden" id="confirmButtonText" value="<%= confirmButtonText %>" />
+<input type="hidden" id="removeFromFavoritesText" value="<%= removeFromFavoritesText %>" />
+<input type="hidden" id="favoriteThreadsText" value="<%= favoriteThreadsText %>" />
 <input type="hidden" id="settingsDialogTitle" value="<%= settingsDialogTitle %>" />
 <div id="settingsDialogTemplate" class="settingsDialog" style="display: none;" >
     <table>
@@ -137,6 +144,28 @@
                                     <%= ce.title %>
                                 </option>
                             <% end %>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <%= quickReplyActionLabelText %>
+                </td>
+                <td>
+                    <select name="quickReplyActionSelect" class="select">
+                        <% if ( content.currentQuickReplyAction == "do_nothing" ) %>
+                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                            <option value="do_nothing" selected="true"><%= quickReplyActionDoNothingText %></option>
+                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
+                        <% elif ( content.currentQuickReplyAction == "append_post" ) %>
+                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                            <option value="append_post" selected="true"><%= quickReplyActionAppendPostText %></option>
+                        <% else %>
+                            <option value="goto_thread" selected="true"><%= quickReplyActionGotoThreadText %></option>
+                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
                         <% end %>
                     </select>
                 </td>

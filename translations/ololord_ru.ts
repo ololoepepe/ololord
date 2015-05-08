@@ -372,9 +372,9 @@ By default all captcha engines are supported.</source>
 По умолчанию поддерживаются все движки капчи.</translation>
     </message>
     <message>
-        <source>Board /d/iscussion</source>
-        <comment>title</comment>
-        <translation>/d/искуссии о борде</translation>
+        <source>kbps</source>
+        <comment>fileSize</comment>
+        <translation>кбит/с</translation>
     </message>
 </context>
 <context>
@@ -648,6 +648,34 @@ text</source>
         <comment>preformattedText</comment>
         <translation>Преформатированный
 текст</translation>
+    </message>
+</context>
+<context>
+    <name>PlaylistRoute</name>
+    <message>
+        <source>Playlist</source>
+        <comment>pageTitle</comment>
+        <translation>Плей-лист</translation>
+    </message>
+    <message>
+        <source>Remove from playlist</source>
+        <comment>removeFromPlaylistText</comment>
+        <translation>Удалить из плей-листа</translation>
+    </message>
+    <message>
+        <source>Unknown album</source>
+        <comment>unknownAlbumText</comment>
+        <translation>Неизвестный альбом</translation>
+    </message>
+    <message>
+        <source>Unknown artist</source>
+        <comment>unknownArtistText</comment>
+        <translation>Неизвестный исполнитель</translation>
+    </message>
+    <message>
+        <source>Unknown title</source>
+        <comment>unknownTitleText</comment>
+        <translation>Неизвестное название</translation>
     </message>
 </context>
 <context>
@@ -993,6 +1021,24 @@ text</source>
     </message>
 </context>
 <context>
+    <name>dBoard</name>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Board /d/iscussion</source>
+        <comment>board title</comment>
+        <translation>/d/искуссии о борде</translation>
+    </message>
+</context>
+<context>
     <name>deleteFile</name>
     <message>
         <source>Invalid board name</source>
@@ -1231,6 +1277,29 @@ text</source>
     </message>
 </context>
 <context>
+    <name>getFileMetaData</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such file</source>
+        <comment>error</comment>
+        <translation>Нет такого файла</translation>
+    </message>
+    <message>
+        <source>Invalid file name</source>
+        <comment>error</comment>
+        <translation>Неправильное имя файла</translation>
+    </message>
+</context>
+<context>
     <name>getNewPosts</name>
     <message>
         <source>Invalid board name</source>
@@ -1246,11 +1315,6 @@ text</source>
         <source>Invalid thread number</source>
         <comment>error</comment>
         <translation>Неверный номер треда</translation>
-    </message>
-    <message>
-        <source>Invalid post number</source>
-        <comment>error</comment>
-        <translation>Неверный номер поста</translation>
     </message>
     <message>
         <source>Internal database error</source>
@@ -1292,16 +1356,11 @@ text</source>
     </message>
 </context>
 <context>
-    <name>getThreadOpPosts</name>
+    <name>getThreadNumbers</name>
     <message>
         <source>Invalid board name</source>
         <comment>error</comment>
         <translation>Неверное имя доски</translation>
-    </message>
-    <message>
-        <source>Internal logic error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal database error</source>
@@ -1333,6 +1392,29 @@ text</source>
     <message>
         <source>Invalid date. User will be banned forever. Continue?</source>
         <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
+    </message>
+</context>
+<context>
+    <name>handleCache</name>
+    <message>
+        <source>Invalid argument count</source>
+        <translation>Неверное количество аргументов</translation>
+    </message>
+    <message>
+        <source>This operation is REALLY heavy and may consume A LOT OF MEMORY. Are you sure?</source>
+        <translation>Эта операция ПО-НАСТОЯЩЕМУ тяжелая и может использовать ОЧЕНЬ МНОГО ПАМЯТИ. Вы уверены?</translation>
+    </message>
+    <message>
+        <source>No such cache</source>
+        <translation>Нет такого кеша</translation>
+    </message>
+    <message>
+        <source>Caching dynamic files</source>
+        <translation>Кеширование динамических файлов</translation>
+    </message>
+    <message>
+        <source>Caching static files</source>
+        <translation>Кеширование статических файлов</translation>
     </message>
 </context>
 <context>
@@ -1516,16 +1598,16 @@ Your choice:</source>
 <context>
     <name>handleRerenderPosts</name>
     <message>
-        <source>Are you sure?</source>
-        <translation>Вы уверены?</translation>
-    </message>
-    <message>
         <source>Error:</source>
         <translation>Ошибка:</translation>
     </message>
     <message>
         <source>Rerendered posts:</source>
         <translation>Заново отрендерено постов:</translation>
+    </message>
+    <message>
+        <source>This operation is REALLY heavey and may take a long time. Are you sure?</source>
+        <translation>Эта операция ПО-НАСТОЯЩЕМУ тяжелая и может занять много времени. Вы уверены?</translation>
     </message>
 </context>
 <context>
@@ -1701,6 +1783,51 @@ Your choice:</source>
         <source>Markup</source>
         <comment>toMarkupPageText</comment>
         <translation>Разметка</translation>
+    </message>
+    <message>
+        <source>Appends a new post</source>
+        <comment>quickReplyActionAppendPostText</comment>
+        <translation>Добавляет новый пост</translation>
+    </message>
+    <message>
+        <source>Leaves page unmodified</source>
+        <comment>quickReplyActionDoNothingText</comment>
+        <translation>Оставляет страницу не измененной</translation>
+    </message>
+    <message>
+        <source>Redirects to thread</source>
+        <comment>quickReplyActionGotoThreadText</comment>
+        <translation>Перенаправляет в тред</translation>
+    </message>
+    <message>
+        <source>Quick reply outside thread:</source>
+        <comment>quickReplyActionLabelText</comment>
+        <translation>Быстрый ответ вне треда:</translation>
+    </message>
+    <message>
+        <source>Playlist</source>
+        <comment>toPlaylistPageText</comment>
+        <translation>Плей-лист</translation>
+    </message>
+    <message>
+        <source>Favorites</source>
+        <comment>showFavoriteText</comment>
+        <translation>Избранное</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <comment>closeButtonText</comment>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <source>Remove from favorites</source>
+        <comment>removeFromFavoritesText</comment>
+        <translation>Удалить из избранных</translation>
+    </message>
+    <message>
+        <source>Favorite threads</source>
+        <comment>favoriteThreadsText</comment>
+        <translation>Избранные треды</translation>
     </message>
 </context>
 <context>
@@ -2050,6 +2177,26 @@ Your choice:</source>
         <comment>postingSpeed</comment>
         <translation>п./год.</translation>
     </message>
+    <message>
+        <source>Collapse video</source>
+        <comment>collapseVideoText</comment>
+        <translation>Свернуть видео</translation>
+    </message>
+    <message>
+        <source>Expand video</source>
+        <comment>expandVideoText</comment>
+        <translation>Развернуть видео</translation>
+    </message>
+    <message>
+        <source>Add to playlist</source>
+        <comment>addToPlaylistText</comment>
+        <translation>Добавить в плей-лист</translation>
+    </message>
+    <message>
+        <source>Add thread to favorites</source>
+        <comment>addThreadToFavoritesText</comment>
+        <translation>Добавить тред в избранные</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -2178,6 +2325,16 @@ If one or more board names are specified, rerenders only posts on those boards.<
     <message>
         <source>Reload all captcha engines: builtin and provided by plugins.</source>
         <translation>Перезагрузить все движки капчи: встроенные и предоставленные плагинами.</translation>
+    </message>
+    <message>
+        <source>Cache all dynamic/static files.
+[cache-name] may be one of the following: 
+dynamic_files, static_files.
+If no argument is passed, everything is cached.</source>
+        <translation>Кеширует все динамические/статические файлы.
+[cache-name] может быть одним из следующих:
+dynamic_files, static_files.
+Если не указан аргумент, кешируется все.</translation>
     </message>
 </context>
 <context>
@@ -2405,6 +2562,18 @@ By default all captcha engines are supported.</source>
 Идентификаторы должны разделяться запятыми.
 Пример: google-recaptcha,codecha
 По умолчанию поддерживаются все движки капчи.</translation>
+    </message>
+    <message>
+        <source>ffprobe utility command (possibly full path).
+The default is ffprobe (UNIX) or ffprobe.exe (Windows).</source>
+        <translation>Команда вызова утилиты ffprobe (возможно, полный путь).
+По умолчанию ffprobe (UNIX) или ffprobe.exe (Windows).</translation>
+    </message>
+    <message>
+        <source>The key required to access YouTube API.
+It will appear in HTML.</source>
+        <translation>Ключ, необходимый для доступа к YouTube API.
+Появляется в HTML-страницах.</translation>
     </message>
 </context>
 <context>
@@ -3170,6 +3339,14 @@ By default all captcha engines are supported.</source>
         <source>Attempt to vote in an own voting</source>
         <comment>error</comment>
         <translation>Попытка проголосовать в собственном голосовании</translation>
+    </message>
+</context>
+<context>
+    <name>zeroSpeedString</name>
+    <message>
+        <source>post(s) per hour.</source>
+        <comment>postingSpeed</comment>
+        <translation>п./час.</translation>
     </message>
 </context>
 </TS>

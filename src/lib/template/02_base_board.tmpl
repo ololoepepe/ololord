@@ -134,6 +134,11 @@
                title="<%= findSourceWithIqdbText %>" target="_blank">
                 <img src="/<%= sitePathPrefix %>img/iqdb.png"></a>
         <% end %>
+        <% if ( content.isAudioType(file.type) ) %>
+            <a href="javascript:lord.addToPlaylist('<%= currentBoard.name %>', '<%= file.sourceName %>');"
+               title="<%= addToPlaylistText %>">
+                <img src="/<%= sitePathPrefix %>img/playlist_add.png"></a>
+        <% end %>
     </div>
     <div class="postFileFile">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
@@ -275,6 +280,11 @@
         <% if ( !thread && post.number == post.threadNumber ) %>
             <a name="downloadButton" href="javascript:lord.downloadThread();">
                 <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+        <% end %>
+        <% if ( post.number == post.threadNumber ) %>
+            <a name="addToFavoritesButton"
+               href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
+                <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
         <% end %>
         <a name="complainButton" href="javascript:lord.complain();">
             <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
@@ -451,6 +461,10 @@
 <input type="hidden" id="captchaQuotaText" value="<%= captchaQuotaText %>" />
 <input type="hidden" id="postFormButtonSubmit" value="<%= postFormButtonSubmit %>" />
 <input type="hidden" id="postFormButtonSubmitSending" value="<%= postFormButtonSubmitSending %>" />
+<input type="hidden" id="collapseVideoText" value="<%= collapseVideoText %>" />
+<input type="hidden" id="expandVideoText" value="<%= expandVideoText %>" />
+<input type="hidden" id="youtubeApiKey" value="<%= youtubeApiKey %>" />
+<input type="hidden" id="addToPlaylistText" value="<%= addToPlaylistText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
         <% item %>
@@ -514,13 +528,16 @@
             <input name="draft" type="hidden" value="false" />
             <a name="downloadButton" href="javascript:lord.downloadThread();">
                 <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+            <a name="addToFavoritesButton"
+               href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', %postNumber%);">
+                <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
             <a href="javascript:lord.complain();">
                 <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
             <a name="deleteButton"
-               href="javascript:lord.deletePost('<%= currentBoard.name %>', '%postNumber%', true);">
+               href="javascript:lord.deletePost('<%= currentBoard.name %>', %postNumber%, true);">
                 <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
             <a id="hidePost%postNumber%" name="hideButton"
-               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '%postNumber%', %hide%);">
+               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%, %hide%);">
                 <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <span name="toThread" style="display: none;">
                 [<a name="toThreadLink"
