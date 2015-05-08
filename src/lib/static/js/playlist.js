@@ -76,6 +76,12 @@ lord.addTrack = function(track) {
             });
             lord.blockVolumeChange = false;
         }, false);*/
+        audio.addEventListener("ended", function() {
+            var nextDiv = audio.parentNode.nextSibling;
+            if (!nextDiv)
+                return;
+            lord.queryOne("audio", nextDiv).play();
+        }, false);
     })(audio, track);
     div.appendChild(audio);
     var rmBtn = lord.node("a");
