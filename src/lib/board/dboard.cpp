@@ -54,7 +54,7 @@ Content::Post dBoard::toController(const Post &post, const cppcms::http::request
         return bRet(ok, false, p);
     QString userAgent = post.userData().toString();
     if (!userAgent.isEmpty()) {
-        QString text = "<font face=\"monospace\">" + Tools::fromStd(p.text)
+        QString text = Tools::fromStd(p.text) + "<font face=\"monospace\">"
                 + BTextTools::toHtml("\n\n" + QString().fill('-', 50) + "\n" + userAgent) + "</font>";
         p.text = Tools::toStd(text);
     }

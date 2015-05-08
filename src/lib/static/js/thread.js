@@ -193,8 +193,9 @@ lord.downloadThread = function() {
     lord.toCenter(cButton, cButton.offsetWidth, cButton.offsetHeight);
     var zip = new JSZip();
     var last = 0;
+    var completed = 0;
     var append = function(i) {
-        if (i >= as.length) {
+        if (completed >= as.length) {
             var content = zip.generate({
                 "type": "blob"
             });
@@ -220,6 +221,7 @@ lord.downloadThread = function() {
                     "binary": true
                 });
             }
+            ++completed;
             progress.value = +progress.value + 1;
             append(++last);
         });
