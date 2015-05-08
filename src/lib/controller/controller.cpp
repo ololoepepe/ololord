@@ -181,6 +181,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
+    c.toPlaylistPageText = ts.translate("initBase", "Playlist", "toPlaylistPageText");
     c.toMarkupPageText = ts.translate("initBase", "Markup", "toMarkupPageText");
 }
 
@@ -206,6 +207,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     }
     c.action = currentThread ? "create_post" : "create_thread";
     c.addFileText = ts.translate("initBaseBoard", "Add file", "addFileText");
+    c.addToPlaylistText = ts.translate("initBaseBoard", "Add to playlist", "addToPlaylistText");
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");

@@ -162,9 +162,9 @@ public:
 static QReadWriteLock processTextLock(QReadWriteLock::Recursive);
 
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
-                                 QString *description = 0)
+                                 QString *description = 0, const QLocale &l = BCoreApplication::locale())
 {
-    TranslatorQt tq;
+    TranslatorQt tq(l);
     if (post.isNull()) {
         return bRet(error, tq.translate("addToReferencedPosts", "Internal error", "error"), description,
                     tq.translate("addToReferencedPosts", "Internal logic error", "description"), false);
@@ -213,9 +213,10 @@ static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &refere
     }
 }
 
-static bool removeFromReferencedPosts(quint64 postId, QString *error = 0)
+static bool removeFromReferencedPosts(quint64 postId, QString *error = 0,
+                                      const QLocale &l = BCoreApplication::locale())
 {
-    TranslatorQt tq;
+    TranslatorQt tq(l);
     if (!postId)
         return bRet(error, tq.translate("removeFromReferencedPosts", "Internal logic error", "description"), false);
     try {
@@ -540,7 +541,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
                               fi.thumbHeight, fi.thumbWidth, fi.metaData, ps);
             t->persist(fileInfo);
         }
-        if (!raw && !ps->draft() && !addToReferencedPosts(ps, refs, p.error, p.description))
+        if (!raw && !ps->draft() && !addToReferencedPosts(ps, refs, p.error, p.description, tq.locale()))
             return false;
         bSet(p.postNumber, postNumber);
         t.commit();
@@ -580,7 +581,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                                                          && odb::query<Thread>::number == postNumber);
         if (thread.error)
             return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
-        if (!removeFromReferencedPosts(post.data->id(), error))
+        if (!removeFromReferencedPosts(post.data->id(), error, tq.locale()))
             return false;
         typedef QLazySharedPointer<PostReference> PostReferenceSP;
         foreach (PostReferenceSP ref, post->referencedBy()) {
@@ -1110,7 +1111,7 @@ bool editPost(EditPostParameters &p)
         post->setRawText(p.text);
         bool wasDraft = post->draft();
         post->setDraft(board->draftsEnabled() && p.draft);
-        if (!post->draft() && !removeFromReferencedPosts(post.data->id(), p.error))
+        if (!post->draft() && !removeFromReferencedPosts(post.data->id(), p.error, tq.locale()))
             return false;
         if (p.raw && lvl >= RegisteredUser::AdminLevel) {
             post->setText(p.text);
@@ -1118,7 +1119,7 @@ bool editPost(EditPostParameters &p)
         } else {
             post->setRawHtml(false);
             post->setText(processedText);
-            if (!post->draft() && !addToReferencedPosts(post.data, p.referencedPosts, p.error))
+            if (!post->draft() && !addToReferencedPosts(post.data, p.referencedPosts, p.error, 0, tq.locale()))
                 return false;
         }
         post->setEmail(p.email);
@@ -1174,6 +1175,30 @@ bool fileExists(const QString &hashString, bool *ok)
     if (!b || hash.isEmpty())
         return bRet(ok, false, false);
     return fileExists(hash, ok);
+}
+
+QVariant getFileMetaData(const QString &fileName, bool *ok, QString *error, const QLocale &l)
+{
+    TranslatorQt tq(l);
+    if (fileName.isEmpty())
+        return bRet(ok, false, error, tq.translate("getFileMetaData", "Invalid file name", "error"), QVariant());
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "description"),
+                        QVariant());
+        }
+        Result<FileInfo> fi = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
+        if (fi.error) {
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "error"),
+                        QVariant());
+        }
+        if (!fi)
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "No such file", "error"), QVariant());
+        return bRet(ok, true, error, QString(), fi->metaData());
+    } catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QVariant());
+    }
 }
 
 QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool *ok, QString *error,
@@ -1609,14 +1634,14 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
             QList<Post> posts = query<Post, Post>(qs);
             foreach (int i, bRangeD(0, posts.size() - 1)) {
                 Post &post = posts[i];
-                if (!post.draft() && !removeFromReferencedPosts(post.id(), error))
+                if (!post.draft() && !removeFromReferencedPosts(post.id(), error, tq.locale()))
                     return -1;
                 if (post.rawHtml())
                     continue;
                 const PostTmpInfo &tmp = postIds.value(post.id());
                 post.setText(tmp.text);
                 QSharedPointer<Post> sp(new Post(post));
-                if (!post.draft() && !addToReferencedPosts(sp, tmp.refs, error))
+                if (!post.draft() && !addToReferencedPosts(sp, tmp.refs, error, 0, tq.locale()))
                     return -1;
                 t->update(post);
                 Cache::removePost(post.board(), post.number());

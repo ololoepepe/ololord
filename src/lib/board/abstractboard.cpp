@@ -1070,11 +1070,11 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         if (!tags.album.isEmpty())
             m.insert("album", tags.album);
         if (!tags.artist.isEmpty())
-            m.insert("artist", tags.album);
+            m.insert("artist", tags.artist);
         if (!tags.title.isEmpty())
-            m.insert("title", tags.album);
+            m.insert("title", tags.title);
         if (!tags.year.isEmpty())
-            m.insert("year", tags.album);
+            m.insert("year", tags.year);
         if (!m.isEmpty())
             ft.setMetaData(m);
     } else if (Tools::isVideoType(mimeType)) {

@@ -49,6 +49,41 @@ lord.deleteCookie = function(name) {
     lord.setCookie(name, "", {expires: -1});
 };
 
+lord.getLocalObject = function(key, defValue) {
+    if (!key || typeof key != "string")
+        return null;
+    try {
+        var val = localStorage.getItem(key);
+        return (null != val) ? JSON.parse(val) : defValue;
+    } catch (ex) {
+        return null;
+    }
+};
+
+lord.setLocalObject = function(key, value) {
+    if (!key || typeof key != "string")
+        return false;
+    try {
+        if (null != value && typeof value != "undefined")
+            localStorage.setItem(key, JSON.stringify(value));
+        else
+            localStorage.setItem(key, null);
+        return true;
+    } catch (ex) {
+        return false;
+    }
+};
+
+lord.removeLocalObject = function(key) {
+    if (!key || typeof key != "string")
+        return;
+    try {
+        return localStorage.removeItem(key);
+    } catch (ex) {
+        //
+    }
+};
+
 lord.in = function(arr, obj, strict) {
     if (!arr || !arr.length)
         return false;
@@ -227,6 +262,34 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
         modal.destroy();
     });
     dialog.show();
+};
+
+lord.ajaxRequest = function(method, params, id, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    var prefix = lord.text("sitePathPrefix");
+    xhr.open("post", "/" + prefix + "api");
+    xhr.setRequestHeader("Content-Type", "application/json");
+    var request = {
+        "method": method,
+        "params": params,
+        "id": id
+    };
+    xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+                var response = JSON.parse(xhr.responseText);
+                var err = response.error;
+                if (!!err)
+                    return lord.showPopup(err, {type: "critical"});
+                callback(response.result);
+            } else {
+                if (!lord.unloading)
+                    lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+            }
+        }
+    };
+    xhr.send(JSON.stringify(request));
 };
 
 lord.changeLocale = function() {

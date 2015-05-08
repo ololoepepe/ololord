@@ -34,6 +34,10 @@ a.expandCollapse:hover {
     cursor: pointer
 }
 
+audio {
+    width: 500px;
+}
+
 hr {
     color: #CCCCCC; /*IE*/
     background-color: #CCCCCC; /*Firefox, Opera, Safari*/
@@ -643,4 +647,19 @@ a.progressBlocking {
 .settingsDialog {
     /*width: 400px;
     height: 200px;*/
+}
+
+/* Playlist */
+
+.track {
+    background-color: #DDDDDD;
+    border: 1px solid #CCCCCC;
+}
+
+.track ~ .track {
+    margin-top: 5px;
+}
+
+.track > audio {
+    width: 600px;
 }

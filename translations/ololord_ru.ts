@@ -651,6 +651,34 @@ text</source>
     </message>
 </context>
 <context>
+    <name>PlaylistRoute</name>
+    <message>
+        <source>Playlist</source>
+        <comment>pageTitle</comment>
+        <translation>Плей-лист</translation>
+    </message>
+    <message>
+        <source>Remove from playlist</source>
+        <comment>removeFromPlaylistText</comment>
+        <translation>Удалить из плей-листа</translation>
+    </message>
+    <message>
+        <source>Unknown album</source>
+        <comment>unknownAlbumText</comment>
+        <translation>Неизвестный альбом</translation>
+    </message>
+    <message>
+        <source>Unknown artist</source>
+        <comment>unknownArtistText</comment>
+        <translation>Неизвестный исполнитель</translation>
+    </message>
+    <message>
+        <source>Unknown title</source>
+        <comment>unknownTitleText</comment>
+        <translation>Неизвестное название</translation>
+    </message>
+</context>
+<context>
     <name>Search</name>
     <message>
         <source>Invalid search query</source>
@@ -1249,6 +1277,29 @@ text</source>
     </message>
 </context>
 <context>
+    <name>getFileMetaData</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>description</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such file</source>
+        <comment>error</comment>
+        <translation>Нет такого файла</translation>
+    </message>
+    <message>
+        <source>Invalid file name</source>
+        <comment>error</comment>
+        <translation>Неправильное имя файла</translation>
+    </message>
+</context>
+<context>
     <name>getNewPosts</name>
     <message>
         <source>Invalid board name</source>
@@ -1753,6 +1804,11 @@ Your choice:</source>
         <comment>quickReplyActionLabelText</comment>
         <translation>Быстрый ответ вне треда:</translation>
     </message>
+    <message>
+        <source>Playlist</source>
+        <comment>toPlaylistPageText</comment>
+        <translation>Плей-лист</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -2110,6 +2166,11 @@ Your choice:</source>
         <source>Expand video</source>
         <comment>expandVideoText</comment>
         <translation>Развернуть видео</translation>
+    </message>
+    <message>
+        <source>Add to playlist</source>
+        <comment>addToPlaylistText</comment>
+        <translation>Добавить в плей-лист</translation>
     </message>
 </context>
 <context>

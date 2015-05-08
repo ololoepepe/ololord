@@ -31,6 +31,31 @@
 #include <sstream>
 #include <string>
 
+static cppcms::json::value variantToJson(const QVariant &v)
+{
+    cppcms::json::value json;
+    QVariant::Type type = v.type();
+    static const QList<QVariant::Type> NumberTypes = QList<QVariant::Type>() << QVariant::Int << QVariant::UInt
+        << QVariant::LongLong << QVariant::ULongLong << QVariant::Double;
+    if (QVariant::Map == type) {
+        cppcms::json::object o;
+        QVariantMap m = v.toMap();
+        foreach (const QString &key, m.keys())
+            o[Tools::toStd(key)] = variantToJson(m.value(key));
+        json = o;
+    } else if (QVariant::List == type) {
+        cppcms::json::array arr;
+        foreach (const QVariant &vv, v.toList())
+            arr.push_back(variantToJson(vv));
+        json = arr;
+    } else if ( QVariant::String == type) {
+        json = Tools::toStd(v.toString());
+    } else if (NumberTypes.contains(type)) {
+        json = v.toDouble();
+    }
+    return json;
+}
+
 ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
     AbstractAjaxHandler(srv)
 {
@@ -199,7 +224,7 @@ void ActionAjaxHandler::getCaptchaQuota(std::string boardName)
         if (!testBan(bn, true))
             return Tools::log(server, "ajax_get_captcha_quota", "fail:ban", logTarget);
         AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
-        TranslatorStd ts;
+        TranslatorStd ts(server.request());
         if (board.isNull()) {
             std::string err = ts.translate("ActionAjaxHandler", "No such board", "error");
             server.return_error(err);
@@ -226,7 +251,7 @@ void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash
             return Tools::log(server, "ajax_get_file_existence", "fail:ban", logTarget);
         bool ok = false;
         bool exists = Database::fileExists(h, &ok);
-        TranslatorStd ts;
+        TranslatorStd ts(server.request());
         if (!ok) {
             std::string err = ts.translate("ActionAjaxHandler", "Internal database error", "error");
             server.return_error(err);
@@ -239,6 +264,34 @@ void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_file_existence", "fail:" + err);
+    }
+}
+
+void ActionAjaxHandler::getFileMetaData(std::string boardName, std::string fileName)
+{
+    try {
+        QString bn = Tools::fromStd(boardName);
+        QString fn = Tools::fromStd(fileName);
+        QString logTarget = bn + "/" + fn;
+        Tools::log(server, "ajax_get_file_meta_data", "begin", logTarget);
+        if (!testBan(bn, true))
+            return Tools::log(server, "ajax_get_file_meta_data", "fail:ban", logTarget);
+        bool ok = false;
+        QString err;
+        TranslatorStd ts(server.request());
+        QVariant md = Database::getFileMetaData(fn, &ok, &err, ts.locale());
+        if (!ok) {
+            std::string err = ts.translate("ActionAjaxHandler", "Internal database error", "error");
+            server.return_error(err);
+            Tools::log(server, "ajax_get_file_meta_data", "fail:" + Tools::fromStd(err), logTarget);
+            return;
+        }
+        server.return_result(variantToJson(md));
+        Tools::log(server, "ajax_get_file_meta_data", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_file_meta_data", "fail:" + err);
     }
 }
 
@@ -441,6 +494,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("get_captcha_quota", cppcms::rpc::json_method(&ActionAjaxHandler::getCaptchaQuota, self),
                     method_role);
     list << Handler("get_file_existence", cppcms::rpc::json_method(&ActionAjaxHandler::getFileExistence, self),
+                    method_role);
+    list << Handler("get_file_meta_data", cppcms::rpc::json_method(&ActionAjaxHandler::getFileMetaData, self),
                     method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);

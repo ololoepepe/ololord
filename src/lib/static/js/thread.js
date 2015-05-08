@@ -10,6 +10,8 @@ lord.blinkTimer = null;
 lord.pageVisible = "visible";
 lord.isDownloading = false;
 
+/*Functions*/
+
 lord.addAnchorChangeListener = function(callback) {
     if ("onhashchange" in window) {
         window.onhashchange = function() {

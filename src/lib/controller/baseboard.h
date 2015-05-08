@@ -85,6 +85,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
 {
     std::string action;
     std::string addFileText;
+    std::string addToPlaylistText;
     std::string ajaxErrorText;
     std::list<AbstractBoard::BoardInfo> availableBoards;
     std::string banExpiresLabelText;

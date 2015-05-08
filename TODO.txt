@@ -21,9 +21,10 @@
 [done] Improve URL markup
 [done] Add [url] tag
 [done] Add e-mail markup
+[done] Add get_file_meta_data AJAX request
+[done] Implement playlist for audio files
 * Implement Drag and Drop file upload
 * Implement favorite threads system
-* Implement playlist for audio files
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

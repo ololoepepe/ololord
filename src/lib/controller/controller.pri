@@ -14,6 +14,7 @@ HEADERS += \
     $${PWD}/markup.h \
     $${PWD}/mlpboard.h \
     $${PWD}/notfound.h \
+    $${PWD}/playlist.h \
     $${PWD}/prboard.h \
     $${PWD}/prthread.h \
     $${PWD}/rpgboard.h \

@@ -179,34 +179,6 @@ lord.traverseChildren = function(elem) {
     return children;
 };
 
-lord.ajaxRequest = function(method, params, id, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
-    var prefix = lord.text("sitePathPrefix");
-    xhr.open("post", "/" + prefix + "api");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    var request = {
-        "method": method,
-        "params": params,
-        "id": id
-    };
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
-                var err = response.error;
-                if (!!err)
-                    return lord.showPopup(err, {type: "critical"});
-                callback(response.result);
-            } else {
-                if (!lord.unloading)
-                    lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
-            }
-        }
-    };
-    xhr.send(JSON.stringify(request));
-};
-
 lord.createPostFile = function(f, boardName, postNumber) {
     if (!f || !boardName || isNaN(+postNumber))
         return null;
@@ -258,6 +230,16 @@ lord.createPostFile = function(f, boardName, postNumber) {
             divFileSearch.appendChild(lord.node("text", " "));
             divFileSearch.appendChild(a);
         });
+    }
+    if (lord.isAudioType(f["type"])) {
+        var a = lord.node("a");
+        a.href = "javascript:lord.addToPlaylist('" + boardName + "', '" + f["sourceName"] + "');";
+        a.title = lord.text("addToPlaylistText");
+        var logo = lord.node("img");
+        logo.src = "/" + sitePrefix + "img/playlist_add.png";
+        a.appendChild(logo);
+        divFileSearch.appendChild(lord.node("text", " "));
+        divFileSearch.appendChild(a);
     }
     file.appendChild(divFileSearch);
     var divImage = lord.node("div");
@@ -1129,6 +1111,16 @@ lord.deleteFile = function(boardName, postNumber, fileName) {
             lord.updatePost(boardName, postNumber, post);
         });
     });
+};
+
+lord.addToPlaylist = function(boardName, fileName) {
+    if (!boardName || !fileName)
+        return;
+    var tracks = lord.getLocalObject("playlist/tracks", {});
+    if (tracks[boardName + "/" + fileName])
+        return;
+    tracks[boardName + "/" + fileName] = {};
+    lord.setLocalObject("playlist/tracks", tracks);
 };
 
 lord.viewPostStage2 = function(link, boardName, postNumber, post) {

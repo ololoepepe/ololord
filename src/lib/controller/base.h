@@ -78,6 +78,7 @@ public:
     std::string timeLocalText;
     std::string timeServerText;
     std::string toHomePageText;
+    std::string toPlaylistPageText;
     std::string toMarkupPageText;
 };
 
