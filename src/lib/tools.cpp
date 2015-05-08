@@ -185,6 +185,9 @@ static QString audioTag(const ID3_Tag &tag, ID3_FrameID id)
     ID3_Field *text = frame->GetField(ID3FN_TEXT);
     if (!text)
         return "";
+    QString s = QString::fromUtf16(text->GetRawUnicodeText(), text->Size() / 2);
+    if (!s.isEmpty())
+        return s;
     QByteArray ba(text->GetRawText());
     QTextCodec *codec = BTextTools::guessTextCodec(ba);
     if (!codec)
