@@ -1,29 +1,3 @@
-[done] Fix posting speed displaying
-[done] Improve URL markup
-[done] Fix quick reply from board
-[done] Add ability to select quick reply action
-[done] Catch thread exceptions
-[done] Fix auto thread update system
-[done] Add ability to cache posts and dynamic/static files manually
-[done] Improve rules system
-[done] Show user agent at /d/
-[done] Improve complain button surprize
-[done] Implement partial GET request support
-[done] Implement YouTube video embedding
-[done] Replace YouTube link text with video title
-[done] Improve file information storing
-[done] Store audio/video metadata (duration, bitrate, tags)
-[done] Fix post form rules including system
-[done] Implement Last-Modified/If-Modified-Since support
-[done] Fix thread files downloading
-[done] In get_new_posts AJAX request, get all posts if last post number is 0
-[done] Replace get_thread_op_posts AJAX request with get_thread_numbers
-[done] Improve URL markup
-[done] Add [url] tag
-[done] Add e-mail markup
-[done] Add get_file_meta_data AJAX request
-[done] Implement playlist for audio files
-[done] Implement favorite threads system
 * Implement Drag and Drop file upload
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page

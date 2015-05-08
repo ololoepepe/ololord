@@ -448,7 +448,6 @@ lord.showFavorites = function() {
         a.target = "_blank";
         postDiv.appendChild(a);
         postDiv.appendChild(lord.node("text", " "));
-        postDiv.title = txt;
         var fnt = lord.node("font");
         fnt.color = "green";
         postDiv.appendChild(fnt);
