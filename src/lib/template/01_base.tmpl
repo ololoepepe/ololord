@@ -24,6 +24,9 @@
         <button class="button" onclick="javascript:lord.showSettings();"><%= settingsButtonText %></button>
     </span>
     <span>
+        <button class="button" onclick="javascript:lord.showFavorites();"><%= showFavoriteText %></button>
+    </span>
+    <span>
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
             <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
@@ -81,7 +84,10 @@
 <input type="hidden" id="siteProtocol" value="<%= siteProtocol %>" />
 <input type="hidden" id="showPasswordText" value="<%= showPasswordText %>" />
 <input type="hidden" id="cancelButtonText" value="<%= cancelButtonText %>" />
+<input type="hidden" id="closeButtonText" value="<%= closeButtonText %>" />
 <input type="hidden" id="confirmButtonText" value="<%= confirmButtonText %>" />
+<input type="hidden" id="removeFromFavoritesText" value="<%= removeFromFavoritesText %>" />
+<input type="hidden" id="favoriteThreadsText" value="<%= favoriteThreadsText %>" />
 <input type="hidden" id="settingsDialogTitle" value="<%= settingsDialogTitle %>" />
 <div id="settingsDialogTemplate" class="settingsDialog" style="display: none;" >
     <table>

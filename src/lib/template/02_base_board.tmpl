@@ -281,6 +281,11 @@
             <a name="downloadButton" href="javascript:lord.downloadThread();">
                 <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
         <% end %>
+        <% if ( post.number == post.threadNumber ) %>
+            <a name="addToFavoritesButton"
+               href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
+                <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+        <% end %>
         <a name="complainButton" href="javascript:lord.complain();">
             <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
         <a name="deleteButton"
@@ -523,13 +528,16 @@
             <input name="draft" type="hidden" value="false" />
             <a name="downloadButton" href="javascript:lord.downloadThread();">
                 <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+            <a name="addToFavoritesButton"
+               href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', %postNumber%);">
+                <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
             <a href="javascript:lord.complain();">
                 <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
             <a name="deleteButton"
-               href="javascript:lord.deletePost('<%= currentBoard.name %>', '%postNumber%', true);">
+               href="javascript:lord.deletePost('<%= currentBoard.name %>', %postNumber%, true);">
                 <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
             <a id="hidePost%postNumber%" name="hideButton"
-               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '%postNumber%', %hide%);">
+               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%, %hide%);">
                 <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <span name="toThread" style="display: none;">
                 [<a name="toThreadLink"

@@ -118,11 +118,13 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         c.currentCaptchaEngine.title = eilist.first().title;
     }
     c.cancelButtonText = ts.translate("initBase", "Cancel", "cancelButtonText");
+    c.closeButtonText = ts.translate("initBase", "Close", "closeButtonText");
     c.confirmButtonText = ts.translate("initBase", "Confirm", "confirmButtonText");
     c.currentLocale = toWithLocale(ts.locale());
     cppcms::http::request *mreq = const_cast<cppcms::http::request *>(&req);
     c.currentTime = mreq->cookie_by_name("time").value();
     c.currentQuickReplyAction = mreq->cookie_by_name("quickReplyAction").value();
+    c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.loggedIn = !Tools::hashpassString(req).isEmpty();
@@ -153,12 +155,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.quickReplyActionGotoThreadText = ts.translate("initBase", "Redirects to thread",
                                                     "quickReplyActionGotoThreadText");
     c.quickReplyActionLabelText = ts.translate("initBase", "Quick reply outside thread:", "quickReplyActionLabelText");
+    c.removeFromFavoritesText = ts.translate("initBase", "Remove from favorites", "removeFromFavoritesText");
     SettingsLocker s;
     c.searchButtonText = ts.translate("initBase", "Search", "searchButtonText");
     c.searchInputPlaceholder = ts.translate("initBase", "Search: possible +required -excluded",
                                             "searchInputPlaceholder");
     c.settingsButtonText = ts.translate("initBase", "Settings", "settingsButtonText");
     c.settingsDialogTitle = ts.translate("initBase", "Settings", "settingsDialogTitle");
+    c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
@@ -208,6 +212,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.action = currentThread ? "create_post" : "create_thread";
     c.addFileText = ts.translate("initBaseBoard", "Add file", "addFileText");
     c.addToPlaylistText = ts.translate("initBaseBoard", "Add to playlist", "addToPlaylistText");
+    c.addThreadToFavoritesText = ts.translate("initBaseBoard", "Add thread to favorites", "addThreadToFavoritesText");
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");

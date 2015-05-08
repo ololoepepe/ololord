@@ -37,16 +37,6 @@ lord.isSpecialThumbName = function(thumbName) {
     return lord.isAudioType(thumbName) || lord.isImageType(thumbName) || lord.isVideoType(thumbName);
 };
 
-lord.toCenter = function(element, sizeHintX, sizeHintY) {
-    var doc = document.documentElement;
-    if (!sizeHintX || sizeHintX <= 0)
-        sizeHintX = 300;
-    if (!sizeHintY  || sizeHintY <= 0)
-        sizeHintY = 150;
-    element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
-    element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
-};
-
 lord.resetScale = function(image) {
     var k = (image.scale / 100);
     var tr = "scale(" + k + ", " + k + ")";
@@ -452,6 +442,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var closeButton = lord.nameOne("closeButton", post);
     var banButton = lord.nameOne("banButton", post);
     var downloadButton = lord.nameOne("downloadButton", post);
+    var favButton = lord.nameOne("addToFavoritesButton", post);
     var rawText = lord.nameOne("rawText", post);
     var rawHtml = lord.nameOne("rawHtml", post);
     if (res["rawHtml"])
@@ -473,6 +464,10 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     if (res["number"] != res["threadNumber"] || !inp || +inp.value !== res["threadNumber"])
         downloadButton.parentNode.removeChild(downloadButton);
+    if (res["number"] == res["threadNumber"])
+        favButton.href = favButton.href.replace("%postNumber%", res["number"]);
+    else
+        favButton.parentNode.removeChild(favButton);
     if (!moder) {
         fixButton.parentNode.removeChild(fixButton);
         unfixButton.parentNode.removeChild(unfixButton);
@@ -1496,6 +1491,25 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     lord.images[href] = lord.img;
     return false;
+};
+
+lord.addThreadToFavorites = function(boardName, threadNumber) {
+    threadNumber = +threadNumber;
+    if (!boardName || isNaN(threadNumber))
+        return;
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    if (fav.hasOwnProperty(boardName + "/" + threadNumber))
+        return;
+    lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], 7, function(res) {
+        if (!res || res.length < 1)
+            return;
+        var pn = res.pop()["number"];
+        fav[boardName + "/" + threadNumber] = {
+            "lastPostNumber": pn,
+            "previousLastPostNumber": pn
+        };
+        lord.setLocalObject("favoriteThreads", fav);
+    });
 };
 
 lord.complain = function() {

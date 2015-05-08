@@ -90,6 +90,30 @@ hr {
     border: 1px dotted orange;
 }
 
+.favorites {
+    background-color: #CCCCCC;
+    border: 1px solid #AAAAAA;
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    z-index: 9980;
+}
+
+.favorites > div {
+    background-color: #DDDDDD;
+    border: 1px solid #CCCCCC;
+}
+
+/*.favorites > span {
+    position: absolute;
+    bottom: 5px;
+}
+
+.favorites > span > button {
+    position: absolute;
+    right: 10px;
+}*/
+
 /*
     Ban
 */

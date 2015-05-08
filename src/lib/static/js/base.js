@@ -176,6 +176,16 @@ lord.node = function(type, text) {
     return ("TEXT" == type) ? document.createTextNode(text ? text : "") : document.createElement(type);
 };
 
+lord.toCenter = function(element, sizeHintX, sizeHintY) {
+    var doc = document.documentElement;
+    if (!sizeHintX || sizeHintX <= 0)
+        sizeHintX = +element.offsetWidth;
+    if (!sizeHintY  || sizeHintY <= 0)
+        sizeHintY = +element.offsetHeight;
+    element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
+    element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
+};
+
 lord.reloadPage = function() {
     document.location.reload(true);
 };
@@ -399,6 +409,112 @@ lord.showSettings = function() {
     });
 };
 
+lord.showFavorites = function() {
+    var div = lord.id("favorites");
+    if (div)
+        return;
+    div = lord.node("div");
+    div.id = "favorites";
+    div.className = "favorites";
+    var h = lord.node("h1");
+    h.appendChild(lord.node("text", lord.text("showFavoriteText")));
+    div.appendChild(h);
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    var span = lord.node("span");
+    var clBtn = lord.node("button");
+    clBtn.appendChild(lord.node("text", lord.text("closeButtonText")));
+    clBtn.onclick = function() {
+        fav = lord.getLocalObject("favoriteThreads", {});
+        lord.forIn(fav, function(o, x) {
+            o.previousLastPostNumber = o.lastPostNumber;
+            fav[x] = o;
+        });
+        lord.setLocalObject("favoriteThreads", fav);
+        document.body.removeChild(div);
+    };
+    span.appendChild(clBtn);
+    div.appendChild(span);
+    var f = function(res, x) {
+        var postDiv = lord.node("div");
+        postDiv.id = "favorite/" + x;
+        var txt = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+        postDiv.appendChild(lord.node("text", txt.substring(0, 50) + " "));
+        postDiv.title = txt;
+        var fnt = lord.node("font");
+        fnt.color = "green";
+        postDiv.appendChild(fnt);
+        div.insertBefore(postDiv, span);
+        var p = fav[x];
+        if (p["lastPostNumber"] > p["previousLastPostNumber"]) {
+            fnt.appendChild(lord.node("text", "+" + (p["lastPostNumber"] - p["previousLastPostNumber"])));
+        }
+        var rmBtn = lord.node("a");
+        rmBtn.onclick = function() {
+            postDiv.parentNode.removeChild(postDiv);
+            var fav = lord.getLocalObject("favoriteThreads", {});
+            delete fav[x];
+            lord.setLocalObject("favoriteThreads", fav);
+        };
+        rmBtn.title = lord.text("removeFromFavoritesText");
+        var img = lord.node("img");
+        img.src = "/" + lord.text("sitePathPrefix") + "img/delete.png";
+        rmBtn.appendChild(img);
+        postDiv.appendChild(rmBtn);
+    };
+    lord.forIn(fav, function(_, x) {
+        var boardName = x.split("/").shift();
+        var threadNumber = x.split("/").pop();
+        lord.ajaxRequest("get_post", [boardName, +threadNumber], 6, function(res) {
+            f(res, x);
+        });
+    });
+    document.body.appendChild(div);
+    lord.toCenter(div);
+};
+
+lord.checkFavoriteThreads = function() {
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    var nfav = {};
+    lord.forIn(fav, function(o, x) {
+        var boardName = x.split("/").shift();
+        var threadNumber = x.split("/").pop();
+        lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, o.lastPostNumber], 7, function(res) {
+            if (!res || res.length < 1)
+                return;
+            o.lastPostNumber = res.pop()["number"];
+            nfav[x] = o;
+        });
+    });
+    setTimeout(function() {
+        fav = lord.getLocalObject("favoriteThreads", {});
+        lord.forIn(nfav, function(o, x) {
+            fav[x].lastPostNumber = o.lastPostNumber;
+        });
+        lord.setLocalObject("favoriteThreads", fav);
+        var div = lord.id("favorites");
+        if (div) {
+            lord.forIn(fav, function(o, x) {
+                var postDiv = lord.id("favorite/" + x);
+                var fnt = lord.queryOne("font", postDiv);
+                if (fnt.childNodes.length > 0)
+                    fnt.removeChild(fnt.childNodes[0]);
+                if (o.lastPostNumber > o.previousLastPostNumber)
+                    fnt.appendChild(lord.node("text", "+" + (o.lastPostNumber - o.previousLastPostNumber)));
+            });
+        } else {
+            var threadNumber = lord.text("currentThreadNumber");
+            lord.forIn(fav, function(o, x) {
+                if (o.lastPostNumber > o.previousLastPostNumber) {
+                    if (threadNumber && x.split("/").pop() == threadNumber)
+                        return;
+                    lord.showFavorites();
+                }
+            });
+        }
+        setTimeout(lord.checkFavoriteThreads, 15 * lord.Second);
+    }, 5 * lord.Second);
+};
+
 lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
@@ -407,6 +523,7 @@ lord.initializeOnLoadSettings = function() {
 window.addEventListener("load", function load() {
     window.removeEventListener("load", load, false);
     lord.initializeOnLoadSettings();
+    lord.checkFavoriteThreads();
 }, false);
 
 window.addEventListener("beforeunload", function unload() {

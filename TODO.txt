@@ -23,8 +23,8 @@
 [done] Add e-mail markup
 [done] Add get_file_meta_data AJAX request
 [done] Implement playlist for audio files
+[done] Implement favorite threads system
 * Implement Drag and Drop file upload
-* Implement favorite threads system
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

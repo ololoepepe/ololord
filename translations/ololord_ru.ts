@@ -1809,6 +1809,26 @@ Your choice:</source>
         <comment>toPlaylistPageText</comment>
         <translation>Плей-лист</translation>
     </message>
+    <message>
+        <source>Favorites</source>
+        <comment>showFavoriteText</comment>
+        <translation>Избранное</translation>
+    </message>
+    <message>
+        <source>Close</source>
+        <comment>closeButtonText</comment>
+        <translation>Закрыть</translation>
+    </message>
+    <message>
+        <source>Remove from favorites</source>
+        <comment>removeFromFavoritesText</comment>
+        <translation>Удалить из избранных</translation>
+    </message>
+    <message>
+        <source>Favorite threads</source>
+        <comment>favoriteThreadsText</comment>
+        <translation>Избранные треды</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -2171,6 +2191,11 @@ Your choice:</source>
         <source>Add to playlist</source>
         <comment>addToPlaylistText</comment>
         <translation>Добавить в плей-лист</translation>
+    </message>
+    <message>
+        <source>Add thread to favorites</source>
+        <comment>addThreadToFavoritesText</comment>
+        <translation>Добавить тред в избранные</translation>
     </message>
 </context>
 <context>
