@@ -434,11 +434,20 @@ lord.showFavorites = function() {
     };
     span.appendChild(clBtn);
     div.appendChild(span);
+    var sitePathPrefix = lord.text("sitePathPrefix");
     var f = function(res, x) {
         var postDiv = lord.node("div");
         postDiv.id = "favorite/" + x;
+        var a = lord.node("a");
+        var boardName = x.split("/").shift();
+        var threadNumber = x.split("/").pop();
+        a.href = "/" + sitePathPrefix + boardName + "/thread/" + threadNumber + ".html";
         var txt = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
-        postDiv.appendChild(lord.node("text", txt.substring(0, 50) + " "));
+        a.appendChild(lord.node("text", "[" + x + "] " + txt.substring(0, 50)));
+        a.title = txt;
+        a.target = "_blank";
+        postDiv.appendChild(a);
+        postDiv.appendChild(lord.node("text", " "));
         postDiv.title = txt;
         var fnt = lord.node("font");
         fnt.color = "green";
@@ -457,7 +466,7 @@ lord.showFavorites = function() {
         };
         rmBtn.title = lord.text("removeFromFavoritesText");
         var img = lord.node("img");
-        img.src = "/" + lord.text("sitePathPrefix") + "img/delete.png";
+        img.src = "/" + sitePathPrefix + "img/delete.png";
         rmBtn.appendChild(img);
         postDiv.appendChild(rmBtn);
     };
