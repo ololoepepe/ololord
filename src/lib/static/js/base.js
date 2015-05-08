@@ -417,7 +417,7 @@ lord.showFavorites = function() {
     div.id = "favorites";
     div.className = "favorites";
     var h = lord.node("h1");
-    h.appendChild(lord.node("text", lord.text("showFavoriteText")));
+    h.appendChild(lord.node("text", lord.text("favoriteThreadsText")));
     div.appendChild(h);
     var fav = lord.getLocalObject("favoriteThreads", {});
     var span = lord.node("span");
