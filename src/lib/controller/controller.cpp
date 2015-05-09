@@ -123,7 +123,6 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentLocale = toWithLocale(ts.locale());
     cppcms::http::request *mreq = const_cast<cppcms::http::request *>(&req);
     c.currentTime = mreq->cookie_by_name("time").value();
-    c.currentQuickReplyAction = mreq->cookie_by_name("quickReplyAction").value();
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.localeLabelText = "Language:";
     c.locales = locales;
@@ -164,7 +163,6 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.settingsDialogTitle = ts.translate("initBase", "Settings", "settingsDialogTitle");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
-    c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
@@ -310,13 +308,13 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
+    c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode", "postFormLabelTripcode");
     c.postingDisabledText = currentThread
             ? ts.translate("initBaseBoard", "Posting is disabled for this thread", "postingDisabledText")
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postingSpeedText = ts.translate("initBaseBoard", "Posting speed:", "postingSpeedText");
     AbstractBoard::PostingSpeed speed = board->postingSpeed();
-    //qint64 uptime = speed.uptimeMsecs / BeQt::Hour;
     double duptime = double(speed.uptimeMsecs) / double(BeQt::Hour);
     qint64 uptime = qint64(duptime);
     std::string shour = ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
@@ -325,7 +323,6 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     } else if ((speed.postCount / uptime) > 0) {
         c.postingSpeed = speedString(speed, duptime) + " " + shour;
     } else {
-        //uptime /= 24;
         duptime /= 24.0;
         uptime = qint64(duptime);
         std::string sday = ts.translate("initBaseBoard", "post(s) per day.", "postingSpeed");
@@ -334,7 +331,6 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
         } else if ((speed.postCount / uptime) > 0) {
             c.postingSpeed = speedString(speed, duptime) + " " + sday;
         } else {
-            //uptime /= 30;
             duptime /= (365.0 / 12.0);
             uptime = qint64(duptime);
             std::string smonth = ts.translate("initBaseBoard", "post(s) per month.", "postingSpeed");
@@ -343,7 +339,6 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             } else if ((speed.postCount / uptime) > 0) {
                 c.postingSpeed = speedString(speed, duptime) + " " + smonth;
             } else {
-                //uptime /= 12;
                 duptime /= 12.0;
                 uptime = qint64(duptime);
                 std::string syear = ts.translate("initBaseBoard", "post(s) per year.", "postingSpeed");

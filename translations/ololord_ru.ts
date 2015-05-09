@@ -1725,11 +1725,6 @@ Your choice:</source>
         <translation>Подтвердить</translation>
     </message>
     <message>
-        <source>I&apos;m an attention whore!</source>
-        <comment>showTripcodeText</comment>
-        <translation>Я - вниманиешлюха!</translation>
-    </message>
-    <message>
         <source>Show password</source>
         <comment>showPasswordText</comment>
         <translation>Показать пароль</translation>
@@ -2196,6 +2191,11 @@ Your choice:</source>
         <source>Add thread to favorites</source>
         <comment>addThreadToFavoritesText</comment>
         <translation>Добавить тред в избранные</translation>
+    </message>
+    <message>
+        <source>Show tripcode</source>
+        <comment>postFormLabelTripcode</comment>
+        <translation>Показывать трипкод</translation>
     </message>
 </context>
 <context>

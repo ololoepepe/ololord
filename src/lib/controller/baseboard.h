@@ -149,6 +149,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postFormLabelRaw;
     std::string postFormLabelSubject;
     std::string postFormLabelText;
+    std::string postFormLabelTripcode;
     std::list<std::string> postformRules;
     std::string postFormTextPlaceholder;
     std::string postingDisabledText;

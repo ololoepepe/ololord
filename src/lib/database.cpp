@@ -528,7 +528,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             ps->setText(processedText);
             bSet(p.referencedPosts, refs);
         }
-        ps->setShowTripcode(!Tools::cookieValue(p.request, "show_tripcode").compare("true", Qt::CaseInsensitive));
+        ps->setShowTripcode(post.showTripcode);
         if (bump) {
             thread->setDateTime(p.dateTime);
             update(thread);

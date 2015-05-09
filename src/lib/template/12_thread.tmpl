@@ -11,13 +11,8 @@
     <% else %>
         [<a href="#top"><%= toTopText %></a>]
     <% end %>
-    <% if ( content.autoUpdateEnabled ) %>
-        [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
-            type="checkbox" checked="true"><%= autoUpdateText %></input>]
-    <% else %>
-        [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
+    [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
             type="checkbox"><%= autoUpdateText %></input>]
-    <% end %>
 </div>
 <% end template %>
 

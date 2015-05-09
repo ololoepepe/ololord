@@ -110,6 +110,7 @@ struct Post
     QString name;
     QByteArray password;
     bool raw;
+    bool showTripcode;
     QString subject;
     QString text;
 };

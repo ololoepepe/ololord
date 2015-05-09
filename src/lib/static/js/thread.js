@@ -159,9 +159,13 @@ lord.setAutoUpdateEnabled = function(cbox) {
             lord.autoUpdateTimer = null;
         }
     }
-    lord.setCookie("auto_update" + lord.text("currentThreadNumber"), enabled, {
-        "expires": lord.Year
-    });
+    var list = lord.getLocalObject("autoUpdate", {});
+    var threadNumber = lord.text("currentThreadNumber");
+    if (enabled)
+        list[threadNumber] = {};
+    else if (list.hasOwnProperty(threadNumber))
+        delete list[threadNumber];
+    lord.setLocalObject("autoUpdate", list);
 };
 
 lord.downloadThread = function() {
@@ -236,7 +240,7 @@ lord.downloadThread = function() {
 lord.initializeOnLoadThread = function() {
     lord.addVisibilityChangeListener(lord.visibilityChangeListener);
     lord.addAnchorChangeListener(lord.anchorChangeListener);
-    if (lord.getCookie("auto_update" + lord.text("currentThreadNumber")) === "true") {
+    if (lord.getLocalObject("autoUpdate", {})[lord.text("currentThreadNumber")]) {
         var cbox = lord.id("autoUpdate_top");
         cbox.checked = true;
         lord.setAutoUpdateEnabled(cbox);

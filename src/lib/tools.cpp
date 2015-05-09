@@ -833,6 +833,7 @@ Post toPost(const PostParameters &params, const FileList &files)
         pwd = SettingsLocker()->value("Board/default_post_password").toString();
     p.password = QCryptographicHash::hash(pwd.toLocal8Bit(), QCryptographicHash::Sha1);
     p.raw = !params.value("raw").compare("true", Qt::CaseInsensitive);
+    p.showTripcode = !params.value("tripcode").compare("true", Qt::CaseInsensitive);
     p.subject = params.value("subject");
     p.text = params.value("text");
     p.draft = !params.value("draft").compare("true", Qt::CaseInsensitive);

@@ -35,6 +35,12 @@
 <% template customPostFormField4() %>
 <% end template %>
 
+<% template customPostFormField41() %>
+<% end template %>
+
+<% template customPostFormField42() %>
+<% end template %>
+
 <% template customPostFormField5() %>
 <% end template %>
 
@@ -742,6 +748,18 @@
                         </td>
                     </tr>
                 <% end %>
+                <% include customPostFormField41() %>
+                <% if ( content.loggedIn ) %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelTripcode %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
+                        </td>
+                    </tr>
+                <% end %>
+                <% include customPostFormField42() %>
                 <% if ( content.draftsEnabled && content.loggedIn ) %>
                     <tr>
                         <td class="postformLabel">

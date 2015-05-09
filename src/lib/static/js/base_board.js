@@ -756,6 +756,15 @@ lord.showHidePostForm = function(position) {
     lord.postForm.visibility[position] = !lord.postForm.visibility[position];
 };
 
+lord.switchShowTripcode = function() {
+    var postForm = lord.id("postForm");
+    var sw = lord.nameOne("tripcode", postForm);
+    if (sw.checked)
+        lord.setLocalObject("showTripcode", true);
+    else
+        lord.removeLocalObject("showTripcode");
+};
+
 lord.deletePost = function(boardName, postNumber, fromThread) {
     if (!boardName || isNaN(+postNumber))
         return;
@@ -1591,12 +1600,14 @@ lord.posted = function(response) {
     var threadNumber = o.threadNumber;
     var boardName = lord.text("currentBoardName");
     var currentThreadNumber = lord.text("currentThreadNumber");
-    var btn = postForm.querySelector("[name='submit']");
-    btn.disabled = false;
-    btn.value = lord.text("postFormButtonSubmit");
+    var resetButton = function() {
+        var btn = postForm.querySelector("[name='submit']");
+        btn.disabled = false;
+        btn.value = lord.text("postFormButtonSubmit");
+    };
     if (postNumber) {
         if (lord.postForm.quickReply && !currentThreadNumber) {
-            var action = lord.getCookie("quickReplyAction");
+            var action = lord.getLocalObject("quickReplyAction", "goto_thread");
             if ("do_nothing" === action) {
                 //Do nothing
             } else if ("append_post" == action) {
@@ -1618,6 +1629,7 @@ lord.posted = function(response) {
                 return;
             }
         }
+        resetButton();
         lord.resetPostForm();
         if (currentThreadNumber)
             lord.updateThread(boardName, currentThreadNumber, true, lord.selectPost.bind(lord, postNumber));
@@ -1628,6 +1640,7 @@ lord.posted = function(response) {
         window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/" + threadNumber
             + ".html";
     } else {
+        resetButton();
         var errmsg = o.errorMessage;
         var errdesc = o.errorDescription;
         var txt = (errmsg && errdesc) ? (errmsg + ": " + errdesc) : response.substring(0, 150);
@@ -1661,6 +1674,11 @@ lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
+    if (lord.getLocalObject("showTripcode", false)) {
+        var postForm = lord.id("postForm");
+        var sw = lord.nameOne("tripcode", postForm);
+        sw.checked = true;
+    }
     lord.query(".post").forEach(function(post) {
         lord.addYoutubeButton(post);
     });

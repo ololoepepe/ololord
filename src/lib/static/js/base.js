@@ -347,19 +347,6 @@ lord.switchShowLogin = function() {
         inp.type = "password";
 };
 
-lord.switchShowTripcode = function() {
-    var sw = lord.id("showTripcodeCheckbox");
-    if (!!sw.checked) {
-        lord.setCookie("show_tripcode", "true", {
-            "expires": lord.Billion, "path": "/"
-        });
-    } else {
-        lord.setCookie("show_tripcode", "", {
-            "expires": lord.Billion, "path": "/"
-        });
-    }
-};
-
 lord.doSearch = function() {
     var query = lord.text("searchFormInputQuery");
     if ("" === query)
@@ -384,6 +371,9 @@ lord.showSettings = function() {
     var div = lord.id("settingsDialogTemplate").cloneNode(true);
     div.style.display = "";
     div.className = "settingsDialog";
+    var sel = lord.nameOne("quickReplyActionSelect", div);
+    var act = lord.getLocalObject("quickReplyAction", "goto_thread");
+    lord.queryOne("[value='" + act + "']", sel).selected = true;
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
         var sel = lord.nameOne("styleChangeSelect", div);
         var sn = sel.options[sel.selectedIndex].value;
@@ -395,16 +385,14 @@ lord.showSettings = function() {
         lord.setCookie("time", tm, {
             "expires": lord.Billion, "path": "/"
         });
-        sel = lord.nameOne("captchaChangeSelect", div);
+        sel = lord.nameOne("captchaEngineSelect", div);
         var tm = sel.options[sel.selectedIndex].value;
         lord.setCookie("captchaEngine", tm, {
             "expires": lord.Billion, "path": "/"
         });
         sel = lord.nameOne("quickReplyActionSelect", div);
         var act = sel.options[sel.selectedIndex].value;
-        lord.setCookie("quickReplyAction", act, {
-            "expires": lord.Billion, "path": "/"
-        });
+        lord.setLocalObject("quickReplyAction", act);
         lord.reloadPage();
     });
 };
@@ -526,6 +514,12 @@ lord.checkFavoriteThreads = function() {
 lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
+    //Remove outdated cookies
+    ["show_tripcode", "captcha", "quickReplyAction", "1may", "9may"].forEach(function(name) {
+        lord.setCookie(name, "", {
+            "expires": -1, "path": "/"
+        });
+    });
 };
 
 window.addEventListener("load", function load() {
