@@ -1,4 +1,5 @@
 [done] Fix audio tags support
+[done] Fix posting speed counting
 * Implement Drag and Drop file upload
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
