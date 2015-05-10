@@ -37,7 +37,7 @@ void mlpBoard::handleBoard(cppcms::application &app, unsigned int page)
     c.videoFileName = Tools::toStd(QString("friendship_is_magic_%1.webm").arg((qrand() % 2) + 1));
     c.videoFileName2 = "bombanoolow.webm";
     c.videoType = "video/webm";
-    app.render("mlp_board", c);
+    Tools::render(app, "mlp_board", c);
     Tools::log(app, "board", "success", logTarget);
 }
 

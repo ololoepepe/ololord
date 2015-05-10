@@ -26,7 +26,7 @@ lord.reloadCaptchaFunction = function() {
         img.onclick = lord.reloadCaptchaFunction.bind(lord);
         image.appendChild(img);
     });
-}
+};
 
 window.addEventListener("load", function load() {
     window.removeEventListener("load", load, false);

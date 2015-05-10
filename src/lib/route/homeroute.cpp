@@ -46,7 +46,7 @@ void HomeRoute::handle()
     foreach (const QString &s, Tools::rules("rules/home", tq.locale()))
         c.rules.push_back(Tools::toStd(s));
     c.welcomeMessage = ts.translate("HomeRoute", "Welcome. Again.", "welcomeMessage");
-    application.render("home", c);
+    Tools::render(application, "home", c);
     Tools::log(application, "home", "success");
 }
 

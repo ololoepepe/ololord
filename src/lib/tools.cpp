@@ -685,6 +685,28 @@ cppcms::json::value readJsonValue(const QString &fileName, bool *ok)
         return bRet(ok, false, cppcms::json::value());
 }
 
+void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
+{
+    int m = SettingsLocker()->value("System/minification_mode", 1).toInt();
+    if (m <= 0)
+        return app.render(toStd(templateName), content);
+    std::stringstream stream;
+    app.render(toStd(templateName), stream, content);
+    QStringList sl = fromStd(stream.str()).split(QRegExp("(\r?\n)+"));
+    foreach (int i, bRangeR(sl.size() - 1, 0)) {
+        if (sl[i].isEmpty() || QRegExp("\\s+").exactMatch(sl[i])) {
+            sl.removeAt(i);
+        } else {
+            sl[i].replace(QRegExp("^\\s+"), "");
+            sl[i].replace(QRegExp("\\s+$"), "");
+        }
+    }
+    QString s = sl.join("\n");
+    if (m > 1)
+        s.replace(QRegExp(" {2,}"), " ");
+    app.response().out() << toStd(s);
+}
+
 void resetLoggingSkipIps()
 {
     QStringList list = SettingsLocker()->value("System/logging_skip_ip").toString().split(QRegExp("\\,\\s*"),

@@ -7,6 +7,7 @@ namespace cppcms
 {
 
 class application;
+class base_content;
 
 namespace json
 {
@@ -170,6 +171,7 @@ OLOLORD_EXPORT QStringList news(const QLocale &l);
 OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request);
 OLOLORD_EXPORT PostParameters postParameters(const cppcms::http::request &request);
 OLOLORD_EXPORT cppcms::json::value readJsonValue(const QString &fileName, bool *ok = 0);
+OLOLORD_EXPORT void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content);
 OLOLORD_EXPORT void resetLoggingSkipIps();
 OLOLORD_EXPORT QStringList rules(const QString &prefix, const QLocale &l);
 OLOLORD_EXPORT FriendList siteFriends();

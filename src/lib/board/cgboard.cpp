@@ -30,7 +30,7 @@ void cgBoard::handleBoard(cppcms::application &app, unsigned int page)
     Controller::initBase(c, app.request(), title(tq.locale()));
     c.imageFileName = "drakeface.jpg";
     c.imageTitle = ts.translate("cgBoard", "No games", "imageTitle");
-    app.render("board_image", c);
+    Tools::render(app, "board_image", c);
     return Tools::log(app, "board", "success", logTarget);
 }
 

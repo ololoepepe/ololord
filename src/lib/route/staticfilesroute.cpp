@@ -3,19 +3,25 @@
 #include "board/abstractboard.h"
 #include "cache.h"
 #include "controller/controller.h"
+#include "settingslocker.h"
 #include "tools.h"
 
 #include <BDirTools>
 #include <BeQt>
+#include <BTextTools>
 
 #include <QByteArray>
 #include <QDebug>
+#include <QFileInfo>
 #include <QList>
 #include <QMap>
 #include <QPair>
 #include <QRegExp>
+#include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QTextCodec>
+#include <QVariant>
 
 #include <cppcms/application.h>
 #include <cppcms/http_request.h>
@@ -61,6 +67,28 @@ void StaticFilesRoute::handle(std::string p)
         Controller::renderNotFound(application);
         Tools::log(application, logAction, "fail:not_found", logTarget);
         return;
+    }
+    QString suff = QFileInfo(path).suffix();
+    if (!suff.compare("css", Qt::CaseInsensitive) || !suff.compare("js", Qt::CaseInsensitive)) {
+        int m = SettingsLocker()->value("System/minification_mode").toInt();
+        if (m > 0) {
+            QTextCodec *codec = BTextTools::guessTextCodec(ba);
+            if (!codec)
+                codec = QTextCodec::codecForName("UTF-8");
+            QStringList sl = codec->toUnicode(ba).split(QRegExp("(\r?\n)+"));
+            foreach (int i, bRangeR(sl.size() - 1, 0)) {
+                if (sl[i].isEmpty() || QRegExp("\\s+").exactMatch(sl[i])) {
+                    sl.removeAt(i);
+                } else {
+                    sl[i].replace(QRegExp("^\\s+"), "");
+                    sl[i].replace(QRegExp("\\s+$"), "");
+                }
+            }
+            QString s = sl.join("\n");
+            if (m > 1)
+                s.replace(QRegExp(" {2,}"), " ");
+            ba = codec->fromUnicode(s);
+        }
     }
     file = setCache(path, ba);
     if (file)

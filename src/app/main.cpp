@@ -731,6 +731,7 @@ void initSettings()
 {
     BSettingsNode *root = new BSettingsNode;
     BTerminal::createBeQtSettingsNode(root);
+    /*======================================== Board ========================================*/
     BSettingsNode *n = new BSettingsNode("Board", root);
     BSettingsNode *nn = new BSettingsNode(QVariant::ByteArray, "default_post_password", n);
     nn->setUserSetFunction(&setDefaultThreadPassword);
@@ -810,6 +811,7 @@ void initSettings()
     t.setArgument(AbstractBoard::defaultFileTypes);
     nn = new BSettingsNode(QVariant::String, "supported_file_types", n);
     nn->setDescription(t);
+    /*======================================== Site ========================================*/
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "domain", n);
     nn->setDescription(BTranslation::translate("initSettings", "Site domain name.\n"
@@ -829,7 +831,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "youtube_api_key", n);
     nn->setDescription(BTranslation::translate("initSettings", "The key required to access YouTube API.\n"
                                                "It will appear in HTML."));
-    n = new BSettingsNode("Captcha", root);
+    /*======================================== Captcha ========================================*/
+    n = new BSettingsNode("Captcha", root); //NOTE: Yep, it must be here.
+    /*======================================== System ========================================*/
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);
     nn->setDescription(BTranslation::translate("initSettings", "Determines if HTTP_X_REAL_IP header is used to "
@@ -846,6 +850,12 @@ void initSettings()
                                                "  2 - log to file only\n"
                                                "  3 and more - log to console and file\n"
                                                "  The default is 2."));
+    nn = new BSettingsNode(QVariant::Int, "minification_mode", n);
+    nn->setDescription(BTranslation::translate("initSettings", "HTML/CSS/JS minification mode. Possible values:\n"
+                                               "  0 or less - don't minify anything\n"
+                                               "  1 - remove empty lines only\n"
+                                               "  2 and more - remove empty lines and extra spaces\n"
+                                               "  The default is 1."));
     nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
@@ -864,6 +874,7 @@ void initSettings()
                                                 "Works for non-transparent proxies only (X-Forwarded-For, "
                                                 "X-Client-IP).\n"
                                                 "The default is true."));
+    /*======================================== Cache ========================================*/
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {
         nn = new BSettingsNode(s, n);

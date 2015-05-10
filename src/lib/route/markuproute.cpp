@@ -55,7 +55,7 @@ void MarkupRoute::handle()
         c.strikedoutTextWakaba.append("^H");
     }
     c.underlinedText = ts.translate("MarkupRoute", "underlined text", "underlinedText");
-    application.render("markup", c);
+    Tools::render(application, "markup", c);
     Tools::log(application, "markup", "success");
 }
 

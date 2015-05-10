@@ -797,7 +797,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     c.toNextPageText = ts.translate("AbstractBoard", "Next page", "toNextPageText");
     c.toPreviousPageText = ts.translate("AbstractBoard", "Previous page", "toPreviousPageText");
     beforeRenderBoard(app.request(), cc.data());
-    app.render(Tools::toStd(viewName), c);
+    Tools::render(app, viewName, c);
     Tools::log(app, "board", "success", logTarget);
 }
 
@@ -814,7 +814,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
     c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");;
     foreach (const QString &r, rules(ts.locale()))
         c.rules.push_back(Tools::toStd(r));
-    app.render("rules", c);
+    Tools::render(app, "rules", c);
     Tools::log(app, "board_rules", "success", logTarget);
 }
 
@@ -932,7 +932,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     c.postLimit = postLimit();
     c.updateThreadText = ts.translate("AbstractBoard", "Update thread", "updateThreadText");
     beforeRenderThread(app.request(), cc.data());
-    app.render(Tools::toStd(viewName), c);
+    Tools::render(app, viewName, c);
     Tools::log(app, "thread", "success", logTarget);
 }
 

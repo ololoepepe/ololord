@@ -407,7 +407,7 @@ void renderBan(cppcms::application &app, const Database::BanInfo &info)
     c.banMessage = ts.translate("renderBan", "You are banned", "banMessage");
     c.banReason = Tools::toStd(info.reason);
     c.banReasonLabel = ts.translate("renderBan", "Reason", "banReasonLabel");
-    app.render("ban", c);
+    Tools::render(app, "ban", c);
 }
 
 void renderBanAjax(cppcms::application &app, const Database::BanInfo &info)
@@ -444,7 +444,7 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     initBase(c, app.request(), tq.translate("renderError", "Error", "pageTitle"));
     c.errorMessage = !error.isEmpty() ? Tools::toStd(error) : c.pageTitle;
     c.errorDescription = Tools::toStd(description);
-    app.render("error", c);
+    Tools::render(app, "error", c);
 }
 
 void renderErrorAjax(cppcms::application &app, const QString &error, const QString &description)
@@ -470,7 +470,7 @@ void renderIpBan(cppcms::application &app, int level)
         c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
                                         "You are not allowed to make posts.", "banDescription");
     }
-    app.render("ip_ban", c);
+    Tools::render(app, "ip_ban", c);
 }
 
 void renderIpBanAjax(cppcms::application &app, int level)
@@ -502,7 +502,7 @@ void renderNotFound(cppcms::application &app)
         c.imageFileName = Tools::toStd("not_found/" + fns.at(qrand() % fns.size()));
     }
     c.notFoundMessage = ts.translate("renderNotFound", "Page or file not found", "notFoundMessage");
-    app.render("not_found", c);
+    Tools::render(app, "not_found", c);
 }
 
 void renderSuccessfulPostAjax(cppcms::application &app, quint64 postNumber)
