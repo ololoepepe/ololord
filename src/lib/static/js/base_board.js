@@ -267,9 +267,6 @@ lord.createPostNode = function(res, permanent, boardName) {
     post.style.display = "";
     if (!boardName)
         boardName = lord.text("currentBoardName");
-    var hidden = (lord.getCookie("postHidden" + boardName + res["number"]) === "true");
-    if (hidden)
-        post.className += " hiddenPost";
     var fixed = lord.nameOne("fixed", post);
     if (!!res["fixed"])
         fixed.style.display = "";
@@ -416,8 +413,6 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     if (res["number"] === res["threadNumber"])
         post.className = post.className.replace("post", "opPost");
-    if (hidden)
-        post.className += " hiddenPost";
     perm.style.display = "";
     var anumber = lord.node("a");
     number.parentNode.insertBefore(anumber, number);
@@ -433,7 +428,6 @@ lord.createPostNode = function(res, permanent, boardName) {
     var hideButton = lord.nameOne("hideButton", post);
     hideButton.id = hideButton.id.replace("%postNumber%", res["number"]);
     hideButton.href = hideButton.href.replace("%postNumber%", res["number"]);
-    hideButton.href = hideButton.href.replace("%hide%", !hidden);
     var addFileButton = lord.nameOne("addFileButton", post);
     var editButton = lord.nameOne("editButton", post);
     var fixButton = lord.nameOne("fixButton", post);
@@ -706,10 +700,32 @@ lord.addYoutubeButton = function(post) {
     });
 };
 
+lord.tryHidePost = function(post, list) {
+    if (!post)
+        return;
+    var postNumber = post.id.replace("post", "");
+    if (isNaN(+postNumber))
+        return;
+    var boardName = lord.text("currentBoardName");
+    if (!list)
+        list = lord.getLocalObject("hiddenPosts", {});
+    //TODO: Custom hide rules
+    if (!list[boardName + "/" + postNumber])
+        return;
+    post.className += " hiddenPost";
+    var thread = lord.id("thread" + postNumber);
+    if (!thread)
+        return;
+    thread.className = "hiddenThread";
+    lord.id("threadOmitted" + postNumber).className += " hiddenPosts";
+    lord.id("threadPosts" + postNumber).className += " hiddenPosts";
+};
+
 lord.postNodeInserted = function(post) {
     if (!post)
         return;
     lord.addYoutubeButton(post);
+    lord.tryHidePost(post);
 };
 
 lord.showPasswordDialog = function(title, label, callback) {
@@ -1039,59 +1055,37 @@ lord.editPost = function(boardName, postNumber) {
     });
 };
 
-lord.setPostHidden = function(boardName, postNumber, hidden) {
+lord.setPostHidden = function(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
     var post = lord.id("post" + postNumber);
-    var sw = lord.id("hidePost" + postNumber);
-    if (!!hidden) {
-        post.className += " hiddenPost";
-        sw.href = sw.href.replace("true", "false");
-        lord.setCookie("postHidden" + boardName + postNumber, "true", {
-            "expires": lord.Billion, "path": "/"
-        });
-    } else {
-        post.className = post.className.replace(" hiddenPost", "");
-        sw.href = sw.href.replace("false", "true");
-        lord.setCookie("postHidden" + boardName + postNumber, "true", {
-            "expires": -1, "path": "/"
-        });
-    }
-};
-
-lord.setThreadHidden = function(boardName, postNumber, hidden) {
-    if (!boardName || isNaN(+postNumber))
+    if (!post)
         return;
-    var post = lord.id("post" + postNumber);
-    var sw = lord.id("hidePost" + postNumber);
     var thread = lord.id("thread" + postNumber);
-    var omitted = lord.id("threadOmitted" + postNumber);
-    var posts = lord.id("threadPosts" + postNumber);
-    if (!!hidden) {
+    var list = lord.getLocalObject("hiddenPosts", {});
+    var hidden = (post.className.replace("hiddenPost") != post.className);
+    if (!hidden)
         post.className += " hiddenPost";
-        if (!!thread)
-            thread.className = "hiddenThread";
-        if (!!omitted)
-            omitted.className += " hiddenPosts";
-        if (!!posts)
-            posts.className += " hiddenPosts";
-        sw.href = sw.href.replace("true", "false");
-        lord.setCookie("postHidden" + boardName + postNumber, "true", {
-            "expires": lord.Billion, "path": "/"
-        });
-    } else {
+    else
         post.className = post.className.replace(" hiddenPost", "");
-        if (!!thread)
+    if (thread) {
+        var omitted = lord.id("threadOmitted" + postNumber);
+        var posts = lord.id("threadPosts" + postNumber);
+        if (!hidden) {
+            thread.className = "hiddenThread";
+            omitted.className += " hiddenPosts";
+            posts.className += " hiddenPosts";
+        } else {
             thread.className = "";
-        if (!!omitted)
             omitted.className = omitted.className.replace(" hiddenPosts", "");
-        if (!!posts)
             posts.className = posts.className.replace(" hiddenPosts", "");
-        sw.href = sw.href.replace("false", "true");
-        lord.setCookie("postHidden" + boardName + postNumber, "true", {
-            "expires": -1, "path": "/"
-        });
+        }
     }
+    if (!hidden)
+        list[boardName + "/" + postNumber] = {};
+    else if (list[boardName + "/" + postNumber])
+        delete list[boardName + "/" + postNumber];          
+    lord.setLocalObject("hiddenPosts", list);
 };
 
 lord.deleteFile = function(boardName, postNumber, fileName) {
@@ -1535,7 +1529,8 @@ lord.complain = function() {
     lord.complainVideo.play();
 };
 
-lord.submitted = function(form) {
+lord.submitted = function(event, form) {
+    event.preventDefault();
     var btn = form.querySelector("[name='submit']");
     btn.disabled = true;
     btn.value = lord.text("postFormButtonSubmitSending") + " 0%";
@@ -1543,7 +1538,11 @@ lord.submitted = function(form) {
     var xhr = new XMLHttpRequest();
     xhr.open("POST", form.action);
     xhr.upload.onprogress = function(e) {
-        btn.value = lord.text("postFormButtonSubmitSending") + " " + Math.floor(100 * (e.loaded / e.total)) + "%";
+        var percent = Math.floor(100 * (e.loaded / e.total));
+        if (100 == percent)
+            btn.value = lord.text("postFormButtonSubmitWaiting");
+        else
+            btn.value = lord.text("postFormButtonSubmitSending") + " " + percent + "%";
     };
     xhr.onreadystatechange = function() {
         if (xhr.readyState === 4) {
@@ -1552,6 +1551,8 @@ lord.submitted = function(form) {
                 var err = response.error;
                 if (!!err) {
                     lord.showPopup(err, {type: "critical"});
+                    btn.disabled = false;
+                    btn.value = lord.text("postFormButtonSubmit");
                     return false;
                 }
                 lord.posted(response);
@@ -1679,8 +1680,10 @@ lord.initializeOnLoadBaseBoard = function() {
         var sw = lord.nameOne("tripcode", postForm);
         sw.checked = true;
     }
-    lord.query(".post").forEach(function(post) {
+    var list = lord.getLocalObject("hiddenPosts", {});
+    lord.query(".post, .opPost").forEach(function(post) {
         lord.addYoutubeButton(post);
+        lord.tryHidePost(post, list);
     });
 };
 

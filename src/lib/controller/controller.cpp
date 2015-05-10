@@ -294,6 +294,8 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
     c.postFormButtonSubmitSending = ts.translate("initBaseBoard", "Sending:", "postFormButtonSubmitSending");
+    c.postFormButtonSubmitWaiting = ts.translate("initBaseBoard", "Waiting for reply...",
+                                                 "postFormButtonSubmitWaiting");
     c.postFormInputFile = ts.translate("initBaseBoard", "File(s):", "postFormInputFile");
     SettingsLocker s;
     int maxText = s->value("Board/" + board->name() + "/max_text_length",

@@ -774,8 +774,6 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                 if (thread.lastPosts.size() >= maxPosts)
                     break;
             }
-            thread.hidden = (Tools::cookieValue(app.request(), "postHidden" + name()
-                                                + QString::number(tt.number())) == "true");
             c.threads.push_back(thread);
         }
         t.commit();
@@ -932,7 +930,6 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     c.newPostsText = ts.translate("AbstractBoard", "New posts:", "newPostsText");
     c.noNewPostsText = ts.translate("AbstractBoard", "No new posts", "noNewPostsText");
     c.postLimit = postLimit();
-    c.hidden = (Tools::cookieValue(app.request(), "postHidden" + name() + QString::number(threadNumber)) == "true");
     c.updateThreadText = ts.translate("AbstractBoard", "Update thread", "updateThreadText");
     beforeRenderThread(app.request(), cc.data());
     app.render(Tools::toStd(viewName), c);
@@ -1334,7 +1331,6 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.modificationDateTime = Tools::toStd(l.toString(Tools::dateTime(post.modificationDateTime(), req),
                                                           DateTimeFormat));
     }
-    pp.hidden = (Tools::cookieValue(req, "postHidden" + name() + QString::number(post.number())) == "true");
     pp.name = Tools::toStd(Controller::toHtml(post.name()));
     if (pp.name.empty())
         pp.name = "<span class=\"userName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
@@ -1401,7 +1397,6 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["files"] = files;
     o["fixed"] = post.fixed;
     o["flagName"] = post.flagName;
-    o["hidden"] = post.hidden;
     o["ip"] = post.ip;
     o["name"] = post.name;
     o["nameRaw"] = post.nameRaw;

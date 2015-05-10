@@ -58,7 +58,6 @@ public:
     std::list<File> files;
     bool fixed;
     std::string flagName;
-    bool hidden;
     std::string ip;
     std::string modificationDateTime;
     std::string name;
@@ -140,6 +139,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string openThreadText;
     std::string postFormButtonSubmit;
     std::string postFormButtonSubmitSending;
+    std::string postFormButtonSubmitWaiting;
     std::string postFormInputFile;
     std::string postFormLabelCaptcha;
     std::string postFormLabelDraft;

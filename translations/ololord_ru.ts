@@ -2197,6 +2197,11 @@ Your choice:</source>
         <comment>postFormLabelTripcode</comment>
         <translation>Показывать трипкод</translation>
     </message>
+    <message>
+        <source>Waiting for reply...</source>
+        <comment>postFormButtonSubmitWaiting</comment>
+        <translation>Ожидание ответа...</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

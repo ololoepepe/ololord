@@ -201,26 +201,12 @@ lord.downloadThread = function() {
     var last = 0;
     var completed = 0;
     var append = function(i) {
-        if (completed >= as.length) {
-            var content = zip.generate({
-                "type": "blob"
-            });
-            if (!cancel) {
-                document.body.removeChild(cButton);
-                document.body.removeChild(progress);
-            }
-            saveAs(content, document.title + ".zip");
-            lord.isDownloading = false;
-            dlButton.className = dlButton.className.replace(" disabled", "");
-            return;
-        }
         if (cancel) {
             lord.isDownloading = false;
             dlButton.className = dlButton.className.replace(" disabled", "");
             return;
         }
         var a = as[i];
-        last = i;
         JSZipUtils.getBinaryContent(a.href, function (err, data) {
             if (!err) {
                 zip.file(a.href.split("/").pop(), data, {
@@ -229,7 +215,20 @@ lord.downloadThread = function() {
             }
             ++completed;
             progress.value = +progress.value + 1;
-            append(++last);
+            if (completed == as.length) {
+                var content = zip.generate({
+                    "type": "blob"
+                });
+                if (!cancel) {
+                    document.body.removeChild(cButton);
+                    document.body.removeChild(progress);
+                }
+                saveAs(content, document.title + ".zip");
+                lord.isDownloading = false;
+                dlButton.className = dlButton.className.replace(" disabled", "");
+            }
+            if (last < as.length - 1)
+                append(++last);
         });
     };
     append(last);

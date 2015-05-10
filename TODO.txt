@@ -1,8 +1,10 @@
 [done] Fix audio tags support
 [done] Fix posting speed counting
+[done] Fix thread files downloading
+[done] Fix/improve post form submitting
 [done] Use localStorage and JS instead of cookies for settings (when possible)
 [done] Remove outdated cookies
-* Use localStorage and JS instead of cookies for post hiding
+[done] Use localStorage and JS instead of cookies for post hiding
 * Implement Drag and Drop file upload
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
