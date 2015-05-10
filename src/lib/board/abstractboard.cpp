@@ -1266,7 +1266,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                         szt += " - ";
                         szt += !title.isEmpty() ? title : "Unknown title";
                         szt += " [";
-                        szt += !album.isEmpty() ? album : "UnknownAlbum";
+                        szt += !album.isEmpty() ? album : "Unknown album";
                         szt += "]";
                         if (!year.isEmpty())
                             szt += " (" + year + ")";

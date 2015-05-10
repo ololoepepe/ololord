@@ -169,6 +169,45 @@ lord.nameOne = function(name, parent) {
     return lord.queryOne("[name='" + name + "']", parent);
 };
 
+lord.contains = function(s, subs) {
+    if (typeof s != "string" || typeof subs != "string")
+        return false;
+    return s.replace(subs, "") != s;
+};
+
+lord.addClass = function(element, classNames) {
+    if (!element || !element.tagName || !classNames || typeof classNames != "string")
+        return;
+    lord.arr(classNames.split(" ")).forEach(function(className) {
+        if (!className)
+            return;
+        if (lord.hasClass(element, className))
+            return;
+        if (element.className)
+            element.className += " " + className;
+        else
+            element.className = className;
+    });
+};
+
+lord.hasClass = function(element, className) {
+    if (!element || !element.tagName || !className || typeof className != "string")
+        return false;
+    return !!element.className.match(new RegExp("(^| )" + className + "( |$)"));
+};
+
+lord.removeClass = function(element, classNames) {
+    if (!element || !element.tagName || !classNames || typeof classNames != "string")
+        return;
+    lord.arr(classNames.split(" ")).forEach(function(className) {
+        if (!className)
+            return;
+        element.className = element.className.replace(new RegExp("(^| )" + className + "$"), "");
+        element.className = element.className.replace(new RegExp("^" + className + "( |$)"), "");
+        element.className = element.className.replace(new RegExp(" " + className + " "), " ");
+    });
+};
+
 lord.node = function(type, text) {
     if (typeof type != "string")
         return null;
