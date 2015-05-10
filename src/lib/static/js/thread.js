@@ -94,14 +94,14 @@ lord.blinkFaviconNewMessage = function() {
 };
 
 lord.selectPost = function(post) {
-    if (!!lord.lastSelectedElement)
-        lord.lastSelectedElement.className = lord.lastSelectedElement.className.replace(" selectedPost", "");
+    if (lord.lastSelectedElement)
+        lord.removeClass(lord.lastSelectedElement, "selectedPost");
     lord.lastSelectedElement = null;
     if (isNaN(+post))
         return;
     lord.lastSelectedElement = lord.id("post" + post);
-    if (!!lord.lastSelectedElement)
-        lord.lastSelectedElement.className += " selectedPost";
+    if (lord.lastSelectedElement)
+        lord.addClass(lord.lastSelectedElement, "selectedPost");
     window.location.href = window.location.href.split("#").shift() + "#" + post;
 };
 
@@ -178,13 +178,13 @@ lord.downloadThread = function() {
     if (!dlButton)
         return;
     lord.isDownloading = true;
-    dlButton.className += " disabled";
+    lord.addClass(dlButton, "disabled");
     var progress = lord.node("progress");
-    progress.className = "progressBlocking";
+    lord.addClass(progress, "progressBlocking");
     progress.max = as.length;
     progress.value = 0;
     var cButton = lord.node("a");
-    cButton.className = "progressBlocking";
+    lord.addClass(cButton, "progressBlocking");
     cButton.href = "javascript:void(0);";
     var cancel = false;
     cButton.onclick = function() {
@@ -203,7 +203,7 @@ lord.downloadThread = function() {
     var append = function(i) {
         if (cancel) {
             lord.isDownloading = false;
-            dlButton.className = dlButton.className.replace(" disabled", "");
+            lord.removeClass(dlButton, "disabled");
             return;
         }
         var a = as[i];
@@ -225,7 +225,7 @@ lord.downloadThread = function() {
                 }
                 saveAs(content, document.title + ".zip");
                 lord.isDownloading = false;
-                dlButton.className = dlButton.className.replace(" disabled", "");
+                lord.removeClass(dlButton, "disabled");
             }
             if (last < as.length - 1)
                 append(++last);

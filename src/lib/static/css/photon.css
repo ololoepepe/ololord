@@ -97,22 +97,20 @@ hr {
     width: 600px;
     height: 600px;
     z-index: 9980;
+    padding: 2px 2px 2px 2px;
 }
 
 .favorites > div {
     background-color: #DDDDDD;
     border: 1px solid #CCCCCC;
+    padding: 2px 2px 2px 2px;
 }
 
-/*.favorites > span {
+.favorites > span {
     position: absolute;
-    bottom: 5px;
+    bottom: 10px;
+    right: 20px;
 }
-
-.favorites > span > button {
-    position: absolute;
-    right: 10px;
-}*/
 
 /*
     Ban
@@ -683,6 +681,7 @@ a.progressBlocking {
 .track {
     background-color: #DDDDDD;
     border: 1px solid #CCCCCC;
+    padding: 2px 2px 2px 2px;
 }
 
 .track ~ .track {

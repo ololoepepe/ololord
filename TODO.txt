@@ -7,6 +7,7 @@
 [done] Use localStorage and JS instead of cookies for post hiding
 [done] Implement Drag and Drop file upload
 [done] Show addititonal information about media files
+[done] Add JS functions for adding/removing CSS classes
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

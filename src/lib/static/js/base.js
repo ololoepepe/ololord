@@ -237,9 +237,8 @@ lord.showPopup = function(text, options) {
     if (options && typeof options.type == "string" && lord.in(["critical", "warning"], options.type.toLowerCase()))
         classNames += options.type.toLowerCase() + (("" != classNames) ? " " : "");
     var msg = lord.node("div");
-    msg.className = "popup";
-    if ("" != classNames.empty)
-        msg.className += " " + classNames;
+    lord.addClass(msg, "popup");
+    lord.addClass(msg, classNames);
     if (lord.popups.length > 0) {
         var prev = lord.popups[lord.popups.length - 1];
         msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
@@ -409,7 +408,7 @@ lord.searchKeyPress = function(e) {
 lord.showSettings = function() {
     var div = lord.id("settingsDialogTemplate").cloneNode(true);
     div.style.display = "";
-    div.className = "settingsDialog";
+    lord.addClass(div, "settingsDialog");
     var sel = lord.nameOne("quickReplyActionSelect", div);
     var act = lord.getLocalObject("quickReplyAction", "goto_thread");
     lord.queryOne("[value='" + act + "']", sel).selected = true;
@@ -442,7 +441,7 @@ lord.showFavorites = function() {
         return;
     div = lord.node("div");
     div.id = "favorites";
-    div.className = "favorites";
+    lord.addClass(div, "favorites");
     var h = lord.node("h1");
     h.appendChild(lord.node("text", lord.text("favoriteThreadsText")));
     div.appendChild(h);

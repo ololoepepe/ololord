@@ -111,7 +111,7 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
             div.appendChild(inp);
             div.appendChild(lord.node("text", " " + v.text + " "));
             var span = lord.node("span");
-            span.className = "voteCount";
+            lord.addClass(span, "voteCount");
             span.appendChild(lord.node("text", "(" + lord.text("votedText") + " " + v.voteCount + ")"));
             div.appendChild(span);
             div.appendChild(lord.node("br"));
