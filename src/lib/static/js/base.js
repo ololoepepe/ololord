@@ -515,7 +515,7 @@ lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
     //Remove outdated cookies
-    ["show_tripcode", "captcha", "quickReplyAction", "1may", "9may"].forEach(function(name) {
+    ["show_tripcode", "captcha", "quickReplyAction"].forEach(function(name) {
         lord.setCookie(name, "", {
             "expires": -1, "path": "/"
         });
