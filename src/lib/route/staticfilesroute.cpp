@@ -69,7 +69,8 @@ void StaticFilesRoute::handle(std::string p)
         return;
     }
     QString suff = QFileInfo(path).suffix();
-    if (!suff.compare("css", Qt::CaseInsensitive) || !suff.compare("js", Qt::CaseInsensitive)) {
+    if ((StaticFilesMode == mode)
+            && (!suff.compare("css", Qt::CaseInsensitive) || !suff.compare("js", Qt::CaseInsensitive))) {
         int m = SettingsLocker()->value("System/minification_mode").toInt();
         if (m > 0) {
             QTextCodec *codec = BTextTools::guessTextCodec(ba);
