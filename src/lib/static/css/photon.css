@@ -484,6 +484,11 @@ span.spoiler:hover a {
     text-align: justify;
 }
 
+.postformFile.drag {
+    background-color: #DDDDDD;
+    border: 1px dashed #555555;
+}
+
 .postformFile ~ .postformFile {
     margin-top: 5px;
 }

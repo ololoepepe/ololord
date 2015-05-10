@@ -537,6 +537,7 @@ lord.clearFileInput = function(div) {
     var span = div.querySelector("span");
     if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
         span.removeChild(span.childNodes[0]);
+    lord.removeFileHash(div);
     div.fileHash = null;
 };
 
@@ -965,6 +966,10 @@ lord.addFile = function(boardName, postNumber) {
             return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
         lord.nameOne("postNumber", form).value = postNumber;
         var formData = new FormData(form);
+        lord.query(".postformFile", form).forEach(function(div) {
+            if (div.droppedFile)
+                formData.append("file", div.droppedFile);
+        });
         var xhr = new XMLHttpRequest();
         xhr.open("POST", form.action);
         var progress = lord.node("progress");
@@ -1245,28 +1250,42 @@ lord.noViewPost = function() {
     }, 500);
 };
 
-lord.fileSelected = function(current) {
-    if (!current)
+lord.fileDragOver = function(e, div) {
+    e.preventDefault();
+    if (div.className.replace(" drag") == div.className)
+        div.className += " drag";
+    return false;
+};
+
+lord.fileDragLeave = function(e, div) {
+    e.preventDefault();
+    div.className = div.className.replace(" drag", "");
+    return false;
+};
+
+lord.removeFileHash = function(div) {
+    if (!div)
         return;
-    var inp = lord.id("maxFileCount");
+    if (!div.fileHash)
+        return;
+    var fileHashes = lord.getFileHashes(div);
+    var val = fileHashes.value.replace("," + div.fileHash, "");
+    if (val === fileHashes.value)
+        val = fileHashes.value.replace(div.fileHash + ",", "");
+    if (val === fileHashes.value)
+        val = fileHashes.value.replace(div.fileHash, "");
+    fileHashes.value = val;
+};
+
+lord.fileAddedCommon = function(div, file) {
+    if (!div || !file)
+        return;
+    var inp = lord.queryOne("input", div);
     if (!inp)
         return;
-    var maxCount = +inp.value;
-    var additionalCount = lord.getAdditionalCount(current);
-    if (additionalCount)
-        maxCount -= +additionalCount;
-    if (isNaN(maxCount))
-        return;
-    var div = current.parentNode;
-    if (current.value == "")
-        return lord.removeFile(div.querySelector("a"), additionalCount);
-    lord.clearFileInput(div);
-    var file = current.files[0];
     div.querySelector("span").appendChild(lord.node("text", file.name + " (" + lord.readableSize(file.size) + ")"));
+    lord.removeFileHash(div);
     var binaryReader = new FileReader();
-    binaryReader.readAsArrayBuffer(file);
-    var oldDiv = div;
-    var previous = current;
     binaryReader.onload = function(e) {
         var wordArray = CryptoJS.lib.WordArray.create(e.target.result);
         var currentBoardName = lord.text("currentBoardName");
@@ -1274,71 +1293,107 @@ lord.fileSelected = function(current) {
         lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], 8, function(res) {
             if (!res)
                 return;
-            var fileHashes = lord.getFileHashes(oldDiv);
+            var fileHashes = lord.getFileHashes(div);
             if (fileHashes.value.indexOf(fileHash) < 0)
                 fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
-            var f = previous.onchange;
-            delete previous.onchange;
-            previous.value = "";
-            previous.onchange = f;
-            oldDiv.fileHash = fileHash;
+            var f = inp.onchange;
+            delete inp.onchange;
+            inp.value = "";
+            inp.onchange = f;
+            div.fileHash = fileHash;
+            if (div.droppedFile)
+                delete div.droppedFile;
         });
     };
+    binaryReader.readAsArrayBuffer(file);
     var prefix = lord.text("sitePathPrefix");
-    if (!!current.value.match(/\.(jpe?g|png|gif)$/i)) {
+    if (!!file.name.match(/\.(jpe?g|png|gif)$/i)) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function(e) {
-            oldDiv.querySelector("img").src = e.target.result;
+            div.querySelector("img").src = e.target.result;
         };
-    } else if (!!current.value.match(/\.(mp3)$/i)) {
+    } else if (!!file.name.match(/\.(mp3)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/mp3_file.png";
-    } else if (!!current.value.match(/\.(mp4)$/i)) {
+    } else if (!!file.name.match(/\.(mp4)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/mp4_file.png";
-    } else if (!!current.value.match(/\.(ogg|ogv)$/i)) {
+    } else if (!!file.name.match(/\.(ogg|ogv)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/ogg_file.png";
-    } else if (!!current.value.match(/\.(webm)$/i)) {
+    } else if (!!file.name.match(/\.(webm)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/webm_file.png";
-    } else if (!!current.value.match(/\.(wav)$/i)) {
+    } else if (!!file.name.match(/\.(wav)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/wav_file.png";
     } else {
         div.querySelector("img").src = "/" + prefix + "img/file.png";
     }
     div.querySelector("a").style.display = "inline";
+    var inpMax = lord.id("maxFileCount");
+    if (!inpMax)
+        return;
+    var maxCount = +inpMax.value;
+    var additionalCount = lord.getAdditionalCount(inp);
+    if (additionalCount)
+        maxCount -= +additionalCount;
+    if (isNaN(maxCount))
+        return;
     var parent = div.parentNode;
     if (parent.children.length >= maxCount)
         return;
     for (var i = 0; i < parent.children.length; ++i) {
-        if (!parent.children[i].fileHash && lord.queryOne("input", parent.children[i]).value === "")
+        var c = parent.children[i];
+        if (!c.fileHash && lord.queryOne("input", c).value === "" && !c.droppedFile)
             return;
-        parent.children[i].querySelector("a").style.display = "inline";
+        c.querySelector("a").style.display = "inline";
     }
-    div = div.cloneNode(true);
+    (function(div) {
+        div = div.cloneNode(true);
+        var span = lord.queryOne(".postformFileText", div);
+        div.querySelector("a").style.display = "none";
+        div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
+        parent.appendChild(div);
+        lord.clearFileInput(div);
+    })(div);
+};
+
+lord.fileDrop = function(e, div) {
+    e.preventDefault();
+    div.className = div.className.replace(" drag", "");
+    var inp = lord.queryOne("input", div);
+    inp.parentNode.replaceChild(inp.cloneNode(true), inp);
     lord.clearFileInput(div);
-    div.querySelector("a").style.display = "none";
-    div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
-    parent.appendChild(div);
+    var file = e.dataTransfer.files[0];
+    div.droppedFile = file;
+    lord.fileAddedCommon(div, file);
+    return false;
+};
+
+lord.fileSelected = function(current) {
+    if (!current)
+        return;
+    var div = current.parentNode;
+    if (div.droppedFile)
+        delete div.droppedFile;
+    if (current.value == "")
+        return lord.removeFile(current);
+    lord.clearFileInput(div);
+    var file = current.files[0];
+    lord.fileAddedCommon(div, file);
 };
 
 lord.removeFile = function(current) {
     if (!current)
         return;
     var div = current.parentNode;
-    if (!!div.fileHash) {
-        var fileHashes = lord.getFileHashes(div);
-        var val = fileHashes.value.replace("," + div.fileHash, "");
-        if (val === fileHashes.value)
-            val = fileHashes.value.replace(div.fileHash + ",", "");
-        if (val === fileHashes.value)
-            val = fileHashes.value.replace(div.fileHash, "");
-        fileHashes.value = val;
-    }
+    lord.removeFileHash(div);
     var parent = div.parentNode;
     parent.removeChild(div);
     lord.clearFileInput(div);
+    if (div.droppedFile)
+        delete div.droppedFile;
     if (parent.children.length > 1) {
         for (var i = 0; i < parent.children.length; ++i) {
-            if (!parent.children[i].fileHash && lord.queryOne("input", parent.children[i]).value === "")
+            var c = parent.children[i];
+            if (!c.fileHash && lord.queryOne("input", c).value === "" && !c.droppedFile)
                 return;
         }
         var inp = lord.id("maxFileCount");
@@ -1357,10 +1412,11 @@ lord.removeFile = function(current) {
         div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
         parent.appendChild(div);
     }
-    if (parent.children.length > 0 && !parent.children[0].fileHash
-            && lord.queryOne("input", parent.children[0]).value === "") {
-        parent.children[0].querySelector("a").style.display = "none";
-    }
+    if (parent.children.length > 0) {
+        var c = parent.children[0];
+        if (!c.fileHash && lord.queryOne("input", c).value === "" && !c.droppedFile)
+            c.querySelector("a").style.display = "none";
+    } 
     if (parent.children.length < 1) {
         div.querySelector("a").style.display = "none";
         div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
@@ -1539,6 +1595,10 @@ lord.submitted = function(event, form) {
         btn.value = lord.text("postFormButtonSubmit");
     };
     var formData = new FormData(form);
+    lord.query(".postformFile", form).forEach(function(div) {
+        if (div.droppedFile)
+            formData.append("file", div.droppedFile);
+    });
     var xhr = new XMLHttpRequest();
     xhr.open("POST", form.action);
     xhr.upload.onprogress = function(e) {

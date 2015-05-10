@@ -570,7 +570,10 @@
         <input name="postNumber" type="hidden" value="" />
         <input type="hidden" value="" name="fileHashes" />
         <div>
-            <div class="postformFile" onclick="lord.browseFile(event, this);" title="<%= selectFileText %>">
+            <div class="postformFile" onclick="lord.browseFile(event, this);"
+                 ondragover="return lord.fileDragOver(event, this);"
+                 ondragleave="return lord.fileDragLeave(event, this);" ondrop="return lord.fileDrop(event, this);"
+                 title="<%= selectFileText %>">
                 <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
                 <input type="file" name="file" onchange="lord.fileSelected(this);" class="postformFileInput"
                        accept="<%= supportedFileTypes %>" />
@@ -753,7 +756,9 @@
                         </td>
                         <td class="postformField">
                             <div class="postformFile" onclick="lord.browseFile(event, this);"
-                                 title="<%= selectFileText %>">
+                                 ondragover="return lord.fileDragOver(event, this);"
+                                 ondragleave="return lord.fileDragLeave(event, this);"
+                                 ondrop="return lord.fileDrop(event, this);" title="<%= selectFileText %>">
                                 <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
                                 <input type="file" name="file" onchange="lord.fileSelected(this);"
                                        class="postformFileInput" accept="<%= supportedFileTypes %>" />
