@@ -1676,8 +1676,14 @@ lord.posted = function(response) {
                 //Do nothing
             } else if ("append_post" == action) {
                 var parent = postForm.parentNode;
-                if ("threadPosts" != parent.className)
+                if (parent.className.replace("threadPosts", "") == parent.className) {
                     parent = parent.nextSibling;
+                    if (!parent.tagName)
+                        parent = parent.nextSibling;
+                    parent = parent.nextSibling;
+                    if (!parent.tagName)
+                        parent = parent.nextSibling;
+                }
                 lord.ajaxRequest("get_post", [boardName, postNumber], 6, function(res) {
                     var newPost = lord.createPostNode(res, true);
                     if (newPost) {
