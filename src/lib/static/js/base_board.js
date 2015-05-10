@@ -1534,6 +1534,10 @@ lord.submitted = function(event, form) {
     var btn = form.querySelector("[name='submit']");
     btn.disabled = true;
     btn.value = lord.text("postFormButtonSubmitSending") + " 0%";
+    var resetButton = function() {
+        btn.disabled = false;
+        btn.value = lord.text("postFormButtonSubmit");
+    };
     var formData = new FormData(form);
     var xhr = new XMLHttpRequest();
     xhr.open("POST", form.action);
@@ -1550,13 +1554,12 @@ lord.submitted = function(event, form) {
                 var response = xhr.responseText;
                 var err = response.error;
                 if (!!err) {
+                    resetButton();
                     lord.showPopup(err, {type: "critical"});
-                    btn.disabled = false;
-                    btn.value = lord.text("postFormButtonSubmit");
-                    return false;
                 }
                 lord.posted(response);
             } else {
+                resetButton();
                 lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
             }
         }
