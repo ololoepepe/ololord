@@ -25,6 +25,7 @@ struct OLOLORD_EXPORT BanLevel
 struct OLOLORD_EXPORT File
 {
     std::string size;
+    std::string sizeTooltip;
     int sizeX;
     int sizeY;
     std::string sourceName;

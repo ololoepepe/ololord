@@ -376,6 +376,21 @@ By default all captcha engines are supported.</source>
         <comment>fileSize</comment>
         <translation>кбит/с</translation>
     </message>
+    <message>
+        <source>Unknown album</source>
+        <comment>fileSizeTooltip</comment>
+        <translation>Неизвестный альбом</translation>
+    </message>
+    <message>
+        <source>Unknown artist</source>
+        <comment>fileSizeTooltip</comment>
+        <translation>Неизвестный исполнитель</translation>
+    </message>
+    <message>
+        <source>Unknown title</source>
+        <comment>fileSizeTooltip</comment>
+        <translation>Неизвестное название</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>

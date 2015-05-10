@@ -188,6 +188,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
     var divFileSize = lord.node("div");
     divFileSize.className = "postFileSize";
     divFileSize.appendChild(lord.node("text", "(" + f["size"] + ")"));
+    divFileSize.title = f["sizeTooltip"];
     file.appendChild(divFileSize);
     var divFileSearch = lord.node("div");
     divFileSearch.className = "postFileSearch";

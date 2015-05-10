@@ -6,6 +6,7 @@
 [done] Remove outdated cookies
 [done] Use localStorage and JS instead of cookies for post hiding
 [done] Implement Drag and Drop file upload
+[done] Show addititonal information about media files
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

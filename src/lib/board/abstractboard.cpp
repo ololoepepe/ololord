@@ -1246,6 +1246,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                     if (f.sizeX > 0 && f.sizeY > 0)
                         sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
                 }
+                QString szt;
                 if (fis->mimeType().startsWith("audio/") || fis->mimeType().startsWith("video/")) {
                     QVariantMap m = fis->metaData().toMap();
                     QString duration = m.value("duration").toString();
@@ -1257,12 +1258,27 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                         szz += bitrate;
                         if (!bitrate.isEmpty())
                             szz += "kbps";
+                        QString album = m.value("album").toString();
+                        QString artist = m.value("artist").toString();
+                        QString title = m.value("title").toString();
+                        QString year = m.value("year").toString();
+                        szt = !artist.isEmpty() ? artist : "Unknown artist";
+                        szt += " - ";
+                        szt += !title.isEmpty() ? title : "Unknown title";
+                        szt += " [";
+                        szt += !album.isEmpty() ? album : "UnknownAlbum";
+                        szt += "]";
+                        if (!year.isEmpty())
+                            szt += " (" + year + ")";
+                    } else if (fis->mimeType().startsWith("video/")) {
+                        szt = m.value("bitrate").toString() + "kbps";
                     }
                     if (!szz.isEmpty())
                         sz += ", " + szz;
                 }
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);
+                f.sizeTooltip = Tools::toStd(szt);
                 p->files.push_back(f);
             }
             QSharedPointer<Thread> thread = post.thread().load();
@@ -1316,9 +1332,17 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
     TranslatorStd ts(req);
     QLocale l = tq.locale();
     for (std::list<Content::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i) {
-        i->size = Tools::toStd(Tools::fromStd(i->size).replace("kbps", tq.translate("AbstractBoard", "kbps",
-                                                                                    "fileSize")));
-        i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("AbstractBoard", "KB", "fileSize")));
+        QString kb = tq.translate("AbstractBoard", "KB", "fileSize");
+        QString kbps = tq.translate("AbstractBoard", "kbps", "fileSize");
+        QString ualbum = tq.translate("AbstractBoard", "Unknown album", "fileSizeTooltip");
+        QString uartist = tq.translate("AbstractBoard", "Unknown artist", "fileSizeTooltip");
+        QString utitle = tq.translate("AbstractBoard", "Unknown title", "fileSizeTooltip");
+        i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", kb));
+        i->size = Tools::toStd(Tools::fromStd(i->size).replace("kbps", kbps));
+        i->sizeTooltip = Tools::toStd(Tools::fromStd(i->sizeTooltip).replace("kbps", kbps));
+        i->sizeTooltip = Tools::toStd(Tools::fromStd(i->sizeTooltip).replace("Unknown album", ualbum));
+        i->sizeTooltip = Tools::toStd(Tools::fromStd(i->sizeTooltip).replace("Unknown artist", uartist));
+        i->sizeTooltip = Tools::toStd(Tools::fromStd(i->sizeTooltip).replace("Unknown title", utitle));
     }
     if (showWhois() && "Unknown country" == pp.countryName)
         pp.countryName = ts.translate("AbstractBoard", "Unknown country", "countryName");
@@ -1386,6 +1410,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
         cppcms::json::object f;
         f["type"] = file.type;
         f["size"] = file.size;
+        f["sizeTooltip"] = file.sizeTooltip;
         f["thumbSizeX"] = file.thumbSizeX;
         f["thumbSizeY"] = file.thumbSizeY;
         f["sizeX"] = file.sizeX;
