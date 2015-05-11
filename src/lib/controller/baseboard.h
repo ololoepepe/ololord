@@ -132,6 +132,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     unsigned int maxNameLength;
     unsigned int maxSubjectLength;
     unsigned int maxPasswordLength;
+    unsigned int maxTextLength;
     std::string megabytesText;
     int moder;
     std::string modificationDateTimeText;

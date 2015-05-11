@@ -622,8 +622,11 @@
                 <b><%= postFormLabelText %></b>
             </td>
             <td class="postformField">
-                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                          class="postFormTextarea"></textarea>
+                <div class="symbolCounterContainer">
+                    <span class="symbolCounter"><span name="used"></span>/<%= maxTextLength %></span>
+                    <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                              class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                </div>
             </td>
         </tr>
         <% include customPostFormFieldEdit4() %>
@@ -711,8 +714,11 @@
                         <b><%= postFormLabelText %></b>
                     </td>
                     <td class="postformField">
-                        <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                                  class="postFormTextarea"></textarea>
+                        <div class="symbolCounterContainer">
+                            <span class="symbolCounter"><span name="used">0</span>/<%= maxTextLength %></span>
+                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                        </div>
                     </td>
                 </tr>
                 <% include customPostFormField4() %>

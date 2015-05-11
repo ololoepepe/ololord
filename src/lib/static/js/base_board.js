@@ -785,6 +785,16 @@ lord.switchShowTripcode = function() {
         lord.removeLocalObject("showTripcode");
 };
 
+lord.countSymbols = function(textarea) {
+    if (!textarea)
+        return;
+    var span = lord.queryOne(".symbolCounter", textarea.parentNode);
+    span = lord.nameOne("used", span);
+    if (span.childNodes.length > 0)
+        span.removeChild(span.childNodes[0]);
+    span.appendChild(lord.node("text", textarea.value.length.toString()));
+};
+
 lord.deletePost = function(boardName, postNumber, fromThread) {
     if (!boardName || isNaN(+postNumber))
         return;
@@ -1018,10 +1028,13 @@ lord.editPost = function(boardName, postNumber) {
     var name = lord.nameOne("name", form);
     var subject = lord.nameOne("subject", form);
     var text = lord.nameOne("text", form);
+    var used = lord.queryOne(".symbolCounter", form);
+    used = lord.nameOne("used", used);
     email.value = lord.nameOne("email", post).value;
     name.value = lord.nameOne("name", post).value;
     subject.value = lord.nameOne("subject", post).value;
     text.appendChild(lord.node("text", lord.nameOne("rawText", post).value));
+    used.appendChild(lord.node("text", text.value.length.toString()));
     var moder = (lord.text("moder") === "true");
     var draftField = lord.nameOne("draft", form);
     var rawField = lord.nameOne("raw", form);

@@ -281,6 +281,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, board->name());
     c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, board->name());
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
+    c.maxTextLength = Tools::maxInfo(Tools::MaxTextFieldLength, board->name());
     c.megabytesText = ts.translate("initBaseBoard", "MB", "megabytesText");
     c.moder = Database::registeredUserLevel(req) / 10;
     if (c.moder > 0) {

@@ -34,7 +34,7 @@ void mlpBoard::handleBoard(cppcms::application &app, unsigned int page)
     Controller::initBase(c, app.request(), title(tq.locale()));
     c.altVideoText = ts.translate("mlpBoard", "Friendship is magic", "altVideoText");
     c.buttonText = ts.translate("mlpBoard", "Hands off my pony!!!!!11", "buttonText");
-    c.videoFileName = Tools::toStd(QString("friendship_is_magic_%1.webm").arg((qrand() % 2) + 1));
+    c.videoFileName = Tools::toStd(QString("friendship_is_magic_%1.webm").arg((qrand() % 3) + 1));
     c.videoFileName2 = "bombanoolow.webm";
     c.videoType = "video/webm";
     Tools::render(app, "mlp_board", c);

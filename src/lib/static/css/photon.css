@@ -272,6 +272,20 @@ span.spoiler:hover a {
     text-align: left;
 }
 
+.symbolCounter {
+    position: absolute;
+    right: 12px;
+    bottom: 7px;
+    color: #333333;
+    opacity: 0.6;
+    filter: alpha(opacity=60);
+}
+
+.symbolCounterContainer {
+    position: relative;
+    display: inline-block;
+}
+
 /*
     Create action /pr/
 */

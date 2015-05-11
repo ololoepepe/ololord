@@ -9,6 +9,7 @@
 [done] Show addititonal information about media files
 [done] Add JS functions for adding/removing CSS classes
 [done] Add ability to minify HTML/JS/CSS
+[done] Add symbol counter to post form
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
