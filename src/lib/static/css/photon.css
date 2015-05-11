@@ -273,6 +273,7 @@ span.spoiler:hover a {
 }
 
 .symbolCounter {
+    font-size: 0.8em;
     position: absolute;
     right: 12px;
     bottom: 7px;
