@@ -1687,6 +1687,9 @@ lord.posted = function(response) {
                     parent = parent.nextSibling;
                     if (!parent.tagName)
                         parent = parent.nextSibling;
+                }
+                //NOTE: Yep, twice
+                if (!lord.hasClass(parent, "threadPosts")) {
                     parent = parent.nextSibling;
                     if (!parent.tagName)
                         parent = parent.nextSibling;
