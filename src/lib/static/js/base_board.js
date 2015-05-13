@@ -1086,7 +1086,7 @@ lord.setPostHidden = function(boardName, postNumber) {
     var list = lord.getLocalObject("hiddenPosts", {});
     var hidden = lord.hasClass(post, "hiddenPost");
     var f = !hidden ? lord.addClass : lord.removeClass;
-    f(lord.post, "hiddenPost");
+    f(post, "hiddenPost");
     if (thread) {
         var omitted = lord.id("threadOmitted" + postNumber);
         var posts = lord.id("threadPosts" + postNumber);
