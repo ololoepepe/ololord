@@ -126,7 +126,6 @@ int main(int argc, char **argv)
         BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
         BDirTools::writeFile(postingSpeedFile, AbstractBoard::savePostingSpeed());
         BDirTools::writeFile(searchIndexFile, Search::saveIndex());
-
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));

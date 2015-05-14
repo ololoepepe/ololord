@@ -676,7 +676,7 @@ cppcms::json::value readJsonValue(const QString &fileName, bool *ok)
     bool b = false;
     QString s = BDirTools::readTextFile(fileName, "UTF-8", &b);
     if (!b)
-        return cppcms::json::value();
+        return bRet(ok, false, cppcms::json::value());
     cppcms::json::value json;
     std::stringstream in(toStd(s));
     if (json.load(in, true))
