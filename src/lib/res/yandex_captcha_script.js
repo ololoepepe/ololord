@@ -10,16 +10,14 @@ lord.reloadCaptchaFunction = function() {
     if (!captcha)
         return lord.showPopup("No captcha", {type: "critical"});
     var image = lord.nameOne("image", captcha);
-    var id = lord.nameOne("yandexCaptchaId", captcha);
     var challenge = lord.nameOne("yandexCaptchaChallenge", captcha);
     var response = lord.nameOne("yandexCaptchaResponse", captcha);
-    if (!id || !challenge || !response)
+    if (!challenge || !response)
         return lord.showPopup("No challenge/response", {type: "critical"});
     response.value = "";
     if (image.firstChild)
         image.removeChild(image.firstChild);
     lord.ajaxRequest("get_yandex_captcha_image", ["%type%"], 16, function(res) {
-        id.value = res["id"];
         challenge.value = res["challenge"];
         var img = lord.node("img");
         img.src = "//" + res["url"].replace("https://", "").replace("http://", "");

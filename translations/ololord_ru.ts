@@ -430,11 +430,6 @@ Apperas in the HTML pages.</source>
         <translation>кириллица</translation>
     </message>
     <message>
-        <source>Captcha ID is empty</source>
-        <comment>error</comment>
-        <translation>Идентификатор капчи пуст</translation>
-    </message>
-    <message>
         <source>Captcha challenge is empty</source>
         <comment>error</comment>
         <translation>Задание капчи пусто</translation>

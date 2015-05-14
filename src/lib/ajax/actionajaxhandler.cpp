@@ -416,52 +416,26 @@ void ActionAjaxHandler::getYandexCaptchaImage(std::string type)
             return;
         }
         try {
-            QString id;
-            QString challenge;
-            QString iurl;
-            {
-                curlpp::Cleanup curlppCleanup;
-                Q_UNUSED(curlppCleanup)
-                curlpp::Easy request;
-                QString url = "http://cleanweb-api.yandex.ru/1.0/check-spam?key="
-                        + QUrl::toPercentEncoding(e->privateKey());
-                request.setOpt(curlpp::options::Url(Tools::toStd(url)));
-                std::ostringstream os;
-                os << request;
-                QString result = Tools::fromStd(os.str());
-                QRegExp rx("<id>.+</id>");
-                if (rx.indexIn(result) < 0) {
-                    QString err = tq.translate("ActionAjaxHandler", "Internal error", "error");
-                    Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
-                    server.return_error(Tools::toStd(err));
-                    return;
-                }
-                id = rx.cap().remove("<id>").remove("</id>");
+            curlpp::Cleanup curlppCleanup;
+            Q_UNUSED(curlppCleanup)
+            QString url = "http://cleanweb-api.yandex.ru/1.0/get-captcha?key="
+                    + QUrl::toPercentEncoding(e->privateKey()) + "&type=" + QUrl::toPercentEncoding(t);
+            curlpp::Easy request;
+            request.setOpt(curlpp::options::Url(Tools::toStd(url)));
+            std::ostringstream os;
+            os << request;
+            QString result = Tools::fromStd(os.str());
+            QRegExp rxc("<captcha>.+</captcha>");
+            QRegExp rxu("<url>.+</url>");
+            if (rxc.indexIn(result) < 0 || rxu.indexIn(result) < 0) {
+                QString err = tq.translate("ActionAjaxHandler", "Internal error", "error");
+                Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
+                server.return_error(Tools::toStd(err));
+                return;
             }
-            {
-                curlpp::Cleanup curlppCleanup;
-                Q_UNUSED(curlppCleanup)
-                QString url = "http://cleanweb-api.yandex.ru/1.0/get-captcha?key="
-                        + QUrl::toPercentEncoding(e->privateKey()) + "&id=" + QUrl::toPercentEncoding(id)
-                        + "&type=" + QUrl::toPercentEncoding(t);
-                curlpp::Easy request;
-                request.setOpt(curlpp::options::Url(Tools::toStd(url)));
-                std::ostringstream os;
-                os << request;
-                QString result = Tools::fromStd(os.str());
-                QRegExp rxc("<captcha>.+</captcha>");
-                QRegExp rxu("<url>.+</url>");
-                if (rxc.indexIn(result) < 0 || rxu.indexIn(result) < 0) {
-                    QString err = tq.translate("ActionAjaxHandler", "Internal error", "error");
-                    Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
-                    server.return_error(Tools::toStd(err));
-                    return;
-                }
-                challenge = rxc.cap().remove("<captcha>").remove("</captcha>");
-                iurl = rxu.cap().remove("<url>").remove("</url>");
-            }
+            QString challenge = rxc.cap().remove("<captcha>").remove("</captcha>");
+            QString iurl = rxu.cap().remove("<url>").remove("</url>");
             cppcms::json::object o;
-            o["id"] = Tools::toStd(id);
             o["challenge"] = Tools::toStd(challenge);
             o["url"] = Tools::toStd(iurl);
             server.return_result(o);
