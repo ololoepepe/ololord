@@ -268,5 +268,6 @@
         <file>static/img/playlist_add.png</file>
         <file>static/img/playlist_delete.png</file>
         <file>static/img/favorite.png</file>
+        <file>static/img/yandex-hernya.png</file>
     </qresource>
 </RCC>

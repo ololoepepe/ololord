@@ -312,7 +312,7 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
     dialog.show();
 };
 
-lord.ajaxRequest = function(method, params, id, callback) {
+lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
     var prefix = lord.text("sitePathPrefix");
@@ -328,12 +328,20 @@ lord.ajaxRequest = function(method, params, id, callback) {
             if (xhr.status === 200) {
                 var response = JSON.parse(xhr.responseText);
                 var err = response.error;
-                if (!!err)
-                    return lord.showPopup(err, {type: "critical"});
-                callback(response.result);
+                if (!!err) {
+                    lord.showPopup(err, {type: "critical"});
+                    if (typeof errorCallback == "function")
+                        errorCallback();
+                    return;
+                }
+                if (typeof callback == "function")
+                    callback(response.result);
             } else {
-                if (!lord.unloading)
+                if (!lord.unloading) {
                     lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+                    if (typeof errorCallback == "function")
+                        errorCallback();
+                }
             }
         }
     };
