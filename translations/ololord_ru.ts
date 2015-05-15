@@ -1512,6 +1512,17 @@ text</source>
     </message>
 </context>
 <context>
+    <name>handleNewLog</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
+    </message>
+</context>
+<context>
     <name>handleOpenThread</name>
     <message>
         <source>Invalid argument count</source>
@@ -2358,6 +2369,10 @@ If no argument is passed, everything is cached.</source>
 [cache-name] может быть одним из следующих:
 dynamic_files, static_files.
 Если не указан аргумент, кешируется все.</translation>
+    </message>
+    <message>
+        <source>Finish writing to the current log file and start writing to a new one.</source>
+        <translation>Закончить запись в текущий лог-файл и начать запись в новый.</translation>
     </message>
 </context>
 <context>

@@ -39,7 +39,9 @@ B_DECLARE_TRANSLATE_FUNCTION
 
 static const QString IpAddressRegexpPattern =
         "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])";
-static const QString DateTimeFormat = "dd.MM.yyyy:hh";
+static const QString InputDateTimeFormat = "dd.MM.yyyy:hh";
+static const QString LogDateTimeFormat = "yyyy.MM.dd hh:mm:ss";
+static const QString LogFileDateTimeFormat = "yyyy.MM.dd-hh.mm.ss";
 
 static bool checkParsingError(BTextTools::OptionsParsingError error, const QString &errorData);
 static bool handleBanPoster(const QString &cmd, const QStringList &args);
@@ -49,6 +51,7 @@ static bool handleClearCache(const QString &cmd, const QStringList &args);
 static bool handleCloseThread(const QString &cmd, const QStringList &args);
 static bool handleDeletePost(const QString &cmd, const QStringList &args);
 static bool handleFixThread(const QString &cmd, const QStringList &args);
+static bool handleNewLog(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
 static bool handleRebuildPostIndex(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
@@ -61,6 +64,7 @@ static bool handleUnfixThread(const QString &cmd, const QStringList &args);
 static void initCommands();
 static void initSettings();
 static void initTerminal();
+static QString logFileName();
 static bool setDefaultThreadPassword(const BSettingsNode *node, const QVariant &value);
 static bool setLoggingMode(const BSettingsNode *, const QVariant &v);
 static bool setLoggingSkipIp(const BSettingsNode *node, const QVariant &value);
@@ -99,10 +103,8 @@ int main(int argc, char **argv)
         AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
         AbstractBoard::restorePostingSpeed(BDirTools::readFile(postingSpeedFile));
         Search::restoreIndex(BDirTools::readFile(searchIndexFile));
-        bLogger->setDateTimeFormat("yyyy.MM.dd hh:mm:ss");
-        QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
-        fn += QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss") + ".txt";
-        bLogger->setFileName(fn);
+        bLogger->setDateTimeFormat(LogDateTimeFormat);
+        bLogger->setFileName(logFileName());
         updateLoggingMode();
         bWriteLine(translate("main", "This is") + " " + BCoreApplication::applicationName()
                    + " v" + BCoreApplication::applicationVersion());
@@ -183,7 +185,7 @@ bool handleBanPoster(const QString &, const QStringList &args)
     QString reason = result.value("reason");
     QDateTime expires;
     if (result.contains("expires")) {
-        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), InputDateTimeFormat)
                                              : QDateTime();
         if (!expires.isValid()) {
             QString s = bReadLine(translate("handleBanPoster", "Invalid date. User will be banned forever. Continue?")
@@ -222,7 +224,7 @@ bool handleBanUser(const QString &, const QStringList &args)
     QString reason = result.value("reason");
     QDateTime expires;
     if (result.contains("expires")) {
-        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), InputDateTimeFormat)
                                              : QDateTime();
         if (!expires.isValid()) {
             QString s = bReadLine(translate("handleBanUser", "Invalid date. User will be banned forever. Continue?")
@@ -406,6 +408,16 @@ bool handleFixThread(const QString &, const QStringList &args)
         bWriteLine(err);
     else
         bWriteLine(translate("handleFixThread", "OK"));
+    return true;
+}
+
+bool handleNewLog(const QString &, const QStringList &)
+{
+    QString s = bReadLine(translate("handleNewLog", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    bLogger->setFileName(logFileName());
+    bWriteLine(translate("handleNewLog", "OK"));
     return true;
 }
 
@@ -724,6 +736,12 @@ void initCommands()
     ch.description = BTranslation::translate("initCommands", "Delete post with <post-number> at <board>.\n"
         "If <post-number> is a thread, that thread and all posts in it are deleted.");
     BTerminal::setCommandHelp("delete-post", ch);
+    //
+    BTerminal::installHandler("new-log", &handleNewLog);
+    ch.usage = "new-log";
+    ch.description = BTranslation::translate("initCommands", "Finish writing to the current log file and start "
+                                             "writing to a new one.");
+    BTerminal::setCommandHelp("new-log", ch);
 }
 
 void initSettings()
@@ -892,6 +910,13 @@ void initTerminal()
     BTerminal::setMode(BTerminal::StandardMode);
     initCommands();
     initSettings();
+}
+
+QString logFileName()
+{
+    QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
+    fn += QDateTime::currentDateTime().toString(LogFileDateTimeFormat) + ".txt";
+    return fn;
 }
 
 bool setDefaultThreadPassword(const BSettingsNode *, const QVariant &value)
