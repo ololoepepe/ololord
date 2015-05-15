@@ -264,6 +264,7 @@ public:
 
 OLOLORD_EXPORT bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &params,
                             const QList<Tools::File> &files, QString *error = 0, QString *description = 0);
+OLOLORD_EXPORT int addPostsToIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int level = 1,
                             const QString &reason = QString(), const QDateTime &expires = QDateTime(),
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
@@ -316,7 +317,6 @@ OLOLORD_EXPORT int registeredUserLevel(const QByteArray &hashpass);
 OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level = RegisteredUser::UserLevel,
                                  const QStringList &boards = QStringList("*"), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT int reloadPostIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT int rerenderPosts(const QStringList boardNames = QStringList(), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, QString *error = 0,

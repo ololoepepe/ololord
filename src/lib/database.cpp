@@ -768,6 +768,23 @@ bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &par
     }
 }
 
+int addPostsToIndex(QString *error, const QLocale &l)
+{
+    TranslatorQt tq(l);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("addPostsToIndex", "Internal database error", "error"), -1);
+        QList<Post> posts = queryAll<Post>();
+        foreach (const Post &post, posts)
+            Search::addToIndex(post.board(), post.number(), post.rawText());
+        t.commit();
+        return bRet(error, QString(), posts.size());
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), -1);
+    }
+}
+
 bool banUser(const QString &ip, const QString &board, int level, const QString &reason, const QDateTime &expires,
              QString *error, const QLocale &l)
 {
@@ -1561,23 +1578,6 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
-    }
-}
-
-int reloadPostIndex(QString *error, const QLocale &l)
-{
-    TranslatorQt tq(l);
-    try {
-        Transaction t;
-        if (!t)
-            return bRet(error, tq.translate("reloadPostIndex", "Internal database error", "error"), -1);
-        QList<Post> posts = queryAll<Post>();
-        foreach (const Post &post, posts)
-            Search::addToIndex(post.board(), post.number(), post.rawText());
-        t.commit();
-        return bRet(error, QString(), posts.size());
-    } catch (const odb::exception &e) {
-        return bRet(error, Tools::fromStd(e.what()), -1);
     }
 }
 

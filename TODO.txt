@@ -11,6 +11,7 @@
 [done] Add ability to minify HTML/JS/CSS
 [done] Add symbol counter to post form
 [done] Fix Yandex captcha
+[done] Rename "reload-post-index" into "rebuild-post-index"
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

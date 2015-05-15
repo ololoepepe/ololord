@@ -50,10 +50,10 @@ static bool handleCloseThread(const QString &cmd, const QStringList &args);
 static bool handleDeletePost(const QString &cmd, const QStringList &args);
 static bool handleFixThread(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
+static bool handleRebuildPostIndex(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
 static bool handleReloadCaptchaEngines(const QString &cmd, const QStringList &args);
-static bool handleReloadPostIndex(const QString &cmd, const QStringList &args);
 static bool handleRerenderPosts(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
@@ -434,6 +434,20 @@ bool handleOpenThread(const QString &, const QStringList &args)
     return true;
 }
 
+bool handleRebuildPostIndex(const QString &, const QStringList &)
+{
+    QString s = bReadLine(translate("handleRebuildPostIndex", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    QString err;
+    int count = Search::rebuildIndex(&err);
+    if (count < 0)
+        bWriteLine(translate("handleRebuildPostIndex", "Error:") + " " + err);
+    else
+        bWriteLine(translate("handleRebuildPostIndex", "Rebuilt index of posts:") +  " " + QString::number(count));
+    return true;
+}
+
 bool handleRegisterUser(const QString &, const QStringList &)
 {
     QString pwd = bReadLineSecure(translate("handleRegisterUser", "Enter password:") + " ");
@@ -487,20 +501,6 @@ bool handleReloadCaptchaEngines(const QString &, const QStringList &)
         return true;
     AbstractCaptchaEngine::reloadEngines();
     bWriteLine(translate("handleReloadCaptchaEngines", "OK"));
-    return true;
-}
-
-bool handleReloadPostIndex(const QString &, const QStringList &)
-{
-    QString s = bReadLine(translate("handleReloadPostIndex", "Are you sure?") + " [Yn] ");
-    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
-        return true;
-    QString err;
-    int count = Database::reloadPostIndex(&err);
-    if (count < 0)
-        bWriteLine(translate("handleReloadPostIndex", "Error:") + " " + err);
-    else
-        bWriteLine(translate("handleReloadPostIndex", "Reloaded index of posts:") +  " " + QString::number(count));
     return true;
 }
 
@@ -702,10 +702,10 @@ void initCommands()
                                              "plugins.");
     BTerminal::setCommandHelp("reload-captcha-engines", ch);
     //
-    BTerminal::installHandler("reload-post-index", &handleReloadPostIndex);
-    ch.usage = "reload-post-index";
+    BTerminal::installHandler("rebuild-post-index", &handleRebuildPostIndex);
+    ch.usage = "rebuild-post-index";
     ch.description = BTranslation::translate("initCommands", "Clear post text index and create it from scratch.");
-    BTerminal::setCommandHelp("reload-post-index", ch);
+    BTerminal::setCommandHelp("rebuild-post-index", ch);
     //
     BTerminal::installHandler("register-user", &handleRegisterUser);
     ch.usage = "register-user";

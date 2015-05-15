@@ -768,6 +768,14 @@ text</source>
     </message>
 </context>
 <context>
+    <name>addPostsToIndex</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>addToReferencedPosts</name>
     <message>
         <source>Internal error</source>
@@ -1523,6 +1531,21 @@ text</source>
     </message>
 </context>
 <context>
+    <name>handleRebuildPostIndex</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>Error:</source>
+        <translation>Ошибка:</translation>
+    </message>
+    <message>
+        <source>Rebuilt index of posts:</source>
+        <translation>Пересоздан индекс постов:</translation>
+    </message>
+</context>
+<context>
     <name>handleRegisterUser</name>
     <message>
         <source>Enter password:</source>
@@ -1588,21 +1611,6 @@ Your choice:</source>
     <message>
         <source>OK</source>
         <translation>ОК</translation>
-    </message>
-</context>
-<context>
-    <name>handleReloadPostIndex</name>
-    <message>
-        <source>Are you sure?</source>
-        <translation>Вы уверены?</translation>
-    </message>
-    <message>
-        <source>Error:</source>
-        <translation>Ошибка:</translation>
-    </message>
-    <message>
-        <source>Reloaded index of posts:</source>
-        <translation>Перезагружен индекс постов:</translation>
     </message>
 </context>
 <context>
@@ -2681,14 +2689,6 @@ It will appear in HTML.</source>
         <source>Invalid board(s)</source>
         <comment>error</comment>
         <translation>Неправильная(ые) доска(и)</translation>
-    </message>
-</context>
-<context>
-    <name>reloadPostIndex</name>
-    <message>
-        <source>Internal database error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>
