@@ -575,6 +575,7 @@ static void processTagUrl(ProcessPostTextContext &c)
     SkipList skip;
     QString t = c.mid();
     QRegExp rx("\\[url\\](.+)\\[/url\\]");
+    rx.setMinimal(true);
     QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
     int ind = rx.indexIn(t);
     while (ind >= 0) {
@@ -583,9 +584,10 @@ static void processTagUrl(ProcessPostTextContext &c)
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
+        QString hrefold = href;
         if (!href.startsWith("http"))
             href.prepend("http://");
-        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(href) + "</a>";
+        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(hrefold) + "</a>";
         t.replace(ind, rx.matchedLength(), result);
         skip << qMakePair(ind, result.length());
         ind = rx.indexIn(t, ind + result.length());
