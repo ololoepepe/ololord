@@ -583,6 +583,8 @@ static void processTagUrl(ProcessPostTextContext &c)
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
+        if (!href.startsWith("http"))
+            href.prepend("http://");
         QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(href) + "</a>";
         t.replace(ind, rx.matchedLength(), result);
         skip << qMakePair(ind, result.length());
