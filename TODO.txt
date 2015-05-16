@@ -13,6 +13,7 @@
 [done] Fix Yandex captcha
 [done] Rename "reload-post-index" into "rebuild-post-index"
 [done] Implement "new-log" command
+[done] Add Futaba style
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

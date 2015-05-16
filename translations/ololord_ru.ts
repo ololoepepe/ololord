@@ -1853,6 +1853,11 @@ Your choice:</source>
         <comment>favoriteThreadsText</comment>
         <translation>Избранные треды</translation>
     </message>
+    <message>
+        <source>Futaba</source>
+        <comment>style name</comment>
+        <translation>Futaba</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

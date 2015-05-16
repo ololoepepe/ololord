@@ -88,7 +88,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     }
     typedef QMap<QString, BTranslation> TranslationMap;
     init_once(TranslationMap, styles, TranslationMap()) {
-        styles.insert("", BTranslation::translate("initBase", "Photon", "style name"));
+        styles.insert("photon", BTranslation::translate("initBase", "Photon", "style name"));
+        styles.insert("futaba", BTranslation::translate("initBase", "Futaba", "style name"));
     }
     localeMutex.unlock();
     TranslatorStd ts(req);
