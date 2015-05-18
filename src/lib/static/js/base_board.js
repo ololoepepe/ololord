@@ -1760,10 +1760,22 @@ lord.initializeOnLoadBaseBoard = function() {
         sw.checked = true;
     }
     var list = lord.getLocalObject("hiddenPosts", {});
-    lord.query(".post, .opPost").forEach(function(post) {
+    var posts = lord.query(".post, .opPost");
+    posts.forEach(function(post) {
         lord.addYoutubeButton(post);
         lord.tryHidePost(post, list);
     });
+    if (!lord.text("currentThreadNumber")) {
+        var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
+        var last = 0;
+        posts.forEach(function(post) {
+            var n = +post.id.replace("post", "");
+            if (n > last)
+                last = n;
+        });
+        lastPostNumbers[lord.text("currentBoardName")] = last;
+        lord.setLocalObject("lastPostNumbers", lastPostNumbers);
+    }
 };
 
 window.addEventListener("load", function load() {

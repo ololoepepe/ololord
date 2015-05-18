@@ -1250,6 +1250,30 @@ QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool
     }
 }
 
+int getNewPostCount(const cppcms::http::request &req, const QString &boardName, quint64 lastPostNumber, bool *ok,
+                    QString *error)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (board.isNull())
+        return bRet(ok, false, error, tq.translate("getNewPostCount", "Invalid board name", "error"), 0);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(ok, false, error, tq.translate("getNewPostCount", "Internal database error", "error"), 0);
+        odb::query<Post> q = odb::query<Post>::board == boardName && odb::query<Post>::draft == false;
+        if (lastPostNumber)
+            q = q && odb::query<Post>::number > lastPostNumber;
+        Result<PostCount> count = queryOne<PostCount, Post>(q);
+        if (count.error || !count)
+            return bRet(ok, false, error, tq.translate("getNewPostCount", "Internal database error", "error"), 0);
+        t.commit();
+        return bRet(ok, true, error, QString(), count->count);
+    }  catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), 0);
+    }
+}
+
 QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
                         quint64 lastPostNumber, bool *ok, QString *error)
 {

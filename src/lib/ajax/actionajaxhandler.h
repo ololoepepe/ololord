@@ -35,6 +35,7 @@ public:
     void getCaptchaQuota(std::string boardName);
     void getFileExistence(std::string boardName, std::string hash);
     void getFileMetaData(std::string boardName, std::string fileName);
+    void getNewPostCount(std::string boardName, long long lastPostNumber);
     void getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber);
     void getPost(std::string boardName, long long postNumber);
     void getThreadNumbers(std::string boardName);

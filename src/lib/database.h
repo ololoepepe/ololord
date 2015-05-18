@@ -292,6 +292,8 @@ OLOLORD_EXPORT QList<Post> findPosts(const Search::Query &query, const QString &
                                      const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT QVariant getFileMetaData(const QString &fileName, bool *ok = 0, QString *error = 0,
                                         const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT int getNewPostCount(const cppcms::http::request &req, const QString &boardName, quint64 lastPostNumber,
+                                   bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
                                        quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,

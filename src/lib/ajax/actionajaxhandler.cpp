@@ -295,6 +295,39 @@ void ActionAjaxHandler::getFileMetaData(std::string boardName, std::string fileN
     }
 }
 
+void ActionAjaxHandler::getNewPostCount(std::string boardName, long long lastPostNumber)
+{
+    try {
+        QString bn = Tools::fromStd(boardName);
+        quint64 lpn = lastPostNumber > 0 ? quint64(lastPostNumber) : 0;
+        QString logTarget = bn + "/" + QString::number(lpn);
+        Tools::log(server, "ajax_get_new_post_count", "begin", logTarget);
+        AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+        if (board.isNull()) {
+            TranslatorQt tq(server.request());
+            QString err = tq.translate("ActionAjaxHandler", "No such board", "error");
+            Tools::log(server, "ajax_get_new_post_count", "fail:" + err, logTarget);
+            server.return_error(Tools::toStd(err));
+        }
+        if (!testBan(bn, true))
+            return Tools::log(server, "ajax_get_new_post_count", "fail:ban", logTarget);
+        bool ok = false;
+        QString err;
+        int count = Database::getNewPostCount(server.request(), bn, lpn, &ok, &err);
+        if (!ok) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_get_new_post_count", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(count);
+        Tools::log(server, "ajax_get_new_post_count", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_new_post_count", "fail:" + err);
+    }
+}
+
 void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber)
 {
     try {
@@ -470,6 +503,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("get_file_existence", cppcms::rpc::json_method(&ActionAjaxHandler::getFileExistence, self),
                     method_role);
     list << Handler("get_file_meta_data", cppcms::rpc::json_method(&ActionAjaxHandler::getFileMetaData, self),
+                    method_role);
+    list << Handler("get_new_post_count", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPostCount, self),
                     method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);

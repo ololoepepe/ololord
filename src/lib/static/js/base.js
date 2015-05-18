@@ -560,10 +560,28 @@ lord.checkFavoriteThreads = function() {
 lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
-    //Remove outdated cookies
-    ["show_tripcode", "captcha", "quickReplyAction"].forEach(function(name) {
-        lord.setCookie(name, "", {
-            "expires": -1, "path": "/"
+    var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
+    var currentBoardName = lord.text("currentBoardName");
+    lord.query(".navbar").forEach(function(navbar) {
+        lord.query(".navbarItemBoard", navbar).forEach(function(item) {
+            var a = lord.queryOne("a", item);
+            var boardName = a.childNodes[0].nodeValue;
+            if (currentBoardName == boardName)
+                return;
+            var lastPostNumber = +lastPostNumbers[boardName];
+            if (isNaN(lastPostNumber))
+                lastPostNumber = 0;
+            lord.ajaxRequest("get_new_post_count", [boardName, lastPostNumber], 18, function(res) {
+                if (isNaN(res) || res < 1)
+                    return;
+                var fnt = lord.node("font");
+                fnt.color = "green";
+                fnt.size = "2";
+                fnt.appendChild(lord.node("text", "+" + res));
+                var parent = a.parentNode;
+                parent.insertBefore(fnt, a);
+                parent.insertBefore(lord.node("text", " "), a);
+            });
         });
     });
 };

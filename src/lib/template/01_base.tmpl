@@ -50,7 +50,7 @@
 <div class="navbar">
     <% foreach board in boards %>
         <% item %>
-            <span class="navbarItem">[<a href="/<%= sitePathPrefix %><%= board.name %>"
+            <span class="navbarItem navbarItemBoard">[<a href="/<%= sitePathPrefix %><%= board.name %>"
                   title="<%= board.title %>"><%= board.name %></a>] </span>
         <% end %>
     <% end %>
