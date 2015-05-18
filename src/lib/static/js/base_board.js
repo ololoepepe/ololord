@@ -730,6 +730,9 @@ lord.postNodeInserted = function(post) {
         return;
     lord.addYoutubeButton(post);
     lord.tryHidePost(post);
+    var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
+    lastPostNumbers[lord.text("currentBoardName")] = +post.id.replace("post", "");
+    lord.setLocalObject("lastPostNumbers", lastPostNumbers);
 };
 
 lord.showPasswordDialog = function(title, label, callback) {
