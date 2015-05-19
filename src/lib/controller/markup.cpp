@@ -506,6 +506,33 @@ static void processWakabaMarkList(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkQuote);
 }
 
+static void processTagUrl(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\[url\\](.+)\\[/url\\]");
+    rx.setMinimal(true);
+    QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
+    int ind = rx.indexIn(t);
+    while (ind >= 0) {
+        QString href = rx.cap(1);
+        if (!rxLink.exactMatch(href)) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
+        QString hrefold = href;
+        if (!href.startsWith("http"))
+            href.prepend("http://");
+        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(hrefold) + "</a>";
+        t.replace(ind, rx.matchedLength(), result);
+        skip << qMakePair(ind, result.length());
+        ind = rx.indexIn(t, ind + result.length());
+    }
+    c.process(t, skip, &processWakabaMarkList);
+}
+
 static void processTags(ProcessPostTextContext &c)
 {
     typedef QMap<QString, QString> StringMap;
@@ -529,7 +556,7 @@ static void processTags(ProcessPostTextContext &c)
         htmls.insert("[sub]", qMakePair(QString("<sub>"), QString("</sub>")));
         htmls.insert("[sup]", qMakePair(QString("<sup>"), QString("</sup>")));
     }
-    ProcessPostTextFunction next = &processWakabaMarkList;
+    ProcessPostTextFunction next = &processTagUrl;
     if (!c.isValid())
         return;
     SkipList skip;
@@ -568,36 +595,9 @@ static void processTags(ProcessPostTextContext &c)
     c.process(t, skip, next);
 }
 
-static void processTagUrl(ProcessPostTextContext &c)
-{
-    if (!c.isValid())
-        return;
-    SkipList skip;
-    QString t = c.mid();
-    QRegExp rx("\\[url\\](.+)\\[/url\\]");
-    rx.setMinimal(true);
-    QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
-    int ind = rx.indexIn(t);
-    while (ind >= 0) {
-        QString href = rx.cap(1);
-        if (!rxLink.exactMatch(href)) {
-            ind = rx.indexIn(t, ind + rx.matchedLength());
-            continue;
-        }
-        QString hrefold = href;
-        if (!href.startsWith("http"))
-            href.prepend("http://");
-        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(hrefold) + "</a>";
-        t.replace(ind, rx.matchedLength(), result);
-        skip << qMakePair(ind, result.length());
-        ind = rx.indexIn(t, ind + result.length());
-    }
-    c.process(t, skip, &processTags);
-}
-
 static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processTagUrl, "`", "", "font", "<font face=\"monospace\">", true);
+    processSimmetric(c, &processTags, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
 static void processTagCode(ProcessPostTextContext &c)
