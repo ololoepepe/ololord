@@ -18,6 +18,7 @@
 [done] Process post text outside transaction
 [done] Fix DB timeout
 [done] Add DB indexes
+[done] Add ability to use external libmagic (file utility)
 * Add ASCII-art tag
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page

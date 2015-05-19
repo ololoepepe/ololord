@@ -11,6 +11,7 @@
 
 #include <BCoreApplication>
 #include <BDirTools>
+#include <BeQt>
 #include <BLogger>
 #include <BTextTools>
 
@@ -31,6 +32,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryFile>
 #include <QTextCodec>
 #include <QTime>
 #include <QVariant>
@@ -164,7 +166,6 @@ static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
 static QList<IpRange> loggingSkipIps;
 static QMutex loggingSkipIpsMutex(QMutex::Recursive);
-static QMutex mimeMutex(QMutex::Recursive);
 static QMutex storagePathMutex(QMutex::Recursive);
 static QMutex timezoneMutex(QMutex::Recursive);
 
@@ -606,19 +607,40 @@ unsigned int maxInfo(MaxInfo m, const QString &boardName)
 
 QString mimeType(const QByteArray &data, bool *ok)
 {
+#if defined(Q_OS_WIN)
+    static const QString FileDefault = "file.exe";
+#elif defined(Q_OS_UNIX)
+    static const QString FileDefault = "file";
+#endif
     if (data.isEmpty())
         return bRet(ok, false, QString());
-    QMutexLocker locker(&mimeMutex);
-    magic_t magicMimePredictor;
-    magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
-    if (!magicMimePredictor)
-        return bRet(ok, false, QString());
-    if (magic_load(magicMimePredictor, 0)) {
-        magic_close(magicMimePredictor);
-        return bRet(ok, false, QString());
+    SettingsLocker sl;
+    if (sl->value("System/use_extarnal_libmagic", false).toBool()) {
+        QString file = sl->value("System/file_command", FileDefault).toString();
+        QTemporaryFile f;
+        if (!f.open())
+            return bRet(ok, false, QString());
+        f.write(data);
+        f.close();
+        if (f.error() != QFile::NoError)
+            return bRet(ok, false, QString());
+        QString out;
+        QStringList args = QStringList() << "--brief" << "--mime-type" << f.fileName();
+        if (BeQt::execProcess(QFileInfo(f).path(), file, args, BeQt::Second, 5 * BeQt::Second, &out))
+            return bRet(ok, false, QString());
+        return bRet(ok, !out.isEmpty(), out);
+    } else {
+        magic_t magicMimePredictor;
+            magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
+            if (!magicMimePredictor)
+                return bRet(ok, false, QString());
+            if (magic_load(magicMimePredictor, 0)) {
+                magic_close(magicMimePredictor);
+                return bRet(ok, false, QString());
+            }
+            QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
+            return bRet(ok, !result.isEmpty(), result);
     }
-    QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
-    return bRet(ok, !result.isEmpty(), result);
 }
 
 QStringList news(const QLocale &l)

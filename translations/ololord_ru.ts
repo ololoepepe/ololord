@@ -2643,6 +2643,22 @@ It will appear in HTML.</source>
   2 и больше - убирать пустые строки и лишние пробелы
   Значение по умолчанию - 1.</translation>
     </message>
+    <message>
+        <source>file utility command (possibly full path).
+The default is file (UNIX) or file.exe (Windows).</source>
+        <translation>Команда вызова утилиты file (возможно, полный путь).
+По умолчанию file (UNIX) или file.exe (Windows).</translation>
+    </message>
+    <message>
+        <source>Determines if an external file utility is used to identify MIME type.
+By default MIME types are identified internally using libmagic.
+Set this option to false if libmagic crashes the application.
+Calling external file utility is MUCH slower.</source>
+        <translation>Определяет, использовать ли внешнюю утилиту file для идентификации MIME-типа.
+По умолчанию идентификация MIME-типов осуществляется библиотекой libmagic внутри программы.
+Установите значение этой опции в false, если libmagic крэшит приложение.
+Вызов внешней утилиты НАМНОГО медленнее.</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>

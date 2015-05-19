@@ -879,11 +879,21 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "ffprobe_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffprobe utility command (possibly full path).\n"
                                                "The default is ffprobe (UNIX) or ffprobe.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::String, "file_command", n);
+    nn->setDescription(BTranslation::translate("initSettings", "file utility command (possibly full path).\n"
+                                               "The default is file (UNIX) or file.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::String, "use_external_libmagic", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines if an external file utility is used to "
+                                               "identify MIME type.\n"
+                                               "By default MIME types are identified internally using libmagic.\n"
+                                               "Set this option to false if libmagic crashes the application.\n"
+                                               "Calling external file utility is MUCH slower."));
     nn = new BSettingsNode(QVariant::String, "logging_skip_ip", n);
     nn->setUserSetFunction(&setLoggingSkipIp);
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
                                                "IP's are represented as ranges and are separated by commas.\n"
                                                "Example: 127.0.0.1,192.168.0.1-192.168.0.255"));
+    /*======================================== Proxy ========================================*/
     nn = new BSettingsNode("Proxy", n);
     BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
     nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"
