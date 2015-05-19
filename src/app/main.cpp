@@ -40,7 +40,7 @@ B_DECLARE_TRANSLATE_FUNCTION
 static const QString IpAddressRegexpPattern =
         "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])";
 static const QString InputDateTimeFormat = "dd.MM.yyyy:hh";
-static const QString LogDateTimeFormat = "yyyy.MM.dd hh:mm:ss";
+static const QString LogDateTimeFormat = "yyyy.MM.dd hh:mm:ss.zzz";
 static const QString LogFileDateTimeFormat = "yyyy.MM.dd-hh.mm.ss";
 
 static bool checkParsingError(BTextTools::OptionsParsingError error, const QString &errorData);
@@ -78,9 +78,11 @@ int main(int argc, char **argv)
     QString home = QDir::home().dirName();
     BApplicationServer s(9710 + qHash(home) % 10, AppName + "0" + home);
     int ret = 0;
-    if (!s.testServer()) {
+    bool force = (argc > 1) && (QString::fromLocal8Bit(argv[1]) == "--force-launch");
+    if (!s.testServer() || force) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
-        s.listen();
+        if (!force)
+            s.listen();
         app.setApplicationVersion("0.1.0-rc6");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");

@@ -19,6 +19,7 @@
 [done] Fix DB timeout
 [done] Add DB indexes
 [done] Add ability to use external libmagic (file utility)
+[done] Add command line option to force application launch if there is another instance running
 * Add ASCII-art tag
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
