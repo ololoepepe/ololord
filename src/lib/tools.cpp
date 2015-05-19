@@ -616,7 +616,6 @@ QString mimeType(const QByteArray &data, bool *ok)
         return bRet(ok, false, QString());
     SettingsLocker sl;
     if (sl->value("System/use_external_libmagic", false).toBool()) {
-        qDebug() << "xxx";
         QString file = sl->value("System/file_command", FileDefault).toString();
         QTemporaryFile f;
         if (!f.open())
@@ -629,6 +628,7 @@ QString mimeType(const QByteArray &data, bool *ok)
         QStringList args = QStringList() << "--brief" << "--mime-type" << f.fileName();
         if (BeQt::execProcess(QFileInfo(f).path(), file, args, BeQt::Second, 5 * BeQt::Second, &out))
             return bRet(ok, false, QString());
+        out.remove("\r").remove("\n");
         return bRet(ok, !out.isEmpty(), out);
     } else {
         magic_t magicMimePredictor;
