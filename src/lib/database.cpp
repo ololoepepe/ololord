@@ -168,6 +168,7 @@ public:
 };
 
 static QReadWriteLock processTextLock(QReadWriteLock::Recursive);
+static QMutex createPostMutex;
 
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
                                  QString *description = 0, const QLocale &l = BCoreApplication::locale())
@@ -337,6 +338,34 @@ static void deleteFiles(const QString &boardName, const QStringList &fileNames)
     QString path = Tools::storagePath() + "/img/" + boardName;
     foreach (const QString &fn, fileNames)
         QFile::remove(path + "/" + fn);
+}
+
+static quint64 incrementPostCounter(const QString &boardName, QString *error = 0,
+                                    const QLocale &l = BCoreApplication::locale())
+{
+    TranslatorQt tq(l);
+    if (!AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("incrementPostCounter", "Invalid board name", "error"), 0L);
+    quint64 incremented = 0L;
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("incrementPostCounter", "Invalid database connection", "error"), 0L);
+        Result<PostCounter> counter = queryOne<PostCounter, PostCounter>(odb::query<PostCounter>::board == boardName);
+        if (!counter && !counter.error) {
+            PostCounter c(boardName);
+            t->persist(c);
+            counter = queryOne<PostCounter, PostCounter>(odb::query<PostCounter>::board == boardName);
+        }
+        if (counter.error || !counter)
+            return bRet(error, tq.translate("incrementPostCounter", "Internal database error", "error"), 0L);
+        incremented = counter->incrementLastPostNumber();
+        update(counter);
+        t.commit();
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), 0L);
+    }
+    return bRet(error, QString(), incremented);
 }
 
 static bool saveFile(const Tools::File &f, AbstractBoard::FileTransaction &ft, QString *error = 0,
@@ -788,7 +817,6 @@ int addPostsToIndex(QString *error, const QLocale &l)
         QList<Post> posts = queryAll<Post>();
         foreach (const Post &post, posts)
             Search::addToIndex(post.board(), post.number(), post.rawText());
-        t.commit();
         return bRet(error, QString(), posts.size());
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), -1);
@@ -886,15 +914,11 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
     CreatePostInternalParameters pp(p, board.data());
     if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
-    try {
-        pp.postNumber = postNumber;
-        if (!createPostInternal(pp))
-            return false;
-        return bRet(p.error, QString(), p.description, QString(), true);
-    } catch (const odb::exception &e) {
-        return bRet(p.error, tq.translate("createPost", "Internal error", "error"), p.description,
-                    Tools::fromStd(e.what()), false);
-    }
+    pp.postNumber = postNumber;
+    QMutexLocker locker(&createPostMutex);
+    if (!createPostInternal(pp))
+        return false;
+    return bRet(p.error, QString(), p.description, QString(), true);
 }
 
 void createSchema()
@@ -928,6 +952,7 @@ quint64 createThread(CreateThreadParameters &p)
     CreatePostInternalParameters pp(p, board.data());
     if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
+    QMutexLocker locker(&createPostMutex);
     try {
         QStringList filesToDelete;
         Transaction t;
@@ -1183,7 +1208,6 @@ bool fileExists(const QByteArray &hash, bool *ok)
         Result<FileInfoCount> count = queryOne<FileInfoCount, FileInfo>(odb::query<FileInfo>::hash == hash);
         if (count.error)
             return bRet(ok, false, false);
-        t.commit();
         return bRet(ok, true, count->count > 0);
     } catch (const odb::exception &e) {
         Tools::log("Database::fileExists", e);
@@ -1275,7 +1299,6 @@ int getNewPostCount(const cppcms::http::request &req, const QString &boardName, 
         Result<PostCount> count = queryOne<PostCount, Post>(q);
         if (count.error || !count)
             return bRet(ok, false, error, tq.translate("getNewPostCount", "Internal database error", "error"), 0);
-        t.commit();
         return bRet(ok, true, error, QString(), count->count);
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), 0);
@@ -1324,7 +1347,6 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
                 posts.removeAt(i);
             }
         }
-        t.commit();
         return bRet(ok, true, error, QString(), posts);
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), QList<Post>());
@@ -1355,7 +1377,6 @@ Post getPost(const cppcms::http::request &req, const QString &boardName, quint64
                 && (!modOnBoard || registeredUserLevel(post->hashpass()) >= registeredUserLevel(req))) {
             return bRet(ok, false, error, tq.translate("getPost", "No such post", "error"), Post());
         }
-        t.commit();
         return bRet(ok, true, error, QString(), *post);
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), Post());
@@ -1389,38 +1410,10 @@ QList<quint64> getThreadNumbers(const cppcms::http::request &req, const QString 
             }
             list << t.number();
         }
-        t.commit();
         return bRet(ok, true, error, QString(), list);
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), QList<quint64>());
     }
-}
-
-quint64 incrementPostCounter(const QString &boardName, QString *error, const QLocale &l)
-{
-    TranslatorQt tq(l);
-    if (!AbstractBoard::boardNames().contains(boardName))
-        return bRet(error, tq.translate("incrementPostCounter", "Invalid board name", "error"), 0L);
-    quint64 incremented = 0L;
-    try {
-        Transaction t;
-        if (!t)
-            return bRet(error, tq.translate("incrementPostCounter", "Invalid database connection", "error"), 0L);
-        Result<PostCounter> counter = queryOne<PostCounter, PostCounter>(odb::query<PostCounter>::board == boardName);
-        if (!counter && !counter.error) {
-            PostCounter c(boardName);
-            t->persist(c);
-            counter = queryOne<PostCounter, PostCounter>(odb::query<PostCounter>::board == boardName);
-        }
-        if (counter.error || !counter)
-            return bRet(error, tq.translate("incrementPostCounter", "Internal database error", "error"), 0L);
-        incremented = counter->incrementLastPostNumber();
-        update(counter);
-        t.commit();
-    } catch (const odb::exception &e) {
-        return bRet(error, Tools::fromStd(e.what()), 0L);
-    }
-    return bRet(error, QString(), incremented);
 }
 
 bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp, const QByteArray &hashpass)
@@ -1439,7 +1432,6 @@ bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp,
         if (post.error || !post)
             return false;
         bool b = (post->posterIp() == userIp) || (!hashpass.isEmpty() && post->hashpass() == hashpass);
-        t.commit();
         return b;
     } catch (const odb::exception &e) {
         Tools::log("Database::isOp", e);
@@ -1501,9 +1493,8 @@ bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNum
         if (post.error || !post)
             return bRet(threadNumber, quint64(0), false);
         bSet(threadNumber, post->thread().load()->number());
-        t.commit();
         return true;
-    }  catch (const odb::exception &e) {
+    } catch (const odb::exception &e) {
         Tools::log("Database::postExists", e);
         return bRet(threadNumber, quint64(0), false);
     }
@@ -1519,7 +1510,6 @@ QString posterIp(const QString &boardName, quint64 postNumber)
                                                  && odb::query<Post>::number == postNumber);
         if (post.error || !post)
             return "";
-        t.commit();
         return post->posterIp();
     }  catch (const odb::exception &e) {
         Tools::log("Database::posterIp", e);
@@ -1549,7 +1539,6 @@ QStringList registeredUserBoards(const QByteArray &hashpass)
                     odb::query<RegisteredUser>::hashpass == hashpass);
         if (user.error || !user)
             return QStringList();
-        t.commit();
         return user->boards();
     }  catch (const odb::exception &e) {
         Tools::log("Database::registeredUserBoards", e);
@@ -1579,7 +1568,6 @@ int registeredUserLevel(const QByteArray &hashpass)
                     odb::query<RegisteredUser>::hashpass == hashpass);
         if (level.error || !level)
             return -1;
-        t.commit();
         return level->level;
     }  catch (const odb::exception &e) {
         Tools::log("Database::registeredUserLevel", e);
@@ -1606,7 +1594,6 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
             return bRet(error, tq.translate("registerUser", "Internal database error", "error"), false);
         RegisteredUser user(hashpass, QDateTime::currentDateTimeUtc(), level, boards);
         t->persist(user);
-        t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -1874,7 +1861,6 @@ BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QStri
                 }
             }
         }
-        t.commit();
         return bRet(ok, true, error, QString(), inf);
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), inf);

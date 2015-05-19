@@ -8,6 +8,7 @@
 #include <QMap>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QScopedPointer>
 #include <QString>
 
 #include <odb/database.hxx>
@@ -50,26 +51,28 @@ void Transaction::commit()
 {
     if (finalized)
         return;
+    finalized = true;
     try {
         Hack *h = reinterpret_cast<Hack *>(&odb::transaction::current());
         if (h->counter > 1) {
             h->counter -= 1;
         } else {
+            odb::database *db = &h->database();
             try {
                 h->commit();
-                odb::database *db = &h->database();
                 delete h;
                 delete db;
-            } catch (const std::exception &e) {
+            } catch (const odb::timeout &e) {
                 Tools::log("Transaction::commit", e);
-                return;
+                delete h;
+                delete db;
+                throw e;
             }
         }
     } catch (const odb::not_in_transaction &e) {
         Tools::log("Transaction::commit", e);
-        return;
+        throw e;
     }
-    finalized = true;
 }
 
 odb::database *Transaction::db() const
@@ -97,10 +100,12 @@ void Transaction::reset()
         if (!BDirTools::touch(fileName))
             return;
         try {
-            odb::database *db = new odb::sqlite::database(Tools::toStd(fileName),
-                                                          SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+            odb::sqlite::database *db = new odb::sqlite::database(Tools::toStd(fileName),
+                                                                  SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
+            //sqlite3 *s3 = dynamic_cast<odb::sqlite::connection *>(db->connection().get())->handle();
+            //qdesqlite3_busy_timeout(s3, 5 * BeQt::Minute);
             new Hack(db->begin());
-        } catch (const std::exception &e) {
+        } catch (const odb::exception &e) {
             Tools::log("Transaction::reset", e);
             return;
         }
@@ -112,26 +117,28 @@ void Transaction::rollback()
 {
     if (finalized)
         return;
+    finalized = true;
     try {
         Hack *h = reinterpret_cast<Hack *>(&odb::transaction::current());
         if (h->counter > 1) {
             h->counter -= 1;
         } else {
+            odb::database *db = &h->database();
             try {
                 h->rollback();
-                odb::database *db = &h->database();
                 delete h;
                 delete db;
-            } catch (const std::exception &e) {
+            } catch (const odb::timeout &e) {
                 Tools::log("Transaction::rollback", e);
-                return;
+                delete h;
+                delete db;
+                throw e;
             }
         }
     } catch (const odb::not_in_transaction &e) {
         Tools::log("Transaction::rollback", e);
-        return;
+        throw e;
     }
-    finalized = true;
 }
 
 odb::database *Transaction::operator ->() const

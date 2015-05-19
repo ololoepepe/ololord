@@ -300,8 +300,6 @@ OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boa
                             bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT QList<quint64> getThreadNumbers(const cppcms::http::request &req, const QString &boardName,
                                                bool *ok = 0, QString *error = 0);
-OLOLORD_EXPORT quint64 incrementPostCounter(const QString &boardName, QString *error = 0,
-                                            const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp,
                          const QByteArray &hashpass = QByteArray());
 OLOLORD_EXPORT quint64 lastPostNumber(const QString &boardName, QString *error = 0,

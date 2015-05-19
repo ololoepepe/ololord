@@ -607,8 +607,6 @@ QString mimeType(const QByteArray &data, bool *ok)
 {
     if (data.isEmpty())
         return bRet(ok, false, QString());
-    qDebug() << "MIME" << data.size();
-    BDirTools::writeFile("/home/darkangel/tmp/debug-mime", data);
     magic_t magicMimePredictor;
     magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
     if (!magicMimePredictor)
