@@ -15,6 +15,8 @@
 [done] Implement "new-log" command
 [done] Add Futaba style
 [done] Add information about new posts to navigation bar
+[done] Process post text outside transaction
+* Add ASCII-art tag
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

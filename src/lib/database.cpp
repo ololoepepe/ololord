@@ -123,6 +123,8 @@ public:
     quint64 threadNumber;
     quint64 *postNumber;
     RefMap *referencedPosts;
+    RefMap refs;
+    QString processedText;
 public:
     explicit CreatePostInternalParameters(const cppcms::http::request &req, const Tools::PostParameters &ps,
                                           const Tools::FileList &fs, AbstractBoard *board,
@@ -134,6 +136,8 @@ public:
         referencedPosts = 0;
         threadNumber = 0;
         postNumber = 0;
+        if (board)
+            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
     }
     explicit CreatePostInternalParameters(CreatePostParameters &p, AbstractBoard *board) :
         request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
@@ -145,6 +149,8 @@ public:
         referencedPosts = &p.referencedPosts;
         threadNumber = 0;
         postNumber = 0;
+        if (board)
+            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
     }
     explicit CreatePostInternalParameters(CreateThreadParameters &p, AbstractBoard *board) :
         request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
@@ -156,6 +162,8 @@ public:
         threadNumber = 0;
         postNumber = 0;
         referencedPosts = 0;
+        if (board)
+            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
     }
 };
 
@@ -469,7 +477,9 @@ static bool createPostInternal(CreatePostInternalParameters &p)
     Tools::Post post = Tools::toPost(p.params, p.files);
     bool draft = board->draftsEnabled() && post.draft;
     RefMap refs;
-    QString processedText = Controller::processPostText(post.text, boardName, !draft ? &refs : 0);
+    QString processedText = p.processedText;
+    if (!draft)
+        refs = p.refs;
     QReadLocker locker(&processTextLock);
     try {
         Transaction t;
@@ -877,11 +887,11 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
     if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     try {
-        Transaction t;
+        //Transaction t;
         pp.postNumber = postNumber;
         if (!createPostInternal(pp))
             return false;
-        t.commit();
+        //t.commit();
         return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(p.error, tq.translate("createPost", "Internal error", "error"), p.description,
@@ -1836,9 +1846,8 @@ BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QStri
         return bRet(ok, false, error, tq.translate("userBanInfo", "Internal logic error", "description"), inf);
     try {
         Transaction t;
-        if (!t) {
+        if (!t)
             return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "description"), inf);
-        }
         QList<BannedUser> list = query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
                                                                && odb::query<BannedUser>::ip == ip);
         foreach (const BannedUser &u, list) {
