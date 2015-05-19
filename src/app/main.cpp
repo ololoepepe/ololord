@@ -882,7 +882,7 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "file_command", n);
     nn->setDescription(BTranslation::translate("initSettings", "file utility command (possibly full path).\n"
                                                "The default is file (UNIX) or file.exe (Windows)."));
-    nn = new BSettingsNode(QVariant::String, "use_external_libmagic", n);
+    nn = new BSettingsNode(QVariant::Bool, "use_external_libmagic", n);
     nn->setDescription(BTranslation::translate("initSettings", "Determines if an external file utility is used to "
                                                "identify MIME type.\n"
                                                "By default MIME types are identified internally using libmagic.\n"
