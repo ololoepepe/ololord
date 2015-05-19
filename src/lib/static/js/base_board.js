@@ -625,7 +625,7 @@ lord.addYoutubeButton = function(post) {
     var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
         + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
     lord.query(q, post).forEach(function(link) {
-        if (link.href.replace("/watch?v=", "") == link.href)
+        if (link.href.replace("v=", "") == link.href)
             return;
         var img = lord.node("img");
         img.src = "https://youtube.com/favicon.ico";
