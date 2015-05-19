@@ -615,7 +615,8 @@ QString mimeType(const QByteArray &data, bool *ok)
     if (data.isEmpty())
         return bRet(ok, false, QString());
     SettingsLocker sl;
-    if (sl->value("System/use_extarnal_libmagic", false).toBool()) {
+    if (sl->value("System/use_external_libmagic", false).toBool()) {
+        qDebug() << "xxx";
         QString file = sl->value("System/file_command", FileDefault).toString();
         QTemporaryFile f;
         if (!f.open())
