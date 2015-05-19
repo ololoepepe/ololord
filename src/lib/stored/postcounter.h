@@ -13,6 +13,7 @@ class OLOLORD_EXPORT PostCounter
 private:
     PRAGMA_DB(id)
     QString board_;
+    PRAGMA_DB(index unique member(board_))
     quint64 lastPostNumber_;
 public:
     explicit PostCounter(const QString &board);

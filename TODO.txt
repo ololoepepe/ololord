@@ -17,7 +17,7 @@
 [done] Add information about new posts to navigation bar
 [done] Process post text outside transaction
 [done] Fix DB timeout
-* Add DB indexes
+[done] Add DB indexes
 * Add ASCII-art tag
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page

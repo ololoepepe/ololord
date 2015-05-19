@@ -523,8 +523,8 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description, err,
                         false);
         }
-        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::number == p.threadNumber
-                                                         && odb::query<Thread>::board == boardName);
+        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::board == boardName
+                                                         && odb::query<Thread>::number == p.threadNumber);
         if (thread.error) {
             return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description,
                         tq.translate("createPostInternal", "Internal database error", "description"), false);
@@ -705,8 +705,8 @@ static bool setThreadFixedInternal(const QString &board, quint64 threadNumber, b
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("setThreadFixedInternal", "Internal database error", "error"), false);
-        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::number == threadNumber
-                                                         && odb::query<Thread>::board == board);
+        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::board == board
+                                                         && odb::query<Thread>::number == threadNumber);
         if (thread.error)
             return bRet(error, tq.translate("setThreadFixedInternal", "Internal database error", "error"), false);
         if (!thread)
@@ -731,8 +731,8 @@ static bool setThreadOpenedInternal(const QString &board, quint64 threadNumber, 
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("setThreadOpenedInternal", "Internal database error", "error"), false);
-        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::number == threadNumber
-                                                         && odb::query<Thread>::board == board);
+        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::board == board
+                                                         && odb::query<Thread>::number == threadNumber);
         if (thread.error)
             return bRet(error, tq.translate("setThreadOpenedInternal", "Internal database error", "error"), false);
         if (!thread)
@@ -1750,8 +1750,8 @@ bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request 
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("setVoteOpened", "Internal database error", "error"), false);
-        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
-                                                 && odb::query<Post>::board == "rpg");
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == "rpg"
+                                                 && odb::query<Post>::number == postNumber);
         if (post.error)
             return bRet(error, tq.translate("setVoteOpened", "Internal database error", "error"), false);
         if (!post)
@@ -1779,8 +1779,8 @@ bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("unvote", "Internal database error", "error"), false);
-        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
-                                                 && odb::query<Post>::board == "rpg");
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == "rpg"
+                                                 && odb::query<Post>::number == postNumber);
         if (post.error)
             return bRet(error, tq.translate("unvote", "Internal database error", "error"), false);
         if (!post)
@@ -1882,8 +1882,8 @@ bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::requ
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("vote", "Internal database error", "error"), false);
-        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::number == postNumber
-                                                 && odb::query<Post>::board == "rpg");
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == "rpg"
+                                                 && odb::query<Post>::number == postNumber);
         if (post.error)
             return bRet(error, tq.translate("vote", "Internal database error", "error"), false);
         if (!post)

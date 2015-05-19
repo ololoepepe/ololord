@@ -25,13 +25,18 @@ public:
 private:
     PRAGMA_DB(id auto)
     quint64 id_;
+    PRAGMA_DB(index unique member(id_))
     PRAGMA_DB(not_null)
     QString board_;
+    PRAGMA_DB(index member(board_))
     PRAGMA_DB(not_null)
     quint64 number_;
+    PRAGMA_DB(index("board_number_index_threads") unique members(board_, number_))
+    PRAGMA_DB(index("board_number_archived_index") unique members(board_, number_, archived_))
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
     bool archived_;
+    PRAGMA_DB(index("board_archived_index") members(board_, archived_))
     bool fixed_;
     bool postingEnabled_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(thread_))
@@ -87,10 +92,12 @@ public:
 private:
     PRAGMA_DB(id auto)
     quint64 id_;
+    PRAGMA_DB(index unique member(id_))
     PRAGMA_DB(not_null)
     QString board_;
     PRAGMA_DB(not_null)
     quint64 number_;
+    PRAGMA_DB(index("board_number_index_posts") unique members(board_, number_))
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
     QDateTime modificationDateTime_;
@@ -102,6 +109,7 @@ private:
     QByteArray hashpass_;
     QString name_;
     bool draft_;
+    PRAGMA_DB(index("board_draft_index") members(board_, draft_))
     PRAGMA_DB(not_null)
     QByteArray password_;
     QString posterIp_;
@@ -116,6 +124,9 @@ private:
     QByteArray userData_;
     PRAGMA_DB(not_null)
     QLazySharedPointer<Thread> thread_;
+    PRAGMA_DB(index member(thread_))
+    PRAGMA_DB(index("board_thread_index") members(board_, thread_))
+    PRAGMA_DB(index("board_thread_number_index") members(board_, thread_, number_))
 public:
     explicit Post();
     explicit Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
@@ -182,8 +193,11 @@ private:
     quint64 id_;
     PRAGMA_DB(not_null)
     QLazySharedPointer<Post> sourcePost_;
+    PRAGMA_DB(index member(sourcePost_))
     PRAGMA_DB(not_null)
     QLazySharedPointer<Post> targetPost_;
+    PRAGMA_DB(index member(targetPost_))
+    PRAGMA_DB(index("sourcePost_targetPost_index") unique members(sourcePost_, targetPost_))
 public:
     explicit PostReference();
     explicit PostReference(QSharedPointer<Post> sourcePost, QSharedPointer<Post> targetPost);
@@ -200,8 +214,10 @@ class OLOLORD_EXPORT FileInfo
 private:
     PRAGMA_DB(id)
     QString name_;
+    PRAGMA_DB(index member(name_))
     PRAGMA_DB(not_null)
     QByteArray hash_;
+    PRAGMA_DB(index member(hash_))
     PRAGMA_DB(not_null)
     QString mimeType_;
     PRAGMA_DB(not_null)
