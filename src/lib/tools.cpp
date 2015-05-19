@@ -164,6 +164,7 @@ static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
 static QList<IpRange> loggingSkipIps;
 static QMutex loggingSkipIpsMutex(QMutex::Recursive);
+static QMutex mimeMutex(QMutex::Recursive);
 static QMutex storagePathMutex(QMutex::Recursive);
 static QMutex timezoneMutex(QMutex::Recursive);
 
@@ -607,6 +608,7 @@ QString mimeType(const QByteArray &data, bool *ok)
 {
     if (data.isEmpty())
         return bRet(ok, false, QString());
+    QMutexLocker locker(&mimeMutex);
     magic_t magicMimePredictor;
     magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
     if (!magicMimePredictor)

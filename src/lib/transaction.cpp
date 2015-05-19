@@ -24,13 +24,22 @@ class Hack : public odb::transaction
 {
 public:
     int counter;
+private:
+    static QMutex mutex;
 public:
     explicit Hack(odb::transaction_impl *impl) :
         odb::transaction(impl)
     {
+        mutex.lock();
         counter = 1;
     }
+    ~Hack()
+    {
+        mutex.unlock();
+    }
 };
+
+QMutex Hack::mutex;
 
 Transaction::Transaction(bool commitOnDestruction) :
     CommitOnDestruction(commitOnDestruction)
@@ -102,8 +111,6 @@ void Transaction::reset()
         try {
             odb::sqlite::database *db = new odb::sqlite::database(Tools::toStd(fileName),
                                                                   SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
-            //sqlite3 *s3 = dynamic_cast<odb::sqlite::connection *>(db->connection().get())->handle();
-            //qdesqlite3_busy_timeout(s3, 5 * BeQt::Minute);
             new Hack(db->begin());
         } catch (const odb::exception &e) {
             Tools::log("Transaction::reset", e);

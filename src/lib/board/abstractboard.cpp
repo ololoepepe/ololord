@@ -776,7 +776,6 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             }
             c.threads.push_back(thread);
         }
-        t.commit();
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
         Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
@@ -911,7 +910,6 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                 return;
             }
         }
-        t.commit();
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
         Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);

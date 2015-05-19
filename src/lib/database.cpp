@@ -168,7 +168,7 @@ public:
 };
 
 static QReadWriteLock processTextLock(QReadWriteLock::Recursive);
-static QMutex createPostMutex;
+static QMutex postMutex(QMutex::Recursive);
 
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
                                  QString *description = 0, const QLocale &l = BCoreApplication::locale())
@@ -606,6 +606,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
         return bRet(error, tq.translate("deletePostInternal", "Invalid post number", "error"), false);
     QWriteLocker lock(&processTextLock);
     QMap<quint64, PostTmpInfo> postIds;
+    QMutexLocker locker(&postMutex);
     try {
         Transaction t;
         if (!t)
@@ -915,7 +916,7 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
     if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     pp.postNumber = postNumber;
-    QMutexLocker locker(&createPostMutex);
+    QMutexLocker locker(&postMutex);
     if (!createPostInternal(pp))
         return false;
     return bRet(p.error, QString(), p.description, QString(), true);
@@ -952,7 +953,7 @@ quint64 createThread(CreateThreadParameters &p)
     CreatePostInternalParameters pp(p, board.data());
     if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
-    QMutexLocker locker(&createPostMutex);
+    QMutexLocker locker(&postMutex);
     try {
         QStringList filesToDelete;
         Transaction t;
@@ -1084,6 +1085,7 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
     if (password.isEmpty() && hashpass.isEmpty())
         return bRet(error, tq.translate("deletePost", "Invalid password", "error"), false);
     QStringList filesToDelete;
+    QMutexLocker locker(&postMutex);
     try {
         Transaction t;
         if (!t)
@@ -1126,6 +1128,7 @@ bool editPost(EditPostParameters &p)
         return bRet(p.error, tq.translate("editPost", "Invalid password", "error"), false);
     QString processedText = Controller::processPostText(p.text, p.boardName, &p.referencedPosts);
     QReadLocker locker(&processTextLock);
+    QMutexLocker plocker(&postMutex);
     try {
         Transaction t;
         if (!t)
@@ -1484,6 +1487,7 @@ bool moderOnBoard(const QByteArray &hashpass, const QString &board1, const QStri
 
 bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNumber)
 {
+    QMutexLocker locker(&postMutex);
     try {
         Transaction t;
         if (!t)
