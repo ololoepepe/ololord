@@ -887,11 +887,9 @@ bool createPost(CreatePostParameters &p, quint64 *postNumber)
     if (!saveFiles(p.params, p.files, pp.fileTransaction, p.error, p.description, p.locale))
         return false;
     try {
-        //Transaction t;
         pp.postNumber = postNumber;
         if (!createPostInternal(pp))
             return false;
-        //t.commit();
         return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(p.error, tq.translate("createPost", "Internal error", "error"), p.description,
