@@ -37,6 +37,11 @@
 #include <QTime>
 #include <QVariant>
 
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QMimeDatabase>
+#include <QMimeType>
+#endif
+
 #include <cppcms/http_cookie.h>
 #include <cppcms/http_file.h>
 #include <cppcms/http_request.h>
@@ -620,6 +625,12 @@ QString mimeType(const QByteArray &data, bool *ok)
 #endif
     if (data.isEmpty())
         return bRet(ok, false, QString());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    QMimeDatabase db;
+    QString name = db.mimeTypeForData(data, QMimeDatabase::MatchContent).name();
+    if (!name.isEmpty() && "application/octet-stream" != name)
+        return name;
+#endif
     SettingsLocker sl;
     if (sl->value("System/use_external_libmagic", false).toBool()) {
         QString file = sl->value("System/file_command", FileDefault).toString();
@@ -638,15 +649,15 @@ QString mimeType(const QByteArray &data, bool *ok)
         return bRet(ok, !out.isEmpty(), out);
     } else {
         magic_t magicMimePredictor;
-            magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
-            if (!magicMimePredictor)
-                return bRet(ok, false, QString());
-            if (magic_load(magicMimePredictor, 0)) {
-                magic_close(magicMimePredictor);
-                return bRet(ok, false, QString());
-            }
-            QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
-            return bRet(ok, !result.isEmpty(), result);
+        magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
+        if (!magicMimePredictor)
+            return bRet(ok, false, QString());
+        if (magic_load(magicMimePredictor, 0)) {
+            magic_close(magicMimePredictor);
+            return bRet(ok, false, QString());
+        }
+        QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
+        return bRet(ok, !result.isEmpty(), result);
     }
 }
 
