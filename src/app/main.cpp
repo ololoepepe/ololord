@@ -83,7 +83,7 @@ int main(int argc, char **argv)
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         if (!force)
             s.listen();
-        app.setApplicationVersion("0.1.0-rc6");
+        app.setApplicationVersion("0.1.0-rc7");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");

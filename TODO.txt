@@ -1,27 +1,4 @@
-[done] Fix audio tags support
-[done] Fix posting speed counting
-[done] Fix thread files downloading
-[done] Fix/improve post form submitting
-[done] Use localStorage and JS instead of cookies for settings (when possible)
-[done] Remove outdated cookies
-[done] Use localStorage and JS instead of cookies for post hiding
-[done] Implement Drag and Drop file upload
-[done] Show addititonal information about media files
-[done] Add JS functions for adding/removing CSS classes
-[done] Add ability to minify HTML/JS/CSS
-[done] Add symbol counter to post form
-[done] Fix Yandex captcha
-[done] Rename "reload-post-index" into "rebuild-post-index"
-[done] Implement "new-log" command
-[done] Add Futaba style
-[done] Add information about new posts to navigation bar
-[done] Process post text outside transaction
-[done] Fix DB timeout
-[done] Add DB indexes
-[done] Add ability to use external libmagic (file utility)
-[done] Add command line option to force application launch if there is another instance running
-[done] Optimize post text parser
-* Add ASCII-art tag
+? Add ASCII-art tag
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
