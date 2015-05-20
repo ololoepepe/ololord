@@ -629,7 +629,7 @@ QString mimeType(const QByteArray &data, bool *ok)
     QMimeDatabase db;
     QString name = db.mimeTypeForData(data).name();
     if (!name.isEmpty() && "application/octet-stream" != name)
-        return name;
+        return bRet(ok, true, name);
 #endif
     SettingsLocker sl;
     if (sl->value("System/use_external_libmagic", false).toBool()) {
