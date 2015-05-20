@@ -1,3 +1,4 @@
+[done] Fix building with Qt5
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
