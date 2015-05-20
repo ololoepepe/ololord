@@ -52,7 +52,7 @@ void SearchRoute::handle()
         c.error = true;
         c.errorMessage = ts.translate("SearchRoute", "Query error", "error");
         c.errorDescription = Tools::toStd(err);
-        application.render("search", c);
+        Tools::render(application, "search", c);
         Tools::log(application, "search", "fail:" + err, logTarget);
         return;
     }
@@ -63,7 +63,7 @@ void SearchRoute::handle()
             c.errorMessage = ts.translate("SearchRoute", "Internal error", "error");
             err = tq.translate("SearchRoute", "Internal database error", "description");
             c.errorDescription = Tools::toStd(err);
-            application.render("search", c);
+            Tools::render(application, "search", c);
             Tools::log(application, "search", "fail:" + err, logTarget);
             return;
         }
@@ -102,7 +102,7 @@ void SearchRoute::handle()
         c.errorMessage = ts.translate("SearchRoute", "Internal error", "error");
         err = Tools::fromStd(e.what());
         c.errorDescription = Tools::toStd(err);
-        application.render("search", c);
+        Tools::render(application, "search", c);
         Tools::log(application, "search", "fail:" + err, logTarget);
         return;
     }
@@ -111,7 +111,7 @@ void SearchRoute::handle()
     c.errorDescription = Tools::toStd(desc);
     c.resultsMessage = ts.translate("SearchRoute", "Search results", "resultsMessage");
     c.nothingFoundMessage = ts.translate("SearchRoute", "Nothing found", "nothingFoundMessage");
-    application.render("search", c);
+    Tools::render(application, "search", c);
     Tools::log(application, "search", "success", logTarget);
 }
 

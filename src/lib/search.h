@@ -38,7 +38,7 @@ OLOLORD_EXPORT BoardMap find(const Query &query, bool *ok = 0, QString *error = 
                              const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT Query query(const QString &q, bool *ok = 0, QString *error = 0,
                            const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool reloadIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT int rebuildIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT void removeFromIndex(const QString &boardName, quint64 postNumber, const QString &text);
 OLOLORD_EXPORT void restoreIndex(const QByteArray &data);
 OLOLORD_EXPORT QByteArray saveIndex();

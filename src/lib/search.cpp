@@ -276,11 +276,11 @@ void removeFromIndex(const QString &boardName, quint64 postNumber, const QString
     }
 }
 
-bool reloadIndex(QString *error, const QLocale &l)
+int rebuildIndex(QString *error, const QLocale &l)
 {
     QWriteLocker locker(&indexLock);
     index.clear();
-    return Database::reloadPostIndex(error, l);
+    return Database::addPostsToIndex(error, l);
 }
 
 void restoreIndex(const QByteArray &data)

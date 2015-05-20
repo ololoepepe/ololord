@@ -42,9 +42,9 @@ namespace Controller
 
 static QMutex localeMutex(QMutex::Recursive);
 
-static std::string speedString(const AbstractBoard::PostingSpeed &s, qint64 uptime)
+static std::string speedString(const AbstractBoard::PostingSpeed &s, double duptime)
 {
-    double d = double(s.postCount) / double(uptime);
+    double d = double(s.postCount) / duptime;
     QString ss = QString::number(d, 'f', 1);
     return Tools::toStd((ss.split('.').last() != "0") ? ss : ss.split('.').first());
 }
@@ -88,7 +88,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     }
     typedef QMap<QString, BTranslation> TranslationMap;
     init_once(TranslationMap, styles, TranslationMap()) {
-        styles.insert("", BTranslation::translate("initBase", "Photon", "style name"));
+        styles.insert("photon", BTranslation::translate("initBase", "Photon", "style name"));
+        styles.insert("futaba", BTranslation::translate("initBase", "Futaba", "style name"));
     }
     localeMutex.unlock();
     TranslatorStd ts(req);
@@ -123,7 +124,6 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentLocale = toWithLocale(ts.locale());
     cppcms::http::request *mreq = const_cast<cppcms::http::request *>(&req);
     c.currentTime = mreq->cookie_by_name("time").value();
-    c.currentQuickReplyAction = mreq->cookie_by_name("quickReplyAction").value();
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.localeLabelText = "Language:";
     c.locales = locales;
@@ -164,7 +164,6 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.settingsDialogTitle = ts.translate("initBase", "Settings", "settingsDialogTitle");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
-    c.showTripcodeText = ts.translate("initBase", "I'm an attention whore!", "showTripcodeText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
@@ -283,6 +282,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, board->name());
     c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, board->name());
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
+    c.maxTextLength = Tools::maxInfo(Tools::MaxTextFieldLength, board->name());
     c.megabytesText = ts.translate("initBaseBoard", "MB", "megabytesText");
     c.moder = Database::registeredUserLevel(req) / 10;
     if (c.moder > 0) {
@@ -296,6 +296,8 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
     c.postFormButtonSubmitSending = ts.translate("initBaseBoard", "Sending:", "postFormButtonSubmitSending");
+    c.postFormButtonSubmitWaiting = ts.translate("initBaseBoard", "Waiting for reply...",
+                                                 "postFormButtonSubmitWaiting");
     c.postFormInputFile = ts.translate("initBaseBoard", "File(s):", "postFormInputFile");
     SettingsLocker s;
     int maxText = s->value("Board/" + board->name() + "/max_text_length",
@@ -310,39 +312,44 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
+    c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode", "postFormLabelTripcode");
     c.postingDisabledText = currentThread
             ? ts.translate("initBaseBoard", "Posting is disabled for this thread", "postingDisabledText")
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");
     c.postingEnabled = postingEnabled;
     c.postingSpeedText = ts.translate("initBaseBoard", "Posting speed:", "postingSpeedText");
     AbstractBoard::PostingSpeed speed = board->postingSpeed();
-    qint64 uptime = speed.uptimeMsecs / BeQt::Hour;
+    double duptime = double(speed.uptimeMsecs) / double(BeQt::Hour);
+    qint64 uptime = qint64(duptime);
     std::string shour = ts.translate("initBaseBoard", "post(s) per hour.", "postingSpeed");
     if (!uptime) {
         c.postingSpeed = zeroSpeedString(speed, shour, ts.locale());
     } else if ((speed.postCount / uptime) > 0) {
-        c.postingSpeed = speedString(speed, uptime) + " " + shour;
+        c.postingSpeed = speedString(speed, duptime) + " " + shour;
     } else {
-        uptime /= 24;
+        duptime /= 24.0;
+        uptime = qint64(duptime);
         std::string sday = ts.translate("initBaseBoard", "post(s) per day.", "postingSpeed");
         if (!uptime) {
             c.postingSpeed = zeroSpeedString(speed, sday, ts.locale());
         } else if ((speed.postCount / uptime) > 0) {
-            c.postingSpeed = speedString(speed, uptime) + " " + sday;
+            c.postingSpeed = speedString(speed, duptime) + " " + sday;
         } else {
-            uptime /= 30;
+            duptime /= (365.0 / 12.0);
+            uptime = qint64(duptime);
             std::string smonth = ts.translate("initBaseBoard", "post(s) per month.", "postingSpeed");
             if (!uptime) {
                 c.postingSpeed = zeroSpeedString(speed, smonth, ts.locale());
             } else if ((speed.postCount / uptime) > 0) {
-                c.postingSpeed = speedString(speed, uptime) + " " + smonth;
+                c.postingSpeed = speedString(speed, duptime) + " " + smonth;
             } else {
-                uptime /= 12;
+                duptime /= 12.0;
+                uptime = qint64(duptime);
                 std::string syear = ts.translate("initBaseBoard", "post(s) per year.", "postingSpeed");
                 if (!uptime) {
                     c.postingSpeed = zeroSpeedString(speed, syear, ts.locale());
                 } else if ((speed.postCount / uptime) > 0) {
-                    c.postingSpeed = speedString(speed, uptime) + " " + syear;
+                    c.postingSpeed = speedString(speed, duptime) + " " + syear;
                 } else {
                     c.postingSpeed = "0 " + syear;
                 }
@@ -402,7 +409,7 @@ void renderBan(cppcms::application &app, const Database::BanInfo &info)
     c.banMessage = ts.translate("renderBan", "You are banned", "banMessage");
     c.banReason = Tools::toStd(info.reason);
     c.banReasonLabel = ts.translate("renderBan", "Reason", "banReasonLabel");
-    app.render("ban", c);
+    Tools::render(app, "ban", c);
 }
 
 void renderBanAjax(cppcms::application &app, const Database::BanInfo &info)
@@ -439,7 +446,7 @@ void renderError(cppcms::application &app, const QString &error, const QString &
     initBase(c, app.request(), tq.translate("renderError", "Error", "pageTitle"));
     c.errorMessage = !error.isEmpty() ? Tools::toStd(error) : c.pageTitle;
     c.errorDescription = Tools::toStd(description);
-    app.render("error", c);
+    Tools::render(app, "error", c);
 }
 
 void renderErrorAjax(cppcms::application &app, const QString &error, const QString &description)
@@ -465,7 +472,7 @@ void renderIpBan(cppcms::application &app, int level)
         c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
                                         "You are not allowed to make posts.", "banDescription");
     }
-    app.render("ip_ban", c);
+    Tools::render(app, "ip_ban", c);
 }
 
 void renderIpBanAjax(cppcms::application &app, int level)
@@ -497,7 +504,7 @@ void renderNotFound(cppcms::application &app)
         c.imageFileName = Tools::toStd("not_found/" + fns.at(qrand() % fns.size()));
     }
     c.notFoundMessage = ts.translate("renderNotFound", "Page or file not found", "notFoundMessage");
-    app.render("not_found", c);
+    Tools::render(app, "not_found", c);
 }
 
 void renderSuccessfulPostAjax(cppcms::application &app, quint64 postNumber)

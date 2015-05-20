@@ -14,10 +14,12 @@ class OLOLORD_EXPORT BannedUser
 private:
     PRAGMA_DB(id auto)
     quint64 id_;
+    PRAGMA_DB(index unique member(id_))
     PRAGMA_DB(not_null)
     QString board_;
     PRAGMA_DB(not_null)
     QString ip_;
+    PRAGMA_DB(index("board_ip_index") unique members(board_, ip_))
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
     QDateTime expirationDateTime_;

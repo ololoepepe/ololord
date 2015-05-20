@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>static/css/photon.css</file>
+        <file>static/css/futaba.css</file>
     </qresource>
 </RCC>

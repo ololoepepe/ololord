@@ -94,14 +94,14 @@ lord.blinkFaviconNewMessage = function() {
 };
 
 lord.selectPost = function(post) {
-    if (!!lord.lastSelectedElement)
-        lord.lastSelectedElement.className = lord.lastSelectedElement.className.replace(" selectedPost", "");
+    if (lord.lastSelectedElement)
+        lord.removeClass(lord.lastSelectedElement, "selectedPost");
     lord.lastSelectedElement = null;
     if (isNaN(+post))
         return;
     lord.lastSelectedElement = lord.id("post" + post);
-    if (!!lord.lastSelectedElement)
-        lord.lastSelectedElement.className += " selectedPost";
+    if (lord.lastSelectedElement)
+        lord.addClass(lord.lastSelectedElement, "selectedPost");
     window.location.href = window.location.href.split("#").shift() + "#" + post;
 };
 
@@ -159,9 +159,13 @@ lord.setAutoUpdateEnabled = function(cbox) {
             lord.autoUpdateTimer = null;
         }
     }
-    lord.setCookie("auto_update" + lord.text("currentThreadNumber"), enabled, {
-        "expires": lord.Year
-    });
+    var list = lord.getLocalObject("autoUpdate", {});
+    var threadNumber = lord.text("currentThreadNumber");
+    if (enabled)
+        list[threadNumber] = {};
+    else if (list.hasOwnProperty(threadNumber))
+        delete list[threadNumber];
+    lord.setLocalObject("autoUpdate", list);
 };
 
 lord.downloadThread = function() {
@@ -174,13 +178,13 @@ lord.downloadThread = function() {
     if (!dlButton)
         return;
     lord.isDownloading = true;
-    dlButton.className += " disabled";
+    lord.addClass(dlButton, "disabled");
     var progress = lord.node("progress");
-    progress.className = "progressBlocking";
+    lord.addClass(progress, "progressBlocking");
     progress.max = as.length;
     progress.value = 0;
     var cButton = lord.node("a");
-    cButton.className = "progressBlocking";
+    lord.addClass(cButton, "progressBlocking");
     cButton.href = "javascript:void(0);";
     var cancel = false;
     cButton.onclick = function() {
@@ -197,26 +201,12 @@ lord.downloadThread = function() {
     var last = 0;
     var completed = 0;
     var append = function(i) {
-        if (completed >= as.length) {
-            var content = zip.generate({
-                "type": "blob"
-            });
-            if (!cancel) {
-                document.body.removeChild(cButton);
-                document.body.removeChild(progress);
-            }
-            saveAs(content, document.title + ".zip");
-            lord.isDownloading = false;
-            dlButton.className = dlButton.className.replace(" disabled", "");
-            return;
-        }
         if (cancel) {
             lord.isDownloading = false;
-            dlButton.className = dlButton.className.replace(" disabled", "");
+            lord.removeClass(dlButton, "disabled");
             return;
         }
         var a = as[i];
-        last = i;
         JSZipUtils.getBinaryContent(a.href, function (err, data) {
             if (!err) {
                 zip.file(a.href.split("/").pop(), data, {
@@ -225,7 +215,20 @@ lord.downloadThread = function() {
             }
             ++completed;
             progress.value = +progress.value + 1;
-            append(++last);
+            if (completed == as.length) {
+                var content = zip.generate({
+                    "type": "blob"
+                });
+                if (!cancel) {
+                    document.body.removeChild(cButton);
+                    document.body.removeChild(progress);
+                }
+                saveAs(content, document.title + ".zip");
+                lord.isDownloading = false;
+                lord.removeClass(dlButton, "disabled");
+            }
+            if (last < as.length - 1)
+                append(++last);
         });
     };
     append(last);
@@ -236,7 +239,7 @@ lord.downloadThread = function() {
 lord.initializeOnLoadThread = function() {
     lord.addVisibilityChangeListener(lord.visibilityChangeListener);
     lord.addAnchorChangeListener(lord.anchorChangeListener);
-    if (lord.getCookie("auto_update" + lord.text("currentThreadNumber")) === "true") {
+    if (lord.getLocalObject("autoUpdate", {})[lord.text("currentThreadNumber")]) {
         var cbox = lord.id("autoUpdate_top");
         cbox.checked = true;
         lord.setAutoUpdateEnabled(cbox);

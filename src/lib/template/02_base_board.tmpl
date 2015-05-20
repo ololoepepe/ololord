@@ -35,6 +35,12 @@
 <% template customPostFormField4() %>
 <% end template %>
 
+<% template customPostFormField41() %>
+<% end template %>
+
+<% template customPostFormField42() %>
+<% end template %>
+
 <% template customPostFormField5() %>
 <% end template %>
 
@@ -119,7 +125,7 @@
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            target="_blank"><%= file.sourceName %></a>
     </div>
-    <div class="postFileSize">
+    <div class="postFileSize" title="<%= file.sizeTooltip %>">
         (<%= file.size %>)
     </div>
     <div class="postFileSearch">
@@ -161,17 +167,9 @@
 
 <% template post(Content::Post post, Content::Board::ThreadPointer thread) %>
 <% if ( post.number == post.threadNumber ) %>
-    <% if ( post.hidden ) %>
-        <div id="post<%= post.number %>" class="opPost hiddenPost">
-    <% else %>
-        <div id="post<%= post.number %>" class="opPost">
-    <% end %>
+    <div id="post<%= post.number %>" class="opPost">
 <% else %>
-    <% if ( post.hidden ) %>
-        <div id="post<%= post.number %>" class="post hiddenPost">
-    <% else %>
-        <div id="post<%= post.number %>" class="post">
-    <% end %>
+    <div id="post<%= post.number %>" class="post">
 <% end %>
     <div class="postHeader">
         <% if ( !thread ) %>
@@ -295,27 +293,9 @@
         <% else %>
             <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
         <% end %>
-        <% if ( post.number == post.threadNumber ) %>
-            <% if ( (thread && thread->hidden) || (!thread && dynamic_cast<Content::Thread *>(&content)->hidden) ) %>
-                <a name="hideButton" id="hidePost<%= post.number %>"
-                   href="javascript:lord.setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
-            <% else %>
-                <a name="hideButton" id="hidePost<%= post.number %>"
-                   href="javascript:lord.setThreadHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
-            <% end %>
-        <% else %>
-            <% if ( post.hidden ) %>
-                <a name="hideButton" id="hidePost<%= post.number %>"
-                   href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
-            <% else %>
-                <a name="hideButton" id="hidePost<%= post.number %>"
-                   href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
-            <% end %>
-        <% end %>
+        <a name="hideButton" id="hidePost<%= post.number %>"
+           href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>');">
+            <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
         <% if ( thread && post.number == post.threadNumber ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
             <% if ( thread->postLimitReached() ) %>
@@ -461,6 +441,7 @@
 <input type="hidden" id="captchaQuotaText" value="<%= captchaQuotaText %>" />
 <input type="hidden" id="postFormButtonSubmit" value="<%= postFormButtonSubmit %>" />
 <input type="hidden" id="postFormButtonSubmitSending" value="<%= postFormButtonSubmitSending %>" />
+<input type="hidden" id="postFormButtonSubmitWaiting" value="<%= postFormButtonSubmitWaiting %>" />
 <input type="hidden" id="collapseVideoText" value="<%= collapseVideoText %>" />
 <input type="hidden" id="expandVideoText" value="<%= expandVideoText %>" />
 <input type="hidden" id="youtubeApiKey" value="<%= youtubeApiKey %>" />
@@ -537,7 +518,7 @@
                href="javascript:lord.deletePost('<%= currentBoard.name %>', %postNumber%, true);">
                 <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
             <a id="hidePost%postNumber%" name="hideButton"
-               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%, %hide%);">
+               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%);">
                 <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <span name="toThread" style="display: none;">
                 [<a name="toThreadLink"
@@ -589,7 +570,10 @@
         <input name="postNumber" type="hidden" value="" />
         <input type="hidden" value="" name="fileHashes" />
         <div>
-            <div class="postformFile" onclick="lord.browseFile(event, this);" title="<%= selectFileText %>">
+            <div class="postformFile" onclick="lord.browseFile(event, this);"
+                 ondragover="return lord.fileDragOver(event, this);"
+                 ondragleave="return lord.fileDragLeave(event, this);" ondrop="return lord.fileDrop(event, this);"
+                 title="<%= selectFileText %>">
                 <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
                 <input type="file" name="file" onchange="lord.fileSelected(this);" class="postformFileInput"
                        accept="<%= supportedFileTypes %>" />
@@ -638,8 +622,11 @@
                 <b><%= postFormLabelText %></b>
             </td>
             <td class="postformField">
-                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                          class="postFormTextarea"></textarea>
+                <div class="symbolCounterContainer">
+                    <span class="symbolCounter"><span name="used"></span>/<%= maxTextLength %></span>
+                    <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                              class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                </div>
             </td>
         </tr>
         <% include customPostFormFieldEdit4() %>
@@ -684,7 +671,7 @@
 <% end %>
 <div id="hiddenPostForm" style="display: none;">
     <form id="postForm" method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/<%= action %>"
-          enctype="multipart/form-data" onsubmit="return lord.submitted(this);">
+          enctype="multipart/form-data" onsubmit="return lord.submitted(event, this);">
         <input type="hidden" value="<%= currentBoard.name %>" name="board" />
         <% if ( content.currentThread > 0 ) %>
             <input type="hidden" value="<%= currentThread %>" name="thread" />
@@ -727,8 +714,11 @@
                         <b><%= postFormLabelText %></b>
                     </td>
                     <td class="postformField">
-                        <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                                  class="postFormTextarea"></textarea>
+                        <div class="symbolCounterContainer">
+                            <span class="symbolCounter"><span name="used">0</span>/<%= maxTextLength %></span>
+                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                        </div>
                     </td>
                 </tr>
                 <% include customPostFormField4() %>
@@ -742,6 +732,18 @@
                         </td>
                     </tr>
                 <% end %>
+                <% include customPostFormField41() %>
+                <% if ( content.loggedIn ) %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelTripcode %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
+                        </td>
+                    </tr>
+                <% end %>
+                <% include customPostFormField42() %>
                 <% if ( content.draftsEnabled && content.loggedIn ) %>
                     <tr>
                         <td class="postformLabel">
@@ -760,7 +762,9 @@
                         </td>
                         <td class="postformField">
                             <div class="postformFile" onclick="lord.browseFile(event, this);"
-                                 title="<%= selectFileText %>">
+                                 ondragover="return lord.fileDragOver(event, this);"
+                                 ondragleave="return lord.fileDragLeave(event, this);"
+                                 ondrop="return lord.fileDrop(event, this);" title="<%= selectFileText %>">
                                 <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
                                 <input type="file" name="file" onchange="lord.fileSelected(this);"
                                        class="postformFileInput" accept="<%= supportedFileTypes %>" />

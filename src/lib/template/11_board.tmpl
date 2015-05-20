@@ -6,27 +6,15 @@
 <% foreach thread in threads %>
     <% item %>
         <hr />
-        <% if ( thread.hidden ) %>
-            <div id="thread<%= thread.opPost.number %>" class="hiddenThread">
-        <% else %>
-            <div id="thread<%= thread.opPost.number %>">
-        <% end %>
+        <div id="thread<%= thread.opPost.number %>">
             <% include post(thread.opPost, thread.self()) %>
         </div>
         <% if ( thread.omittedPosts() > 0 ) %>
-            <% if ( thread.hidden ) %>
-                <div id="threadOmitted<%= thread.opPost.number %>" class="omittedPosts hiddenPosts">
-            <% else %>
-                <div id="threadOmitted<%= thread.opPost.number %>" class="omittedPosts">
-            <% end %>
+            <div id="threadOmitted<%= thread.opPost.number %>" class="omittedPosts">
                 <%= omittedPostsText %> <%= thread.omittedPosts() %>
             </div>
         <% end %>
-        <% if ( thread.hidden ) %>
-            <div id="threadPosts<%= thread.opPost.number %>" class="threadPosts hiddenPosts">
-        <% else %>
-            <div id="threadPosts<%= thread.opPost.number %>" class="threadPosts">
-        <% end %>
+        <div id="threadPosts<%= thread.opPost.number %>" class="threadPosts">
         <% foreach p in thread.lastPosts %>
             <% item %>
                 <% include post(p, thread.self()) %>

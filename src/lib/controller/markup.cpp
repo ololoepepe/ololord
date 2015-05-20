@@ -116,11 +116,12 @@ static QString tagName(const QRegExp &rx)
 
 static SkipList externalLinks(const QString &s)
 {
-    QRegExp rx(Tools::externalLinkRegexpPattern(false));
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(s);
     SkipList skip;
     while (ind >= 0) {
-        skip << qMakePair(ind, rx.matchedLength());
+        if (Tools::externalLinkRootZoneExists(rx.cap(3)))
+            skip << qMakePair(ind, rx.matchedLength());
         ind = rx.indexIn(s, ind + rx.matchedLength());
     }
     return skip;
@@ -268,9 +269,13 @@ static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
         return;
     SkipList skip;
     QString t = c.mid();
-    QRegExp rx(Tools::externalLinkRegexpPattern(false));
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
+        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
         QString cap = rx.cap();
         if (!cap.startsWith("http"))
             cap.prepend("http://");
@@ -331,9 +336,13 @@ static void processWakabaMarMailto(ProcessPostTextContext &c)
     SkipList skip;
     QString t = c.mid();
     QRegExp rx("[\\w\\.\\-]+@([\\w\\.\\-]+\\.[a-z]{2,6})");
-    QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
+    QRegExp rxLink(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
+        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
         QString mail = rx.cap();
         if (!rxLink.exactMatch(rx.cap(1))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
@@ -506,6 +515,37 @@ static void processWakabaMarkList(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkQuote);
 }
 
+static void processTagUrl(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\[url\\](.+)\\[/url\\]");
+    rx.setMinimal(true);
+    QRegExp rxLink(Tools::externalLinkRegexpPattern());
+    int ind = rx.indexIn(t);
+    while (ind >= 0) {
+        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
+        QString href = rx.cap(1);
+        if (!rxLink.exactMatch(href)) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
+        QString hrefold = href;
+        if (!href.startsWith("http"))
+            href.prepend("http://");
+        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(hrefold) + "</a>";
+        t.replace(ind, rx.matchedLength(), result);
+        skip << qMakePair(ind, result.length());
+        ind = rx.indexIn(t, ind + result.length());
+    }
+    c.process(t, skip, &processWakabaMarkList);
+}
+
 static void processTags(ProcessPostTextContext &c)
 {
     typedef QMap<QString, QString> StringMap;
@@ -529,7 +569,7 @@ static void processTags(ProcessPostTextContext &c)
         htmls.insert("[sub]", qMakePair(QString("<sub>"), QString("</sub>")));
         htmls.insert("[sup]", qMakePair(QString("<sup>"), QString("</sup>")));
     }
-    ProcessPostTextFunction next = &processWakabaMarkList;
+    ProcessPostTextFunction next = &processTagUrl;
     if (!c.isValid())
         return;
     SkipList skip;
@@ -568,32 +608,9 @@ static void processTags(ProcessPostTextContext &c)
     c.process(t, skip, next);
 }
 
-static void processTagUrl(ProcessPostTextContext &c)
-{
-    if (!c.isValid())
-        return;
-    SkipList skip;
-    QString t = c.mid();
-    QRegExp rx("\\[url\\](.+)\\[/url\\]");
-    QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
-    int ind = rx.indexIn(t);
-    while (ind >= 0) {
-        QString href = rx.cap(1);
-        if (!rxLink.exactMatch(href)) {
-            ind = rx.indexIn(t, ind + rx.matchedLength());
-            continue;
-        }
-        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(href) + "</a>";
-        t.replace(ind, rx.matchedLength(), result);
-        skip << qMakePair(ind, result.length());
-        ind = rx.indexIn(t, ind + result.length());
-    }
-    c.process(t, skip, &processTags);
-}
-
 static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processTagUrl, "`", "", "font", "<font face=\"monospace\">", true);
+    processSimmetric(c, &processTags, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
 static void processTagCode(ProcessPostTextContext &c)
@@ -757,9 +774,13 @@ void toHtml(QString *s)
     if (!s)
         return;
     SkipList skip;
-    QRegExp rx(Tools::externalLinkRegexpPattern(true));
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(*s);
     while (ind >= 0) {
+        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+            ind = rx.indexIn(*s, ind + rx.matchedLength());
+            continue;
+        }
         s->insert(ind + rx.matchedLength(), "</a>");
         QString cap = rx.cap();
         if (!cap.startsWith("http"))

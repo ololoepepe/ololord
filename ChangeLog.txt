@@ -1,3 +1,28 @@
+=== ololord 0.1.0-rc7 (20 May 2015) ===
+    * Fix audio tags support
+    * Fix posting speed counting
+    * Fix thread files downloading
+    * Fix/improve post form submitting
+    * Use localStorage and JS instead of cookies for settings (when possible)
+    * Remove outdated cookies
+    * Use localStorage and JS instead of cookies for post hiding
+    * Implement Drag and Drop file upload
+    * Show addititonal information about media files
+    * Add JS functions for adding/removing CSS classes
+    * Add ability to minify HTML/JS/CSS
+    * Add symbol counter to post form
+    * Fix Yandex captcha
+    * Rename "reload-post-index" into "rebuild-post-index"
+    * Implement "new-log" command
+    * Add Futaba style
+    * Add information about new posts to navigation bar
+    * Process post text outside transaction
+    * Fix DB timeout
+    * Add DB indexes
+    * Add ability to use external libmagic (file utility)
+    * Add command line option to force application launch if there is another instance running
+    * Optimize post text parser
+
 === ololord 0.1.0-rc6 (8 May 2015) ===
     * Fix posting speed displaying
     * Improve URL markup

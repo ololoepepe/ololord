@@ -295,6 +295,39 @@ void ActionAjaxHandler::getFileMetaData(std::string boardName, std::string fileN
     }
 }
 
+void ActionAjaxHandler::getNewPostCount(std::string boardName, long long lastPostNumber)
+{
+    try {
+        QString bn = Tools::fromStd(boardName);
+        quint64 lpn = lastPostNumber > 0 ? quint64(lastPostNumber) : 0;
+        QString logTarget = bn + "/" + QString::number(lpn);
+        Tools::log(server, "ajax_get_new_post_count", "begin", logTarget);
+        AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
+        if (board.isNull()) {
+            TranslatorQt tq(server.request());
+            QString err = tq.translate("ActionAjaxHandler", "No such board", "error");
+            Tools::log(server, "ajax_get_new_post_count", "fail:" + err, logTarget);
+            server.return_error(Tools::toStd(err));
+        }
+        if (!testBan(bn, true))
+            return Tools::log(server, "ajax_get_new_post_count", "fail:ban", logTarget);
+        bool ok = false;
+        QString err;
+        int count = Database::getNewPostCount(server.request(), bn, lpn, &ok, &err);
+        if (!ok) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_get_new_post_count", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(count);
+        Tools::log(server, "ajax_get_new_post_count", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_new_post_count", "fail:" + err);
+    }
+}
+
 void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber)
 {
     try {
@@ -416,52 +449,26 @@ void ActionAjaxHandler::getYandexCaptchaImage(std::string type)
             return;
         }
         try {
-            QString id;
-            QString challenge;
-            QString iurl;
-            {
-                curlpp::Cleanup curlppCleanup;
-                Q_UNUSED(curlppCleanup)
-                curlpp::Easy request;
-                QString url = "http://cleanweb-api.yandex.ru/1.0/check-spam?key="
-                        + QUrl::toPercentEncoding(e->privateKey());
-                request.setOpt(curlpp::options::Url(Tools::toStd(url)));
-                std::ostringstream os;
-                os << request;
-                QString result = Tools::fromStd(os.str());
-                QRegExp rx("<id>.+</id>");
-                if (rx.indexIn(result) < 0) {
-                    QString err = tq.translate("ActionAjaxHandler", "Internal error", "error");
-                    Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
-                    server.return_error(Tools::toStd(err));
-                    return;
-                }
-                id = rx.cap().remove("<id>").remove("</id>");
+            curlpp::Cleanup curlppCleanup;
+            Q_UNUSED(curlppCleanup)
+            QString url = "http://cleanweb-api.yandex.ru/1.0/get-captcha?key="
+                    + QUrl::toPercentEncoding(e->privateKey()) + "&type=" + QUrl::toPercentEncoding(t);
+            curlpp::Easy request;
+            request.setOpt(curlpp::options::Url(Tools::toStd(url)));
+            std::ostringstream os;
+            os << request;
+            QString result = Tools::fromStd(os.str());
+            QRegExp rxc("<captcha>.+</captcha>");
+            QRegExp rxu("<url>.+</url>");
+            if (rxc.indexIn(result) < 0 || rxu.indexIn(result) < 0) {
+                QString err = tq.translate("ActionAjaxHandler", "Internal error", "error");
+                Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
+                server.return_error(Tools::toStd(err));
+                return;
             }
-            {
-                curlpp::Cleanup curlppCleanup;
-                Q_UNUSED(curlppCleanup)
-                QString url = "http://cleanweb-api.yandex.ru/1.0/get-captcha?key="
-                        + QUrl::toPercentEncoding(e->privateKey()) + "&id=" + QUrl::toPercentEncoding(id)
-                        + "&type=" + QUrl::toPercentEncoding(t);
-                curlpp::Easy request;
-                request.setOpt(curlpp::options::Url(Tools::toStd(url)));
-                std::ostringstream os;
-                os << request;
-                QString result = Tools::fromStd(os.str());
-                QRegExp rxc("<captcha>.+</captcha>");
-                QRegExp rxu("<url>.+</url>");
-                if (rxc.indexIn(result) < 0 || rxu.indexIn(result) < 0) {
-                    QString err = tq.translate("ActionAjaxHandler", "Internal error", "error");
-                    Tools::log(server, "ajax_get_yandex_captcha_image", "fail:" + err, logTarget);
-                    server.return_error(Tools::toStd(err));
-                    return;
-                }
-                challenge = rxc.cap().remove("<captcha>").remove("</captcha>");
-                iurl = rxu.cap().remove("<url>").remove("</url>");
-            }
+            QString challenge = rxc.cap().remove("<captcha>").remove("</captcha>");
+            QString iurl = rxu.cap().remove("<url>").remove("</url>");
             cppcms::json::object o;
-            o["id"] = Tools::toStd(id);
             o["challenge"] = Tools::toStd(challenge);
             o["url"] = Tools::toStd(iurl);
             server.return_result(o);
@@ -496,6 +503,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("get_file_existence", cppcms::rpc::json_method(&ActionAjaxHandler::getFileExistence, self),
                     method_role);
     list << Handler("get_file_meta_data", cppcms::rpc::json_method(&ActionAjaxHandler::getFileMetaData, self),
+                    method_role);
+    list << Handler("get_new_post_count", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPostCount, self),
                     method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);

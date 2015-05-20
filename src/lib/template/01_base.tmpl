@@ -30,8 +30,6 @@
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
             <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
-            <input id="showTripcodeCheckbox" type="checkbox" class="checkbox" title="<%= showTripcodeText %>"
-                   onclick="javascript:lord.switchShowTripcode();" name="showTripcode" />
         <% else %>
             <input id="loginInput" type="password" class="input" name="hashpass"
                    placeholder="<%= loginPlaceholderText %>" />
@@ -52,7 +50,7 @@
 <div class="navbar">
     <% foreach board in boards %>
         <% item %>
-            <span class="navbarItem">[<a href="/<%= sitePathPrefix %><%= board.name %>"
+            <span class="navbarItem navbarItemBoard">[<a href="/<%= sitePathPrefix %><%= board.name %>"
                   title="<%= board.title %>"><%= board.name %></a>] </span>
         <% end %>
     <% end %>
@@ -133,7 +131,7 @@
                     <%= captchaLabelText %><sup><font color="red">*</font></sup>
                 </td>
                 <td>
-                    <select name="captchaChangeSelect" class="select">
+                    <select name="captchaEngineSelect" class="select">
                         <% foreach ce in captchaEngines %>
                             <% item %>
                                 <% if ( ce.id == content.currentCaptchaEngine.id ) %>
@@ -154,19 +152,9 @@
                 </td>
                 <td>
                     <select name="quickReplyActionSelect" class="select">
-                        <% if ( content.currentQuickReplyAction == "do_nothing" ) %>
-                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
-                            <option value="do_nothing" selected="true"><%= quickReplyActionDoNothingText %></option>
-                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
-                        <% elif ( content.currentQuickReplyAction == "append_post" ) %>
-                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
-                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
-                            <option value="append_post" selected="true"><%= quickReplyActionAppendPostText %></option>
-                        <% else %>
-                            <option value="goto_thread" selected="true"><%= quickReplyActionGotoThreadText %></option>
-                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
-                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
-                        <% end %>
+                        <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                        <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                        <option value="append_post"><%= quickReplyActionAppendPostText %></option>
                     </select>
                 </td>
             </tr>

@@ -25,12 +25,9 @@ AbstractYandexCaptchaEngine::AbstractYandexCaptchaEngine()
 bool AbstractYandexCaptchaEngine::checkCaptcha(const cppcms::http::request &req, const Tools::PostParameters &params,
                                                QString &error) const
 {
-    QString id = params.value("yandexCaptchaId");
     QString challenge = params.value("yandexCaptchaChallenge");
     QString response = params.value("yandexCaptchaResponse");
     TranslatorQt tq(req);
-    if (id.isEmpty())
-        return bRet(&error, tq.translate("AbstractYandexCaptchaEngine", "Captcha ID is empty", "error"), false);
     if (challenge.isEmpty())
         return bRet(&error, tq.translate("AbstractYandexCaptchaEngine", "Captcha challenge is empty", "error"), false);
     if (response.isEmpty())
@@ -39,8 +36,7 @@ bool AbstractYandexCaptchaEngine::checkCaptcha(const cppcms::http::request &req,
         curlpp::Cleanup curlppCleanup;
         Q_UNUSED(curlppCleanup)
         QString url = "http://cleanweb-api.yandex.ru/1.0/check-captcha?key=" + QUrl::toPercentEncoding(privateKey())
-                + "&id=" + QUrl::toPercentEncoding(id) + "&captcha=" + QUrl::toPercentEncoding(challenge)
-                + "&value=" + QUrl::toPercentEncoding(response);
+                + "&captcha=" + QUrl::toPercentEncoding(challenge) + "&value=" + QUrl::toPercentEncoding(response);
         curlpp::Easy request;
         request.setOpt(curlpp::options::Url(Tools::toStd(url)));
         std::ostringstream os;
@@ -85,7 +81,6 @@ QString AbstractYandexCaptchaEngine::widgetHtml() const
 {
     QString s = "<div id=\"captcha\">";
     s += "<div name=\"image\"></div>";
-    s += "<input type=\"hidden\" name=\"yandexCaptchaId\" />";
     s += "<input type=\"hidden\" name=\"yandexCaptchaChallenge\" />";
     s += "<input type=\"text\" name=\"yandexCaptchaResponse\" size=\"22\" />";
     s += "</div>";

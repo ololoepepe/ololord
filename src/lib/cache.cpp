@@ -56,7 +56,7 @@ void initCache(T &cache, const QString &name, int defaultSize)
 ClearCacheFunctionMap availableClearCacheFunctions()
 {
     init_once(ClearCacheFunctionMap, map, ClearCacheFunctionMap()) {
-        map.insert("custom_home_page_content", &clearCustomHomePageContent);
+        map.insert("home_page", &clearCustomHomePageContent);
         map.insert("dynamic_files", &clearDynamicFilesCache);
         map.insert("friend_list", &clearFriendListCache);
         map.insert("ip_ban_info_list", &clearIpBanInfoListCache);
@@ -72,7 +72,7 @@ ClearCacheFunctionMap availableClearCacheFunctions()
 SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 {
     init_once(SetMaxCacheSizeFunctionMap, map, SetMaxCacheSizeFunctionMap()) {
-        map.insert("custom_home_page_content", &setCustomHomePageContentMaxCacheSize);
+        map.insert("home_page", &setCustomHomePageContentMaxCacheSize);
         map.insert("dynamic_files", &setDynamicFilesMaxCacheSize);
         map.insert("friend_list", &setFriendListMaxCacheSize);
         map.insert("ip_ban_info_list", &setIpBanInfoListMaxCacheSize);
@@ -88,7 +88,7 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 QStringList availableCacheNames()
 {
     init_once(QStringList, names, QStringList()) {
-        names << "custom_home_page_content";
+        names << "home_page";
         names << "dynamic_files";
         names << "friend_list";
         names << "ip_ban_info_list";
@@ -107,7 +107,7 @@ bool cacheCustomHomePageContent(const QLocale &l, QString *content)
         return false;
     QWriteLocker locker(&customHomePageContentsLock);
     do_once(init)
-        initCache(customHomePageContents, "custom_home_page_content", defaultCustomHomePageContentsCacheSize);
+        initCache(customHomePageContents, "home_page", defaultCustomHomePageContentsCacheSize);
     int sz = content->length() * 2;
     if (customHomePageContents.maxCost() < sz)
         return false;
@@ -309,7 +309,7 @@ int defaultCacheSize(const QString &name)
 {
     typedef QMap<QString, int> IntMap;
     init_once(IntMap, map, IntMap()) {
-        map.insert("custom_home_page_content", defaultCustomHomePageContentsCacheSize);
+        map.insert("home_page", defaultCustomHomePageContentsCacheSize);
         map.insert("dynamic_files", defaultDynamicFilesCacheSize);
         map.insert("friend_list", defaultFriendListCacheSize);
         map.insert("ip_ban_info_list", defaultIpBanInfoListCacheSize);

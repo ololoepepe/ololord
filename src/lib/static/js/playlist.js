@@ -14,7 +14,7 @@ lord.addTrack = function(track) {
         return;
     var div = lord.node("div");
     div.id = "track/" + track;
-    div.className = "track";
+    lord.addClass(div, "track");
     var span = lord.node("span");
     div.appendChild(span);
     div.appendChild(lord.node("br"));

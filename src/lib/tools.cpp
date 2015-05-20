@@ -11,6 +11,7 @@
 
 #include <BCoreApplication>
 #include <BDirTools>
+#include <BeQt>
 #include <BLogger>
 #include <BTextTools>
 
@@ -31,6 +32,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QTemporaryFile>
 #include <QTextCodec>
 #include <QTime>
 #include <QVariant>
@@ -185,6 +187,9 @@ static QString audioTag(const ID3_Tag &tag, ID3_FrameID id)
     ID3_Field *text = frame->GetField(ID3FN_TEXT);
     if (!text)
         return "";
+    QString s = QString::fromUtf16(text->GetRawUnicodeText(), text->Size() / 2);
+    if (!s.isEmpty())
+        return s;
     QByteArray ba(text->GetRawText());
     QTextCodec *codec = BTextTools::guessTextCodec(ba);
     if (!codec)
@@ -363,16 +368,22 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
-QString externalLinkRegexpPattern(bool simple)
+QString externalLinkRegexpPattern()
 {
-    init_once(QString, zones, QString()) {
-        QString fn = BDirTools::findResource("res/root-zones.txt", BDirTools::GlobalOnly);
-        zones = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts).join("|");
-    }
-    QString pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.(";
-    pattern += (!simple && !zones.isEmpty()) ? zones : "[a-z]{2,6}\\.?";
-    pattern += ")(\\/[\\w\\.\\-\\?\\=#~&%\\,\\(\\)]*)*\\/?(?!\\S)";
+    init_once(QString, pattern, QString())
+        pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,17}\\.?)(\\/[\\w\\.\\-\\?\\=#~&%\\,\\(\\)]*)*\\/?(?!\\S)";
     return pattern;
+}
+
+bool externalLinkRootZoneExists(const QString &zoneName)
+{
+    typedef QSet<QString> StringSet;
+    init_once(StringSet, rootZones, StringSet()) {
+        QString fn = BDirTools::findResource("res/root-zones.txt", BDirTools::GlobalOnly);
+        QStringList list = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+        rootZones = list.toSet();
+    }
+    return !zoneName.isEmpty() && rootZones.contains(zoneName);
 }
 
 QString flagName(const QString &countryCode)
@@ -602,20 +613,41 @@ unsigned int maxInfo(MaxInfo m, const QString &boardName)
 
 QString mimeType(const QByteArray &data, bool *ok)
 {
+#if defined(Q_OS_WIN)
+    static const QString FileDefault = "file.exe";
+#elif defined(Q_OS_UNIX)
+    static const QString FileDefault = "file";
+#endif
     if (data.isEmpty())
         return bRet(ok, false, QString());
-    qDebug() << "MIME" << data.size();
-    BDirTools::writeFile("/home/darkangel/tmp/debug-mime", data);
-    magic_t magicMimePredictor;
-    magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
-    if (!magicMimePredictor)
-        return bRet(ok, false, QString());
-    if (magic_load(magicMimePredictor, 0)) {
-        magic_close(magicMimePredictor);
-        return bRet(ok, false, QString());
+    SettingsLocker sl;
+    if (sl->value("System/use_external_libmagic", false).toBool()) {
+        QString file = sl->value("System/file_command", FileDefault).toString();
+        QTemporaryFile f;
+        if (!f.open())
+            return bRet(ok, false, QString());
+        f.write(data);
+        f.close();
+        if (f.error() != QFile::NoError)
+            return bRet(ok, false, QString());
+        QString out;
+        QStringList args = QStringList() << "--brief" << "--mime-type" << f.fileName();
+        if (BeQt::execProcess(QFileInfo(f).path(), file, args, BeQt::Second, 5 * BeQt::Second, &out))
+            return bRet(ok, false, QString());
+        out.remove("\r").remove("\n");
+        return bRet(ok, !out.isEmpty(), out);
+    } else {
+        magic_t magicMimePredictor;
+            magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
+            if (!magicMimePredictor)
+                return bRet(ok, false, QString());
+            if (magic_load(magicMimePredictor, 0)) {
+                magic_close(magicMimePredictor);
+                return bRet(ok, false, QString());
+            }
+            QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
+            return bRet(ok, !result.isEmpty(), result);
     }
-    QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
-    return bRet(ok, !result.isEmpty(), result);
 }
 
 QStringList news(const QLocale &l)
@@ -673,13 +705,35 @@ cppcms::json::value readJsonValue(const QString &fileName, bool *ok)
     bool b = false;
     QString s = BDirTools::readTextFile(fileName, "UTF-8", &b);
     if (!b)
-        return cppcms::json::value();
+        return bRet(ok, false, cppcms::json::value());
     cppcms::json::value json;
     std::stringstream in(toStd(s));
     if (json.load(in, true))
         return bRet(ok, true, json);
     else
         return bRet(ok, false, cppcms::json::value());
+}
+
+void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
+{
+    int m = SettingsLocker()->value("System/minification_mode", 1).toInt();
+    if (m <= 0)
+        return app.render(toStd(templateName), content);
+    std::stringstream stream;
+    app.render(toStd(templateName), stream, content);
+    QStringList sl = fromStd(stream.str()).split(QRegExp("(\r?\n)+"));
+    foreach (int i, bRangeR(sl.size() - 1, 0)) {
+        if (sl[i].isEmpty() || QRegExp("\\s+").exactMatch(sl[i])) {
+            sl.removeAt(i);
+        } else {
+            sl[i].replace(QRegExp("^\\s+"), "");
+            sl[i].replace(QRegExp("\\s+$"), "");
+        }
+    }
+    QString s = sl.join("\n");
+    if (m > 1)
+        s.replace(QRegExp(" {2,}"), " ");
+    app.response().out() << toStd(s);
 }
 
 void resetLoggingSkipIps()
@@ -830,6 +884,7 @@ Post toPost(const PostParameters &params, const FileList &files)
         pwd = SettingsLocker()->value("Board/default_post_password").toString();
     p.password = QCryptographicHash::hash(pwd.toLocal8Bit(), QCryptographicHash::Sha1);
     p.raw = !params.value("raw").compare("true", Qt::CaseInsensitive);
+    p.showTripcode = !params.value("tripcode").compare("true", Qt::CaseInsensitive);
     p.subject = params.value("subject");
     p.text = params.value("text");
     p.draft = !params.value("draft").compare("true", Qt::CaseInsensitive);

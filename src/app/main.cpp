@@ -39,7 +39,9 @@ B_DECLARE_TRANSLATE_FUNCTION
 
 static const QString IpAddressRegexpPattern =
         "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])";
-static const QString DateTimeFormat = "dd.MM.yyyy:hh";
+static const QString InputDateTimeFormat = "dd.MM.yyyy:hh";
+static const QString LogDateTimeFormat = "yyyy.MM.dd hh:mm:ss.zzz";
+static const QString LogFileDateTimeFormat = "yyyy.MM.dd-hh.mm.ss";
 
 static bool checkParsingError(BTextTools::OptionsParsingError error, const QString &errorData);
 static bool handleBanPoster(const QString &cmd, const QStringList &args);
@@ -49,11 +51,12 @@ static bool handleClearCache(const QString &cmd, const QStringList &args);
 static bool handleCloseThread(const QString &cmd, const QStringList &args);
 static bool handleDeletePost(const QString &cmd, const QStringList &args);
 static bool handleFixThread(const QString &cmd, const QStringList &args);
+static bool handleNewLog(const QString &cmd, const QStringList &args);
 static bool handleOpenThread(const QString &cmd, const QStringList &args);
+static bool handleRebuildPostIndex(const QString &cmd, const QStringList &args);
 static bool handleRegisterUser(const QString &cmd, const QStringList &args);
 static bool handleReloadBoards(const QString &cmd, const QStringList &args);
 static bool handleReloadCaptchaEngines(const QString &cmd, const QStringList &args);
-static bool handleReloadPostIndex(const QString &cmd, const QStringList &args);
 static bool handleRerenderPosts(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
@@ -61,6 +64,7 @@ static bool handleUnfixThread(const QString &cmd, const QStringList &args);
 static void initCommands();
 static void initSettings();
 static void initTerminal();
+static QString logFileName();
 static bool setDefaultThreadPassword(const BSettingsNode *node, const QVariant &value);
 static bool setLoggingMode(const BSettingsNode *, const QVariant &v);
 static bool setLoggingSkipIp(const BSettingsNode *node, const QVariant &value);
@@ -74,10 +78,12 @@ int main(int argc, char **argv)
     QString home = QDir::home().dirName();
     BApplicationServer s(9710 + qHash(home) % 10, AppName + "0" + home);
     int ret = 0;
-    if (!s.testServer()) {
+    bool force = (argc > 1) && (QString::fromLocal8Bit(argv[1]) == "--force-launch");
+    if (!s.testServer() || force) {
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
-        s.listen();
-        app.setApplicationVersion("0.1.0-rc6");
+        if (!force)
+            s.listen();
+        app.setApplicationVersion("0.1.0-rc7");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -99,10 +105,8 @@ int main(int argc, char **argv)
         AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
         AbstractBoard::restorePostingSpeed(BDirTools::readFile(postingSpeedFile));
         Search::restoreIndex(BDirTools::readFile(searchIndexFile));
-        bLogger->setDateTimeFormat("yyyy.MM.dd hh:mm:ss");
-        QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
-        fn += QDateTime::currentDateTime().toString("yyyy.MM.dd-hh.mm.ss") + ".txt";
-        bLogger->setFileName(fn);
+        bLogger->setDateTimeFormat(LogDateTimeFormat);
+        bLogger->setFileName(logFileName());
         updateLoggingMode();
         bWriteLine(translate("main", "This is") + " " + BCoreApplication::applicationName()
                    + " v" + BCoreApplication::applicationVersion());
@@ -126,7 +130,6 @@ int main(int argc, char **argv)
         BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
         BDirTools::writeFile(postingSpeedFile, AbstractBoard::savePostingSpeed());
         BDirTools::writeFile(searchIndexFile, Search::saveIndex());
-
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
@@ -184,7 +187,7 @@ bool handleBanPoster(const QString &, const QStringList &args)
     QString reason = result.value("reason");
     QDateTime expires;
     if (result.contains("expires")) {
-        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), InputDateTimeFormat)
                                              : QDateTime();
         if (!expires.isValid()) {
             QString s = bReadLine(translate("handleBanPoster", "Invalid date. User will be banned forever. Continue?")
@@ -223,7 +226,7 @@ bool handleBanUser(const QString &, const QStringList &args)
     QString reason = result.value("reason");
     QDateTime expires;
     if (result.contains("expires")) {
-        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), DateTimeFormat)
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), InputDateTimeFormat)
                                              : QDateTime();
         if (!expires.isValid()) {
             QString s = bReadLine(translate("handleBanUser", "Invalid date. User will be banned forever. Continue?")
@@ -410,6 +413,16 @@ bool handleFixThread(const QString &, const QStringList &args)
     return true;
 }
 
+bool handleNewLog(const QString &, const QStringList &)
+{
+    QString s = bReadLine(translate("handleNewLog", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    bLogger->setFileName(logFileName());
+    bWriteLine(translate("handleNewLog", "OK"));
+    return true;
+}
+
 bool handleOpenThread(const QString &, const QStringList &args)
 {
     if (args.size() != 2) {
@@ -432,6 +445,20 @@ bool handleOpenThread(const QString &, const QStringList &args)
         bWriteLine(err);
     else
         bWriteLine(translate("handleOpenThread", "OK"));
+    return true;
+}
+
+bool handleRebuildPostIndex(const QString &, const QStringList &)
+{
+    QString s = bReadLine(translate("handleRebuildPostIndex", "Are you sure?") + " [Yn] ");
+    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
+        return true;
+    QString err;
+    int count = Search::rebuildIndex(&err);
+    if (count < 0)
+        bWriteLine(translate("handleRebuildPostIndex", "Error:") + " " + err);
+    else
+        bWriteLine(translate("handleRebuildPostIndex", "Rebuilt index of posts:") +  " " + QString::number(count));
     return true;
 }
 
@@ -488,20 +515,6 @@ bool handleReloadCaptchaEngines(const QString &, const QStringList &)
         return true;
     AbstractCaptchaEngine::reloadEngines();
     bWriteLine(translate("handleReloadCaptchaEngines", "OK"));
-    return true;
-}
-
-bool handleReloadPostIndex(const QString &, const QStringList &)
-{
-    QString s = bReadLine(translate("handleReloadPostIndex", "Are you sure?") + " [Yn] ");
-    if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
-        return true;
-    QString err;
-    int count = Database::reloadPostIndex(&err);
-    if (count < 0)
-        bWriteLine(translate("handleReloadPostIndex", "Error:") + " " + err);
-    else
-        bWriteLine(translate("handleReloadPostIndex", "Reloaded index of posts:") +  " " + QString::number(count));
     return true;
 }
 
@@ -703,10 +716,10 @@ void initCommands()
                                              "plugins.");
     BTerminal::setCommandHelp("reload-captcha-engines", ch);
     //
-    BTerminal::installHandler("reload-post-index", &handleReloadPostIndex);
-    ch.usage = "reload-post-index";
+    BTerminal::installHandler("rebuild-post-index", &handleRebuildPostIndex);
+    ch.usage = "rebuild-post-index";
     ch.description = BTranslation::translate("initCommands", "Clear post text index and create it from scratch.");
-    BTerminal::setCommandHelp("reload-post-index", ch);
+    BTerminal::setCommandHelp("rebuild-post-index", ch);
     //
     BTerminal::installHandler("register-user", &handleRegisterUser);
     ch.usage = "register-user";
@@ -725,12 +738,19 @@ void initCommands()
     ch.description = BTranslation::translate("initCommands", "Delete post with <post-number> at <board>.\n"
         "If <post-number> is a thread, that thread and all posts in it are deleted.");
     BTerminal::setCommandHelp("delete-post", ch);
+    //
+    BTerminal::installHandler("new-log", &handleNewLog);
+    ch.usage = "new-log";
+    ch.description = BTranslation::translate("initCommands", "Finish writing to the current log file and start "
+                                             "writing to a new one.");
+    BTerminal::setCommandHelp("new-log", ch);
 }
 
 void initSettings()
 {
     BSettingsNode *root = new BSettingsNode;
     BTerminal::createBeQtSettingsNode(root);
+    /*======================================== Board ========================================*/
     BSettingsNode *n = new BSettingsNode("Board", root);
     BSettingsNode *nn = new BSettingsNode(QVariant::ByteArray, "default_post_password", n);
     nn->setUserSetFunction(&setDefaultThreadPassword);
@@ -810,6 +830,7 @@ void initSettings()
     t.setArgument(AbstractBoard::defaultFileTypes);
     nn = new BSettingsNode(QVariant::String, "supported_file_types", n);
     nn->setDescription(t);
+    /*======================================== Site ========================================*/
     n = new BSettingsNode("Site", root);
     nn = new BSettingsNode(QVariant::String, "domain", n);
     nn->setDescription(BTranslation::translate("initSettings", "Site domain name.\n"
@@ -829,7 +850,9 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "youtube_api_key", n);
     nn->setDescription(BTranslation::translate("initSettings", "The key required to access YouTube API.\n"
                                                "It will appear in HTML."));
-    n = new BSettingsNode("Captcha", root);
+    /*======================================== Captcha ========================================*/
+    n = new BSettingsNode("Captcha", root); //NOTE: Yep, it must be here.
+    /*======================================== System ========================================*/
     n = new BSettingsNode("System", root);
     nn = new BSettingsNode(QVariant::Bool, "use_x_real_ip", n);
     nn->setDescription(BTranslation::translate("initSettings", "Determines if HTTP_X_REAL_IP header is used to "
@@ -846,17 +869,33 @@ void initSettings()
                                                "  2 - log to file only\n"
                                                "  3 and more - log to console and file\n"
                                                "  The default is 2."));
+    nn = new BSettingsNode(QVariant::Int, "minification_mode", n);
+    nn->setDescription(BTranslation::translate("initSettings", "HTML/CSS/JS minification mode. Possible values:\n"
+                                               "  0 or less - don't minify anything\n"
+                                               "  1 - remove empty lines only\n"
+                                               "  2 and more - remove empty lines and extra spaces\n"
+                                               "  The default is 1."));
     nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
     nn = new BSettingsNode(QVariant::String, "ffprobe_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffprobe utility command (possibly full path).\n"
                                                "The default is ffprobe (UNIX) or ffprobe.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::String, "file_command", n);
+    nn->setDescription(BTranslation::translate("initSettings", "file utility command (possibly full path).\n"
+                                               "The default is file (UNIX) or file.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::Bool, "use_external_libmagic", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines if an external file utility is used to "
+                                               "identify MIME type.\n"
+                                               "By default MIME types are identified internally using libmagic.\n"
+                                               "Set this option to false if libmagic crashes the application.\n"
+                                               "Calling external file utility is MUCH slower."));
     nn = new BSettingsNode(QVariant::String, "logging_skip_ip", n);
     nn->setUserSetFunction(&setLoggingSkipIp);
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
                                                "IP's are represented as ranges and are separated by commas.\n"
                                                "Example: 127.0.0.1,192.168.0.1-192.168.0.255"));
+    /*======================================== Proxy ========================================*/
     nn = new BSettingsNode("Proxy", n);
     BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
     nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"
@@ -864,6 +903,7 @@ void initSettings()
                                                 "Works for non-transparent proxies only (X-Forwarded-For, "
                                                 "X-Client-IP).\n"
                                                 "The default is true."));
+    /*======================================== Cache ========================================*/
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {
         nn = new BSettingsNode(s, n);
@@ -882,6 +922,13 @@ void initTerminal()
     BTerminal::setMode(BTerminal::StandardMode);
     initCommands();
     initSettings();
+}
+
+QString logFileName()
+{
+    QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
+    fn += QDateTime::currentDateTime().toString(LogFileDateTimeFormat) + ".txt";
+    return fn;
 }
 
 bool setDefaultThreadPassword(const BSettingsNode *, const QVariant &value)

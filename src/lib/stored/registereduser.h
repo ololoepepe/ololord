@@ -25,6 +25,7 @@ private:
     PRAGMA_DB(id auto)
     quint64 id_;
     QByteArray hashpass_;
+    PRAGMA_DB(index unique member(hashpass_))
     PRAGMA_DB(not_null)
     QDateTime dateTime_;
     PRAGMA_DB(not_null)

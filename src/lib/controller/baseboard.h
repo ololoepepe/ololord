@@ -25,6 +25,7 @@ struct OLOLORD_EXPORT BanLevel
 struct OLOLORD_EXPORT File
 {
     std::string size;
+    std::string sizeTooltip;
     int sizeX;
     int sizeY;
     std::string sourceName;
@@ -58,7 +59,6 @@ public:
     std::list<File> files;
     bool fixed;
     std::string flagName;
-    bool hidden;
     std::string ip;
     std::string modificationDateTime;
     std::string name;
@@ -132,6 +132,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     unsigned int maxNameLength;
     unsigned int maxSubjectLength;
     unsigned int maxPasswordLength;
+    unsigned int maxTextLength;
     std::string megabytesText;
     int moder;
     std::string modificationDateTimeText;
@@ -140,6 +141,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string openThreadText;
     std::string postFormButtonSubmit;
     std::string postFormButtonSubmitSending;
+    std::string postFormButtonSubmitWaiting;
     std::string postFormInputFile;
     std::string postFormLabelCaptcha;
     std::string postFormLabelDraft;
@@ -149,6 +151,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postFormLabelRaw;
     std::string postFormLabelSubject;
     std::string postFormLabelText;
+    std::string postFormLabelTripcode;
     std::list<std::string> postformRules;
     std::string postFormTextPlaceholder;
     std::string postingDisabledText;

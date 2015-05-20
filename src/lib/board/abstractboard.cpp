@@ -774,11 +774,8 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                 if (thread.lastPosts.size() >= maxPosts)
                     break;
             }
-            thread.hidden = (Tools::cookieValue(app.request(), "postHidden" + name()
-                                                + QString::number(tt.number())) == "true");
             c.threads.push_back(thread);
         }
-        t.commit();
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
         Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
@@ -799,7 +796,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     c.toNextPageText = ts.translate("AbstractBoard", "Next page", "toNextPageText");
     c.toPreviousPageText = ts.translate("AbstractBoard", "Previous page", "toPreviousPageText");
     beforeRenderBoard(app.request(), cc.data());
-    app.render(Tools::toStd(viewName), c);
+    Tools::render(app, viewName, c);
     Tools::log(app, "board", "success", logTarget);
 }
 
@@ -816,7 +813,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
     c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");;
     foreach (const QString &r, rules(ts.locale()))
         c.rules.push_back(Tools::toStd(r));
-    app.render("rules", c);
+    Tools::render(app, "rules", c);
     Tools::log(app, "board_rules", "success", logTarget);
 }
 
@@ -913,7 +910,6 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
                 return;
             }
         }
-        t.commit();
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
         Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
@@ -926,18 +922,15 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
-    QString au = "auto_update" + QString::number(threadNumber);
-    c.autoUpdateEnabled = !Tools::cookieValue(app.request(), au).compare("true", Qt::CaseInsensitive);
     c.autoUpdateText = ts.translate("AbstractBoard", "Auto update", "autoUpdateText");
     c.backText = ts.translate("AbstractBoard", "Back", "backText");
     c.bumpLimit = bumpLimit();
     c.newPostsText = ts.translate("AbstractBoard", "New posts:", "newPostsText");
     c.noNewPostsText = ts.translate("AbstractBoard", "No new posts", "noNewPostsText");
     c.postLimit = postLimit();
-    c.hidden = (Tools::cookieValue(app.request(), "postHidden" + name() + QString::number(threadNumber)) == "true");
     c.updateThreadText = ts.translate("AbstractBoard", "Update thread", "updateThreadText");
     beforeRenderThread(app.request(), cc.data());
-    app.render(Tools::toStd(viewName), c);
+    Tools::render(app, viewName, c);
     Tools::log(app, "thread", "success", logTarget);
 }
 
@@ -1251,6 +1244,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                     if (f.sizeX > 0 && f.sizeY > 0)
                         sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
                 }
+                QString szt;
                 if (fis->mimeType().startsWith("audio/") || fis->mimeType().startsWith("video/")) {
                     QVariantMap m = fis->metaData().toMap();
                     QString duration = m.value("duration").toString();
@@ -1262,12 +1256,27 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                         szz += bitrate;
                         if (!bitrate.isEmpty())
                             szz += "kbps";
+                        QString album = m.value("album").toString();
+                        QString artist = m.value("artist").toString();
+                        QString title = m.value("title").toString();
+                        QString year = m.value("year").toString();
+                        szt = !artist.isEmpty() ? artist : "Unknown artist";
+                        szt += " - ";
+                        szt += !title.isEmpty() ? title : "Unknown title";
+                        szt += " [";
+                        szt += !album.isEmpty() ? album : "Unknown album";
+                        szt += "]";
+                        if (!year.isEmpty())
+                            szt += " (" + year + ")";
+                    } else if (fis->mimeType().startsWith("video/")) {
+                        szt = m.value("bitrate").toString() + "kbps";
                     }
                     if (!szz.isEmpty())
                         sz += ", " + szz;
                 }
                 f.thumbName = Tools::toStd(fis->thumbName());
                 f.size = Tools::toStd(sz);
+                f.sizeTooltip = Tools::toStd(szt);
                 p->files.push_back(f);
             }
             QSharedPointer<Thread> thread = post.thread().load();
@@ -1321,9 +1330,17 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
     TranslatorStd ts(req);
     QLocale l = tq.locale();
     for (std::list<Content::File>::iterator i = pp.files.begin(); i != pp.files.end(); ++i) {
-        i->size = Tools::toStd(Tools::fromStd(i->size).replace("kbps", tq.translate("AbstractBoard", "kbps",
-                                                                                    "fileSize")));
-        i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", tq.translate("AbstractBoard", "KB", "fileSize")));
+        QString kb = tq.translate("AbstractBoard", "KB", "fileSize");
+        QString kbps = tq.translate("AbstractBoard", "kbps", "fileSize");
+        QString ualbum = tq.translate("AbstractBoard", "Unknown album", "fileSizeTooltip");
+        QString uartist = tq.translate("AbstractBoard", "Unknown artist", "fileSizeTooltip");
+        QString utitle = tq.translate("AbstractBoard", "Unknown title", "fileSizeTooltip");
+        i->size = Tools::toStd(Tools::fromStd(i->size).replace("KB", kb));
+        i->size = Tools::toStd(Tools::fromStd(i->size).replace("kbps", kbps));
+        i->sizeTooltip = Tools::toStd(Tools::fromStd(i->sizeTooltip).replace("kbps", kbps));
+        i->sizeTooltip = Tools::toStd(Tools::fromStd(i->sizeTooltip).replace("Unknown album", ualbum));
+        i->sizeTooltip = Tools::toStd(Tools::fromStd(i->sizeTooltip).replace("Unknown artist", uartist));
+        i->sizeTooltip = Tools::toStd(Tools::fromStd(i->sizeTooltip).replace("Unknown title", utitle));
     }
     if (showWhois() && "Unknown country" == pp.countryName)
         pp.countryName = ts.translate("AbstractBoard", "Unknown country", "countryName");
@@ -1336,7 +1353,6 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.modificationDateTime = Tools::toStd(l.toString(Tools::dateTime(post.modificationDateTime(), req),
                                                           DateTimeFormat));
     }
-    pp.hidden = (Tools::cookieValue(req, "postHidden" + name() + QString::number(post.number())) == "true");
     pp.name = Tools::toStd(Controller::toHtml(post.name()));
     if (pp.name.empty())
         pp.name = "<span class=\"userName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
@@ -1392,6 +1408,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
         cppcms::json::object f;
         f["type"] = file.type;
         f["size"] = file.size;
+        f["sizeTooltip"] = file.sizeTooltip;
         f["thumbSizeX"] = file.thumbSizeX;
         f["thumbSizeY"] = file.thumbSizeY;
         f["sizeX"] = file.sizeX;
@@ -1403,7 +1420,6 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["files"] = files;
     o["fixed"] = post.fixed;
     o["flagName"] = post.flagName;
-    o["hidden"] = post.hidden;
     o["ip"] = post.ip;
     o["name"] = post.name;
     o["nameRaw"] = post.nameRaw;

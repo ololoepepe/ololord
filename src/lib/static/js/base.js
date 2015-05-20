@@ -169,6 +169,45 @@ lord.nameOne = function(name, parent) {
     return lord.queryOne("[name='" + name + "']", parent);
 };
 
+lord.contains = function(s, subs) {
+    if (typeof s != "string" || typeof subs != "string")
+        return false;
+    return s.replace(subs, "") != s;
+};
+
+lord.addClass = function(element, classNames) {
+    if (!element || !element.tagName || !classNames || typeof classNames != "string")
+        return;
+    lord.arr(classNames.split(" ")).forEach(function(className) {
+        if (!className)
+            return;
+        if (lord.hasClass(element, className))
+            return;
+        if (element.className)
+            element.className += " " + className;
+        else
+            element.className = className;
+    });
+};
+
+lord.hasClass = function(element, className) {
+    if (!element || !element.tagName || !className || typeof className != "string")
+        return false;
+    return !!element.className.match(new RegExp("(^| )" + className + "( |$)"));
+};
+
+lord.removeClass = function(element, classNames) {
+    if (!element || !element.tagName || !classNames || typeof classNames != "string")
+        return;
+    lord.arr(classNames.split(" ")).forEach(function(className) {
+        if (!className)
+            return;
+        element.className = element.className.replace(new RegExp("(^| )" + className + "$"), "");
+        element.className = element.className.replace(new RegExp("^" + className + "( |$)"), "");
+        element.className = element.className.replace(new RegExp(" " + className + " "), " ");
+    });
+};
+
 lord.node = function(type, text) {
     if (typeof type != "string")
         return null;
@@ -198,9 +237,8 @@ lord.showPopup = function(text, options) {
     if (options && typeof options.type == "string" && lord.in(["critical", "warning"], options.type.toLowerCase()))
         classNames += options.type.toLowerCase() + (("" != classNames) ? " " : "");
     var msg = lord.node("div");
-    msg.className = "popup";
-    if ("" != classNames.empty)
-        msg.className += " " + classNames;
+    lord.addClass(msg, "popup");
+    lord.addClass(msg, classNames);
     if (lord.popups.length > 0) {
         var prev = lord.popups[lord.popups.length - 1];
         msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
@@ -274,7 +312,7 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
     dialog.show();
 };
 
-lord.ajaxRequest = function(method, params, id, callback) {
+lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
     var prefix = lord.text("sitePathPrefix");
@@ -290,12 +328,20 @@ lord.ajaxRequest = function(method, params, id, callback) {
             if (xhr.status === 200) {
                 var response = JSON.parse(xhr.responseText);
                 var err = response.error;
-                if (!!err)
-                    return lord.showPopup(err, {type: "critical"});
-                callback(response.result);
+                if (!!err) {
+                    lord.showPopup(err, {type: "critical"});
+                    if (typeof errorCallback == "function")
+                        errorCallback();
+                    return;
+                }
+                if (typeof callback == "function")
+                    callback(response.result);
             } else {
-                if (!lord.unloading)
+                if (!lord.unloading) {
                     lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+                    if (typeof errorCallback == "function")
+                        errorCallback();
+                }
             }
         }
     };
@@ -347,19 +393,6 @@ lord.switchShowLogin = function() {
         inp.type = "password";
 };
 
-lord.switchShowTripcode = function() {
-    var sw = lord.id("showTripcodeCheckbox");
-    if (!!sw.checked) {
-        lord.setCookie("show_tripcode", "true", {
-            "expires": lord.Billion, "path": "/"
-        });
-    } else {
-        lord.setCookie("show_tripcode", "", {
-            "expires": lord.Billion, "path": "/"
-        });
-    }
-};
-
 lord.doSearch = function() {
     var query = lord.text("searchFormInputQuery");
     if ("" === query)
@@ -383,7 +416,10 @@ lord.searchKeyPress = function(e) {
 lord.showSettings = function() {
     var div = lord.id("settingsDialogTemplate").cloneNode(true);
     div.style.display = "";
-    div.className = "settingsDialog";
+    lord.addClass(div, "settingsDialog");
+    var sel = lord.nameOne("quickReplyActionSelect", div);
+    var act = lord.getLocalObject("quickReplyAction", "goto_thread");
+    lord.queryOne("[value='" + act + "']", sel).selected = true;
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
         var sel = lord.nameOne("styleChangeSelect", div);
         var sn = sel.options[sel.selectedIndex].value;
@@ -395,16 +431,14 @@ lord.showSettings = function() {
         lord.setCookie("time", tm, {
             "expires": lord.Billion, "path": "/"
         });
-        sel = lord.nameOne("captchaChangeSelect", div);
+        sel = lord.nameOne("captchaEngineSelect", div);
         var tm = sel.options[sel.selectedIndex].value;
         lord.setCookie("captchaEngine", tm, {
             "expires": lord.Billion, "path": "/"
         });
         sel = lord.nameOne("quickReplyActionSelect", div);
         var act = sel.options[sel.selectedIndex].value;
-        lord.setCookie("quickReplyAction", act, {
-            "expires": lord.Billion, "path": "/"
-        });
+        lord.setLocalObject("quickReplyAction", act);
         lord.reloadPage();
     });
 };
@@ -415,7 +449,7 @@ lord.showFavorites = function() {
         return;
     div = lord.node("div");
     div.id = "favorites";
-    div.className = "favorites";
+    lord.addClass(div, "favorites");
     var h = lord.node("h1");
     h.appendChild(lord.node("text", lord.text("favoriteThreadsText")));
     div.appendChild(h);
@@ -526,6 +560,30 @@ lord.checkFavoriteThreads = function() {
 lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
+    var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
+    var currentBoardName = lord.text("currentBoardName");
+    lord.query(".navbar").forEach(function(navbar) {
+        lord.query(".navbarItemBoard", navbar).forEach(function(item) {
+            var a = lord.queryOne("a", item);
+            var boardName = a.childNodes[0].nodeValue;
+            if (currentBoardName == boardName)
+                return;
+            var lastPostNumber = +lastPostNumbers[boardName];
+            if (isNaN(lastPostNumber))
+                lastPostNumber = 0;
+            lord.ajaxRequest("get_new_post_count", [boardName, lastPostNumber], 18, function(res) {
+                if (isNaN(res) || res < 1)
+                    return;
+                var fnt = lord.node("font");
+                fnt.color = "green";
+                fnt.size = "2";
+                fnt.appendChild(lord.node("text", "+" + res));
+                var parent = a.parentNode;
+                parent.insertBefore(fnt, a);
+                parent.insertBefore(lord.node("text", " "), a);
+            });
+        });
+    });
 };
 
 window.addEventListener("load", function load() {

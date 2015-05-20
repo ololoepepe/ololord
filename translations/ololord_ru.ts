@@ -376,6 +376,21 @@ By default all captcha engines are supported.</source>
         <comment>fileSize</comment>
         <translation>кбит/с</translation>
     </message>
+    <message>
+        <source>Unknown album</source>
+        <comment>fileSizeTooltip</comment>
+        <translation>Неизвестный альбом</translation>
+    </message>
+    <message>
+        <source>Unknown artist</source>
+        <comment>fileSizeTooltip</comment>
+        <translation>Неизвестный исполнитель</translation>
+    </message>
+    <message>
+        <source>Unknown title</source>
+        <comment>fileSizeTooltip</comment>
+        <translation>Неизвестное название</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -413,11 +428,6 @@ Apperas in the HTML pages.</source>
         <source>Cyrillic</source>
         <comment>title</comment>
         <translation>кириллица</translation>
-    </message>
-    <message>
-        <source>Captcha ID is empty</source>
-        <comment>error</comment>
-        <translation>Идентификатор капчи пуст</translation>
     </message>
     <message>
         <source>Captcha challenge is empty</source>
@@ -755,6 +765,14 @@ text</source>
         <source>Too many files</source>
         <comment>error</comment>
         <translation>Слишком много файлов</translation>
+    </message>
+</context>
+<context>
+    <name>addPostsToIndex</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>
@@ -1300,6 +1318,19 @@ text</source>
     </message>
 </context>
 <context>
+    <name>getNewPostCount</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>getNewPosts</name>
     <message>
         <source>Invalid board name</source>
@@ -1494,6 +1525,17 @@ text</source>
     </message>
 </context>
 <context>
+    <name>handleNewLog</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>OK</source>
+        <translation>ОК</translation>
+    </message>
+</context>
+<context>
     <name>handleOpenThread</name>
     <message>
         <source>Invalid argument count</source>
@@ -1510,6 +1552,21 @@ text</source>
     <message>
         <source>OK</source>
         <translation>ОК</translation>
+    </message>
+</context>
+<context>
+    <name>handleRebuildPostIndex</name>
+    <message>
+        <source>Are you sure?</source>
+        <translation>Вы уверены?</translation>
+    </message>
+    <message>
+        <source>Error:</source>
+        <translation>Ошибка:</translation>
+    </message>
+    <message>
+        <source>Rebuilt index of posts:</source>
+        <translation>Пересоздан индекс постов:</translation>
     </message>
 </context>
 <context>
@@ -1578,21 +1635,6 @@ Your choice:</source>
     <message>
         <source>OK</source>
         <translation>ОК</translation>
-    </message>
-</context>
-<context>
-    <name>handleReloadPostIndex</name>
-    <message>
-        <source>Are you sure?</source>
-        <translation>Вы уверены?</translation>
-    </message>
-    <message>
-        <source>Error:</source>
-        <translation>Ошибка:</translation>
-    </message>
-    <message>
-        <source>Reloaded index of posts:</source>
-        <translation>Перезагружен индекс постов:</translation>
     </message>
 </context>
 <context>
@@ -1725,11 +1767,6 @@ Your choice:</source>
         <translation>Подтвердить</translation>
     </message>
     <message>
-        <source>I&apos;m an attention whore!</source>
-        <comment>showTripcodeText</comment>
-        <translation>Я - вниманиешлюха!</translation>
-    </message>
-    <message>
         <source>Show password</source>
         <comment>showPasswordText</comment>
         <translation>Показать пароль</translation>
@@ -1828,6 +1865,11 @@ Your choice:</source>
         <source>Favorite threads</source>
         <comment>favoriteThreadsText</comment>
         <translation>Избранные треды</translation>
+    </message>
+    <message>
+        <source>Futaba</source>
+        <comment>style name</comment>
+        <translation>Futaba</translation>
     </message>
 </context>
 <context>
@@ -2197,6 +2239,16 @@ Your choice:</source>
         <comment>addThreadToFavoritesText</comment>
         <translation>Добавить тред в избранные</translation>
     </message>
+    <message>
+        <source>Show tripcode</source>
+        <comment>postFormLabelTripcode</comment>
+        <translation>Показывать трипкод</translation>
+    </message>
+    <message>
+        <source>Waiting for reply...</source>
+        <comment>postFormButtonSubmitWaiting</comment>
+        <translation>Ожидание ответа...</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -2335,6 +2387,10 @@ If no argument is passed, everything is cached.</source>
 [cache-name] может быть одним из следующих:
 dynamic_files, static_files.
 Если не указан аргумент, кешируется все.</translation>
+    </message>
+    <message>
+        <source>Finish writing to the current log file and start writing to a new one.</source>
+        <translation>Закончить запись в текущий лог-файл и начать запись в новый.</translation>
     </message>
 </context>
 <context>
@@ -2575,6 +2631,34 @@ It will appear in HTML.</source>
         <translation>Ключ, необходимый для доступа к YouTube API.
 Появляется в HTML-страницах.</translation>
     </message>
+    <message>
+        <source>HTML/CSS/JS minification mode. Possible values:
+  0 or less - don&apos;t minify anything
+  1 - remove empty lines only
+  2 and more - remove empty lines and extra spaces
+  The default is 1.</source>
+        <translation>Режим минификации HTML/CSS/JS. Возможные значения:
+  0 или меньше - не минифицировать
+  1 - только убирать пустые строки
+  2 и больше - убирать пустые строки и лишние пробелы
+  Значение по умолчанию - 1.</translation>
+    </message>
+    <message>
+        <source>file utility command (possibly full path).
+The default is file (UNIX) or file.exe (Windows).</source>
+        <translation>Команда вызова утилиты file (возможно, полный путь).
+По умолчанию file (UNIX) или file.exe (Windows).</translation>
+    </message>
+    <message>
+        <source>Determines if an external file utility is used to identify MIME type.
+By default MIME types are identified internally using libmagic.
+Set this option to false if libmagic crashes the application.
+Calling external file utility is MUCH slower.</source>
+        <translation>Определяет, использовать ли внешнюю утилиту file для идентификации MIME-типа.
+По умолчанию идентификация MIME-типов осуществляется библиотекой libmagic внутри программы.
+Установите значение этой опции в false, если libmagic крэшит приложение.
+Вызов внешней утилиты НАМНОГО медленнее.</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>
@@ -2654,14 +2738,6 @@ It will appear in HTML.</source>
         <source>Invalid board(s)</source>
         <comment>error</comment>
         <translation>Неправильная(ые) доска(и)</translation>
-    </message>
-</context>
-<context>
-    <name>reloadPostIndex</name>
-    <message>
-        <source>Internal database error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>

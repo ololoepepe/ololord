@@ -46,7 +46,6 @@ public:
     std::string confirmButtonText;
     CaptchaEngine currentCaptchaEngine;
     Locale currentLocale;
-    std::string currentQuickReplyAction;
     std::string currentTime;
     std::string custom;
     std::string favoriteThreadsText;
@@ -71,7 +70,6 @@ public:
     std::string settingsDialogTitle;
     std::string showFavoriteText;
     std::string showPasswordText;
-    std::string showTripcodeText;
     std::string siteDomain;
     std::string sitePathPrefix;
     std::string siteProtocol;

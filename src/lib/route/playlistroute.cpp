@@ -34,7 +34,7 @@ void PlaylistRoute::handle()
     c.unknownAlbumText = ts.translate("PlaylistRoute", "Unknown album", "unknownAlbumText");
     c.unknownArtistText = ts.translate("PlaylistRoute", "Unknown artist", "unknownArtistText");
     c.unknownTitleText = ts.translate("PlaylistRoute", "Unknown title", "unknownTitleText");
-    application.render("playlist", c);
+    Tools::render(application, "playlist", c);
     Tools::log(application, "playlist", "success");
 }
 

@@ -7,6 +7,7 @@ namespace cppcms
 {
 
 class application;
+class base_content;
 
 namespace json
 {
@@ -110,6 +111,7 @@ struct Post
     QString name;
     QByteArray password;
     bool raw;
+    bool showTripcode;
     QString subject;
     QString text;
 };
@@ -140,7 +142,8 @@ OLOLORD_EXPORT QString countryCode(const cppcms::http::request &req);
 OLOLORD_EXPORT QString countryName(const QString &countryCode);
 OLOLORD_EXPORT QString customHomePageContent(const QLocale &l);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
-OLOLORD_EXPORT QString externalLinkRegexpPattern(bool simple = true);
+OLOLORD_EXPORT QString externalLinkRegexpPattern();
+OLOLORD_EXPORT bool externalLinkRootZoneExists(const QString &zoneName);
 OLOLORD_EXPORT QString flagName(const QString &countryCode);
 OLOLORD_EXPORT QLocale fromStd(const std::locale &l);
 OLOLORD_EXPORT QString fromStd(const std::string &s);
@@ -169,6 +172,7 @@ OLOLORD_EXPORT QStringList news(const QLocale &l);
 OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request);
 OLOLORD_EXPORT PostParameters postParameters(const cppcms::http::request &request);
 OLOLORD_EXPORT cppcms::json::value readJsonValue(const QString &fileName, bool *ok = 0);
+OLOLORD_EXPORT void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content);
 OLOLORD_EXPORT void resetLoggingSkipIps();
 OLOLORD_EXPORT QStringList rules(const QString &prefix, const QLocale &l);
 OLOLORD_EXPORT FriendList siteFriends();

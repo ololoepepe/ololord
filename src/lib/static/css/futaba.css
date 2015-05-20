@@ -13,11 +13,12 @@
 }
 
 body {
-    background-color: #EEEEEE;
+    background-color: #FFFFEE;
+    color: #800000;
 }
 
 a {
-    color: #FF6600;
+    color: #0000EE;
 }
 
 a.expandCollapse {
@@ -26,7 +27,7 @@ a.expandCollapse {
 }
 
 a:hover {
-    color: #0066FF;
+    color: #DD0000
 }
 
 a.expandCollapse:hover {
@@ -39,38 +40,33 @@ audio {
 }
 
 hr {
-    color: #CCCCCC; /*IE*/
-    background-color: #CCCCCC; /*Firefox, Opera, Safari*/
+    color: #808080; /*IE*/
+    background-color: #808080; /*Firefox, Opera, Safari*/
     border: 0px none;
     height: 1px;
     clear: both;
 }
 
 .select {
-    background: #EAEAEA;
-    border: 1px solid #CCCCCC;
+    background: #FBFBEA;
     cursor: pointer;
 }
 
 .input {
-    border: 1px solid #CCCCCC;
 }
 
 .button {
-    background: #EAEAEA;
-    border: 1px solid #CCCCCC;
+    background: #FBFBEA;
     cursor: pointer;
 }
 
 .checkbox {
-    background: #EAEAEA;
-    border: 1px solid #CCCCCC;
+    background: #FBFBEA;
     cursor: pointer;
 }
 
 .popup {
-    background-color: #DDDDDD;
-    border: 1px solid #BBBBBB;
+    background-color: #F0E0D6;
     position: fixed;
     top: 5px;
     right: 5px;
@@ -91,8 +87,7 @@ hr {
 }
 
 .favorites {
-    background-color: #CCCCCC;
-    border: 1px solid #AAAAAA;
+    background-color: #F0E0D6;
     position: fixed;
     width: 600px;
     height: 600px;
@@ -101,8 +96,7 @@ hr {
 }
 
 .favorites > div {
-    background-color: #DDDDDD;
-    border: 1px solid #CCCCCC;
+    background-color: #FBFBEA;
     padding: 2px 2px 2px 2px;
 }
 
@@ -117,7 +111,7 @@ hr {
 */
 
 .ban {
-    background-color: #DDDDDD;
+    background-color: #F0E0D6;
     margin-left: 80px;
     margin-right: 80px;
 }
@@ -149,16 +143,16 @@ blockquote {
 }
 
 span.spoiler, span.spoiler a {
-    background: #BBBBBB;
-    color: #BBBBBB;
+    background: #F0D0B6;
+    color: #F0D0B6;
 }
 
 span.spoiler:hover {
-    color: #333333;
+    color: #800000;
 }
 
 span.spoiler:hover a {
-    color: #FF6600;
+    color: #DD0000;
 }
 
 .postLimitReached {
@@ -300,7 +294,8 @@ span.spoiler:hover a {
 */
 
 .error {
-    background-color: #DDDDDD;
+    background-color: #F0E0D6;
+    color: #800000;
     margin-left: 80px;
     margin-right: 80px;
     text-align: center;
@@ -311,8 +306,7 @@ span.spoiler:hover a {
 */
 
 .rules {
-    background-color: #DDDDDD;
-    border: 1px solid #CCCCCC;
+    background-color: #F0E0D6;
     margin-left: 80px;
     margin-right: 80px;
     padding-top: 10px;
@@ -320,7 +314,7 @@ span.spoiler:hover a {
 }
 
 .news {
-    background-color: #DDDDDD;
+    background-color: #F0E0D6;
     margin-left: 80px;
     margin-right: 80px;
 }
@@ -338,7 +332,7 @@ span.spoiler:hover a {
 */
 
 .ipBan {
-    background-color: #DDDDDD;
+    background-color: #F0E0D6;
     margin-left: 80px;
     margin-right: 80px;
 }
@@ -370,8 +364,7 @@ span.spoiler:hover a {
 */
 
 .post {
-    background-color: #DDDDDD;
-    border: 1px solid #CCCCCC;
+    background-color: #F0E0D6;
     margin-top: 4px;
     margin-bottom: 4px;
     padding-top: 10px;
@@ -379,7 +372,7 @@ span.spoiler:hover a {
 }
 
 .newPost {
-    background-color: #CDCDCD;
+    background-color: #CCCCCC;
 }
 
 .hiddenPost > .threadPost {
@@ -391,7 +384,7 @@ span.spoiler:hover a {
 }
 
 .selectedPost {
-    background-color: #EEDACB;
+    background-color: #AAFF99;
 }
 
 .omittedPosts.hiddenPosts {
@@ -408,7 +401,7 @@ span.spoiler:hover a {
 
 .postFileSize {
     font-size: 0.8em;
-    color: #444444;
+    color: #800000;
 }
 
 .postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img {
@@ -451,6 +444,10 @@ span.spoiler:hover a {
     font-style: italic;
 }
 
+.postSubject {
+    color: #CC1105;
+}
+
 .tripcode {
     color: green;
 }
@@ -462,7 +459,7 @@ span.spoiler:hover a {
 
 .userName {
     font-weight: bold;
-    color: #006000;
+    color: #117743;
 }
 
 .navigationButton {
@@ -498,7 +495,7 @@ span.spoiler:hover a {
 }
 
 .postformFile.drag {
-    background-color: #DDDDDD;
+    background-color: #F0E0D6;
     border: 1px dashed #555555;
 }
 
@@ -541,7 +538,7 @@ span.spoiler:hover a {
 
 .referencedBy {
     font-size: 0.8em;
-    color: #555555;
+    color: #707070;
 }
 
 /*
@@ -567,7 +564,6 @@ span.spoiler:hover a {
 */
 
 .settingsBar {
-    border-bottom: 1px solid #CCCCCC;
     display: block;
     font-size: 0.9em;
     padding-bottom: 5px;
@@ -672,8 +668,7 @@ a.progressBlocking {
 /* Vote */
 
 .vote {
-    background-color: #CCCCCC;
-    border: 1px solid #BBBBBB;
+    background-color: #F0D0B6;
 }
 
 .voteText {
@@ -694,8 +689,7 @@ a.progressBlocking {
 /* Playlist */
 
 .track {
-    background-color: #DDDDDD;
-    border: 1px solid #CCCCCC;
+    background-color: #F0E0D6;
     padding: 2px 2px 2px 2px;
 }
 
