@@ -627,7 +627,7 @@ QString mimeType(const QByteArray &data, bool *ok)
         return bRet(ok, false, QString());
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     QMimeDatabase db;
-    QString name = db.mimeTypeForData(data, QMimeDatabase::MatchContent).name();
+    QString name = db.mimeTypeForData(data).name();
     if (!name.isEmpty() && "application/octet-stream" != name)
         return name;
 #endif
