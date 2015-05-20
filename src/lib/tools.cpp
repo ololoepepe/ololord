@@ -368,16 +368,22 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req));
 }
 
-QString externalLinkRegexpPattern(bool simple)
+QString externalLinkRegexpPattern()
 {
-    init_once(QString, zones, QString()) {
-        QString fn = BDirTools::findResource("res/root-zones.txt", BDirTools::GlobalOnly);
-        zones = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts).join("|");
-    }
-    QString pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.(";
-    pattern += (!simple && !zones.isEmpty()) ? zones : "[a-z]{2,6}\\.?";
-    pattern += ")(\\/[\\w\\.\\-\\?\\=#~&%\\,\\(\\)]*)*\\/?(?!\\S)";
+    init_once(QString, pattern, QString())
+        pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,17}\\.?)(\\/[\\w\\.\\-\\?\\=#~&%\\,\\(\\)]*)*\\/?(?!\\S)";
     return pattern;
+}
+
+bool externalLinkRootZoneExists(const QString &zoneName)
+{
+    typedef QSet<QString> StringSet;
+    init_once(StringSet, rootZones, StringSet()) {
+        QString fn = BDirTools::findResource("res/root-zones.txt", BDirTools::GlobalOnly);
+        QStringList list = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
+        rootZones = list.toSet();
+    }
+    return !zoneName.isEmpty() && rootZones.contains(zoneName);
 }
 
 QString flagName(const QString &countryCode)

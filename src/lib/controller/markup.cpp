@@ -116,11 +116,12 @@ static QString tagName(const QRegExp &rx)
 
 static SkipList externalLinks(const QString &s)
 {
-    QRegExp rx(Tools::externalLinkRegexpPattern(false));
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(s);
     SkipList skip;
     while (ind >= 0) {
-        skip << qMakePair(ind, rx.matchedLength());
+        if (Tools::externalLinkRootZoneExists(rx.cap(3)))
+            skip << qMakePair(ind, rx.matchedLength());
         ind = rx.indexIn(s, ind + rx.matchedLength());
     }
     return skip;
@@ -268,9 +269,13 @@ static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
         return;
     SkipList skip;
     QString t = c.mid();
-    QRegExp rx(Tools::externalLinkRegexpPattern(false));
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
+        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
         QString cap = rx.cap();
         if (!cap.startsWith("http"))
             cap.prepend("http://");
@@ -331,9 +336,13 @@ static void processWakabaMarMailto(ProcessPostTextContext &c)
     SkipList skip;
     QString t = c.mid();
     QRegExp rx("[\\w\\.\\-]+@([\\w\\.\\-]+\\.[a-z]{2,6})");
-    QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
+    QRegExp rxLink(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
+        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
         QString mail = rx.cap();
         if (!rxLink.exactMatch(rx.cap(1))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
@@ -514,9 +523,13 @@ static void processTagUrl(ProcessPostTextContext &c)
     QString t = c.mid();
     QRegExp rx("\\[url\\](.+)\\[/url\\]");
     rx.setMinimal(true);
-    QRegExp rxLink(Tools::externalLinkRegexpPattern(false));
+    QRegExp rxLink(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
+        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
         QString href = rx.cap(1);
         if (!rxLink.exactMatch(href)) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
@@ -761,9 +774,13 @@ void toHtml(QString *s)
     if (!s)
         return;
     SkipList skip;
-    QRegExp rx(Tools::externalLinkRegexpPattern(true));
+    QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(*s);
     while (ind >= 0) {
+        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+            ind = rx.indexIn(*s, ind + rx.matchedLength());
+            continue;
+        }
         s->insert(ind + rx.matchedLength(), "</a>");
         QString cap = rx.cap();
         if (!cap.startsWith("http"))
