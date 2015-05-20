@@ -957,6 +957,9 @@ quint64 createThread(CreateThreadParameters &p)
     try {
         QStringList filesToDelete;
         Transaction t;
+        if (!t)
+            return bRet(p.error, tq.translate("createThread", "Internal database error", "error"), p.description,
+                        tq.translate("createThread", "Internal database error", "error"), false);
         QString err;
         quint64 postNumber = incrementPostCounter(p.params.value("board"), &err, p.locale);
         if (!postNumber)

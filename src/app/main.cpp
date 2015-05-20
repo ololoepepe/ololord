@@ -895,7 +895,6 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
                                                "IP's are represented as ranges and are separated by commas.\n"
                                                "Example: 127.0.0.1,192.168.0.1-192.168.0.255"));
-    /*======================================== Proxy ========================================*/
     nn = new BSettingsNode("Proxy", n);
     BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
     nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"
