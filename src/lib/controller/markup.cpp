@@ -530,12 +530,12 @@ static void processTagUrl(ProcessPostTextContext &c)
     QRegExp rxLink(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
-        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+        QString href = rx.cap(1);
+        if (!rxLink.exactMatch(href)) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
-        QString href = rx.cap(1);
-        if (!rxLink.exactMatch(href)) {
+        if (!Tools::externalLinkRootZoneExists(rxLink.cap(3))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
