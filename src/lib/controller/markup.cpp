@@ -59,19 +59,23 @@ struct ProcessPostTextContext
     const int length;
     const QString &boardName;
     Database::RefMap *referencedPosts;
+    quint64 deletedPost;
 public:
-    explicit ProcessPostTextContext(QString &txt, const QString &board, Database::RefMap *refPosts = 0) :
-        text(txt), start(0), length(txt.length()), boardName(board), referencedPosts(refPosts)
+    explicit ProcessPostTextContext(QString &txt, const QString &board, Database::RefMap *refPosts = 0,
+                                    quint64 delPost = 0) :
+        text(txt), start(0), length(txt.length()), boardName(board), referencedPosts(refPosts), deletedPost(delPost)
     {
         //
     }
     explicit ProcessPostTextContext(const ProcessPostTextContext &c, int s, int l) :
-        text(c.text), start(s), length(l), boardName(c.boardName), referencedPosts(c.referencedPosts)
+        text(c.text), start(s), length(l), boardName(c.boardName), referencedPosts(c.referencedPosts),
+        deletedPost(c.deletedPost)
     {
         //
     }
     explicit ProcessPostTextContext(const ProcessPostTextContext &c, QString &txt) :
-        text(txt), start(0), length(txt.length()), boardName(c.boardName), referencedPosts(c.referencedPosts)
+        text(txt), start(0), length(txt.length()), boardName(c.boardName), referencedPosts(c.referencedPosts),
+        deletedPost(c.deletedPost)
     {
         //
     }
@@ -314,7 +318,7 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
         bool ok = false;
         quint64 pn = postNumber.toULongLong(&ok);
         quint64 tn = 0;
-        if (ok && pn && Database::postExists(boardName, pn, &tn)) {
+        if (ok && pn && (pn != c.deletedPost) && Database::postExists(boardName, pn, &tn)) {
             QString threadNumber = QString::number(tn);
             QString href = "href=\"/" + prefix + boardName + "/thread/" + threadNumber + ".html#" + postNumber + "\"";
             QString a = "<a " + href + /*" " + mouseover + " " + mouseout*/ + ">" + cap.replace(">", "&gt;") + "</a>";
@@ -755,9 +759,9 @@ static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)
     processSimmetric(c, &processWakabaMarkPre, "``", "", "font", "<font face=\"monospace\">", true);
 }
 
-QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts)
+QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts, quint64 deletedPost)
 {
-    ProcessPostTextContext c(text, boardName, referencedPosts);
+    ProcessPostTextContext c(text, boardName, referencedPosts, deletedPost);
     processWakabaMarkMonospaceDouble(c);
     return text;
 }

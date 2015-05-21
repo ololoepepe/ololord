@@ -637,7 +637,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     }
     foreach (quint64 id, postIds.keys()) {
         PostTmpInfo &tmp = postIds[id];
-        tmp.text = Controller::processPostText(tmp.text, tmp.board);
+        tmp.text = Controller::processPostText(tmp.text, tmp.board, 0, postNumber);
     }
     try {
         Transaction t;
