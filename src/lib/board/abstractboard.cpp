@@ -882,7 +882,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         }
         pageTitle = opPost.subject();
         if (pageTitle.isEmpty()) {
-            pageTitle = opPost.text().replace(QRegExp("\\r?\\n+"), " ").replace(QRegExp("<[^<>]+>"), "");
+            pageTitle = opPost.text().replace(QRegExp("\\r?\\n+"), " ").replace(QRegExp("<[^<>]+>"), " ");
+            pageTitle.replace(QRegExp(" +"), " ");
             pageTitle.replace("&amp;", "&");
             pageTitle.replace("&lt;", "<");
             pageTitle.replace("&gt;", ">");

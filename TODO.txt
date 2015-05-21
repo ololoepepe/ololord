@@ -1,5 +1,7 @@
 [done] Fix building with Qt5
 [done] Use QMimeDatabase for MIME type detection with Qt5
+[done] Fix complain button sound
+[done] Fix thread subject displaying
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
