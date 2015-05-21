@@ -736,7 +736,7 @@ void render(cppcms::application &app, const QString &templateName, cppcms::base_
     foreach (int i, bRangeR(sl.size() - 1, 0)) {
         if (sl[i].isEmpty() || QRegExp("\\s+").exactMatch(sl[i])) {
             sl.removeAt(i);
-        } else {
+        } else if (m > 1) {
             sl[i].replace(QRegExp("^\\s+"), "");
             sl[i].replace(QRegExp("\\s+$"), "");
         }
