@@ -1585,6 +1585,7 @@ lord.complain = function() {
     lord.showPopup(lord.text("complainMessage"), {type: "critical"});
     if (!lord.complainVideo) {
         lord.complainVideo = lord.node("video");
+        lord.complainVideo.style.display = "none";
         var src = lord.node("source");
         src.src = "/" + lord.text("sitePathPrefix") + "video/fail.webm";
         src.type = "video/webm";
