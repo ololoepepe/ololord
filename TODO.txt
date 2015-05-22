@@ -6,6 +6,7 @@
 [done] Fix [url] tag markup
 [done] Improve tripcode displaying
 [done] Improve board speed storage
+[done] Add download buttons to playlist
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread

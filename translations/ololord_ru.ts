@@ -697,6 +697,11 @@ text</source>
         <comment>unknownTitleText</comment>
         <translation>Неизвестное название</translation>
     </message>
+    <message>
+        <source>Download file</source>
+        <comment>downloadPlaylistFileText</comment>
+        <translation>Скачать файл</translation>
+    </message>
 </context>
 <context>
     <name>Search</name>

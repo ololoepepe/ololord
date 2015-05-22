@@ -84,6 +84,14 @@ lord.addTrack = function(track) {
         }, false);
     })(audio, track);
     div.appendChild(audio);
+    var dlBtn = lord.node("a");
+    dlBtn.href = "/" + sitePathPrefix + track;
+    dlBtn.title = lord.text("downloadPlaylistFileText");
+    dlBtn.download = track.split("/").pop();
+    var img = lord.node("img");
+    img.src = "/" + sitePathPrefix + "img/playlist_download.png";
+    dlBtn.appendChild(img);
+    div.appendChild(dlBtn);
     var rmBtn = lord.node("a");
     rmBtn.href = "javascript:lord.removeFromPlaylist('" + track + "');";
     rmBtn.title = lord.text("removeFromPlaylistText");

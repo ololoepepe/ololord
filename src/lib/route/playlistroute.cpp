@@ -30,6 +30,7 @@ void PlaylistRoute::handle()
     TranslatorQt tq(application.request());
     TranslatorStd ts(tq.locale());
     Controller::initBase(c, application.request(), tq.translate("PlaylistRoute", "Playlist", "pageTitle"));
+    c.downloadPlaylistFileText = ts.translate("PlaylistRoute", "Download file", "downloadPlaylistFileText");
     c.removeFromPlaylistText = ts.translate("PlaylistRoute", "Remove from playlist", "removeFromPlaylistText");
     c.unknownAlbumText = ts.translate("PlaylistRoute", "Unknown album", "unknownAlbumText");
     c.unknownArtistText = ts.translate("PlaylistRoute", "Unknown artist", "unknownArtistText");

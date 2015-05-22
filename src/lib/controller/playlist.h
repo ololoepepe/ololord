@@ -14,6 +14,7 @@ namespace Content
 
 struct OLOLORD_EXPORT Playlist : public Base
 {
+    std::string downloadPlaylistFileText;
     std::string removeFromPlaylistText;
     std::string unknownAlbumText;
     std::string unknownArtistText;
