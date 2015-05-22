@@ -391,6 +391,16 @@ By default all captcha engines are supported.</source>
         <comment>fileSizeTooltip</comment>
         <translation>Неизвестное название</translation>
     </message>
+    <message>
+        <source>Date and time of first board launch.
+Is used to calculate board speed.
+Format: %1
+By default, the date of first site launch is used.</source>
+        <translation>Дата и время первого запуска доски.
+Используется для подсчета скорости доски.
+Формат: %1
+По умолчанию используется дата первого запуска сайта.</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -2658,6 +2668,16 @@ Calling external file utility is MUCH slower.</source>
 По умолчанию идентификация MIME-типов осуществляется библиотекой libmagic внутри программы.
 Установите значение этой опции в false, если libmagic крэшит приложение.
 Вызов внешней утилиты НАМНОГО медленнее.</translation>
+    </message>
+    <message>
+        <source>Date and time of first site launch.
+Is used to calculate board speed.
+Format: %1
+By default, the date of creation of application settings file is used.</source>
+        <translation>Дата и время первого запуска сайта.
+Используется для подсчета скорости досок.
+Формат: %1
+По умолчанию используется дата создания файла настроек приложения.</translation>
     </message>
 </context>
 <context>

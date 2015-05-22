@@ -148,9 +148,7 @@ public:
     static QStringList boardNames(bool includeHidden = true);
     static void reloadBoards();
     static void restoreCaptchaQuota(const QByteArray &data);
-    static void restorePostingSpeed(const QByteArray &data);
     static QByteArray saveCaptchaQuota();
-    static QByteArray savePostingSpeed();
 public:
     virtual void addFile(cppcms::application &app);
     unsigned int archiveLimit() const;

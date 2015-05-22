@@ -131,6 +131,8 @@ enum MaxInfo
 typedef QMap<QString, QString> GetParameters;
 typedef QMap<QString, QString> PostParameters;
 
+const QString InputDateTimeFormat = "dd.MM.yyyy:hh";
+
 OLOLORD_EXPORT QStringList acceptedExternalBoards();
 OLOLORD_EXPORT AudioTags audioTags(const QString &fileName);
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
