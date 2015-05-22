@@ -4,7 +4,7 @@
 [done] Fix thread subject displaying
 [done] Fix referencing posts properly when deleting referenced post
 [done] Fix [url] tag markup
-* Improve tripcode displaying
+[done] Improve tripcode displaying
 [done] Improve board speed storage
 * Improve minification
 ? Add ASCII-art tag

@@ -1355,17 +1355,9 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.name = Tools::toStd(name);
         if (pp.name.empty())
             pp.name = "<span class=\"userName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
-        QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
-        foreach (int i, bRangeD(0, tripcode.size() - 1)) {
-            QChar c(tripcode.at(i));
-            if (c.isLetterOrNumber() || c.isPunct())
-                s += c;
-            else
-                s += QString::number(uchar(tripcode.at(i)), 16);
-        }
-        pp.tripcode = Tools::toStd(s);
+        pp.tripcode = Tools::toStd(QString::fromLatin1(tripcode.toBase64(QByteArray::OmitTrailingEquals)));
     }
     return bRet(ok, true, error, QString(), pp);
 }
