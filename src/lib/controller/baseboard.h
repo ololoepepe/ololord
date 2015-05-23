@@ -139,6 +139,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string noCaptchaText;
     std::string notLoggedInText;
     std::string openThreadText;
+    std::string postActionsText;
     std::string postFormButtonSubmit;
     std::string postFormButtonSubmitSending;
     std::string postFormButtonSubmitWaiting;

@@ -270,5 +270,6 @@
         <file>static/img/favorite.png</file>
         <file>static/img/yandex-hernya.png</file>
         <file>static/img/playlist_download.png</file>
+        <file>static/img/post_actions.png</file>
     </qresource>
 </RCC>

@@ -171,6 +171,20 @@
 <% else %>
     <div id="post<%= post.number %>" class="post">
 <% end %>
+    <input name="rawText" type="hidden" value="<%= post.rawPostText %>" />
+    <% if ( post.rawHtml ) %>
+        <input name="rawHtml" type="hidden" value="true" />
+    <% else %>
+        <input name="rawHtml" type="hidden" value="false" />
+    <% end %>
+    <input name="email" type="hidden" value="<%= post.email %>" />
+    <input name="name" type="hidden" value="<%= post.rawName %>" />
+    <input name="subject" type="hidden" value="<%= post.rawSubject %>" />
+    <% if ( post.draft ) %>
+        <input name="draft" type="hidden" value="true" />
+    <% else %>
+        <input name="draft" type="hidden" value="false" />
+    <% end %>
     <div class="postHeader">
         <% if ( !thread ) %>
             <a id="<%= post.number %>"></a>
@@ -243,59 +257,64 @@
             <% end %>
         <% end %>
         [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>">&gt;&gt;</a>]
-        <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
-            <a name="addFileButton" href="javascript:lord.addFile('<%= currentBoard.name %>', '<%= post.number %>');">
-                <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
-        <% end %>
-        <% if ( content.moder || post.draft ) %>
-            <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
-                <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
-        <% end %>
-        <% if ( content.moder && post.number == post.threadNumber ) %>
-            <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
-                <a name="fixButton"
-                   href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
-            <% else %>
-                <a name="fixButton"
-                   href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+        <span class="postActions">
+            <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
+            <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
+                <a name="addFileButton"
+                   href="javascript:lord.addFile('<%= currentBoard.name %>', '<%= post.number %>');">
+                    <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
             <% end %>
-            <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
-                <a name="closeButton"
-                   href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
-            <% else %>
-                <a name="closeButton"
-                   href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+            <% if ( content.moder || post.draft ) %>
+                <a name="editButton"
+                   href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
+                    <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
             <% end %>
-        <% end %>
-        <% if ( content.moder ) %>
-            <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
-                <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
-        <% end %>
-        <% if ( !thread && post.number == post.threadNumber ) %>
-            <a name="downloadButton" href="javascript:lord.downloadThread();">
-                <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
-        <% end %>
-        <% if ( post.number == post.threadNumber ) %>
-            <a name="addToFavoritesButton"
-               href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
-                <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
-        <% end %>
-        <a name="complainButton" href="javascript:lord.complain();">
-            <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
-        <a name="deleteButton"
-           href="javascript:lord.deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
-        <% if ( post.number == post.threadNumber ) %>
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
-        <% else %>
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
-        <% end %>
-        <a name="hideButton" id="hidePost<%= post.number %>"
-           href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>');">
-            <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% if ( content.moder && post.number == post.threadNumber ) %>
+                <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
+                    <a name="fixButton"
+                       href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                        <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                <% else %>
+                    <a name="fixButton"
+                       href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                        <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                <% end %>
+                <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
+                    <a name="closeButton"
+                       href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                        <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                <% else %>
+                    <a name="closeButton"
+                       href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                        <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                <% end %>
+            <% end %>
+            <% if ( content.moder ) %>
+                <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
+                    <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+            <% end %>
+            <% if ( !thread && post.number == post.threadNumber ) %>
+                <a name="downloadButton" href="javascript:lord.downloadThread();">
+                    <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+            <% end %>
+            <% if ( post.number == post.threadNumber ) %>
+                <a name="addToFavoritesButton"
+                   href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
+                    <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+            <% end %>
+            <a name="complainButton" href="javascript:lord.complain();">
+                <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
+            <a name="deleteButton"
+               href="javascript:lord.deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+            <% if ( post.number == post.threadNumber ) %>
+                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
+            <% else %>
+                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+            <% end %>
+            <a name="hideButton" id="hidePost<%= post.number %>"
+               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>');">
+                <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+        </span>
         <% if ( thread && post.number == post.threadNumber ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
             <% if ( thread->postLimitReached() ) %>
@@ -313,20 +332,6 @@
                     <% item %>
                         <% include postFile(file, post) %>
                     <% end %>
-                <% end %>
-                <input name="rawText" type="hidden" value="<%= post.rawPostText %>" />
-                <% if ( post.rawHtml ) %>
-                    <input name="rawHtml" type="hidden" value="true" />
-                <% else %>
-                    <input name="rawHtml" type="hidden" value="false" />
-                <% end %>
-                <input name="email" type="hidden" value="<%= post.email %>" />
-                <input name="name" type="hidden" value="<%= post.rawName %>" />
-                <input name="subject" type="hidden" value="<%= post.rawSubject %>" />
-                <% if ( post.draft ) %>
-                    <input name="draft" type="hidden" value="true" />
-                <% else %>
-                    <input name="draft" type="hidden" value="false" />
                 <% end %>
                 <% if ( post.files.size() < 2 ) %>
                     <td class="postText">
@@ -469,6 +474,12 @@
     <% end %>
 </select>
 <div id="postTemplate" class="post" style="display: none;">
+    <input name="rawText" type="hidden" value="" />
+    <input name="rawHtml" type="hidden" value="false" />
+    <input name="email" type="hidden" value="" />
+    <input name="name" type="hidden" value="" />
+    <input name="subject" type="hidden" value="" />
+    <input name="draft" type="hidden" value="false" />
     <div class="postHeader">
         <img name="fixed" src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>" style="display: none;">
         <img name="closed" src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>" style="display: none;">
@@ -483,43 +494,40 @@
         <span name="permanent" style="display: none;">
             [<a name="quickReply" href="javascript:lord.quickReply(%postNumber%);"
                 title="<%= quickReplyText %>">&gt;&gt;</a>]
-            <a name="addFileButton" href="javascript:lord.addFile('<%= currentBoard.name %>', '%postNumber%');">
-                <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
-            <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '%postNumber%');">
-                <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
-            <a name="fixButton"
-               href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
-                <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
-            <a name="unfixButton"
-               href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
-                <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
-            <a name="closeButton"
-               href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
-                <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
-            <a name="openButton"
-               href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
-                <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
-            <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '%postNumber%');">
-                <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
-            <input name="rawText" type="hidden" value="" />
-            <input name="rawHtml" type="hidden" value="false" />
-            <input name="email" type="hidden" value="" />
-            <input name="name" type="hidden" value="" />
-            <input name="subject" type="hidden" value="" />
-            <input name="draft" type="hidden" value="false" />
-            <a name="downloadButton" href="javascript:lord.downloadThread();">
-                <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
-            <a name="addToFavoritesButton"
-               href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', %postNumber%);">
-                <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
-            <a href="javascript:lord.complain();">
-                <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
-            <a name="deleteButton"
-               href="javascript:lord.deletePost('<%= currentBoard.name %>', %postNumber%, true);">
-                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
-            <a id="hidePost%postNumber%" name="hideButton"
-               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%);">
-                <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <span class="postActions">
+                <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
+                <a name="addFileButton" href="javascript:lord.addFile('<%= currentBoard.name %>', '%postNumber%');">
+                    <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '%postNumber%');">
+                    <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <a name="fixButton"
+                   href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                <a name="unfixButton"
+                   href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                <a name="closeButton"
+                   href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
+                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                <a name="openButton"
+                   href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
+                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '%postNumber%');">
+                    <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                <a name="downloadButton" href="javascript:lord.downloadThread();">
+                    <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+                <a name="addToFavoritesButton"
+                   href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', %postNumber%);">
+                    <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+                <a href="javascript:lord.complain();">
+                    <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
+                <a name="deleteButton"
+                   href="javascript:lord.deletePost('<%= currentBoard.name %>', %postNumber%, true);">
+                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+                <a id="hidePost%postNumber%" name="hideButton"
+                   href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%);">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            </span>
             <span name="toThread" style="display: none;">
                 [<a name="toThreadLink"
                     href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/%postNumber%.html"><%= toThread %></a>]

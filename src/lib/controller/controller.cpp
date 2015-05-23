@@ -294,6 +294,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
+    c.postActionsText = ts.translate("initBaseBoard", "Post actions", "postActionsText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
     c.postFormButtonSubmitSending = ts.translate("initBaseBoard", "Sending:", "postFormButtonSubmitSending");
     c.postFormButtonSubmitWaiting = ts.translate("initBaseBoard", "Waiting for reply...",

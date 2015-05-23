@@ -2264,6 +2264,11 @@ Your choice:</source>
         <comment>postFormButtonSubmitWaiting</comment>
         <translation>Ожидание ответа...</translation>
     </message>
+    <message>
+        <source>Post actions</source>
+        <comment>postActionsText</comment>
+        <translation>Действия над постом</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
