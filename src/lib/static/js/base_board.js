@@ -278,13 +278,13 @@ lord.createPostNode = function(res, permanent, boardName) {
         closed.style.display = "";
     else
         closed.parentNode.removeChild(closed);
-    lord.nameOne("subject", post).appendChild(lord.node("text", res["subject"]));
+    lord.nameOne("postSubject", post).appendChild(lord.node("text", res["subject"]));
     var registered = lord.nameOne("registered", post);
     if (!!res["showRegistered"] && !!res["showTripcode"])
         registered.style.display = "";
     else
         registered.parentNode.removeChild(registered);
-    var name = lord.nameOne("name", post);
+    var name = lord.nameOne("userName", post);
     if (!!res["email"])
         name.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
     else

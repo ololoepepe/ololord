@@ -8,6 +8,7 @@
 [done] Improve board speed storage
 [done] Add download buttons to playlist
 [done] Hide post actions
+[done] Fix post editing
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread
