@@ -132,6 +132,8 @@ private:
     static QMap<QString, AbstractBoard *> boards;
     static bool boardsInitialized;
     static QReadWriteLock boardsLock;
+    static bool globalCaptchaQuotaModified;
+    static QMutex globalCaptchaQuotaMutex;
 private:
     QMap<QString, unsigned int> captchaQuotaMap;
     mutable QMutex captchaQuotaMutex;
@@ -146,6 +148,7 @@ public:
     static LockingWrapper board(const QString &name);
     static BoardInfoList boardInfos(const QLocale &l, bool includeHidden = true);
     static QStringList boardNames(bool includeHidden = true);
+    static bool isCaptchaQuotaModified();
     static void reloadBoards();
     static void restoreCaptchaQuota(const QByteArray &data);
     static QByteArray saveCaptchaQuota();

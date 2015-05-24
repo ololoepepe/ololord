@@ -95,12 +95,8 @@ int main(int argc, char **argv)
         initTerminal();
         AbstractCaptchaEngine::reloadEngines();
         AbstractBoard::reloadBoards();
-        QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
-                + "/captcha-quota.dat";
-        QString searchIndexFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
-                + "/search-index.dat";
-        AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
-        Search::restoreIndex(BDirTools::readFile(searchIndexFile));
+        AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(Tools::captchaQuotaFile()));
+        Search::restoreIndex(BDirTools::readFile(Tools::searchIndexFile()));
         bLogger->setDateTimeFormat(LogDateTimeFormat);
         bLogger->setFileName(logFileName());
         updateLoggingMode();
@@ -123,8 +119,8 @@ int main(int argc, char **argv)
         ret = app.exec();
         owt.shutdown();
         owt.wait(10 * BeQt::Second);
-        BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
-        BDirTools::writeFile(searchIndexFile, Search::saveIndex());
+        BDirTools::writeFile(Tools::captchaQuotaFile(), AbstractBoard::saveCaptchaQuota());
+        BDirTools::writeFile(Tools::searchIndexFile(), Search::saveIndex());
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));

@@ -32,6 +32,7 @@ typedef QMap<QString, BoardMap> WordMap;
 
 static WordMap index;
 static QReadWriteLock indexLock(QReadWriteLock::Recursive);
+static bool modified = false;
 
 static BoardMap complement(const BoardMap &boards1, const BoardMap &boards2)
 {
@@ -206,6 +207,7 @@ void clearIndex()
 {
     QWriteLocker locker(&indexLock);
     index.clear();
+    modified = true;
 }
 
 BoardMap find(const Query &q, const QString &boardName, bool *ok, QString *error, const QLocale &l)
@@ -232,6 +234,12 @@ BoardMap find(const Query &q, const QString &boardName, bool *ok, QString *error
 BoardMap find(const Query &query, bool *ok, QString *error, const QLocale &l)
 {
     return find(query, "", ok, error, l);
+}
+
+bool isModified()
+{
+    QReadLocker locker(&indexLock);
+    return modified;
 }
 
 Query query(const QString &q, bool *ok, QString *error, const QLocale &l)
@@ -274,12 +282,14 @@ void removeFromIndex(const QString &boardName, quint64 postNumber, const QString
         if (boards.isEmpty())
             index.remove(word);
     }
+    modified = true;
 }
 
 int rebuildIndex(QString *error, const QLocale &l)
 {
     QWriteLocker locker(&indexLock);
     index.clear();
+    modified = true;
     return Database::addPostsToIndex(error, l);
 }
 
@@ -289,6 +299,7 @@ void restoreIndex(const QByteArray &data)
     ds.setVersion(BeQt::DataStreamVersion);
     QWriteLocker locker(&indexLock);
     ds >> index;
+    modified = false;
 }
 
 QByteArray saveIndex()
@@ -297,6 +308,7 @@ QByteArray saveIndex()
     QDataStream out(&data, QIODevice::WriteOnly);
     QReadLocker locker(&indexLock);
     out << index;
+    modified = false;
     return data;
 }
 

@@ -9,6 +9,7 @@
 [done] Add download buttons to playlist
 [done] Hide post actions
 [done] Fix post editing
+[done] Save post text index and captcha quota periodically
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread

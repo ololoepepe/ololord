@@ -191,6 +191,8 @@ bool AbstractBoard::boardsInitialized = false;
 QReadWriteLock AbstractBoard::boardsLock(QReadWriteLock::Recursive);
 const QString AbstractBoard::defaultFileTypes = "audio/mpeg,audio/ogg,audio/wav,image/gif,image/jpeg,image/png,"
                                                 "video/mp4,video/ogg,video/webm";
+bool AbstractBoard::globalCaptchaQuotaModified = false;
+QMutex AbstractBoard::globalCaptchaQuotaMutex(QMutex::Recursive);
 
 AbstractBoard::LockingWrapper::LockingWrapper(const LockingWrapper &other) :
     Board(other.Board)
@@ -275,6 +277,12 @@ QStringList AbstractBoard::boardNames(bool includeHidden)
             list.removeAt(i);
     }
     return list;
+}
+
+bool AbstractBoard::isCaptchaQuotaModified()
+{
+    QMutexLocker locker(&globalCaptchaQuotaMutex);
+    return globalCaptchaQuotaModified;
 }
 
 void AbstractBoard::reloadBoards()
@@ -466,6 +474,9 @@ void AbstractBoard::restoreCaptchaQuota(const QByteArray &data)
             board->captchaQuotaMap.insert(ip, q);
         }
     }
+    globalCaptchaQuotaMutex.lock();
+    globalCaptchaQuotaModified = false;
+    globalCaptchaQuotaMutex.unlock();
 }
 
 QByteArray AbstractBoard::saveCaptchaQuota()
@@ -479,6 +490,9 @@ QByteArray AbstractBoard::saveCaptchaQuota()
             mm.insert(ip, board->captchaQuotaMap.value(ip));
         m.insert(board->name(), mm);
     }
+    globalCaptchaQuotaMutex.lock();
+    globalCaptchaQuotaModified = false;
+    globalCaptchaQuotaMutex.unlock();
     return BeQt::serialize(m);
 }
 
@@ -564,6 +578,9 @@ void AbstractBoard::captchaSolved(const QString &ip)
         return;
     QMutexLocker locker(&captchaQuotaMutex);
     captchaQuotaMap[ip] = captchaQuota();
+    globalCaptchaQuotaMutex.lock();
+    globalCaptchaQuotaModified = true;
+    globalCaptchaQuotaMutex.unlock();
 }
 
 void AbstractBoard::captchaUsed(const QString &ip)
@@ -572,12 +589,13 @@ void AbstractBoard::captchaUsed(const QString &ip)
         return;
     QMutexLocker locker(&captchaQuotaMutex);
     unsigned int &q = captchaQuotaMap[ip];
-    if (!q)
-        captchaQuotaMap.remove(ip);
-    else
+    if (q)
         --q;
     if (!q)
         captchaQuotaMap.remove(ip);
+    globalCaptchaQuotaMutex.lock();
+    globalCaptchaQuotaModified = false;
+    globalCaptchaQuotaMutex.unlock();
 }
 
 void AbstractBoard::createPost(cppcms::application &app)
@@ -611,8 +629,6 @@ void AbstractBoard::createPost(cppcms::application &app)
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
-    //QMutexLocker locker(&speedMutex);
-    //++postCount;
     Controller::renderSuccessfulPostAjax(app, postNumber);
     Tools::log(app, "create_post", "success", logTarget);
 }
@@ -648,8 +664,6 @@ void AbstractBoard::createThread(cppcms::application &app)
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
-    //QMutexLocker locker(&speedMutex);
-    //++postCount;
     Controller::renderSuccessfulThreadAjax(app, threadNumber);
     Tools::log(app, "create_thread", "success", logTarget);
 }

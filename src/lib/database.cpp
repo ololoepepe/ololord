@@ -1108,7 +1108,6 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         } else if (password != post->password()) {
             return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
         }
-        t.commit();
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
     }

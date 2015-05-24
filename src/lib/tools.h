@@ -135,6 +135,7 @@ const QString InputDateTimeFormat = "dd.MM.yyyy:hh";
 
 OLOLORD_EXPORT QStringList acceptedExternalBoards();
 OLOLORD_EXPORT AudioTags audioTags(const QString &fileName);
+OLOLORD_EXPORT QString captchaQuotaFile();
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
 OLOLORD_EXPORT QString cityName(const QString &ip);
 OLOLORD_EXPORT QString cityName(const cppcms::http::request &req);
@@ -177,6 +178,7 @@ OLOLORD_EXPORT cppcms::json::value readJsonValue(const QString &fileName, bool *
 OLOLORD_EXPORT void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content);
 OLOLORD_EXPORT void resetLoggingSkipIps();
 OLOLORD_EXPORT QStringList rules(const QString &prefix, const QLocale &l);
+OLOLORD_EXPORT QString searchIndexFile();
 OLOLORD_EXPORT FriendList siteFriends();
 OLOLORD_EXPORT QString storagePath();
 OLOLORD_EXPORT QStringList supportedCodeLanguages();

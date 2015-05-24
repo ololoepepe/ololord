@@ -221,6 +221,11 @@ AudioTags audioTags(const QString &fileName)
     return a;
 }
 
+QString captchaQuotaFile()
+{
+    return BCoreApplication::location("storage", BCoreApplication::UserResource) + "/captcha-quota.dat";
+}
+
 bool captchaEnabled(const QString &boardName)
 {
     SettingsLocker s;
@@ -779,6 +784,11 @@ QStringList rules(const QString &prefix, const QLocale &l)
         }
     }
     return *sl;
+}
+
+QString searchIndexFile()
+{
+    return BCoreApplication::location("storage", BCoreApplication::UserResource) + "/search-index.dat";
 }
 
 FriendList siteFriends()

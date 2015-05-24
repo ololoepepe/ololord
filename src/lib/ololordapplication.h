@@ -21,7 +21,9 @@ class OLOLORD_EXPORT OlolordApplication : public BCoreApplication
 {
     Q_OBJECT
 private:
-    int timerId;
+    int captchaQuotaTimerId;
+    int outdatedTimerId;
+    int searchTimerId;
 public:
     explicit OlolordApplication(int &argc, char **argv, const QString &applicationName = QString(),
                                 const QString &organizationName = QString());
