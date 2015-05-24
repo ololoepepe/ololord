@@ -20,6 +20,7 @@
         <input type="hidden" id="unknownAlbumText" value="<%= unknownAlbumText %>" />
         <input type="hidden" id="unknownArtistText" value="<%= unknownArtistText %>" />
         <input type="hidden" id="unknownTitleText" value="<%= unknownTitleText %>" />
+        <% include customHeader() %>
         <% include settings() %>
         <br />
         <% include navbar() %>
@@ -29,6 +30,7 @@
             <h1><%= pageTitle %></h1>
         </div>
         <div id="playlist"></div>
+        <% include customFooter() %>
     </body>
 </html>
 <% end template %>

@@ -350,18 +350,18 @@ QString countryName(const QString &countryCode)
     return names.value(countryCode);
 }
 
-QString customHomePageContent(const QLocale &l)
+QString customContent(const QString &prefix, const QLocale &l)
 {
-    QString *s = Cache::customHomePageContent(l);
+    QString *s = Cache::customContent(prefix, l);
     if (!s) {
-        QString path = BDirTools::findResource("homepage", BDirTools::UserOnly);
+        QString path = BDirTools::findResource("custom/" + prefix, BDirTools::UserOnly);
         if (path.isEmpty())
             return QString();
         QString fn = BDirTools::localeBasedFileName(path + "/content.html", l);
         if (fn.isEmpty())
             return QString();
         s = new QString(BDirTools::readTextFile(fn, "UTF-8"));
-        if (!Cache::cacheCustomHomePageContent(l, s)) {
+        if (!Cache::cacheCustomContent(prefix, l, s)) {
             QString ss = *s;
             delete s;
             return ss;

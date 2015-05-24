@@ -2,6 +2,20 @@
 <% skin my_skin %>
 <% view base uses Content::Base %>
 
+<% template customHeader() %>
+<% if ( !content.customHeaderContent.empty() ) %>
+    <%= customHeaderContent | raw %>
+    <br />
+<% end %>
+<% end template %>
+
+<% template customFooter() %>
+<% if ( !content.customFooterContent.empty() ) %>
+    <br />
+    <%= customFooterContent | raw %>
+<% end %>
+<% end template %>
+
 <% template settings() %>
 <div class="settingsBar">
     <span>

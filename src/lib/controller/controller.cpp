@@ -124,6 +124,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentLocale = toWithLocale(ts.locale());
     cppcms::http::request *mreq = const_cast<cppcms::http::request *>(&req);
     c.currentTime = mreq->cookie_by_name("time").value();
+    c.customFooterContent = Tools::toStd(Tools::customContent("footer", ts.locale()));
+    c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.localeLabelText = "Language:";
     c.locales = locales;

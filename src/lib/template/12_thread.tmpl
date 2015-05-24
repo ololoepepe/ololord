@@ -28,6 +28,7 @@
 <% template body() %>
 <% include baseTexts() %>
 <% include boardTexts() %>
+<% include customHeader() %>
 <% include navigationButton("bottom") %>
 <% include navigationButton("top") %>
 <input id="noNewPostsText" type="hidden" value="<%= noNewPostsText %>" />
@@ -86,6 +87,7 @@
 <hr />
 <% include navbar() %>
 <a id="bottom"></a>
+<% include customFooter() %>
 <% end template %>
 
 <% template render() %>

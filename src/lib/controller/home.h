@@ -20,6 +20,7 @@ struct OLOLORD_EXPORT Home : public Base
         std::string url;
     };
 public:
+    std::string custom;
     std::list<Friend> friends;
     std::string friendsHeader;
     std::list<std::string> news;

@@ -13,6 +13,7 @@
 [done] Improve time zone handling
 [done] Fix file copying (Database::copyFile)
 [done] Fix JS
+[done] Improve custom content system
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread

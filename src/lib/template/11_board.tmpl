@@ -73,6 +73,7 @@
     <body>
         <% include baseTexts() %>
         <% include boardTexts() %>
+        <% include customHeader() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>
         <a id="top"></a>
@@ -116,6 +117,7 @@
             </div>
         <% end %>
         <a id="bottom"></a>
+        <% include customFooter() %>
     </body>
 </html>
 <% end template %>

@@ -10,6 +10,7 @@
     </head>
     <body>
         <% include baseTexts() %>
+        <% include customHeader() %>
         <% include settings() %>
         <br />
         <% include navbar() %>
@@ -21,6 +22,7 @@
         <div class="error" id="errorDescription">
             <%= errorDescription %>
         </div>
+        <% include customFooter() %>
     </body>
 </html>
 <% end template %>
