@@ -431,6 +431,12 @@ lord.showSettings = function() {
         lord.setCookie("time", tm, {
             "expires": lord.Billion, "path": "/"
         });
+        if ("local" == tm) {
+            var date = new Date();
+            lord.setCookie("time_zone_offset", -date.getTimezoneOffset(), {
+                "expires": lord.Billion, "path": "/"
+            });
+        }
         sel = lord.nameOne("captchaEngineSelect", div);
         var tm = sel.options[sel.selectedIndex].value;
         lord.setCookie("captchaEngine", tm, {

@@ -900,6 +900,10 @@ void initSettings()
                                                 "Works for non-transparent proxies only (X-Forwarded-For, "
                                                 "X-Client-IP).\n"
                                                 "The default is true."));
+    nn = new BSettingsNode(QVariant::String, "time_zone_offset", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Time zone offset in minutes.\n"
+                                               "The value must be between -720 and 840.\n"
+                                               "The default is -1000 (no offset)."));
     /*======================================== Cache ========================================*/
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {

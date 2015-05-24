@@ -373,9 +373,10 @@ QString customHomePageContent(const QLocale &l)
 QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
 {
     QString s = cookieValue(req, "time");
+    int def = SettingsLocker()->value("System/time_zone_offset", -1000).toInt();
     if (s.isEmpty() || s.compare("local", Qt::CaseInsensitive))
-        return localDateTime(dt);
-    return localDateTime(dt, timeZoneMinutesOffset(req));
+        return localDateTime(dt, def);
+    return localDateTime(dt, timeZoneMinutesOffset(req, def));
 }
 
 QString externalLinkRegexpPattern()
@@ -547,7 +548,7 @@ QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
         return dt.toLocalTime();
     QDateTime ndt = dt.toUTC();
     QTime t = ndt.time();
-    int msecs = t.hour() * BeQt::Hour + t.minute() * BeQt::Minute + t.second() * BeQt::Second * t.msec();
+    int msecs = t.hour() * BeQt::Hour + t.minute() * BeQt::Minute + t.second() * BeQt::Second + t.msec();
     int msecsOffset = offsetMinutes * BeQt::Minute;
     msecs += msecsOffset;
     if (msecs < 0) {
@@ -846,7 +847,7 @@ QStringList supportedCodeLanguages()
     return sl;
 }
 
-int timeZoneMinutesOffset(const cppcms::http::request &req)
+int timeZoneMinutesOffset(const cppcms::http::request &req, int defaultOffset)
 {
     typedef QMap<QString, int> TimezoneMap;
     QMutexLocker locker(&timezoneMutex);
@@ -866,8 +867,12 @@ int timeZoneMinutesOffset(const cppcms::http::request &req)
             timezones.insert(QStringList(sll.mid(0, sll.size() - 1)).join(" "), offset);
         }
     }
-    return SettingsLocker()->value("Board/guess_city_name", true).toBool() ? timezones.value(cityName(req), -1000) :
-                                                                             -1000;
+    bool ok = false;
+    int offset = cookieValue(req, "time_zone_offset").toInt(&ok);
+    if (ok && offset >= -720 && offset <= 840)
+        return offset;
+    return SettingsLocker()->value("Board/guess_city_name", true).toBool()
+            ? timezones.value(cityName(req), defaultOffset) : defaultOffset;
 }
 
 QByteArray toHashpass(const QString &s, bool *ok)

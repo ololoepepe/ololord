@@ -2689,6 +2689,14 @@ By default, the date of creation of application settings file is used.</source>
 Формат: %1
 По умолчанию используется дата создания файла настроек приложения.</translation>
     </message>
+    <message>
+        <source>Time zone offset in minutes.
+The value must be between -720 and 840.
+The default is -1000 (no offset).</source>
+        <translation>Смещение временной зоны в минутах.
+Значение должно быть в пределах от -720 до 840.
+По умолчанию -1000 (без смещения).</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>

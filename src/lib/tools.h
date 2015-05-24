@@ -182,7 +182,7 @@ OLOLORD_EXPORT QString searchIndexFile();
 OLOLORD_EXPORT FriendList siteFriends();
 OLOLORD_EXPORT QString storagePath();
 OLOLORD_EXPORT QStringList supportedCodeLanguages();
-OLOLORD_EXPORT int timeZoneMinutesOffset(const cppcms::http::request &req);
+OLOLORD_EXPORT int timeZoneMinutesOffset(const cppcms::http::request &req, int defaultOffset = -1000);
 OLOLORD_EXPORT QByteArray toHashpass(const QString &s, bool *ok = 0);
 OLOLORD_EXPORT Post toPost(const PostParameters &params, const FileList &files);
 OLOLORD_EXPORT Post toPost(const cppcms::http::request &req);
