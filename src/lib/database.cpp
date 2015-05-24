@@ -299,7 +299,7 @@ static bool copyFile(const QString &hashString, AbstractBoard::FileTransaction &
         ft.setThumbFile(pfn);
         ft.setThumbFileSize(info.thumbHeight(), info.thumbWidth());
         ft.setMetaData(info.metaData());
-        if (!QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn)) {
+        if (!BDirTools::mkpath(path) || !QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn)) {
             return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
                         tq.translate("copyFileHash", "Internal file system error", "description"), false);
         }
