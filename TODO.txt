@@ -14,6 +14,7 @@
 [done] Fix file copying (Database::copyFile)
 [done] Fix JS
 [done] Improve custom content system
+[done] Fix captcha engine selection
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread

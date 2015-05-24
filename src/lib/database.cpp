@@ -414,7 +414,19 @@ static bool testCaptcha(const cppcms::http::request &req, const Tools::PostParam
     if (board->captchaQuota(ip)) {
         board->captchaUsed(ip);
     } else {
-        AbstractCaptchaEngine::LockingWrapper e = AbstractCaptchaEngine::engine(params.value("captchaEngine"));
+        QStringList supportedCaptchaEngines = board->supportedCaptchaEngines().split(',');
+        if (supportedCaptchaEngines.isEmpty()) {
+            return bRet(error, tq.translate("testCaptcha", "Internal error", "error"), description,
+                        tq.translate("testCaptcha", "Internal logic error", "description"), false);
+        }
+        QString ceid = params.value("captchaEngine");
+        if (ceid.isEmpty() || !supportedCaptchaEngines.contains(ceid, Qt::CaseInsensitive)) {
+            if (supportedCaptchaEngines.contains("google-recaptcha"))
+                ceid = "google-recaptcha";
+            else
+                ceid = supportedCaptchaEngines.first();
+        }
+        AbstractCaptchaEngine::LockingWrapper e = AbstractCaptchaEngine::engine(ceid);
         if (e.isNull()) {
             return bRet(error, tq.translate("testCaptcha", "Invalid captcha", "error"), description,
                         tq.translate("testCaptcha", "No engine for this captcha type", "sescription"), false);
