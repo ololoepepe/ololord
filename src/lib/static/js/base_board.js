@@ -540,7 +540,8 @@ lord.clearFileInput = function(div) {
     var span = div.querySelector("span");
     if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
         span.removeChild(span.childNodes[0]);
-    lord.removeFileHash(div);
+    if (div.parentNode)
+        lord.removeFileHash(div);
     div.fileHash = null;
 };
 
@@ -1360,8 +1361,8 @@ lord.fileAddedCommon = function(div, file) {
         var span = lord.queryOne(".postformFileText", div);
         div.querySelector("a").style.display = "none";
         div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
-        parent.appendChild(div);
         lord.clearFileInput(div);
+        parent.appendChild(div);
     })(div);
 };
 
