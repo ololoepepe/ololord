@@ -556,7 +556,7 @@ QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
         ndt.setTime(time(msecs + MaxMsecs));
     } else if (msecs >= MaxMsecs) {
         ndt.setDate(ndt.date().addDays(1));
-        ndt.setTime(time(MaxMsecs - msecs));
+        ndt.setTime(time(msecs - MaxMsecs));
     } else {
         ndt.setTime(time(msecs));
     }
