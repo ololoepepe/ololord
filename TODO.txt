@@ -15,6 +15,7 @@
 [done] Fix JS
 [done] Improve custom content system
 [done] Fix captcha engine selection
+[done] Select appropriate suffix for file according to MIME type
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread

@@ -1013,6 +1013,23 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         suffixes.insert("video/ogg", "ogg");
         suffixes.insert("video/webm", "webm");
     }
+    init_once(StringMap, formatsForSuffixes, StringMap()) {
+        formatsForSuffixes.insert("mpeg", "audio/mpeg");
+        formatsForSuffixes.insert("mp1", "audio/mpeg");
+        formatsForSuffixes.insert("m1a", "audio/mpeg");
+        formatsForSuffixes.insert("mp3", "audio/mpeg");
+        formatsForSuffixes.insert("m2a", "audio/mpeg");
+        formatsForSuffixes.insert("mpa", "audio/mpeg");
+        formatsForSuffixes.insert("mpg", "audio/mpeg");
+        formatsForSuffixes.insert("ogg", "audio/ogg"); //Also "video/ogg"
+        formatsForSuffixes.insert("wav", "audio/wav");
+        formatsForSuffixes.insert("gif", "image/gif");
+        formatsForSuffixes.insert("jpeg", "image/jpeg");
+        formatsForSuffixes.insert("jpg", "image/jpeg");
+        formatsForSuffixes.insert("png", "image/png");
+        formatsForSuffixes.insert("mp4", "video/mp4");
+        formatsForSuffixes.insert("webm", "video/webm");
+    }
     bool ok = false;
     QString mimeType = Tools::mimeType(f.data, &ok);
     if (!ok)
@@ -1027,7 +1044,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         return false;
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
-    if (suffix.isEmpty())
+    if (suffix.isEmpty() || formatsForSuffixes.value(suffix.toLower()) != mimeType)
         suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
     ft.addInfo(sfn, QCryptographicHash::hash(f.data, QCryptographicHash::Sha1), mimeType, f.data.size());
