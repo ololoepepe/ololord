@@ -148,6 +148,10 @@ blockquote {
     word-wrap: break-word;
 }
 
+blockquote.expand {
+    max-height: none;
+}
+
 span.spoiler, span.spoiler a {
     background: #BBBBBB;
     color: #BBBBBB;
@@ -608,6 +612,10 @@ span.spoiler:hover a {
 
 blockquote.blockquoteThread {
     max-height: 800px;
+}
+
+blockquote.blockquoteThread.expand {
+    max-height: none;
 }
 
 .codeBlock {

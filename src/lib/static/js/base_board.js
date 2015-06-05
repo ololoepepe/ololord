@@ -662,7 +662,9 @@ lord.addYoutubeButton = function(post) {
                     a.parentNode.removeChild(a.nextSibling);
                     a.parentNode.removeChild(a.nextSibling);
                     a.replaceChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"), a.childNodes[0]);
+                    lord.removeClass(a.parentNode, "expand");
                 } else {
+                    lord.addClass(a.parentNode, "expand");
                     var iframe = lord.node("iframe");
                     var src = link.href.replace("http://", "//").replace("https://", "//");
                     src = src.replace("youtube.com/watch?v=", "youtube.com/embed/");

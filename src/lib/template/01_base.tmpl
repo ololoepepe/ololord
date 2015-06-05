@@ -4,7 +4,9 @@
 
 <% template customHeader() %>
 <% if ( !content.customHeaderContent.empty() ) %>
-    <%= customHeaderContent | raw %>
+    <header>
+        <%= customHeaderContent | raw %>
+    </header>
     <br />
 <% end %>
 <% end template %>
@@ -12,7 +14,9 @@
 <% template customFooter() %>
 <% if ( !content.customFooterContent.empty() ) %>
     <br />
-    <%= customFooterContent | raw %>
+    <footer>
+        <%= customFooterContent | raw %>
+    </footer>
 <% end %>
 <% end template %>
 
