@@ -666,14 +666,7 @@ lord.addYoutubeButton = function(post) {
                 } else {
                     lord.addClass(a.parentNode, "expand");
                     var iframe = lord.node("iframe");
-                    var src = link.href.replace("http://", "//").replace("https://", "//");
-                    src = src.replace("youtube.com/watch?v=", "youtube.com/embed/");
-                    var options = src.split(/&|#/).slice(1);
-                    src = src.split(/&|#/).shift();
-                    src += "?autoplay=1";
-                    if (options.length)
-                        src += "&" + options.join("&");
-                    iframe.src = src;
+                    iframe.src = "https://youtube.com/embed/" + videoId + "?autoplay=1";
                     iframe.allowfullscreen = true;
                     iframe.frameborder = "0px";
                     iframe.height = "360";

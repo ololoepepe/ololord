@@ -17,6 +17,8 @@
 [done] Fix captcha engine selection
 [done] Select appropriate suffix for file according to MIME type
 [done] Expand posts when YouTube video is eapanded
+[done] Fix YouTube video ID detection
+* Add ability to edit audio tags
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread
