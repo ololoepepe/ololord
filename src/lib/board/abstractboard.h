@@ -20,6 +20,7 @@ class FileTransaction;
 
 }
 
+class QImage;
 class QLocale;
 class QString;
 class QStringList;
@@ -206,6 +207,7 @@ protected:
     virtual Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 private:
     static void cleanupBoards();
+    static QImage generateRandomImage(const QByteArray &hash, const QString &mimeType);
 private:
     QStringList rulesImplementation(const QLocale &l, const QString &type) const;
 private:

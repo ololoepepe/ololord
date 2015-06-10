@@ -19,6 +19,7 @@
 [done] Expand posts when YouTube video is eapanded
 [done] Fix YouTube video ID detection
 [done] Make file logo images transparent
+[done] Generate random thumbnails for audio files
 * Add ability to edit audio tags
 * Improve minification
 ? Add ASCII-art tag

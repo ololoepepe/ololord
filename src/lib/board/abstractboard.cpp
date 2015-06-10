@@ -34,8 +34,10 @@
 #include <BTerminal>
 #include <BTranslation>
 
+#include <QBrush>
 #include <QBuffer>
 #include <QByteArray>
+#include <QColor>
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
@@ -47,8 +49,10 @@
 #include <QMap>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QPainter>
 #include <QReadLocker>
 #include <QReadWriteLock>
+#include <QRect>
 #include <QRegExp>
 #include <QScopedPointer>
 #include <QSet>
@@ -1047,7 +1051,8 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     if (suffix.isEmpty() || formatsForSuffixes.value(suffix.toLower()) != mimeType)
         suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
-    ft.addInfo(sfn, QCryptographicHash::hash(f.data, QCryptographicHash::Sha1), mimeType, f.data.size());
+    QByteArray hash = QCryptographicHash::hash(f.data, QCryptographicHash::Sha1);
+    ft.addInfo(sfn, hash, mimeType, f.data.size());
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
@@ -1059,8 +1064,13 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     QString out;
     if (Tools::isAudioType(mimeType)) {
         ft.setMainFileSize(0, 0);
-        ft.setThumbFile(mimeType);
+        ft.setThumbFile(path + "/" + dt + "s.png");
         ft.setThumbFileSize(200, 200);
+        img = generateRandomImage(hash, mimeType);
+        if (img.isNull())
+            return false;
+        if (!img.save(path + "/" + dt + "s.png", "png"))
+            return false;
         Tools::AudioTags tags = Tools::audioTags(sfn);
         QVariantMap m;
         if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
@@ -1082,17 +1092,19 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     } else if (Tools::isVideoType(mimeType)) {
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
+        ft.setThumbFile(path + "/" + dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
-            ft.setThumbFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
                 return false;
             scaleThumbnail(img, ft);
-            if (!img.save(path + "/" + dt + "s.png", "png"))
-                return false;
         } else {
-            ft.setThumbFile(mimeType);
+            img = generateRandomImage(hash, mimeType);
+            if (img.isNull())
+                return false;
             ft.setThumbFileSize(200, 200);
         }
+        if (!img.save(path + "/" + dt + "s.png", "png"))
+            return false;
         QVariantMap m;
         if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
             if (rxd.indexIn(out) >= 0) {
@@ -1486,6 +1498,27 @@ void AbstractBoard::cleanupBoards()
     foreach (AbstractBoard *b, boards)
         delete b;
     boards.clear();
+}
+
+QImage AbstractBoard::generateRandomImage(const QByteArray &hash, const QString &mimeType)
+{
+    if (hash.size() != 20 || mimeType.isEmpty())
+        return QImage();
+    QImage img(200, 200, QImage::Format_ARGB32);
+    QPainter painter(&img);
+    QList<QRect> list = QList<QRect>() << QRect(0, 0, 200, 200) << QRect(25, 25, 50, 50) << QRect(125, 25, 50, 50)
+        << QRect(25, 125, 50, 50) << QRect(125, 125, 50, 50);
+    for (int i = 0; i < 20; i += 4) {
+        int alpha = i ? 180 : 255;
+        QColor clr(uchar(hash.at(i)), uchar(hash.at(i + 1)), uchar(hash.at(i + 2)), alpha);
+        painter.setPen(clr);
+        painter.setBrush(QBrush(clr));
+        painter.drawRect(list.takeFirst());
+    }
+    QString fn = "static/img/" + QString(mimeType).replace("/", "_") + "_logo.png";
+    QImage over(BDirTools::findResource(fn, BDirTools::GlobalOnly));
+    painter.drawImage(0, 0, over);
+    return img;
 }
 
 QStringList AbstractBoard::rulesImplementation(const QLocale &l, const QString &type) const
