@@ -990,7 +990,7 @@ lord.addFile = function(boardName, postNumber) {
     var form = lord.queryOne("form", div);
     div.id = "";
     div.style.display = "";
-    lord.nameOne("additionalCount", div).value = additionalCount + lord.query(".postFile", post).length;
+    lord.nameOne("additionalCount", div).value = lord.query(".postFile", post).length;
     lord.showDialog(title, null, div, function() {
         if (!lord.getCookie("hashpass"))
             return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
