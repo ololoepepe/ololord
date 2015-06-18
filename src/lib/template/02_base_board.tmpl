@@ -120,7 +120,13 @@
 <% end template %>
 
 <% template postFile(Content::File file, Content::Post post) %>
-<td class="postFile">
+<td id="file<%= file.sourceName %>" class="postFile">
+    <% if ( content.isAudioType(file.type) ) %>
+        <input type="hidden" name="audioTagAlbum" value="<%= file.audioTagAlbum %>" />
+        <input type="hidden" name="audioTagArtist" value="<%= file.audioTagArtist %>" />
+        <input type="hidden" name="audioTagTitle" value="<%= file.audioTagTitle %>" />
+        <input type="hidden" name="audioTagYear" value="<%= file.audioTagYear %>" />
+    <% end %>
     <div class="postFileName">
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            target="_blank"><%= file.sourceName %></a>
@@ -141,6 +147,9 @@
                 <img src="/<%= sitePathPrefix %>img/iqdb.png"></a>
         <% end %>
         <% if ( content.isAudioType(file.type) ) %>
+            <a href="javascript:lord.editAudioTags('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');"
+               title="<%= editAudioTagsText %>">
+                <img src="/<%= sitePathPrefix %>img/audio_edit_tags.png"></a>
             <a href="javascript:lord.addToPlaylist('<%= currentBoard.name %>', '<%= file.sourceName %>');"
                title="<%= addToPlaylistText %>">
                 <img src="/<%= sitePathPrefix %>img/playlist_add.png"></a>
@@ -450,6 +459,8 @@
 <input type="hidden" id="collapseVideoText" value="<%= collapseVideoText %>" />
 <input type="hidden" id="expandVideoText" value="<%= expandVideoText %>" />
 <input type="hidden" id="youtubeApiKey" value="<%= youtubeApiKey %>" />
+<input type="hidden" id="addFileText" value="<%= addFileText %>" />
+<input type="hidden" id="editAudioTagsText" value="<%= editAudioTagsText %>" />
 <input type="hidden" id="addToPlaylistText" value="<%= addToPlaylistText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <%foreach board in availableBoards %>
@@ -595,6 +606,50 @@
     </form>
     <input name="additionalCount" type="hidden" value="" />
 </div>
+<table id="editAudioTagsTemplate" style="display: none;">
+    <tbody>
+        <tr>
+            <td>
+                <b><%= audioTagAlbumText %></b>
+            </td>
+            <td>
+                <input type="text" name="album" size="43" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b><%= audioTagArtistText %></b>
+            </td>
+            <td>
+                <input type="text" name="artist" size="43" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b><%= audioTagTitleText %></b>
+            </td>
+            <td>
+                <input type="text" name="title" size="43" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b><%= audioTagYearText %></b>
+            </td>
+            <td>
+                <input type="text" name="year" size="43" />
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <b><%= postFormLabelPassword %></b>
+            </td>
+            <td>
+                <input type="password" name="password" size="43" />
+            </td>
+        </tr>
+    </tbody>
+</table>
 <table id="editPostTemplate" class="postFormTable" style="display: none;">
     <tbody>
         <% include customPostFormFieldEdit0() %>

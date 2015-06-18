@@ -1229,6 +1229,54 @@ text</source>
     </message>
 </context>
 <context>
+    <name>editAudioTags</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid file name</source>
+        <comment>error</comment>
+        <translation>Неправильное имя файла</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such file</source>
+        <comment>error</comment>
+        <translation>Нет такого файла</translation>
+    </message>
+    <message>
+        <source>Not an audio file</source>
+        <comment>error</comment>
+        <translation>Не является аудиофайлом</translation>
+    </message>
+    <message>
+        <source>Board name mismatch</source>
+        <comment>error</comment>
+        <translation>Несоответствие имени доски</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+</context>
+<context>
     <name>editPost</name>
     <message>
         <source>Invalid board name</source>
@@ -2268,6 +2316,31 @@ Your choice:</source>
         <source>Post actions</source>
         <comment>postActionsText</comment>
         <translation>Действия над постом</translation>
+    </message>
+    <message>
+        <source>Edit audio file tags</source>
+        <comment>editAudioTagsText</comment>
+        <translation>Редактировать теги аудиофайла</translation>
+    </message>
+    <message>
+        <source>Album:</source>
+        <comment>audioTagAlbumText</comment>
+        <translation>Альбом:</translation>
+    </message>
+    <message>
+        <source>Artist:</source>
+        <comment>audioTagArtistText</comment>
+        <translation>Исполнитель:</translation>
+    </message>
+    <message>
+        <source>Title:</source>
+        <comment>audioTagTitleText</comment>
+        <translation>Название:</translation>
+    </message>
+    <message>
+        <source>Year:</source>
+        <comment>audioTagYearText</comment>
+        <translation>Год:</translation>
     </message>
 </context>
 <context>

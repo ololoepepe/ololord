@@ -1281,6 +1281,10 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                         QString artist = m.value("artist").toString();
                         QString title = m.value("title").toString();
                         QString year = m.value("year").toString();
+                        f.audioTagAlbum = Tools::toStd(album);
+                        f.audioTagArtist = Tools::toStd(artist);
+                        f.audioTagTitle = Tools::toStd(title);
+                        f.audioTagYear = Tools::toStd(year);
                         szt = !artist.isEmpty() ? artist : "Unknown artist";
                         szt += " - ";
                         szt += !title.isEmpty() ? title : "Unknown title";
@@ -1428,6 +1432,10 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
         f["sizeY"] = file.sizeY;
         f["sourceName"] = file.sourceName;
         f["thumbName"] = file.thumbName;
+        f["audioTagAlbum"] = file.audioTagAlbum;
+        f["audioTagArtist"] = file.audioTagArtist;
+        f["audioTagTitle"] = file.audioTagTitle;
+        f["audioTagYear"] = file.audioTagYear;
         files.push_back(f);
     }
     o["files"] = files;

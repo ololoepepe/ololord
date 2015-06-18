@@ -36,6 +36,8 @@
 #include <QTextCodec>
 #include <QTime>
 #include <QVariant>
+#include <QVariantList>
+#include <QVariantMap>
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QMimeDatabase>
@@ -958,6 +960,41 @@ QString toString(const QByteArray &hp, bool *ok)
     if (!b)
         return bRet(ok, false, QString());
     return bRet(ok, true, s);
+}
+
+QVariant toVariant(const cppcms::json::value &v)
+{
+    try {
+        switch (v.type()) {
+        case cppcms::json::is_array: {
+            QVariantList l;
+            foreach (const cppcms::json::value &vv, v.array())
+                l << toVariant(vv);
+            return l;
+        }
+        case cppcms::json::is_boolean: {
+            return v.boolean();
+        }
+        case cppcms::json::is_number: {
+            return v.number();
+        }
+        case cppcms::json::is_object: {
+            QVariantMap m;
+            const cppcms::json::object &o = v.object();
+            for (cppcms::json::object::const_iterator i = o.begin(); i != o.end(); ++i)
+                m.insert(fromStd(i->first), toVariant(i->second));
+            return m;
+        }
+        case cppcms::json::is_string: {
+            return fromStd(v.str());
+        }
+        default:
+            return QVariant();
+        }
+    } catch (const std::exception &e) {
+        log("Tools::toVariantMap", e);
+        return QVariant();
+    }
 }
 
 QString userIp(const cppcms::http::request &req, bool *proxy)

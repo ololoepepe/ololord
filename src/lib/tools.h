@@ -9,13 +9,6 @@ namespace cppcms
 class application;
 class base_content;
 
-namespace json
-{
-
-class value;
-
-}
-
 namespace http
 {
 
@@ -43,6 +36,9 @@ class locale;
 #include <QMap>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
+
+#include <cppcms/json.h>
 
 #include <list>
 #include <string>
@@ -190,6 +186,7 @@ OLOLORD_EXPORT std::locale toStd(const QLocale &l);
 OLOLORD_EXPORT std::string toStd(const QString &s);
 OLOLORD_EXPORT std::list<std::string> toStd(const QStringList &sl);
 OLOLORD_EXPORT QString toString(const QByteArray &hp, bool *ok = 0);
+OLOLORD_EXPORT QVariant toVariant(const cppcms::json::value &v);
 OLOLORD_EXPORT QString userIp(const cppcms::http::request &req, bool *proxy = 0);
 
 }

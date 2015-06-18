@@ -1129,6 +1129,60 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
     return bRet(error, QString(), true);
 }
 
+bool editAudioTags(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
+                   const QByteArray &password, const QVariantMap &tags, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("editAudioTags", "Invalid board name", "error"), false);
+    if (fileName.isEmpty())
+        return bRet(error, tq.translate("editAudioTags", "Invalid file name", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (password.isEmpty() && hashpass.isEmpty())
+        return bRet(error, tq.translate("editAudioTags", "Invalid password", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("editAudioTags", "Internal database error", "error"), false);
+        Result<FileInfo> fileInfo = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
+        if (fileInfo.error)
+            return bRet(error, tq.translate("editAudioTags", "Internal database error", "error"), false);
+        if (!fileInfo)
+            return bRet(error, tq.translate("editAudioTags", "No such file", "error"), false);
+        if (!fileInfo->mimeType().startsWith("audio/"))
+            return bRet(error, tq.translate("editAudioTags", "Not an audio file", "error"), false);
+        QSharedPointer<Post> post = fileInfo->post().load();
+        if (post->board() != boardName)
+            return bRet(error, tq.translate("editAudioTags", "Board name mismatch", "error"), false);
+        if (password.isEmpty()) {
+            if (hashpass != post->hashpass()) {
+                int lvl = registeredUserLevel(req);
+                if (!moderOnBoard(req, boardName) || registeredUserLevel(post->hashpass()) >= lvl)
+                    return bRet(error, tq.translate("editAudioTags", "Not enough rights", "error"), false);
+            }
+        } else if (password != post->password()) {
+            return bRet(error, tq.translate("editAudioTags", "Incorrect password", "error"), false);
+        }
+        QVariantMap m = fileInfo->metaData().toMap();
+        static const QStringList Keys = QStringList() << "album" << "artist" << "title" << "year";
+        foreach (const QString &key, Keys) {
+            if (!tags.contains(key))
+                continue;
+            QVariant v = tags.value(key);
+            if (v.type() != QVariant::String)
+                continue;
+            m[key] = v;
+        }
+        fileInfo->setMetaData(m);
+        update(fileInfo);
+        t.commit();
+        Cache::removePost(boardName, post->number());
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
 bool editPost(EditPostParameters &p)
 {
     AbstractBoard::LockingWrapper board = AbstractBoard::board(p.boardName);

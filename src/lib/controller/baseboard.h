@@ -33,6 +33,10 @@ struct OLOLORD_EXPORT File
     int thumbSizeX;
     int thumbSizeY;
     std::string type;
+    std::string audioTagAlbum;
+    std::string audioTagArtist;
+    std::string audioTagTitle;
+    std::string audioTagYear;
 public:
     std::string specialThumbName() const
     {
@@ -88,6 +92,10 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string addThreadToFavoritesText;
     std::string addToPlaylistText;
     std::string ajaxErrorText;
+    std::string audioTagAlbumText;
+    std::string audioTagArtistText;
+    std::string audioTagTitleText;
+    std::string audioTagYearText;
     std::list<AbstractBoard::BoardInfo> availableBoards;
     std::string banExpiresLabelText;
     std::string banLevelLabelText;
@@ -117,6 +125,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string deleteThreadText;
     std::string downloadThreadText;
     bool draftsEnabled;
+    std::string editAudioTagsText;
     std::string editPostText;
     std::string enterPasswordText;
     std::string enterPasswordTitle;

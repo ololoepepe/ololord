@@ -271,5 +271,6 @@
         <file>static/img/playlist_download.png</file>
         <file>static/img/post_actions.png</file>
         <file>static/img/audio_wav_logo.png</file>
+        <file>static/img/audio_edit_tags.png</file>
     </qresource>
 </RCC>

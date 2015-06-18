@@ -215,6 +215,10 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.addToPlaylistText = ts.translate("initBaseBoard", "Add to playlist", "addToPlaylistText");
     c.addThreadToFavoritesText = ts.translate("initBaseBoard", "Add thread to favorites", "addThreadToFavoritesText");
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
+    c.audioTagAlbumText = ts.translate("initBaseBoard", "Album:", "audioTagAlbumText");
+    c.audioTagArtistText = ts.translate("initBaseBoard", "Artist:", "audioTagArtistText");
+    c.audioTagTitleText = ts.translate("initBaseBoard", "Title:", "audioTagTitleText");
+    c.audioTagYearText = ts.translate("initBaseBoard", "Year:", "audioTagYearText");
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");
     Content::BanLevel bl;
@@ -268,6 +272,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.downloadThreadText = ts.translate("initBaseBoard", "Download all thread files as a .zip archive",
                                         "downloadThreadText");
     c.draftsEnabled = board->draftsEnabled();
+    c.editAudioTagsText = ts.translate("initBaseBoard", "Edit audio file tags", "editAudioTagsText");
     c.editPostText = ts.translate("initBaseBoard", "Edit post", "editPostText");
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");

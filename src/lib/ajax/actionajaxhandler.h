@@ -30,6 +30,8 @@ public:
     void banUser(const cppcms::json::object &params);
     void deleteFile(std::string boardName, std::string fileName, std::string password);
     void deletePost(std::string boardName, long long postNumber, std::string password);
+    void editAudioTags(std::string boardName, std::string fileName, std::string password,
+                       const cppcms::json::object &tags);
     void editPost(const cppcms::json::object &params);
     void getBoards();
     void getCaptchaQuota(std::string boardName);

@@ -147,6 +147,33 @@ void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, 
     }
 }
 
+void ActionAjaxHandler::editAudioTags(std::string boardName, std::string fileName, std::string password,
+                                      const cppcms::json::object &tags)
+{
+    try {
+        QString bn = Tools::fromStd(boardName);
+        QString fn = Tools::fromStd(fileName);
+        QString logTarget = bn + "/" + fn;
+        Tools::log(server, "ajax_edit_audio_tags", "begin", logTarget);
+        if (!testBan(bn))
+            return Tools::log(server, "ajax_edit_audio_tags", "fail:ban", logTarget);
+        QByteArray pwd = Tools::toHashpass(Tools::fromStd(password));
+        QVariantMap m = Tools::toVariant(tags).toMap();
+        QString err;
+        if (!Database::editAudioTags(bn, fn, server.request(), pwd, m, &err)) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_edit_audio_tags", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(true);
+        Tools::log(server, "ajax_edit_audio_tags", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_edit_audio_tags", "fail:" + err);
+    }
+}
+
 void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 {
     try {
@@ -496,6 +523,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
     list << Handler("delete_file", cppcms::rpc::json_method(&ActionAjaxHandler::deleteFile, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
+    list << Handler("edit_audio_tags", cppcms::rpc::json_method(&ActionAjaxHandler::editAudioTags, self), method_role);
     list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
     list << Handler("get_boards", cppcms::rpc::json_method(&ActionAjaxHandler::getBoards, self), method_role);
     list << Handler("get_captcha_quota", cppcms::rpc::json_method(&ActionAjaxHandler::getCaptchaQuota, self),

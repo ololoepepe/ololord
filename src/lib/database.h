@@ -48,6 +48,7 @@ class request;
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <QVariantMap>
 
 #include <cppcms/json.h>
 
@@ -284,6 +285,8 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QSt
                                const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
+OLOLORD_EXPORT bool editAudioTags(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
+                                  const QByteArray &password, const QVariantMap &tags, QString *error = 0);
 OLOLORD_EXPORT bool editPost(EditPostParameters &p);
 OLOLORD_EXPORT bool fileExists(const QByteArray &hash, bool *ok = 0);
 OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);

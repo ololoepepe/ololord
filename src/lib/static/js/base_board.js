@@ -176,7 +176,17 @@ lord.createPostFile = function(f, boardName, postNumber) {
     if (!boardName)
         boardName = lord.text("currentBoardName");
     var file = lord.node("td");
+    file.id = "file" + f["sourceName"];
     lord.addClass(file, "postFile");
+    if (lord.isAudioType(f["type"])) {
+        ["Album", "Artist", "Title", "Year"].forEach(function(key) {
+            var inp = lord.node("input");
+            inp.type = "hidden";
+            inp.name = "audioTag" + key;
+            inp.value = f["audioTag" + key];
+            file.appendChild(inp);
+        });
+    }
     var divFileName = lord.node("div");
     lord.addClass(divFileName, "postFileName");
     var aFileName = lord.node("a");
@@ -224,9 +234,17 @@ lord.createPostFile = function(f, boardName, postNumber) {
     }
     if (lord.isAudioType(f["type"])) {
         var a = lord.node("a");
+        a.href = "javascript:lord.editAudioTags('" + boardName + "', " + postNumber + ", '" + f["sourceName"] + "');";
+        a.title = lord.text("editAudioTagsText");
+        var logo = lord.node("img");
+        logo.src = "/" + sitePrefix + "img/audio_edit_tags.png";
+        a.appendChild(logo);
+        divFileSearch.appendChild(lord.node("text", " "));
+        divFileSearch.appendChild(a);
+        a = lord.node("a");
         a.href = "javascript:lord.addToPlaylist('" + boardName + "', '" + f["sourceName"] + "');";
         a.title = lord.text("addToPlaylistText");
-        var logo = lord.node("img");
+        logo = lord.node("img");
         logo.src = "/" + sitePrefix + "img/playlist_add.png";
         a.appendChild(logo);
         divFileSearch.appendChild(lord.node("text", " "));
@@ -972,7 +990,7 @@ lord.addFile = function(boardName, postNumber) {
     var form = lord.queryOne("form", div);
     div.id = "";
     div.style.display = "";
-    lord.nameOne("additionalCount", div).value = additionalCount = lord.query(".postFile", post).length;
+    lord.nameOne("additionalCount", div).value = additionalCount + lord.query(".postFile", post).length;
     lord.showDialog(title, null, div, function() {
         if (!lord.getCookie("hashpass"))
             return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
@@ -1118,6 +1136,45 @@ lord.deleteFile = function(boardName, postNumber, fileName) {
             pwd = lord.toHashpass(pwd);
         }
         lord.ajaxRequest("delete_file", [boardName, fileName, pwd], 10, function() {
+            lord.updatePost(boardName, postNumber, post);
+        });
+    });
+};
+
+lord.editAudioTags = function(boardName, postNumber, fileName) {
+    if (!boardName || isNaN(+postNumber) || !fileName)
+        return;
+    var post = lord.id("post" + postNumber);
+    if (!post)
+        return;
+    var dlgTitle = lord.text("editAudioTagsText");
+    var table = lord.id("editAudioTagsTemplate").cloneNode(true);
+    table.id = "";
+    table.style.display = "";
+    var f = lord.id("file" + fileName);
+    var album = lord.nameOne("album", table);
+    var artist = lord.nameOne("artist", table);
+    var title = lord.nameOne("title", table);
+    var year = lord.nameOne("year", table);
+    album.value = lord.nameOne("audioTagAlbum", f).value;
+    artist.value = lord.nameOne("audioTagArtist", f).value;
+    title.value = lord.nameOne("audioTagTitle", f).value;
+    year.value = lord.nameOne("audioTagYear", f).value;
+    lord.showDialog(dlgTitle, null, table, function() {
+        var pwd = lord.nameOne("password", table).value;
+        if (pwd.length < 1) {
+            if (!lord.getCookie("hashpass"))
+                return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
+        } else if (!lord.isHashpass(pwd)) {
+            pwd = lord.toHashpass(pwd);
+        }
+        var tags = {
+            "album": album.value,
+            "artist": artist.value,
+            "title": title.value,
+            "year": year.value
+        };
+        lord.ajaxRequest("edit_audio_tags", [boardName, fileName, pwd, tags], 19, function() {
             lord.updatePost(boardName, postNumber, post);
         });
     });
