@@ -165,6 +165,11 @@ span.spoiler:hover a {
     color: #FF6600;
 }
 
+span.tooltip {
+    color: #304070;
+    cursor: help;
+}
+
 .postLimitReached {
     color: red;
 }

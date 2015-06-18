@@ -801,7 +801,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
     Controller::initBase(c, app.request(), pageTitle);
     c.currentBoard.name = Tools::toStd(name());
     c.currentBoard.title = Tools::toStd(title(tq.locale()));
-    c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");;
+    c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");
     foreach (const QString &r, rules(ts.locale()))
         c.rules.push_back(Tools::toStd(r));
     Tools::render(app, "rules", c);

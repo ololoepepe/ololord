@@ -333,7 +333,7 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkExternalLink);
 }
 
-static void processWakabaMarMailto(ProcessPostTextContext &c)
+static void processWakabaMarkMailto(ProcessPostTextContext &c)
 {
     if (!c.isValid())
         return;
@@ -360,6 +360,28 @@ static void processWakabaMarMailto(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkLink);
 }
 
+static void processWakabaMarkTooltip(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\S+\\?{3}\"(.*)\"");
+    rx.setMinimal(true);
+    int ind = rx.indexIn(t);
+    while (ind >= 0) {
+        QString tooltip = rx.cap(1);
+        int ttind = t.indexOf(tooltip, ind) - 4;
+        t.replace(ttind, tooltip.length() + 5, "</span>");
+        QString op = "<span class=\"tooltip\" title=\"" + tooltip + "\">";
+        t.insert(ind, op);
+        skip << qMakePair(ind, op.length());
+        skip << qMakePair(ttind + op.length(), 7);
+        ind = rx.indexIn(t, ttind + op.length() + 7);
+    }
+    c.process(t, skip, &processWakabaMarkMailto);
+}
+
 static void processWakabaMarkStrikeoutShitty(ProcessPostTextContext &c)
 {
     if (!c.isValid())
@@ -378,7 +400,7 @@ static void processWakabaMarkStrikeoutShitty(ProcessPostTextContext &c)
         skip << qMakePair(ind + 3, 4);
         ind = rx.indexIn(t, ind + 7);
     }
-    c.process(t, skip, &processWakabaMarMailto);
+    c.process(t, skip, &processWakabaMarkTooltip);
 }
 
 static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
@@ -612,9 +634,32 @@ static void processTags(ProcessPostTextContext &c)
     c.process(t, skip, next);
 }
 
+static void processTagTooltip(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\[tooltip\\s+value\\=\"(.*)\"\\s*\\]");
+    rx.setMinimal(true);
+    int indStart = rx.indexIn(t);
+    int indEnd = t.indexOf("[/tooltip]", indStart + rx.matchedLength());
+    while (indStart >= 0 && indEnd > 0) {
+        QString tooltip = rx.cap(1);
+        t.replace(indEnd, 10, "</span>");
+        QString op = "<span class=\"tooltip\" title=\"" + tooltip + "\">";
+        t.replace(indStart, rx.matchedLength(), op);
+        skip << qMakePair(indStart, op.length());
+        skip << qMakePair(indEnd + (op.length() - rx.matchedLength()), 7);
+        indStart = rx.indexIn(t, indEnd + (op.length() - rx.matchedLength()));
+        indEnd = t.indexOf("[/tooltip]", indStart + rx.matchedLength());
+    }
+    c.process(t, skip, &processTags);
+}
+
 static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processTags, "`", "", "font", "<font face=\"monospace\">", true);
+    processSimmetric(c, &processTagTooltip, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
 static void processTagCode(ProcessPostTextContext &c)

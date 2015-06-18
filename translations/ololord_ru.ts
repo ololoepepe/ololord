@@ -669,6 +669,16 @@ text</source>
         <translation>Преформатированный
 текст</translation>
     </message>
+    <message>
+        <source>tooltip</source>
+        <comment>tooltip</comment>
+        <translation>всплывающая подсказка</translation>
+    </message>
+    <message>
+        <source>text with tooltip</source>
+        <comment>tooltipText</comment>
+        <translation>текст со всплывающей подсказкой</translation>
+    </message>
 </context>
 <context>
     <name>PlaylistRoute</name>

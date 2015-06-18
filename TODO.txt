@@ -21,8 +21,8 @@
 [done] Make file logo images transparent
 [done] Generate random thumbnails for audio files
 [done] Add ability to edit audio tags
+[done] Add tooltip tag/markup
 * Improve minification
-* Add tooltip tag/markup
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread
 * Reload codecha instead of reloading a page
