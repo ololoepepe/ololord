@@ -334,10 +334,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var postingEnabled = (lord.text("postingEnabled") === "true");
     var inp = lord.id("currentThreadNumber");
     if (!!inp && +inp.value === res["threadNumber"]) {
-        if (postingEnabled)
-            number.href = "javascript:lord.insertPostNumber(" + res["number"] + ");";
-        else
-            number.href = "#" + res["number"];
+        number.href = "#" + res["number"];
     } else {
         number.href = "/" + sitePathPrefix + boardName + "/thread/" + res["threadNumber"] + ".html#"
         if (postingEnabled)
@@ -440,10 +437,15 @@ lord.createPostNode = function(res, permanent, boardName) {
     number.parentNode.removeChild(number);
     anumber.title = number.title;
     anumber.appendChild(number);
-    if (postingEnabled)
-        anumber.href = "javascript:lord.insertPostNumber(" + res["number"] + ");";
-    else
-        anumber.href = "#" + res["number"];
+    anumber.href = "#" + res["number"];
+    (function(pn) {
+        if (postingEnabled) {
+            anumber.onclick = function() {
+                lord.insertPostNumber(pn);
+                return false;
+            };
+        }
+    })(res["number"]);
     var deleteButton = lord.nameOne("deleteButton", post);
     deleteButton.href = deleteButton.href.replace("%postNumber%", res["number"]);
     var hideButton = lord.nameOne("hideButton", post);
@@ -923,21 +925,25 @@ lord.banUser = function(boardName, postNumber) {
 };
 
 lord.insertPostNumber = function(postNumber) {
-    var field = lord.nameOne("text", lord.id("postForm"));
-    var value = ">>" + postNumber + "\n";
-    if (document.selection) {
-        var sel = document.selection.createRange();
-        sel.text = value;
-    } else if (field.selectionStart || field.selectionStart == "0") {
-        var startPos = field.selectionStart;
-        var endPos = field.selectionEnd;
-        field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
-        var pos = ((startPos < endPos) ? startPos : endPos) + value.length;
-        field.setSelectionRange(pos, pos);
-    } else {
-        field.value += value;
+    try {
+        var field = lord.nameOne("text", lord.id("postForm"));
+        var value = ">>" + postNumber + "\n";
+        if (document.selection) {
+            var sel = document.selection.createRange();
+            sel.text = value;
+        } else if (field.selectionStart || field.selectionStart == "0") {
+            var startPos = field.selectionStart;
+            var endPos = field.selectionEnd;
+            field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+            var pos = ((startPos < endPos) ? startPos : endPos) + value.length;
+            field.setSelectionRange(pos, pos);
+        } else {
+            field.value += value;
+        }
+        field.focus();
+    } catch (ex) {
+        //Do nothing
     }
-    field.focus();
 };
 
 lord.quickReply = function(postNumber) {

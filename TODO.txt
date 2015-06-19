@@ -1,4 +1,5 @@
 [done] Implement "uptime" command
+[done] Fix post number links
 * Implement "ascetic" mode
 * Use D-Pointer approach for the lib
 

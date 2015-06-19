@@ -242,10 +242,11 @@
                 <% end %>
             <% else %>
                 <% if ( content.moder ) %>
-                    #<a href="javascript:lord.insertPostNumber(<%= post.number %>);"
+                    #<a href="#<%= post.number %>" onclick="lord.insertPostNumber(<%= post.number %>); return false;"
                         title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="javascript:lord.insertPostNumber(<%= post.number %>);"><%= post.number %></a>
+                    #<a href="#<%= post.number %>"
+                        onclick="lord.insertPostNumber(<%= post.number %>); return false;"><%= post.number %></a>
                 <% end %>
             <% end %>
         <% else %>
