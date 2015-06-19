@@ -164,6 +164,11 @@ span.tooltip {
     cursor: help;
 }
 
+span.newPostCount {
+    color: red;
+    font-size: 75%;
+}
+
 .postLimitReached {
     color: red;
 }

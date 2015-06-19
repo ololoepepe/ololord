@@ -1404,6 +1404,14 @@ text</source>
     </message>
 </context>
 <context>
+    <name>getNewPostCountEx</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
     <name>getNewPosts</name>
     <message>
         <source>Invalid board name</source>

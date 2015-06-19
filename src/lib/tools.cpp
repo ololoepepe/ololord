@@ -407,6 +407,41 @@ QString flagName(const QString &countryCode)
     return !fn.isEmpty() ? QFileInfo(fn).fileName() : QString();
 }
 
+QVariant fromJson(const cppcms::json::value &v)
+{
+    try {
+        switch (v.type()) {
+        case cppcms::json::is_array: {
+            QVariantList l;
+            foreach (const cppcms::json::value &vv, v.array())
+                l << fromJson(vv);
+            return l;
+        }
+        case cppcms::json::is_boolean: {
+            return v.boolean();
+        }
+        case cppcms::json::is_number: {
+            return v.number();
+        }
+        case cppcms::json::is_object: {
+            QVariantMap m;
+            const cppcms::json::object &o = v.object();
+            for (cppcms::json::object::const_iterator i = o.begin(); i != o.end(); ++i)
+                m.insert(fromStd(i->first), fromJson(i->second));
+            return m;
+        }
+        case cppcms::json::is_string: {
+            return fromStd(v.str());
+        }
+        default:
+            return QVariant();
+        }
+    } catch (const std::exception &e) {
+        log("Tools::fromJson", e);
+        return QVariant();
+    }
+}
+
 QLocale fromStd(const std::locale &l)
 {
     return QLocale(fromStd(l.name()).split('.').first());
@@ -900,6 +935,47 @@ QByteArray toHashpass(const QString &s, bool *ok)
     return bRet(ok, true, ba);
 }
 
+cppcms::json::value toJson(const QVariant &v)
+{
+    try {
+        switch (v.type()) {
+        case QVariant::List: {
+            cppcms::json::array a;
+            foreach (const QVariant &vv, v.toList())
+                a.push_back(toJson(vv));
+            return a;
+        }
+        case QVariant::Bool: {
+            cppcms::json::value vv;
+            vv.boolean(v.toBool());
+            return vv;
+        }
+        case QVariant::Double:
+        case QVariant::Int:
+        case QVariant::UInt:
+        case QVariant::LongLong:
+        case QVariant::ULongLong: {
+            return v.toDouble();
+        }
+        case QVariant::Map: {
+            cppcms::json::object o;
+            const QVariantMap &m = v.toMap();
+            for (QVariantMap::ConstIterator i = m.begin(); i != m.end(); ++i)
+                o.insert(std::pair<std::string, cppcms::json::value>(toStd(i.key()), toJson(i.value())));
+            return o;
+        }
+        case QVariant::String: {
+            return toStd(v.toString());
+        }
+        default:
+            return cppcms::json::value();
+        }
+    } catch (const std::exception &e) {
+        log("Tools::toJson", e);
+        return cppcms::json::value();
+    }
+}
+
 Post toPost(const PostParameters &params, const FileList &files)
 {
     Post p;
@@ -960,41 +1036,6 @@ QString toString(const QByteArray &hp, bool *ok)
     if (!b)
         return bRet(ok, false, QString());
     return bRet(ok, true, s);
-}
-
-QVariant toVariant(const cppcms::json::value &v)
-{
-    try {
-        switch (v.type()) {
-        case cppcms::json::is_array: {
-            QVariantList l;
-            foreach (const cppcms::json::value &vv, v.array())
-                l << toVariant(vv);
-            return l;
-        }
-        case cppcms::json::is_boolean: {
-            return v.boolean();
-        }
-        case cppcms::json::is_number: {
-            return v.number();
-        }
-        case cppcms::json::is_object: {
-            QVariantMap m;
-            const cppcms::json::object &o = v.object();
-            for (cppcms::json::object::const_iterator i = o.begin(); i != o.end(); ++i)
-                m.insert(fromStd(i->first), toVariant(i->second));
-            return m;
-        }
-        case cppcms::json::is_string: {
-            return fromStd(v.str());
-        }
-        default:
-            return QVariant();
-        }
-    } catch (const std::exception &e) {
-        log("Tools::toVariantMap", e);
-        return QVariant();
-    }
 }
 
 QString userIp(const cppcms::http::request &req, bool *proxy)

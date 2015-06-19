@@ -1376,6 +1376,33 @@ int getNewPostCount(const cppcms::http::request &req, const QString &boardName, 
     }
 }
 
+QVariantMap getNewPostCountEx(const cppcms::http::request &req, const QVariantMap &numbers, bool *ok, QString *error)
+{
+    QStringList boardNames = numbers.keys();
+    if (numbers.isEmpty())
+        return bRet(ok, true, error, QString(), QVariantMap());
+    TranslatorQt tq(req);
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(ok, false, error, tq.translate("getNewPostCountEx", "Internal database error", "error"),
+                        QVariantMap());
+        }
+        QVariantMap m;
+        foreach (const QString &bn, boardNames) {
+            quint64 lpn = numbers.value(bn).toULongLong();
+            odb::query<Post> q = odb::query<Post>::board == bn && odb::query<Post>::draft == false;
+            if (lpn)
+                q = q && odb::query<Post>::number > lpn;
+            Result<PostCount> count = queryOne<PostCount, Post>(q);
+            m.insert(bn, count->count);
+        }
+        return bRet(ok, true, error, QString(), m);
+    }  catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QVariantMap());
+    }
+}
+
 QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
                         quint64 lastPostNumber, bool *ok, QString *error)
 {

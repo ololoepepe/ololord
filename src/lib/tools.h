@@ -144,6 +144,7 @@ OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::reque
 OLOLORD_EXPORT QString externalLinkRegexpPattern();
 OLOLORD_EXPORT bool externalLinkRootZoneExists(const QString &zoneName);
 OLOLORD_EXPORT QString flagName(const QString &countryCode);
+OLOLORD_EXPORT QVariant fromJson(const cppcms::json::value &v);
 OLOLORD_EXPORT QLocale fromStd(const std::locale &l);
 OLOLORD_EXPORT QString fromStd(const std::string &s);
 OLOLORD_EXPORT QStringList fromStd(const std::list<std::string> &sl);
@@ -180,13 +181,13 @@ OLOLORD_EXPORT QString storagePath();
 OLOLORD_EXPORT QStringList supportedCodeLanguages();
 OLOLORD_EXPORT int timeZoneMinutesOffset(const cppcms::http::request &req, int defaultOffset = -1000);
 OLOLORD_EXPORT QByteArray toHashpass(const QString &s, bool *ok = 0);
+OLOLORD_EXPORT cppcms::json::value toJson(const QVariant &v);
 OLOLORD_EXPORT Post toPost(const PostParameters &params, const FileList &files);
 OLOLORD_EXPORT Post toPost(const cppcms::http::request &req);
 OLOLORD_EXPORT std::locale toStd(const QLocale &l);
 OLOLORD_EXPORT std::string toStd(const QString &s);
 OLOLORD_EXPORT std::list<std::string> toStd(const QStringList &sl);
 OLOLORD_EXPORT QString toString(const QByteArray &hp, bool *ok = 0);
-OLOLORD_EXPORT QVariant toVariant(const cppcms::json::value &v);
 OLOLORD_EXPORT QString userIp(const cppcms::http::request &req, bool *proxy = 0);
 
 }
