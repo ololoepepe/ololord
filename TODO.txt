@@ -24,6 +24,7 @@
 [done] Add tooltip tag/markup
 [done] Use "constants" for JSON-RPC method IDs
 [done] Use hidden input for last post number info
+[done] Do not render raw post text on pages, load it on demand
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread

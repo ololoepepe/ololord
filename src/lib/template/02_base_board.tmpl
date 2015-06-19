@@ -180,7 +180,6 @@
 <% else %>
     <div id="post<%= post.number %>" class="post">
 <% end %>
-    <input name="rawText" type="hidden" value="<%= post.rawPostText %>" />
     <% if ( post.rawHtml ) %>
         <input name="rawHtml" type="hidden" value="true" />
     <% else %>

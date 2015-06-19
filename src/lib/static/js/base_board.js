@@ -1037,60 +1037,70 @@ lord.editPost = function(boardName, postNumber) {
     var post = lord.id("post" + postNumber);
     if (!post)
         return;
-    var title = lord.text("editPostText");
-    var form = lord.id("editPostTemplate").cloneNode(true);
-    form.id = "";
-    form.style.display = "";
-    var email = lord.nameOne("email", form);
-    var name = lord.nameOne("name", form);
-    var subject = lord.nameOne("subject", form);
-    var text = lord.nameOne("text", form);
-    var used = lord.queryOne(".symbolCounter", form);
-    used = lord.nameOne("used", used);
-    email.value = lord.nameOne("email", post).value;
-    name.value = lord.nameOne("name", post).value;
-    subject.value = lord.nameOne("subject", post).value;
-    text.appendChild(lord.node("text", lord.nameOne("rawText", post).value));
-    used.appendChild(lord.node("text", text.value.length.toString()));
-    var moder = (lord.text("moder") === "true");
-    var draftField = lord.nameOne("draft", form);
-    var rawField = lord.nameOne("raw", form);
-    if (!!draftField) {
-        if (lord.nameOne("draft", post).value == "true")
-            draftField.checked = true;
-        else
-            draftField.parentNode.parentNode.style.display = "none";
-    }
-    if (!!rawField && lord.nameOne("rawHtml", post).value == "true")
-        rawField.checked = true;
-    if (lord.customEditFormSet)
-        lord.customEditFormSet(form, post, !!draftField, !!rawField);
-    lord.showDialog(title, null, form, function() {
-        var pwd = lord.nameOne("password", form).value;
-        if (pwd.length < 1) {
-            if (!lord.getCookie("hashpass"))
-                return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
-        } else if (!lord.isHashpass(pwd)) {
-            pwd = lord.toHashpass(pwd);
+    var stage2 = function(boardName, postNumber, post, rawPostText) {
+        var title = lord.text("editPostText");
+        var form = lord.id("editPostTemplate").cloneNode(true);
+        form.id = "";
+        form.style.display = "";
+        var email = lord.nameOne("email", form);
+        var name = lord.nameOne("name", form);
+        var subject = lord.nameOne("subject", form);
+        var text = lord.nameOne("text", form);
+        var used = lord.queryOne(".symbolCounter", form);
+        used = lord.nameOne("used", used);
+        email.value = lord.nameOne("email", post).value;
+        name.value = lord.nameOne("name", post).value;
+        subject.value = lord.nameOne("subject", post).value;
+        text.appendChild(lord.node("text", rawPostText));
+        used.appendChild(lord.node("text", text.value.length.toString()));
+        var moder = (lord.text("moder") === "true");
+        var draftField = lord.nameOne("draft", form);
+        var rawField = lord.nameOne("raw", form);
+        if (!!draftField) {
+            if (lord.nameOne("draft", post).value == "true")
+                draftField.checked = true;
+            else
+                draftField.parentNode.parentNode.style.display = "none";
         }
-        var params = {
-            "boardName": boardName,
-            "postNumber": +postNumber,
-            "text": text.value,
-            "email": email.value,
-            "name": name.value,
-            "subject": subject.value,
-            "raw": !!rawField ? form.querySelector("[name='raw']").checked : false,
-            "draft": !!draftField ? draftField.checked : false,
-            "password": pwd,
-            "userData": null
-        };
-        if (lord.customEditFormGet)
-            params["userData"] = lord.customEditFormGet(form, params);
-        lord.ajaxRequest("edit_post", [params], lord.RpcEditPost, function() {
-            lord.updatePost(boardName, postNumber, post);
+        if (!!rawField && lord.nameOne("rawHtml", post).value == "true")
+            rawField.checked = true;
+        if (lord.customEditFormSet)
+            lord.customEditFormSet(form, post, !!draftField, !!rawField);
+        lord.showDialog(title, null, form, function() {
+            var pwd = lord.nameOne("password", form).value;
+            if (pwd.length < 1) {
+                if (!lord.getCookie("hashpass"))
+                    return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
+            } else if (!lord.isHashpass(pwd)) {
+                pwd = lord.toHashpass(pwd);
+            }
+            var params = {
+                "boardName": boardName,
+                "postNumber": +postNumber,
+                "text": text.value,
+                "email": email.value,
+                "name": name.value,
+                "subject": subject.value,
+                "raw": !!rawField ? form.querySelector("[name='raw']").checked : false,
+                "draft": !!draftField ? draftField.checked : false,
+                "password": pwd,
+                "userData": null
+            };
+            if (lord.customEditFormGet)
+                params["userData"] = lord.customEditFormGet(form, params);
+            lord.ajaxRequest("edit_post", [params], lord.RpcEditPostId, function() {
+                lord.updatePost(boardName, postNumber, post);
+            });
         });
-    });
+    };
+    var rawPostText = lord.nameOne("rawText", post);
+    if (rawPostText) {
+        stage2(boardName, postNumber, post, rawPostText.value);
+    } else {
+        lord.ajaxRequest("get_post", [boardName, +postNumber], lord.RpcGetPostId, function(res) {
+            stage2(boardName, postNumber, post, res["rawPostText"]);
+        });
+    }
 };
 
 lord.setPostHidden = function(boardName, postNumber) {
