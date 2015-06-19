@@ -23,8 +23,8 @@
 namespace Cache
 {
 
-static QCache<QString, QString> customHomePageContents;
-static QReadWriteLock customHomePageContentsLock(QReadWriteLock::Recursive);
+static QCache<QString, QString> theCustomContent;
+static QReadWriteLock customContentLock(QReadWriteLock::Recursive);
 static QCache<QString, File> dynamicFiles;
 static QReadWriteLock dynamicFilesLock(QReadWriteLock::Recursive);
 static QCache<QString, Tools::FriendList> theFriendList;
@@ -56,7 +56,7 @@ void initCache(T &cache, const QString &name, int defaultSize)
 ClearCacheFunctionMap availableClearCacheFunctions()
 {
     init_once(ClearCacheFunctionMap, map, ClearCacheFunctionMap()) {
-        map.insert("home_page", &clearCustomHomePageContent);
+        map.insert("custom_content", &clearCustomContent);
         map.insert("dynamic_files", &clearDynamicFilesCache);
         map.insert("friend_list", &clearFriendListCache);
         map.insert("ip_ban_info_list", &clearIpBanInfoListCache);
@@ -72,7 +72,7 @@ ClearCacheFunctionMap availableClearCacheFunctions()
 SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 {
     init_once(SetMaxCacheSizeFunctionMap, map, SetMaxCacheSizeFunctionMap()) {
-        map.insert("home_page", &setCustomHomePageContentMaxCacheSize);
+        map.insert("custom_content", &setCustomContentMaxCacheSize);
         map.insert("dynamic_files", &setDynamicFilesMaxCacheSize);
         map.insert("friend_list", &setFriendListMaxCacheSize);
         map.insert("ip_ban_info_list", &setIpBanInfoListMaxCacheSize);
@@ -101,17 +101,17 @@ QStringList availableCacheNames()
     return names;
 }
 
-bool cacheCustomHomePageContent(const QLocale &l, QString *content)
+bool cacheCustomContent(const QString &prefix, const QLocale &l, QString *content)
 {
-    if (!content)
+    if (prefix.isEmpty() || !content)
         return false;
-    QWriteLocker locker(&customHomePageContentsLock);
+    QWriteLocker locker(&customContentLock);
     do_once(init)
-        initCache(customHomePageContents, "home_page", defaultCustomHomePageContentsCacheSize);
+        initCache(theCustomContent, "custom_content", defaultCustomContentCacheSize);
     int sz = content->length() * 2;
-    if (customHomePageContents.maxCost() < sz)
+    if (theCustomContent.maxCost() < sz)
         return false;
-    customHomePageContents.insert(l.name(), content, sz);
+    theCustomContent.insert(prefix + "/" + l.name(), content, sz);
     return true;
 }
 
@@ -245,10 +245,10 @@ bool clearCache(const QString &name, QString *err, const QLocale &l)
     return bRet(err, QString(), true);
 }
 
-void clearCustomHomePageContent()
+void clearCustomContent()
 {
-    QWriteLocker locker(&customHomePageContentsLock);
-    customHomePageContents.clear();
+    QWriteLocker locker(&customContentLock);
+    theCustomContent.clear();
 }
 
 void clearDynamicFilesCache()
@@ -299,17 +299,19 @@ void clearTranslatorsCache()
     translators.clear();
 }
 
-QString *customHomePageContent(const QLocale &l)
+QString *customContent(const QString &prefix, const QLocale &l)
 {
-    QReadLocker locker(&customHomePageContentsLock);
-    return customHomePageContents.object(l.name());
+    if (prefix.isEmpty())
+        return 0;
+    QReadLocker locker(&customContentLock);
+    return theCustomContent.object(prefix + "/" + l.name());
 }
 
 int defaultCacheSize(const QString &name)
 {
     typedef QMap<QString, int> IntMap;
     init_once(IntMap, map, IntMap()) {
-        map.insert("home_page", defaultCustomHomePageContentsCacheSize);
+        map.insert("custom_content", defaultCustomContentCacheSize);
         map.insert("dynamic_files", defaultDynamicFilesCacheSize);
         map.insert("friend_list", defaultFriendListCacheSize);
         map.insert("ip_ban_info_list", defaultIpBanInfoListCacheSize);
@@ -371,12 +373,12 @@ QStringList *rules(const QLocale &locale, const QString &prefix)
     return theRules.object(prefix + "/" + locale.name());
 }
 
-void setCustomHomePageContentMaxCacheSize(int size)
+void setCustomContentMaxCacheSize(int size)
 {
     if (size < 0)
         return;
-    QWriteLocker locker(&customHomePageContentsLock);
-    customHomePageContents.setMaxCost(size);
+    QWriteLocker locker(&customContentLock);
+    theCustomContent.setMaxCost(size);
 }
 
 void setDynamicFilesMaxCacheSize(int size)

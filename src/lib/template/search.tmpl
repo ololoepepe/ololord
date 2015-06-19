@@ -37,6 +37,7 @@
         <% include baseTexts() %>
         <input type="hidden" id="hiddenSearchQuery" value="<%= query %>" />
         <input type="hidden" id="hiddenSearchQueryBoard" value="<%= queryBoard %>" />
+        <% include customHeader() %>
         <% include settings() %>
         <br />
         <% include navbar() %>
@@ -77,6 +78,7 @@
                 <%= errorDescription %>
             </div>
         <% end %>
+        <% include customFooter() %>
     </body>
 </html>
 <% end template %>

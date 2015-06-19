@@ -23,6 +23,14 @@ for(ODB_TEMPLATE, ODB_TEMPLATES) {
     ODB_TEMPLATES_STRING=$${ODB_TEMPLATES_STRING} \"$${ODB_TEMPLATE}\"
 }
 
+isEmpty(QMAKE_INCDIR_QT) {
+    mac|unix {
+        QMAKE_INCDIR_QT=$$replace(QMAKE_QMAKE, "/bin/qmake", "")/include
+    } else:win32 {
+        QMAKE_INCDIR_QT=$$replace(QMAKE_QMAKE, "/bin/qmake.exe", "")/include
+    }
+}
+
 ODB_PROCESSING_COMMAND=$${ODB_PROCESSING_COMMAND} -d sqlite --generate-query --generate-schema --profile qt
 ODB_PROCESSING_COMMAND=$${ODB_PROCESSING_COMMAND} -I \"$${QMAKE_INCDIR_QT}\"
 ODB_PROCESSING_COMMAND=$${ODB_PROCESSING_COMMAND} -I \"$${QMAKE_INCDIR_QT}/QtCore\" $${ODB_TEMPLATES_STRING}

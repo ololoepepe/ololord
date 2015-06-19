@@ -11,6 +11,39 @@ lord.Day = 24 * lord.Hour;
 lord.Year = 365 * lord.Day;
 lord.Billion = 2 * 1000 * 1000 * 1000;
 
+lord._defineEnum = function(constName, value) {
+    if (typeof constName != "string")
+        return;
+    if (value) {
+        lord[constName] = value;
+        lord._lastEnumValue = value;
+    } else if (typeof lord._lastEnumValue == "number") {
+        lord._lastEnumValue += 1;
+        lord[constName] = lord._lastEnumValue;
+    }
+};
+
+lord._defineEnum("RpcBanUserId", 1);
+lord._defineEnum("RpcDeleteFileId");
+lord._defineEnum("RpcDeletePostId");
+lord._defineEnum("RpcEditAudioTagsId");
+lord._defineEnum("RpcEditPostId");
+lord._defineEnum("RpcGetBoardsId");
+lord._defineEnum("RpcGetCaptchaQuotaId");
+lord._defineEnum("RpcGetFileExistenceId");
+lord._defineEnum("RpcGetFileMetaDataId");
+lord._defineEnum("RpcGetNewPostCountId");
+lord._defineEnum("RpcGetNewPostCountExId");
+lord._defineEnum("RpcGetNewPostsId");
+lord._defineEnum("RpcGetPostId");
+lord._defineEnum("RpcGetThreadNumbersId");
+lord._defineEnum("RpcGetYandexCaptchaImageId");
+lord._defineEnum("RpcSetThreadFixedId");
+lord._defineEnum("RpcSetThreadOpenedId");
+lord._defineEnum("RpcSetVoteOpenedId");
+lord._defineEnum("RpcUnvoteId");
+lord._defineEnum("RpcVoteId");
+
 /*Variables*/
 
 lord.popups = [];
@@ -431,6 +464,12 @@ lord.showSettings = function() {
         lord.setCookie("time", tm, {
             "expires": lord.Billion, "path": "/"
         });
+        if ("local" == tm) {
+            var date = new Date();
+            lord.setCookie("time_zone_offset", -date.getTimezoneOffset(), {
+                "expires": lord.Billion, "path": "/"
+            });
+        }
         sel = lord.nameOne("captchaEngineSelect", div);
         var tm = sel.options[sel.selectedIndex].value;
         lord.setCookie("captchaEngine", tm, {
@@ -506,7 +545,7 @@ lord.showFavorites = function() {
     lord.forIn(fav, function(_, x) {
         var boardName = x.split("/").shift();
         var threadNumber = x.split("/").pop();
-        lord.ajaxRequest("get_post", [boardName, +threadNumber], 6, function(res) {
+        lord.ajaxRequest("get_post", [boardName, +threadNumber], lord.RpcGetPostId, function(res) {
             f(res, x);
         });
     });
@@ -520,7 +559,7 @@ lord.checkFavoriteThreads = function() {
     lord.forIn(fav, function(o, x) {
         var boardName = x.split("/").shift();
         var threadNumber = x.split("/").pop();
-        lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, o.lastPostNumber], 7, function(res) {
+        lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, o.lastPostNumber], lord.RpcGetNewPostsId, function(res) {
             if (!res || res.length < 1)
                 return;
             o.lastPostNumber = res.pop()["number"];
@@ -562,24 +601,32 @@ lord.initializeOnLoadSettings = function() {
         lord.id("showTripcodeCheckbox").checked = true;
     var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
     var currentBoardName = lord.text("currentBoardName");
-    lord.query(".navbar").forEach(function(navbar) {
-        lord.query(".navbarItemBoard", navbar).forEach(function(item) {
-            var a = lord.queryOne("a", item);
-            var boardName = a.childNodes[0].nodeValue;
-            if (currentBoardName == boardName)
-                return;
-            var lastPostNumber = +lastPostNumbers[boardName];
-            if (isNaN(lastPostNumber))
-                lastPostNumber = 0;
-            lord.ajaxRequest("get_new_post_count", [boardName, lastPostNumber], 18, function(res) {
-                if (isNaN(res) || res < 1)
+    var numbers = {};
+    var navbar = lord.query(".navbar").shift();
+    lord.query(".navbarItemBoard", navbar).forEach(function(item) {
+        var a = lord.queryOne("a", item);
+        var boardName = a.childNodes[0].nodeValue;
+        if (currentBoardName == boardName)
+            return;
+        numbers[boardName] = +lastPostNumbers[boardName];
+        if (isNaN(numbers[boardName]))
+            numbers[boardName] = 0;
+    });
+    lord.ajaxRequest("get_new_post_count_ex", [numbers], lord.RpcGetNewPostCountExId, function(res) {
+        if (!res)
+            return;
+        lord.query(".navbar").forEach(function(navbar) {
+            lord.query(".navbarItemBoard", navbar).forEach(function(item) {
+                var a = lord.queryOne("a", item);
+                var boardName = a.childNodes[0].nodeValue;
+                var npc = res[boardName];
+                if (!npc)
                     return;
-                var fnt = lord.node("font");
-                fnt.color = "green";
-                fnt.size = "2";
-                fnt.appendChild(lord.node("text", "+" + res));
+                var span = lord.node("span");
+                lord.addClass(span, "newPostCount");
+                span.appendChild(lord.node("text", "+" + npc));
                 var parent = a.parentNode;
-                parent.insertBefore(fnt, a);
+                parent.insertBefore(span, a);
                 parent.insertBefore(lord.node("text", " "), a);
             });
         });

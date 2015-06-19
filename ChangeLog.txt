@@ -1,3 +1,33 @@
+=== ololord 0.1.0-rc8 (19 June 2015) ===
+    * Fix building with Qt5
+    * Use QMimeDatabase for MIME type detection with Qt5
+    * Fix complain button sound
+    * Fix thread subject displaying
+    * Fix referencing posts when deleting referenced post
+    * Fix [url] tag markup
+    * Improve tripcode displaying
+    * Improve board speed info storage
+    * Add download buttons to playlist
+    * Hide post actions
+    * Fix post editing
+    * Save post text index and captcha quota periodically
+    * Improve time zone handling
+    * Fix file copying (Database::copyFile)
+    * Fix JS bugs/issues
+    * Improve custom content system
+    * Fix captcha engine selection
+    * Select appropriate suffix for file according to MIME type
+    * Expand posts when YouTube video is expanded
+    * Fix YouTube video ID detection
+    * Make file logo images transparent
+    * Generate random thumbnails for audio files
+    * Add ability to edit audio tags
+    * Add tooltip tag/markup
+    * Use "constants" for JSON-RPC method IDs
+    * Use hidden input for last post number info
+    * Do not render raw post text on pages, load it on demand
+    * Get new post count for all boards by one request
+
 === ololord 0.1.0-rc7 (20 May 2015) ===
     * Fix audio tags support
     * Fix posting speed counting

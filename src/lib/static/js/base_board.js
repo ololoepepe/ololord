@@ -126,7 +126,7 @@ lord.resetCaptcha = function() {
     var captcha = lord.id("captcha");
     if (!!captcha) {
         var boardName = lord.text("currentBoardName");
-        lord.ajaxRequest("get_captcha_quota", [boardName], 8, function(res) {
+        lord.ajaxRequest("get_captcha_quota", [boardName], lord.RpcGetCaptchaQuotaId, function(res) {
             res = +res;
             if (isNaN(res))
                 return;
@@ -176,7 +176,17 @@ lord.createPostFile = function(f, boardName, postNumber) {
     if (!boardName)
         boardName = lord.text("currentBoardName");
     var file = lord.node("td");
+    file.id = "file" + f["sourceName"];
     lord.addClass(file, "postFile");
+    if (lord.isAudioType(f["type"])) {
+        ["Album", "Artist", "Title", "Year"].forEach(function(key) {
+            var inp = lord.node("input");
+            inp.type = "hidden";
+            inp.name = "audioTag" + key;
+            inp.value = f["audioTag" + key];
+            file.appendChild(inp);
+        });
+    }
     var divFileName = lord.node("div");
     lord.addClass(divFileName, "postFileName");
     var aFileName = lord.node("a");
@@ -224,9 +234,17 @@ lord.createPostFile = function(f, boardName, postNumber) {
     }
     if (lord.isAudioType(f["type"])) {
         var a = lord.node("a");
+        a.href = "javascript:lord.editAudioTags('" + boardName + "', " + postNumber + ", '" + f["sourceName"] + "');";
+        a.title = lord.text("editAudioTagsText");
+        var logo = lord.node("img");
+        logo.src = "/" + sitePrefix + "img/audio_edit_tags.png";
+        a.appendChild(logo);
+        divFileSearch.appendChild(lord.node("text", " "));
+        divFileSearch.appendChild(a);
+        a = lord.node("a");
         a.href = "javascript:lord.addToPlaylist('" + boardName + "', '" + f["sourceName"] + "');";
         a.title = lord.text("addToPlaylistText");
-        var logo = lord.node("img");
+        logo = lord.node("img");
         logo.src = "/" + sitePrefix + "img/playlist_add.png";
         a.appendChild(logo);
         divFileSearch.appendChild(lord.node("text", " "));
@@ -278,13 +296,13 @@ lord.createPostNode = function(res, permanent, boardName) {
         closed.style.display = "";
     else
         closed.parentNode.removeChild(closed);
-    lord.nameOne("subject", post).appendChild(lord.node("text", res["subject"]));
+    lord.nameOne("postSubject", post).appendChild(lord.node("text", res["subject"]));
     var registered = lord.nameOne("registered", post);
     if (!!res["showRegistered"] && !!res["showTripcode"])
         registered.style.display = "";
     else
         registered.parentNode.removeChild(registered);
-    var name = lord.nameOne("name", post);
+    var name = lord.nameOne("userName", post);
     if (!!res["email"])
         name.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
     else
@@ -515,7 +533,7 @@ lord.updatePost = function(boardName, postNumber, post) {
     postNumber = +postNumber;
     if (!boardName || !post || isNaN(postNumber) || postNumber <= 0)
         return;
-    lord.ajaxRequest("get_post", [boardName, postNumber], 6, function(res) {
+    lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
         var newPost = lord.createPostNode(res, true);
         if (!newPost)
             return;
@@ -540,7 +558,8 @@ lord.clearFileInput = function(div) {
     var span = div.querySelector("span");
     if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
         span.removeChild(span.childNodes[0]);
-    lord.removeFileHash(div);
+    if (div.parentNode)
+        lord.removeFileHash(div);
     div.fileHash = null;
 };
 
@@ -661,16 +680,11 @@ lord.addYoutubeButton = function(post) {
                     a.parentNode.removeChild(a.nextSibling);
                     a.parentNode.removeChild(a.nextSibling);
                     a.replaceChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"), a.childNodes[0]);
+                    lord.removeClass(a.parentNode, "expand");
                 } else {
+                    lord.addClass(a.parentNode, "expand");
                     var iframe = lord.node("iframe");
-                    var src = link.href.replace("http://", "//").replace("https://", "//");
-                    src = src.replace("youtube.com/watch?v=", "youtube.com/embed/");
-                    var options = src.split(/&|#/).slice(1);
-                    src = src.split(/&|#/).shift();
-                    src += "?autoplay=1";
-                    if (options.length)
-                        src += "&" + options.join("&");
-                    iframe.src = src;
+                    iframe.src = "https://youtube.com/embed/" + videoId + "?autoplay=1";
                     iframe.allowfullscreen = true;
                     iframe.frameborder = "0px";
                     iframe.height = "360";
@@ -812,7 +826,7 @@ lord.deletePost = function(boardName, postNumber, fromThread) {
         } else if (!lord.isHashpass(pwd)) {
             pwd = lord.toHashpass(pwd);
         }
-        lord.ajaxRequest("delete_post", [boardName, +postNumber, pwd], 1, function(res) {
+        lord.ajaxRequest("delete_post", [boardName, +postNumber, pwd], lord.RpcDeletePostId, function(res) {
             var post = lord.id("post" + postNumber);
             if (!post) {
                 if (!!fromThread) {
@@ -850,7 +864,7 @@ lord.setThreadFixed = function(boardName, postNumber, fixed) {
         return;
     if (!lord.getCookie("hashpass"))
         return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
-    lord.ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, lord.reloadPage);
+    lord.ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], lord.RpcSetThreadFixedId, lord.reloadPage);
 };
 
 lord.setThreadOpened = function(boardName, postNumber, opened) {
@@ -858,7 +872,7 @@ lord.setThreadOpened = function(boardName, postNumber, opened) {
         return;
     if (!lord.getCookie("hashpass"))
         return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
-    lord.ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, lord.reloadPage);
+    lord.ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], lord.RpcSetThreadOpenedId, lord.reloadPage);
 };
 
 lord.banUser = function(boardName, postNumber) {
@@ -902,7 +916,7 @@ lord.banUser = function(boardName, postNumber) {
             "reason": inputReason.value,
             "expires": inputExpires.value
         };
-        lord.ajaxRequest("ban_user", [params], 4, function(res) {
+        lord.ajaxRequest("ban_user", [params], lord.RpcBanUserId, function(res) {
             lord.reloadPage();
         });
     });
@@ -976,7 +990,7 @@ lord.addFile = function(boardName, postNumber) {
     var form = lord.queryOne("form", div);
     div.id = "";
     div.style.display = "";
-    lord.nameOne("additionalCount", div).value = additionalCount = lord.query(".postFile", post).length;
+    lord.nameOne("additionalCount", div).value = lord.query(".postFile", post).length;
     lord.showDialog(title, null, div, function() {
         if (!lord.getCookie("hashpass"))
             return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
@@ -1023,60 +1037,70 @@ lord.editPost = function(boardName, postNumber) {
     var post = lord.id("post" + postNumber);
     if (!post)
         return;
-    var title = lord.text("editPostText");
-    var form = lord.id("editPostTemplate").cloneNode(true);
-    form.id = "";
-    form.style.display = "";
-    var email = lord.nameOne("email", form);
-    var name = lord.nameOne("name", form);
-    var subject = lord.nameOne("subject", form);
-    var text = lord.nameOne("text", form);
-    var used = lord.queryOne(".symbolCounter", form);
-    used = lord.nameOne("used", used);
-    email.value = lord.nameOne("email", post).value;
-    name.value = lord.nameOne("name", post).value;
-    subject.value = lord.nameOne("subject", post).value;
-    text.appendChild(lord.node("text", lord.nameOne("rawText", post).value));
-    used.appendChild(lord.node("text", text.value.length.toString()));
-    var moder = (lord.text("moder") === "true");
-    var draftField = lord.nameOne("draft", form);
-    var rawField = lord.nameOne("raw", form);
-    if (!!draftField) {
-        if (lord.nameOne("draft", post).value == "true")
-            draftField.checked = true;
-        else
-            draftField.parentNode.parentNode.style.display = "none";
-    }
-    if (!!rawField && lord.nameOne("rawHtml", post).value == "true")
-        rawField.checked = true;
-    if (lord.customEditFormSet)
-        lord.customEditFormSet(form, post, !!draftField, !!rawField);
-    lord.showDialog(title, null, form, function() {
-        var pwd = lord.nameOne("password", form).value;
-        if (pwd.length < 1) {
-            if (!lord.getCookie("hashpass"))
-                return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
-        } else if (!lord.isHashpass(pwd)) {
-            pwd = lord.toHashpass(pwd);
+    var stage2 = function(boardName, postNumber, post, rawPostText) {
+        var title = lord.text("editPostText");
+        var form = lord.id("editPostTemplate").cloneNode(true);
+        form.id = "";
+        form.style.display = "";
+        var email = lord.nameOne("email", form);
+        var name = lord.nameOne("name", form);
+        var subject = lord.nameOne("subject", form);
+        var text = lord.nameOne("text", form);
+        var used = lord.queryOne(".symbolCounter", form);
+        used = lord.nameOne("used", used);
+        email.value = lord.nameOne("email", post).value;
+        name.value = lord.nameOne("name", post).value;
+        subject.value = lord.nameOne("subject", post).value;
+        text.appendChild(lord.node("text", rawPostText));
+        used.appendChild(lord.node("text", text.value.length.toString()));
+        var moder = (lord.text("moder") === "true");
+        var draftField = lord.nameOne("draft", form);
+        var rawField = lord.nameOne("raw", form);
+        if (!!draftField) {
+            if (lord.nameOne("draft", post).value == "true")
+                draftField.checked = true;
+            else
+                draftField.parentNode.parentNode.style.display = "none";
         }
-        var params = {
-            "boardName": boardName,
-            "postNumber": +postNumber,
-            "text": text.value,
-            "email": email.value,
-            "name": name.value,
-            "subject": subject.value,
-            "raw": !!rawField ? form.querySelector("[name='raw']").checked : false,
-            "draft": !!draftField ? draftField.checked : false,
-            "password": pwd,
-            "userData": null
-        };
-        if (lord.customEditFormGet)
-            params["userData"] = lord.customEditFormGet(form, params);
-        lord.ajaxRequest("edit_post", [params], 5, function() {
-            lord.updatePost(boardName, postNumber, post);
+        if (!!rawField && lord.nameOne("rawHtml", post).value == "true")
+            rawField.checked = true;
+        if (lord.customEditFormSet)
+            lord.customEditFormSet(form, post, !!draftField, !!rawField);
+        lord.showDialog(title, null, form, function() {
+            var pwd = lord.nameOne("password", form).value;
+            if (pwd.length < 1) {
+                if (!lord.getCookie("hashpass"))
+                    return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
+            } else if (!lord.isHashpass(pwd)) {
+                pwd = lord.toHashpass(pwd);
+            }
+            var params = {
+                "boardName": boardName,
+                "postNumber": +postNumber,
+                "text": text.value,
+                "email": email.value,
+                "name": name.value,
+                "subject": subject.value,
+                "raw": !!rawField ? form.querySelector("[name='raw']").checked : false,
+                "draft": !!draftField ? draftField.checked : false,
+                "password": pwd,
+                "userData": null
+            };
+            if (lord.customEditFormGet)
+                params["userData"] = lord.customEditFormGet(form, params);
+            lord.ajaxRequest("edit_post", [params], lord.RpcEditPostId, function() {
+                lord.updatePost(boardName, postNumber, post);
+            });
         });
-    });
+    };
+    var rawPostText = lord.nameOne("rawText", post);
+    if (rawPostText) {
+        stage2(boardName, postNumber, post, rawPostText.value);
+    } else {
+        lord.ajaxRequest("get_post", [boardName, +postNumber], lord.RpcGetPostId, function(res) {
+            stage2(boardName, postNumber, post, res["rawPostText"]);
+        });
+    }
 };
 
 lord.setPostHidden = function(boardName, postNumber) {
@@ -1121,7 +1145,46 @@ lord.deleteFile = function(boardName, postNumber, fileName) {
         } else if (!lord.isHashpass(pwd)) {
             pwd = lord.toHashpass(pwd);
         }
-        lord.ajaxRequest("delete_file", [boardName, fileName, pwd], 10, function() {
+        lord.ajaxRequest("delete_file", [boardName, fileName, pwd], lord.RpcDeleteFileId, function() {
+            lord.updatePost(boardName, postNumber, post);
+        });
+    });
+};
+
+lord.editAudioTags = function(boardName, postNumber, fileName) {
+    if (!boardName || isNaN(+postNumber) || !fileName)
+        return;
+    var post = lord.id("post" + postNumber);
+    if (!post)
+        return;
+    var dlgTitle = lord.text("editAudioTagsText");
+    var table = lord.id("editAudioTagsTemplate").cloneNode(true);
+    table.id = "";
+    table.style.display = "";
+    var f = lord.id("file" + fileName);
+    var album = lord.nameOne("album", table);
+    var artist = lord.nameOne("artist", table);
+    var title = lord.nameOne("title", table);
+    var year = lord.nameOne("year", table);
+    album.value = lord.nameOne("audioTagAlbum", f).value;
+    artist.value = lord.nameOne("audioTagArtist", f).value;
+    title.value = lord.nameOne("audioTagTitle", f).value;
+    year.value = lord.nameOne("audioTagYear", f).value;
+    lord.showDialog(dlgTitle, null, table, function() {
+        var pwd = lord.nameOne("password", table).value;
+        if (pwd.length < 1) {
+            if (!lord.getCookie("hashpass"))
+                return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
+        } else if (!lord.isHashpass(pwd)) {
+            pwd = lord.toHashpass(pwd);
+        }
+        var tags = {
+            "album": album.value,
+            "artist": artist.value,
+            "title": title.value,
+            "year": year.value
+        };
+        lord.ajaxRequest("edit_audio_tags", [boardName, fileName, pwd, tags], lord.RpcEditAudioTagsId, function() {
             lord.updatePost(boardName, postNumber, post);
         });
     });
@@ -1200,7 +1263,7 @@ lord.viewPost = function(link, boardName, postNumber) {
     if (!post)
         post = lord.postPreviews[boardName + "/" + postNumber];
     if (!post) {
-        lord.ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
+        lord.ajaxRequest("get_post", [boardName, +postNumber], lord.RpcGetPostId, function(res) {
             post = lord.createPostNode(res, false, boardName);
             if (!post)
                 return;
@@ -1300,7 +1363,7 @@ lord.fileAddedCommon = function(div, file) {
         var wordArray = CryptoJS.lib.WordArray.create(e.target.result);
         var currentBoardName = lord.text("currentBoardName");
         var fileHash = lord.toHashpass(wordArray);
-        lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], 8, function(res) {
+        lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], lord.RpcGetFileExistenceId, function(res) {
             if (!res)
                 return;
             var fileHashes = lord.getFileHashes(div);
@@ -1360,8 +1423,8 @@ lord.fileAddedCommon = function(div, file) {
         var span = lord.queryOne(".postformFileText", div);
         div.querySelector("a").style.display = "none";
         div.innerHTML = div.innerHTML; //NOTE: Workaround since we can't clear it other way
-        parent.appendChild(div);
         lord.clearFileInput(div);
+        parent.appendChild(div);
     })(div);
 };
 
@@ -1569,7 +1632,7 @@ lord.addThreadToFavorites = function(boardName, threadNumber) {
     var fav = lord.getLocalObject("favoriteThreads", {});
     if (fav.hasOwnProperty(boardName + "/" + threadNumber))
         return;
-    lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], 7, function(res) {
+    lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], lord.RpcGetNewPostsId, function(res) {
         if (!res || res.length < 1)
             return;
         var pn = res.pop()["number"];
@@ -1585,6 +1648,7 @@ lord.complain = function() {
     lord.showPopup(lord.text("complainMessage"), {type: "critical"});
     if (!lord.complainVideo) {
         lord.complainVideo = lord.node("video");
+        lord.complainVideo.style.display = "none";
         var src = lord.node("source");
         src.src = "/" + lord.text("sitePathPrefix") + "video/fail.webm";
         src.type = "video/webm";
@@ -1697,7 +1761,7 @@ lord.posted = function(response) {
                     if (!parent.tagName)
                         parent = parent.nextSibling;
                 }
-                lord.ajaxRequest("get_post", [boardName, postNumber], 6, function(res) {
+                lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
                     var newPost = lord.createPostNode(res, true);
                     if (newPost) {
                         parent.appendChild(newPost, parent.lastChild);
@@ -1770,13 +1834,7 @@ lord.initializeOnLoadBaseBoard = function() {
     });
     if (!lord.text("currentThreadNumber")) {
         var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
-        var last = 0;
-        posts.forEach(function(post) {
-            var n = +post.id.replace("post", "");
-            if (n > last)
-                last = n;
-        });
-        lastPostNumbers[lord.text("currentBoardName")] = last;
+        lastPostNumbers[lord.text("currentBoardName")] = +lord.text("lastPostNumber");
         lord.setLocalObject("lastPostNumbers", lastPostNumbers);
     }
 };

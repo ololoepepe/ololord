@@ -36,6 +36,13 @@
 #include <QTextCodec>
 #include <QTime>
 #include <QVariant>
+#include <QVariantList>
+#include <QVariantMap>
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+#include <QMimeDatabase>
+#include <QMimeType>
+#endif
 
 #include <cppcms/http_cookie.h>
 #include <cppcms/http_file.h>
@@ -216,6 +223,11 @@ AudioTags audioTags(const QString &fileName)
     return a;
 }
 
+QString captchaQuotaFile()
+{
+    return BCoreApplication::location("storage", BCoreApplication::UserResource) + "/captcha-quota.dat";
+}
+
 bool captchaEnabled(const QString &boardName)
 {
     SettingsLocker s;
@@ -340,18 +352,18 @@ QString countryName(const QString &countryCode)
     return names.value(countryCode);
 }
 
-QString customHomePageContent(const QLocale &l)
+QString customContent(const QString &prefix, const QLocale &l)
 {
-    QString *s = Cache::customHomePageContent(l);
+    QString *s = Cache::customContent(prefix, l);
     if (!s) {
-        QString path = BDirTools::findResource("homepage", BDirTools::UserOnly);
+        QString path = BDirTools::findResource("custom/" + prefix, BDirTools::UserOnly);
         if (path.isEmpty())
             return QString();
         QString fn = BDirTools::localeBasedFileName(path + "/content.html", l);
         if (fn.isEmpty())
             return QString();
         s = new QString(BDirTools::readTextFile(fn, "UTF-8"));
-        if (!Cache::cacheCustomHomePageContent(l, s)) {
+        if (!Cache::cacheCustomContent(prefix, l, s)) {
             QString ss = *s;
             delete s;
             return ss;
@@ -363,9 +375,10 @@ QString customHomePageContent(const QLocale &l)
 QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
 {
     QString s = cookieValue(req, "time");
+    int def = SettingsLocker()->value("System/time_zone_offset", -1000).toInt();
     if (s.isEmpty() || s.compare("local", Qt::CaseInsensitive))
-        return localDateTime(dt);
-    return localDateTime(dt, timeZoneMinutesOffset(req));
+        return localDateTime(dt, def);
+    return localDateTime(dt, timeZoneMinutesOffset(req, def));
 }
 
 QString externalLinkRegexpPattern()
@@ -392,6 +405,41 @@ QString flagName(const QString &countryCode)
         return "";
     QString fn = BDirTools::findResource("static/img/flag/" + countryCode.toUpper() + ".png");
     return !fn.isEmpty() ? QFileInfo(fn).fileName() : QString();
+}
+
+QVariant fromJson(const cppcms::json::value &v)
+{
+    try {
+        switch (v.type()) {
+        case cppcms::json::is_array: {
+            QVariantList l;
+            foreach (const cppcms::json::value &vv, v.array())
+                l << fromJson(vv);
+            return l;
+        }
+        case cppcms::json::is_boolean: {
+            return v.boolean();
+        }
+        case cppcms::json::is_number: {
+            return v.number();
+        }
+        case cppcms::json::is_object: {
+            QVariantMap m;
+            const cppcms::json::object &o = v.object();
+            for (cppcms::json::object::const_iterator i = o.begin(); i != o.end(); ++i)
+                m.insert(fromStd(i->first), fromJson(i->second));
+            return m;
+        }
+        case cppcms::json::is_string: {
+            return fromStd(v.str());
+        }
+        default:
+            return QVariant();
+        }
+    } catch (const std::exception &e) {
+        log("Tools::fromJson", e);
+        return QVariant();
+    }
 }
 
 QLocale fromStd(const std::locale &l)
@@ -537,7 +585,7 @@ QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
         return dt.toLocalTime();
     QDateTime ndt = dt.toUTC();
     QTime t = ndt.time();
-    int msecs = t.hour() * BeQt::Hour + t.minute() * BeQt::Minute + t.second() * BeQt::Second * t.msec();
+    int msecs = t.hour() * BeQt::Hour + t.minute() * BeQt::Minute + t.second() * BeQt::Second + t.msec();
     int msecsOffset = offsetMinutes * BeQt::Minute;
     msecs += msecsOffset;
     if (msecs < 0) {
@@ -545,7 +593,7 @@ QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
         ndt.setTime(time(msecs + MaxMsecs));
     } else if (msecs >= MaxMsecs) {
         ndt.setDate(ndt.date().addDays(1));
-        ndt.setTime(time(MaxMsecs - msecs));
+        ndt.setTime(time(msecs - MaxMsecs));
     } else {
         ndt.setTime(time(msecs));
     }
@@ -620,6 +668,12 @@ QString mimeType(const QByteArray &data, bool *ok)
 #endif
     if (data.isEmpty())
         return bRet(ok, false, QString());
+#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
+    QMimeDatabase db;
+    QString name = db.mimeTypeForData(data).name();
+    if (!name.isEmpty() && "application/octet-stream" != name)
+        return bRet(ok, true, name);
+#endif
     SettingsLocker sl;
     if (sl->value("System/use_external_libmagic", false).toBool()) {
         QString file = sl->value("System/file_command", FileDefault).toString();
@@ -638,15 +692,15 @@ QString mimeType(const QByteArray &data, bool *ok)
         return bRet(ok, !out.isEmpty(), out);
     } else {
         magic_t magicMimePredictor;
-            magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
-            if (!magicMimePredictor)
-                return bRet(ok, false, QString());
-            if (magic_load(magicMimePredictor, 0)) {
-                magic_close(magicMimePredictor);
-                return bRet(ok, false, QString());
-            }
-            QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
-            return bRet(ok, !result.isEmpty(), result);
+        magicMimePredictor = magic_open(MAGIC_MIME_TYPE);
+        if (!magicMimePredictor)
+            return bRet(ok, false, QString());
+        if (magic_load(magicMimePredictor, 0)) {
+            magic_close(magicMimePredictor);
+            return bRet(ok, false, QString());
+        }
+        QString result = QString::fromLatin1(magic_buffer(magicMimePredictor, (void *) data.data(), data.size()));
+        return bRet(ok, !result.isEmpty(), result);
     }
 }
 
@@ -725,7 +779,7 @@ void render(cppcms::application &app, const QString &templateName, cppcms::base_
     foreach (int i, bRangeR(sl.size() - 1, 0)) {
         if (sl[i].isEmpty() || QRegExp("\\s+").exactMatch(sl[i])) {
             sl.removeAt(i);
-        } else {
+        } else if (m > 1) {
             sl[i].replace(QRegExp("^\\s+"), "");
             sl[i].replace(QRegExp("\\s+$"), "");
         }
@@ -768,6 +822,11 @@ QStringList rules(const QString &prefix, const QLocale &l)
         }
     }
     return *sl;
+}
+
+QString searchIndexFile()
+{
+    return BCoreApplication::location("storage", BCoreApplication::UserResource) + "/search-index.dat";
 }
 
 FriendList siteFriends()
@@ -825,7 +884,7 @@ QStringList supportedCodeLanguages()
     return sl;
 }
 
-int timeZoneMinutesOffset(const cppcms::http::request &req)
+int timeZoneMinutesOffset(const cppcms::http::request &req, int defaultOffset)
 {
     typedef QMap<QString, int> TimezoneMap;
     QMutexLocker locker(&timezoneMutex);
@@ -845,8 +904,12 @@ int timeZoneMinutesOffset(const cppcms::http::request &req)
             timezones.insert(QStringList(sll.mid(0, sll.size() - 1)).join(" "), offset);
         }
     }
-    return SettingsLocker()->value("Board/guess_city_name", true).toBool() ? timezones.value(cityName(req), -1000) :
-                                                                             -1000;
+    bool ok = false;
+    int offset = cookieValue(req, "time_zone_offset").toInt(&ok);
+    if (ok && offset >= -720 && offset <= 840)
+        return offset;
+    return SettingsLocker()->value("Board/guess_city_name", true).toBool()
+            ? timezones.value(cityName(req), defaultOffset) : defaultOffset;
 }
 
 QByteArray toHashpass(const QString &s, bool *ok)
@@ -870,6 +933,47 @@ QByteArray toHashpass(const QString &s, bool *ok)
         ba.append(c, 4);
     }
     return bRet(ok, true, ba);
+}
+
+cppcms::json::value toJson(const QVariant &v)
+{
+    try {
+        switch (v.type()) {
+        case QVariant::List: {
+            cppcms::json::array a;
+            foreach (const QVariant &vv, v.toList())
+                a.push_back(toJson(vv));
+            return a;
+        }
+        case QVariant::Bool: {
+            cppcms::json::value vv;
+            vv.boolean(v.toBool());
+            return vv;
+        }
+        case QVariant::Double:
+        case QVariant::Int:
+        case QVariant::UInt:
+        case QVariant::LongLong:
+        case QVariant::ULongLong: {
+            return v.toDouble();
+        }
+        case QVariant::Map: {
+            cppcms::json::object o;
+            const QVariantMap &m = v.toMap();
+            for (QVariantMap::ConstIterator i = m.begin(); i != m.end(); ++i)
+                o.insert(std::pair<std::string, cppcms::json::value>(toStd(i.key()), toJson(i.value())));
+            return o;
+        }
+        case QVariant::String: {
+            return toStd(v.toString());
+        }
+        default:
+            return cppcms::json::value();
+        }
+    } catch (const std::exception &e) {
+        log("Tools::toJson", e);
+        return cppcms::json::value();
+    }
 }
 
 Post toPost(const PostParameters &params, const FileList &files)

@@ -34,8 +34,10 @@
 #include <BTerminal>
 #include <BTranslation>
 
+#include <QBrush>
 #include <QBuffer>
 #include <QByteArray>
+#include <QColor>
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
@@ -47,8 +49,10 @@
 #include <QMap>
 #include <QMutex>
 #include <QMutexLocker>
+#include <QPainter>
 #include <QReadLocker>
 #include <QReadWriteLock>
+#include <QRect>
 #include <QRegExp>
 #include <QScopedPointer>
 #include <QSet>
@@ -191,6 +195,8 @@ bool AbstractBoard::boardsInitialized = false;
 QReadWriteLock AbstractBoard::boardsLock(QReadWriteLock::Recursive);
 const QString AbstractBoard::defaultFileTypes = "audio/mpeg,audio/ogg,audio/wav,image/gif,image/jpeg,image/png,"
                                                 "video/mp4,video/ogg,video/webm";
+bool AbstractBoard::globalCaptchaQuotaModified = false;
+QMutex AbstractBoard::globalCaptchaQuotaMutex(QMutex::Recursive);
 
 AbstractBoard::LockingWrapper::LockingWrapper(const LockingWrapper &other) :
     Board(other.Board)
@@ -275,6 +281,12 @@ QStringList AbstractBoard::boardNames(bool includeHidden)
             list.removeAt(i);
     }
     return list;
+}
+
+bool AbstractBoard::isCaptchaQuotaModified()
+{
+    QMutexLocker locker(&globalCaptchaQuotaMutex);
+    return globalCaptchaQuotaModified;
 }
 
 void AbstractBoard::reloadBoards()
@@ -428,11 +440,17 @@ void AbstractBoard::reloadBoards()
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Maximum count of extra posts a user may make "
                                                     "before solving captcha again on this board.\n"
                                                     "The default is 0 (solve captcha every time)."));
+        nnn = new BSettingsNode(QVariant::String, "launch_date", nn);
+        BTranslation t = BTranslation::translate("AbstractBoard", "Date and time of first board launch.\n"
+                                                 "Is used to calculate board speed.\n"
+                                                 "Format: %1\n"
+                                                 "By default, the date of first site launch is used.");
+        t.setArgument(Tools::InputDateTimeFormat);
+        nnn->setDescription(t);
         nnn = new BSettingsNode(QVariant::String, "supported_file_types", nn);
-        BTranslation t = BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on "
-                                                 "this board.\n"
-                                                 "Must be separated by commas. Wildcard matching is used.\n"
-                                                 "The default is %1.");
+        t = BTranslation::translate("AbstractBoard", "MIME types of files allowed for attaching on this board.\n"
+                                                     "Must be separated by commas. Wildcard matching is used.\n"
+                                                     "The default is %1.");
         t.setArgument(defaultFileTypes);
         nnn->setDescription(t);
     }
@@ -460,25 +478,9 @@ void AbstractBoard::restoreCaptchaQuota(const QByteArray &data)
             board->captchaQuotaMap.insert(ip, q);
         }
     }
-}
-
-void AbstractBoard::restorePostingSpeed(const QByteArray &data)
-{
-    QVariantMap m = BeQt::deserialize(data).toMap();
-    QReadLocker locker(&boardsLock);
-    foreach (const QString &boardName, m.keys()) {
-        AbstractBoard *board = boards.value(boardName);
-        if (!board)
-            continue;
-        QVariantMap mm = m.value(boardName).toMap();
-        QMutexLocker lockerSpeed(&board->speedMutex);
-        board->postCount = mm.value("post_count").toLongLong();
-        board->uptime = mm.value("uptime").toLongLong();
-        if (board->postCount < 0)
-            board->postCount = 0;
-        if (board->uptime < 0)
-            board->uptime = 0;
-    }
+    globalCaptchaQuotaMutex.lock();
+    globalCaptchaQuotaModified = false;
+    globalCaptchaQuotaMutex.unlock();
 }
 
 QByteArray AbstractBoard::saveCaptchaQuota()
@@ -492,20 +494,9 @@ QByteArray AbstractBoard::saveCaptchaQuota()
             mm.insert(ip, board->captchaQuotaMap.value(ip));
         m.insert(board->name(), mm);
     }
-    return BeQt::serialize(m);
-}
-
-QByteArray AbstractBoard::savePostingSpeed()
-{
-    QVariantMap m;
-    QReadLocker locker(&boardsLock);
-    foreach (AbstractBoard *board, boards.values()) {
-        QVariantMap mm;
-        QMutexLocker lockerSpeed(&board->speedMutex);
-        mm.insert("post_count", board->postCount);
-        mm.insert("uptime", board->uptime + board->uptimeTimer.elapsed());
-        m.insert(board->name(), mm);
-    }
+    globalCaptchaQuotaMutex.lock();
+    globalCaptchaQuotaModified = false;
+    globalCaptchaQuotaMutex.unlock();
     return BeQt::serialize(m);
 }
 
@@ -591,6 +582,9 @@ void AbstractBoard::captchaSolved(const QString &ip)
         return;
     QMutexLocker locker(&captchaQuotaMutex);
     captchaQuotaMap[ip] = captchaQuota();
+    globalCaptchaQuotaMutex.lock();
+    globalCaptchaQuotaModified = true;
+    globalCaptchaQuotaMutex.unlock();
 }
 
 void AbstractBoard::captchaUsed(const QString &ip)
@@ -599,12 +593,13 @@ void AbstractBoard::captchaUsed(const QString &ip)
         return;
     QMutexLocker locker(&captchaQuotaMutex);
     unsigned int &q = captchaQuotaMap[ip];
-    if (!q)
-        captchaQuotaMap.remove(ip);
-    else
+    if (q)
         --q;
     if (!q)
         captchaQuotaMap.remove(ip);
+    globalCaptchaQuotaMutex.lock();
+    globalCaptchaQuotaModified = false;
+    globalCaptchaQuotaMutex.unlock();
 }
 
 void AbstractBoard::createPost(cppcms::application &app)
@@ -638,8 +633,6 @@ void AbstractBoard::createPost(cppcms::application &app)
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
-    QMutexLocker locker(&speedMutex);
-    ++postCount;
     Controller::renderSuccessfulPostAjax(app, postNumber);
     Tools::log(app, "create_post", "success", logTarget);
 }
@@ -675,8 +668,6 @@ void AbstractBoard::createThread(cppcms::application &app)
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
-    QMutexLocker locker(&speedMutex);
-    ++postCount;
     Controller::renderSuccessfulThreadAjax(app, threadNumber);
     Tools::log(app, "create_thread", "success", logTarget);
 }
@@ -776,6 +767,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             }
             c.threads.push_back(thread);
         }
+        c.lastPostNumber = Database::lastPostNumber(name());
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
         Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
@@ -810,7 +802,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
     Controller::initBase(c, app.request(), pageTitle);
     c.currentBoard.name = Tools::toStd(name());
     c.currentBoard.title = Tools::toStd(title(tq.locale()));
-    c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");;
+    c.noRulesText = ts.translate("AbstractBoard", "There are no specific rules for this board.", "noRulesText");
     foreach (const QString &r, rules(ts.locale()))
         c.rules.push_back(Tools::toStd(r));
     Tools::render(app, "rules", c);
@@ -882,7 +874,8 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         }
         pageTitle = opPost.subject();
         if (pageTitle.isEmpty()) {
-            pageTitle = opPost.text().replace(QRegExp("\\r?\\n+"), " ").replace(QRegExp("<[^<>]+>"), "");
+            pageTitle = opPost.text().replace(QRegExp("\\r?\\n+"), " ").replace(QRegExp("<[^<>]+>"), " ");
+            pageTitle.replace(QRegExp(" +"), " ");
             pageTitle.replace("&amp;", "&");
             pageTitle.replace("&lt;", "<");
             pageTitle.replace("&gt;", ">");
@@ -982,11 +975,15 @@ bool AbstractBoard::postingEnabled() const
 
 AbstractBoard::PostingSpeed AbstractBoard::postingSpeed() const
 {
-    PostingSpeed s;
-    QMutexLocker locker(&speedMutex);
-    s.postCount = postCount;
-    s.uptimeMsecs = uptimeTimer.elapsed() + uptime;
-    return s;
+    PostingSpeed speed;
+    SettingsLocker s;
+    QString dts = s->value("Board/" + name() + "/launch_date", s->value("Board/launch_date")).toString();
+    QDateTime dt = QDateTime::fromString(dts, Tools::InputDateTimeFormat);
+    if (!dt.isValid())
+        dt = QFileInfo(BDirTools::createConfFileName(BCoreApplication::applicationName())).created();
+    speed.uptimeMsecs = dt.isValid() ? (QDateTime::currentMSecsSinceEpoch() - dt.toMSecsSinceEpoch()) : 0;
+    speed.postCount = Database::lastPostNumber(name());
+    return speed;
 }
 
 unsigned int AbstractBoard::postLimit() const
@@ -1021,6 +1018,23 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         suffixes.insert("video/ogg", "ogg");
         suffixes.insert("video/webm", "webm");
     }
+    init_once(StringMap, formatsForSuffixes, StringMap()) {
+        formatsForSuffixes.insert("mpeg", "audio/mpeg");
+        formatsForSuffixes.insert("mp1", "audio/mpeg");
+        formatsForSuffixes.insert("m1a", "audio/mpeg");
+        formatsForSuffixes.insert("mp3", "audio/mpeg");
+        formatsForSuffixes.insert("m2a", "audio/mpeg");
+        formatsForSuffixes.insert("mpa", "audio/mpeg");
+        formatsForSuffixes.insert("mpg", "audio/mpeg");
+        formatsForSuffixes.insert("ogg", "audio/ogg"); //Also "video/ogg"
+        formatsForSuffixes.insert("wav", "audio/wav");
+        formatsForSuffixes.insert("gif", "image/gif");
+        formatsForSuffixes.insert("jpeg", "image/jpeg");
+        formatsForSuffixes.insert("jpg", "image/jpeg");
+        formatsForSuffixes.insert("png", "image/png");
+        formatsForSuffixes.insert("mp4", "video/mp4");
+        formatsForSuffixes.insert("webm", "video/webm");
+    }
     bool ok = false;
     QString mimeType = Tools::mimeType(f.data, &ok);
     if (!ok)
@@ -1035,10 +1049,11 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         return false;
     QString dt = QString::number(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch());
     QString suffix = QFileInfo(f.fileName).suffix();
-    if (suffix.isEmpty())
+    if (suffix.isEmpty() || formatsForSuffixes.value(suffix.toLower()) != mimeType)
         suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
-    ft.addInfo(sfn, QCryptographicHash::hash(f.data, QCryptographicHash::Sha1), mimeType, f.data.size());
+    QByteArray hash = QCryptographicHash::hash(f.data, QCryptographicHash::Sha1);
+    ft.addInfo(sfn, hash, mimeType, f.data.size());
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
@@ -1050,8 +1065,13 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     QString out;
     if (Tools::isAudioType(mimeType)) {
         ft.setMainFileSize(0, 0);
-        ft.setThumbFile(mimeType);
+        ft.setThumbFile(path + "/" + dt + "s.png");
         ft.setThumbFileSize(200, 200);
+        img = generateRandomImage(hash, mimeType);
+        if (img.isNull())
+            return false;
+        if (!img.save(path + "/" + dt + "s.png", "png"))
+            return false;
         Tools::AudioTags tags = Tools::audioTags(sfn);
         QVariantMap m;
         if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
@@ -1073,17 +1093,19 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     } else if (Tools::isVideoType(mimeType)) {
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
+        ft.setThumbFile(path + "/" + dt + "s.png");
         if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
-            ft.setThumbFile(path + "/" + dt + "s.png");
             if (!img.load(path + "/" + dt + "s.png"))
                 return false;
             scaleThumbnail(img, ft);
-            if (!img.save(path + "/" + dt + "s.png", "png"))
-                return false;
         } else {
-            ft.setThumbFile(mimeType);
+            img = generateRandomImage(hash, mimeType);
+            if (img.isNull())
+                return false;
             ft.setThumbFileSize(200, 200);
         }
+        if (!img.save(path + "/" + dt + "s.png", "png"))
+            return false;
         QVariantMap m;
         if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
             if (rxd.indexIn(out) >= 0) {
@@ -1260,6 +1282,10 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                         QString artist = m.value("artist").toString();
                         QString title = m.value("title").toString();
                         QString year = m.value("year").toString();
+                        f.audioTagAlbum = Tools::toStd(album);
+                        f.audioTagArtist = Tools::toStd(artist);
+                        f.audioTagTitle = Tools::toStd(title);
+                        f.audioTagYear = Tools::toStd(year);
                         szt = !artist.isEmpty() ? artist : "Unknown artist";
                         szt += " - ";
                         szt += !title.isEmpty() ? title : "Unknown title";
@@ -1377,17 +1403,9 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.name = Tools::toStd(name);
         if (pp.name.empty())
             pp.name = "<span class=\"userName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
-        QString s;
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
-        foreach (int i, bRangeD(0, tripcode.size() - 1)) {
-            QChar c(tripcode.at(i));
-            if (c.isLetterOrNumber() || c.isPunct())
-                s += c;
-            else
-                s += QString::number(uchar(tripcode.at(i)), 16);
-        }
-        pp.tripcode = Tools::toStd(s);
+        pp.tripcode = Tools::toStd("!" + QString::fromLatin1(tripcode.toBase64()).left(10));
     }
     return bRet(ok, true, error, QString(), pp);
 }
@@ -1415,6 +1433,10 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
         f["sizeY"] = file.sizeY;
         f["sourceName"] = file.sourceName;
         f["thumbName"] = file.thumbName;
+        f["audioTagAlbum"] = file.audioTagAlbum;
+        f["audioTagArtist"] = file.audioTagArtist;
+        f["audioTagTitle"] = file.audioTagTitle;
+        f["audioTagYear"] = file.audioTagYear;
         files.push_back(f);
     }
     o["files"] = files;
@@ -1485,6 +1507,27 @@ void AbstractBoard::cleanupBoards()
     foreach (AbstractBoard *b, boards)
         delete b;
     boards.clear();
+}
+
+QImage AbstractBoard::generateRandomImage(const QByteArray &hash, const QString &mimeType)
+{
+    if (hash.size() != 20 || mimeType.isEmpty())
+        return QImage();
+    QImage img(200, 200, QImage::Format_ARGB32);
+    QPainter painter(&img);
+    QList<QRect> list = QList<QRect>() << QRect(0, 0, 200, 200) << QRect(25, 25, 50, 50) << QRect(125, 25, 50, 50)
+        << QRect(25, 125, 50, 50) << QRect(125, 125, 50, 50);
+    for (int i = 0; i < 20; i += 4) {
+        int alpha = i ? 180 : 255;
+        QColor clr(uchar(hash.at(i)), uchar(hash.at(i + 1)), uchar(hash.at(i + 2)), alpha);
+        painter.setPen(clr);
+        painter.setBrush(QBrush(clr));
+        painter.drawRect(list.takeFirst());
+    }
+    QString fn = "static/img/" + QString(mimeType).replace("/", "_") + "_logo.png";
+    QImage over(BDirTools::findResource(fn, BDirTools::GlobalOnly));
+    painter.drawImage(0, 0, over);
+    return img;
 }
 
 QStringList AbstractBoard::rulesImplementation(const QLocale &l, const QString &type) const

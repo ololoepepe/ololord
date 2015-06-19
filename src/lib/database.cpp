@@ -299,7 +299,7 @@ static bool copyFile(const QString &hashString, AbstractBoard::FileTransaction &
         ft.setThumbFile(pfn);
         ft.setThumbFileSize(info.thumbHeight(), info.thumbWidth());
         ft.setMetaData(info.metaData());
-        if (!QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn)) {
+        if (!BDirTools::mkpath(path) || !QFile::copy(sfn, fn) || !QFile::copy(spfn, pfn)) {
             return bRet(error, tq.translate("copyFileHash", "Internal error", "error"), description,
                         tq.translate("copyFileHash", "Internal file system error", "description"), false);
         }
@@ -414,7 +414,19 @@ static bool testCaptcha(const cppcms::http::request &req, const Tools::PostParam
     if (board->captchaQuota(ip)) {
         board->captchaUsed(ip);
     } else {
-        AbstractCaptchaEngine::LockingWrapper e = AbstractCaptchaEngine::engine(params.value("captchaEngine"));
+        QStringList supportedCaptchaEngines = board->supportedCaptchaEngines().split(',');
+        if (supportedCaptchaEngines.isEmpty()) {
+            return bRet(error, tq.translate("testCaptcha", "Internal error", "error"), description,
+                        tq.translate("testCaptcha", "Internal logic error", "description"), false);
+        }
+        QString ceid = params.value("captchaEngine");
+        if (ceid.isEmpty() || !supportedCaptchaEngines.contains(ceid, Qt::CaseInsensitive)) {
+            if (supportedCaptchaEngines.contains("google-recaptcha"))
+                ceid = "google-recaptcha";
+            else
+                ceid = supportedCaptchaEngines.first();
+        }
+        AbstractCaptchaEngine::LockingWrapper e = AbstractCaptchaEngine::engine(ceid);
         if (e.isNull()) {
             return bRet(error, tq.translate("testCaptcha", "Invalid captcha", "error"), description,
                         tq.translate("testCaptcha", "No engine for this captcha type", "sescription"), false);
@@ -637,7 +649,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     }
     foreach (quint64 id, postIds.keys()) {
         PostTmpInfo &tmp = postIds[id];
-        tmp.text = Controller::processPostText(tmp.text, tmp.board);
+        tmp.text = Controller::processPostText(tmp.text, tmp.board, 0, postNumber);
     }
     try {
         Transaction t;
@@ -957,6 +969,9 @@ quint64 createThread(CreateThreadParameters &p)
     try {
         QStringList filesToDelete;
         Transaction t;
+        if (!t)
+            return bRet(p.error, tq.translate("createThread", "Internal database error", "error"), p.description,
+                        tq.translate("createThread", "Internal database error", "error"), false);
         QString err;
         quint64 postNumber = incrementPostCounter(p.params.value("board"), &err, p.locale);
         if (!postNumber)
@@ -1105,7 +1120,6 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         } else if (password != post->password()) {
             return bRet(error, tq.translate("deletePost", "Incorrect password", "error"), false);
         }
-        t.commit();
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
     }
@@ -1113,6 +1127,60 @@ bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::htt
         return false;
     deleteFiles(boardName, filesToDelete);
     return bRet(error, QString(), true);
+}
+
+bool editAudioTags(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
+                   const QByteArray &password, const QVariantMap &tags, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!AbstractBoard::boardNames().contains(boardName))
+        return bRet(error, tq.translate("editAudioTags", "Invalid board name", "error"), false);
+    if (fileName.isEmpty())
+        return bRet(error, tq.translate("editAudioTags", "Invalid file name", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (password.isEmpty() && hashpass.isEmpty())
+        return bRet(error, tq.translate("editAudioTags", "Invalid password", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("editAudioTags", "Internal database error", "error"), false);
+        Result<FileInfo> fileInfo = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
+        if (fileInfo.error)
+            return bRet(error, tq.translate("editAudioTags", "Internal database error", "error"), false);
+        if (!fileInfo)
+            return bRet(error, tq.translate("editAudioTags", "No such file", "error"), false);
+        if (!fileInfo->mimeType().startsWith("audio/"))
+            return bRet(error, tq.translate("editAudioTags", "Not an audio file", "error"), false);
+        QSharedPointer<Post> post = fileInfo->post().load();
+        if (post->board() != boardName)
+            return bRet(error, tq.translate("editAudioTags", "Board name mismatch", "error"), false);
+        if (password.isEmpty()) {
+            if (hashpass != post->hashpass()) {
+                int lvl = registeredUserLevel(req);
+                if (!moderOnBoard(req, boardName) || registeredUserLevel(post->hashpass()) >= lvl)
+                    return bRet(error, tq.translate("editAudioTags", "Not enough rights", "error"), false);
+            }
+        } else if (password != post->password()) {
+            return bRet(error, tq.translate("editAudioTags", "Incorrect password", "error"), false);
+        }
+        QVariantMap m = fileInfo->metaData().toMap();
+        static const QStringList Keys = QStringList() << "album" << "artist" << "title" << "year";
+        foreach (const QString &key, Keys) {
+            if (!tags.contains(key))
+                continue;
+            QVariant v = tags.value(key);
+            if (v.type() != QVariant::String)
+                continue;
+            m[key] = v;
+        }
+        fileInfo->setMetaData(m);
+        update(fileInfo);
+        t.commit();
+        Cache::removePost(boardName, post->number());
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
 }
 
 bool editPost(EditPostParameters &p)
@@ -1305,6 +1373,33 @@ int getNewPostCount(const cppcms::http::request &req, const QString &boardName, 
         return bRet(ok, true, error, QString(), count->count);
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), 0);
+    }
+}
+
+QVariantMap getNewPostCountEx(const cppcms::http::request &req, const QVariantMap &numbers, bool *ok, QString *error)
+{
+    QStringList boardNames = numbers.keys();
+    if (numbers.isEmpty())
+        return bRet(ok, true, error, QString(), QVariantMap());
+    TranslatorQt tq(req);
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(ok, false, error, tq.translate("getNewPostCountEx", "Internal database error", "error"),
+                        QVariantMap());
+        }
+        QVariantMap m;
+        foreach (const QString &bn, boardNames) {
+            quint64 lpn = numbers.value(bn).toULongLong();
+            odb::query<Post> q = odb::query<Post>::board == bn && odb::query<Post>::draft == false;
+            if (lpn)
+                q = q && odb::query<Post>::number > lpn;
+            Result<PostCount> count = queryOne<PostCount, Post>(q);
+            m.insert(bn, count->count);
+        }
+        return bRet(ok, true, error, QString(), m);
+    }  catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QVariantMap());
     }
 }
 

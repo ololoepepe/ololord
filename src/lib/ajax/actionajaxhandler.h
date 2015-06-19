@@ -30,12 +30,15 @@ public:
     void banUser(const cppcms::json::object &params);
     void deleteFile(std::string boardName, std::string fileName, std::string password);
     void deletePost(std::string boardName, long long postNumber, std::string password);
+    void editAudioTags(std::string boardName, std::string fileName, std::string password,
+                       const cppcms::json::object &tags);
     void editPost(const cppcms::json::object &params);
     void getBoards();
     void getCaptchaQuota(std::string boardName);
     void getFileExistence(std::string boardName, std::string hash);
     void getFileMetaData(std::string boardName, std::string fileName);
     void getNewPostCount(std::string boardName, long long lastPostNumber);
+    void getNewPostCountEx(const cppcms::json::object &numbers);
     void getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber);
     void getPost(std::string boardName, long long postNumber);
     void getThreadNumbers(std::string boardName);

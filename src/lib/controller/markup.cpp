@@ -59,19 +59,23 @@ struct ProcessPostTextContext
     const int length;
     const QString &boardName;
     Database::RefMap *referencedPosts;
+    quint64 deletedPost;
 public:
-    explicit ProcessPostTextContext(QString &txt, const QString &board, Database::RefMap *refPosts = 0) :
-        text(txt), start(0), length(txt.length()), boardName(board), referencedPosts(refPosts)
+    explicit ProcessPostTextContext(QString &txt, const QString &board, Database::RefMap *refPosts = 0,
+                                    quint64 delPost = 0) :
+        text(txt), start(0), length(txt.length()), boardName(board), referencedPosts(refPosts), deletedPost(delPost)
     {
         //
     }
     explicit ProcessPostTextContext(const ProcessPostTextContext &c, int s, int l) :
-        text(c.text), start(s), length(l), boardName(c.boardName), referencedPosts(c.referencedPosts)
+        text(c.text), start(s), length(l), boardName(c.boardName), referencedPosts(c.referencedPosts),
+        deletedPost(c.deletedPost)
     {
         //
     }
     explicit ProcessPostTextContext(const ProcessPostTextContext &c, QString &txt) :
-        text(txt), start(0), length(txt.length()), boardName(c.boardName), referencedPosts(c.referencedPosts)
+        text(txt), start(0), length(txt.length()), boardName(c.boardName), referencedPosts(c.referencedPosts),
+        deletedPost(c.deletedPost)
     {
         //
     }
@@ -314,7 +318,7 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
         bool ok = false;
         quint64 pn = postNumber.toULongLong(&ok);
         quint64 tn = 0;
-        if (ok && pn && Database::postExists(boardName, pn, &tn)) {
+        if (ok && pn && (pn != c.deletedPost) && Database::postExists(boardName, pn, &tn)) {
             QString threadNumber = QString::number(tn);
             QString href = "href=\"/" + prefix + boardName + "/thread/" + threadNumber + ".html#" + postNumber + "\"";
             QString a = "<a " + href + /*" " + mouseover + " " + mouseout*/ + ">" + cap.replace(">", "&gt;") + "</a>";
@@ -329,7 +333,7 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkExternalLink);
 }
 
-static void processWakabaMarMailto(ProcessPostTextContext &c)
+static void processWakabaMarkMailto(ProcessPostTextContext &c)
 {
     if (!c.isValid())
         return;
@@ -356,6 +360,28 @@ static void processWakabaMarMailto(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkLink);
 }
 
+static void processWakabaMarkTooltip(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\S+\\?{3}\"(.*)\"");
+    rx.setMinimal(true);
+    int ind = rx.indexIn(t);
+    while (ind >= 0) {
+        QString tooltip = rx.cap(1);
+        int ttind = t.indexOf(tooltip, ind) - 4;
+        t.replace(ttind, tooltip.length() + 5, "</span>");
+        QString op = "<span class=\"tooltip\" title=\"" + tooltip + "\">";
+        t.insert(ind, op);
+        skip << qMakePair(ind, op.length());
+        skip << qMakePair(ttind + op.length(), 7);
+        ind = rx.indexIn(t, ttind + op.length() + 7);
+    }
+    c.process(t, skip, &processWakabaMarkMailto);
+}
+
 static void processWakabaMarkStrikeoutShitty(ProcessPostTextContext &c)
 {
     if (!c.isValid())
@@ -374,7 +400,7 @@ static void processWakabaMarkStrikeoutShitty(ProcessPostTextContext &c)
         skip << qMakePair(ind + 3, 4);
         ind = rx.indexIn(t, ind + 7);
     }
-    c.process(t, skip, &processWakabaMarMailto);
+    c.process(t, skip, &processWakabaMarkTooltip);
 }
 
 static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
@@ -526,12 +552,12 @@ static void processTagUrl(ProcessPostTextContext &c)
     QRegExp rxLink(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
-        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+        QString href = rx.cap(1);
+        if (!rxLink.exactMatch(href)) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
-        QString href = rx.cap(1);
-        if (!rxLink.exactMatch(href)) {
+        if (!Tools::externalLinkRootZoneExists(rxLink.cap(3))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
@@ -608,9 +634,32 @@ static void processTags(ProcessPostTextContext &c)
     c.process(t, skip, next);
 }
 
+static void processTagTooltip(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\[tooltip\\s+value\\=\"(.*)\"\\s*\\]");
+    rx.setMinimal(true);
+    int indStart = rx.indexIn(t);
+    int indEnd = t.indexOf("[/tooltip]", indStart + rx.matchedLength());
+    while (indStart >= 0 && indEnd > 0) {
+        QString tooltip = rx.cap(1);
+        t.replace(indEnd, 10, "</span>");
+        QString op = "<span class=\"tooltip\" title=\"" + tooltip + "\">";
+        t.replace(indStart, rx.matchedLength(), op);
+        skip << qMakePair(indStart, op.length());
+        skip << qMakePair(indEnd + (op.length() - rx.matchedLength()), 7);
+        indStart = rx.indexIn(t, indEnd + (op.length() - rx.matchedLength()));
+        indEnd = t.indexOf("[/tooltip]", indStart + rx.matchedLength());
+    }
+    c.process(t, skip, &processTags);
+}
+
 static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processTags, "`", "", "font", "<font face=\"monospace\">", true);
+    processSimmetric(c, &processTagTooltip, "`", "", "font", "<font face=\"monospace\">", true);
 }
 
 static void processTagCode(ProcessPostTextContext &c)
@@ -755,9 +804,9 @@ static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)
     processSimmetric(c, &processWakabaMarkPre, "``", "", "font", "<font face=\"monospace\">", true);
 }
 
-QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts)
+QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts, quint64 deletedPost)
 {
-    ProcessPostTextContext c(text, boardName, referencedPosts);
+    ProcessPostTextContext c(text, boardName, referencedPosts, deletedPost);
     processWakabaMarkMonospaceDouble(c);
     return text;
 }

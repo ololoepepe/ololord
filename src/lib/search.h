@@ -36,6 +36,7 @@ OLOLORD_EXPORT BoardMap find(const Query &query, const QString &boardName, bool 
                              const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT BoardMap find(const Query &query, bool *ok = 0, QString *error = 0,
                              const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool isModified();
 OLOLORD_EXPORT Query query(const QString &q, bool *ok = 0, QString *error = 0,
                            const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT int rebuildIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());

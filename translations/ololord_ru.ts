@@ -391,6 +391,16 @@ By default all captcha engines are supported.</source>
         <comment>fileSizeTooltip</comment>
         <translation>Неизвестное название</translation>
     </message>
+    <message>
+        <source>Date and time of first board launch.
+Is used to calculate board speed.
+Format: %1
+By default, the date of first site launch is used.</source>
+        <translation>Дата и время первого запуска доски.
+Используется для подсчета скорости доски.
+Формат: %1
+По умолчанию используется дата первого запуска сайта.</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -659,6 +669,16 @@ text</source>
         <translation>Преформатированный
 текст</translation>
     </message>
+    <message>
+        <source>tooltip</source>
+        <comment>tooltip</comment>
+        <translation>всплывающая подсказка</translation>
+    </message>
+    <message>
+        <source>text with tooltip</source>
+        <comment>tooltipText</comment>
+        <translation>текст со всплывающей подсказкой</translation>
+    </message>
 </context>
 <context>
     <name>PlaylistRoute</name>
@@ -686,6 +706,11 @@ text</source>
         <source>Unknown title</source>
         <comment>unknownTitleText</comment>
         <translation>Неизвестное название</translation>
+    </message>
+    <message>
+        <source>Download file</source>
+        <comment>downloadPlaylistFileText</comment>
+        <translation>Скачать файл</translation>
     </message>
 </context>
 <context>
@@ -1214,6 +1239,54 @@ text</source>
     </message>
 </context>
 <context>
+    <name>editAudioTags</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid file name</source>
+        <comment>error</comment>
+        <translation>Неправильное имя файла</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such file</source>
+        <comment>error</comment>
+        <translation>Нет такого файла</translation>
+    </message>
+    <message>
+        <source>Not an audio file</source>
+        <comment>error</comment>
+        <translation>Не является аудиофайлом</translation>
+    </message>
+    <message>
+        <source>Board name mismatch</source>
+        <comment>error</comment>
+        <translation>Несоответствие имени доски</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+</context>
+<context>
     <name>editPost</name>
     <message>
         <source>Invalid board name</source>
@@ -1324,6 +1397,14 @@ text</source>
         <comment>error</comment>
         <translation>Неверное имя доски</translation>
     </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+</context>
+<context>
+    <name>getNewPostCountEx</name>
     <message>
         <source>Internal database error</source>
         <comment>error</comment>
@@ -2249,6 +2330,36 @@ Your choice:</source>
         <comment>postFormButtonSubmitWaiting</comment>
         <translation>Ожидание ответа...</translation>
     </message>
+    <message>
+        <source>Post actions</source>
+        <comment>postActionsText</comment>
+        <translation>Действия над постом</translation>
+    </message>
+    <message>
+        <source>Edit audio file tags</source>
+        <comment>editAudioTagsText</comment>
+        <translation>Редактировать теги аудиофайла</translation>
+    </message>
+    <message>
+        <source>Album:</source>
+        <comment>audioTagAlbumText</comment>
+        <translation>Альбом:</translation>
+    </message>
+    <message>
+        <source>Artist:</source>
+        <comment>audioTagArtistText</comment>
+        <translation>Исполнитель:</translation>
+    </message>
+    <message>
+        <source>Title:</source>
+        <comment>audioTagTitleText</comment>
+        <translation>Название:</translation>
+    </message>
+    <message>
+        <source>Year:</source>
+        <comment>audioTagYearText</comment>
+        <translation>Год:</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -2658,6 +2769,24 @@ Calling external file utility is MUCH slower.</source>
 По умолчанию идентификация MIME-типов осуществляется библиотекой libmagic внутри программы.
 Установите значение этой опции в false, если libmagic крэшит приложение.
 Вызов внешней утилиты НАМНОГО медленнее.</translation>
+    </message>
+    <message>
+        <source>Date and time of first site launch.
+Is used to calculate board speed.
+Format: %1
+By default, the date of creation of application settings file is used.</source>
+        <translation>Дата и время первого запуска сайта.
+Используется для подсчета скорости досок.
+Формат: %1
+По умолчанию используется дата создания файла настроек приложения.</translation>
+    </message>
+    <message>
+        <source>Time zone offset in minutes.
+The value must be between -720 and 840.
+The default is -1000 (no offset).</source>
+        <translation>Смещение временной зоны в минутах.
+Значение должно быть в пределах от -720 до 840.
+По умолчанию -1000 (без смещения).</translation>
     </message>
 </context>
 <context>

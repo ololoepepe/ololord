@@ -252,6 +252,7 @@ public:
     int thumbWidth() const;
     QVariant metaData() const;
     QLazySharedPointer<Post> post() const;
+    void setMetaData(const QVariant &metaData);
 private:
     friend class odb::access;
 };

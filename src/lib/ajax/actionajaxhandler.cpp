@@ -31,31 +31,6 @@
 #include <sstream>
 #include <string>
 
-static cppcms::json::value variantToJson(const QVariant &v)
-{
-    cppcms::json::value json;
-    QVariant::Type type = v.type();
-    static const QList<QVariant::Type> NumberTypes = QList<QVariant::Type>() << QVariant::Int << QVariant::UInt
-        << QVariant::LongLong << QVariant::ULongLong << QVariant::Double;
-    if (QVariant::Map == type) {
-        cppcms::json::object o;
-        QVariantMap m = v.toMap();
-        foreach (const QString &key, m.keys())
-            o[Tools::toStd(key)] = variantToJson(m.value(key));
-        json = o;
-    } else if (QVariant::List == type) {
-        cppcms::json::array arr;
-        foreach (const QVariant &vv, v.toList())
-            arr.push_back(variantToJson(vv));
-        json = arr;
-    } else if ( QVariant::String == type) {
-        json = Tools::toStd(v.toString());
-    } else if (NumberTypes.contains(type)) {
-        json = v.toDouble();
-    }
-    return json;
-}
-
 ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
     AbstractAjaxHandler(srv)
 {
@@ -144,6 +119,33 @@ void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, 
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_delete_file", "fail:" + err);
+    }
+}
+
+void ActionAjaxHandler::editAudioTags(std::string boardName, std::string fileName, std::string password,
+                                      const cppcms::json::object &tags)
+{
+    try {
+        QString bn = Tools::fromStd(boardName);
+        QString fn = Tools::fromStd(fileName);
+        QString logTarget = bn + "/" + fn;
+        Tools::log(server, "ajax_edit_audio_tags", "begin", logTarget);
+        if (!testBan(bn))
+            return Tools::log(server, "ajax_edit_audio_tags", "fail:ban", logTarget);
+        QByteArray pwd = Tools::toHashpass(Tools::fromStd(password));
+        QVariantMap m = Tools::fromJson(tags).toMap();
+        QString err;
+        if (!Database::editAudioTags(bn, fn, server.request(), pwd, m, &err)) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_edit_audio_tags", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(true);
+        Tools::log(server, "ajax_edit_audio_tags", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_edit_audio_tags", "fail:" + err);
     }
 }
 
@@ -286,7 +288,7 @@ void ActionAjaxHandler::getFileMetaData(std::string boardName, std::string fileN
             Tools::log(server, "ajax_get_file_meta_data", "fail:" + Tools::fromStd(err), logTarget);
             return;
         }
-        server.return_result(variantToJson(md));
+        server.return_result(Tools::toJson(md));
         Tools::log(server, "ajax_get_file_meta_data", "success", logTarget);
     } catch (const std::exception &e) {
         QString err = Tools::fromStd(e.what());
@@ -325,6 +327,35 @@ void ActionAjaxHandler::getNewPostCount(std::string boardName, long long lastPos
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_new_post_count", "fail:" + err);
+    }
+}
+
+void ActionAjaxHandler::getNewPostCountEx(const cppcms::json::object &numbers)
+{
+    try {
+        Tools::log(server, "ajax_get_new_post_count_ex", "begin");
+        QVariantMap m;
+        for (cppcms::json::object::const_iterator i = numbers.begin(); i != numbers.end(); ++i) {
+            QString bn = Tools::fromStd(i->first);
+            quint64 lpn = i->second.number() > 0 ? quint64(i->second.number()) : 0;
+            if (!testBan(bn, true))
+                continue;
+            m.insert(bn, lpn);
+        }
+        bool ok = false;
+        QString err;
+        QVariantMap r = Database::getNewPostCountEx(server.request(), m, &ok, &err);
+        if (!ok) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_get_new_post_count_ex", "fail:" + err);
+            return;
+        }
+        server.return_result(Tools::toJson(r));
+        Tools::log(server, "ajax_get_new_post_count_ex", "success");
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_new_post_count_ex", "fail:" + err);
     }
 }
 
@@ -496,6 +527,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
     list << Handler("delete_file", cppcms::rpc::json_method(&ActionAjaxHandler::deleteFile, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
+    list << Handler("edit_audio_tags", cppcms::rpc::json_method(&ActionAjaxHandler::editAudioTags, self), method_role);
     list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
     list << Handler("get_boards", cppcms::rpc::json_method(&ActionAjaxHandler::getBoards, self), method_role);
     list << Handler("get_captcha_quota", cppcms::rpc::json_method(&ActionAjaxHandler::getCaptchaQuota, self),
@@ -505,6 +537,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("get_file_meta_data", cppcms::rpc::json_method(&ActionAjaxHandler::getFileMetaData, self),
                     method_role);
     list << Handler("get_new_post_count", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPostCount, self),
+                    method_role);
+    list << Handler("get_new_post_count_ex", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPostCountEx, self),
                     method_role);
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);

@@ -401,3 +401,8 @@ QLazySharedPointer<Post> FileInfo::post() const
 {
     return post_;
 }
+
+void FileInfo::setMetaData(const QVariant &metaData)
+{
+    metaData_ = BeQt::serialize(metaData);
+}

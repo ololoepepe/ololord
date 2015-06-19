@@ -124,6 +124,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentLocale = toWithLocale(ts.locale());
     cppcms::http::request *mreq = const_cast<cppcms::http::request *>(&req);
     c.currentTime = mreq->cookie_by_name("time").value();
+    c.customFooterContent = Tools::toStd(Tools::customContent("footer", ts.locale()));
+    c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.localeLabelText = "Language:";
     c.locales = locales;
@@ -213,6 +215,10 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.addToPlaylistText = ts.translate("initBaseBoard", "Add to playlist", "addToPlaylistText");
     c.addThreadToFavoritesText = ts.translate("initBaseBoard", "Add thread to favorites", "addThreadToFavoritesText");
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
+    c.audioTagAlbumText = ts.translate("initBaseBoard", "Album:", "audioTagAlbumText");
+    c.audioTagArtistText = ts.translate("initBaseBoard", "Artist:", "audioTagArtistText");
+    c.audioTagTitleText = ts.translate("initBaseBoard", "Title:", "audioTagTitleText");
+    c.audioTagYearText = ts.translate("initBaseBoard", "Year:", "audioTagYearText");
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");
     Content::BanLevel bl;
@@ -266,6 +272,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.downloadThreadText = ts.translate("initBaseBoard", "Download all thread files as a .zip archive",
                                         "downloadThreadText");
     c.draftsEnabled = board->draftsEnabled();
+    c.editAudioTagsText = ts.translate("initBaseBoard", "Edit audio file tags", "editAudioTagsText");
     c.editPostText = ts.translate("initBaseBoard", "Edit post", "editPostText");
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",
                                        "enterPasswordText");
@@ -294,6 +301,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
+    c.postActionsText = ts.translate("initBaseBoard", "Post actions", "postActionsText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
     c.postFormButtonSubmitSending = ts.translate("initBaseBoard", "Sending:", "postFormButtonSubmitSending");
     c.postFormButtonSubmitWaiting = ts.translate("initBaseBoard", "Waiting for reply...",

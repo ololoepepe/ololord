@@ -219,7 +219,7 @@ lord.vote = function(postNumber) {
                 votes.push(inp.value);
         });
     }
-    lord.ajaxRequest("vote", [postNumber, votes], 11, function() {
+    lord.ajaxRequest("vote", [postNumber, votes], lord.RpcVoteId, function() {
         lord.updatePost("rpg", postNumber, post);
     });
 };
@@ -231,7 +231,7 @@ lord.unvote = function(postNumber) {
     var post = lord.id("post" + postNumber);
     if (!post)
         return;
-    lord.ajaxRequest("unvote", [postNumber], 12, function() {
+    lord.ajaxRequest("unvote", [postNumber], lord.RpcUnvoteId, function() {
         lord.updatePost("rpg", postNumber, post);
     });
 };
@@ -243,7 +243,7 @@ lord.setVoteOpened = function(postNumber, opened) {
     var post = lord.id("post" + postNumber);
     if (!post)
         return;
-    lord.ajaxRequest("set_vote_opened", [postNumber, !!opened], 13, function() {
+    lord.ajaxRequest("set_vote_opened", [postNumber, !!opened], lord.RpcSetVoteOpenedId, function() {
         lord.updatePost("rpg", postNumber, post);
     });
 };

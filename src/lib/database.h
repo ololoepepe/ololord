@@ -48,6 +48,7 @@ class request;
 #include <QString>
 #include <QStringList>
 #include <QVariant>
+#include <QVariantMap>
 
 #include <cppcms/json.h>
 
@@ -284,6 +285,8 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QSt
                                const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
+OLOLORD_EXPORT bool editAudioTags(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
+                                  const QByteArray &password, const QVariantMap &tags, QString *error = 0);
 OLOLORD_EXPORT bool editPost(EditPostParameters &p);
 OLOLORD_EXPORT bool fileExists(const QByteArray &hash, bool *ok = 0);
 OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);
@@ -294,6 +297,8 @@ OLOLORD_EXPORT QVariant getFileMetaData(const QString &fileName, bool *ok = 0, Q
                                         const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT int getNewPostCount(const cppcms::http::request &req, const QString &boardName, quint64 lastPostNumber,
                                    bool *ok = 0, QString *error = 0);
+OLOLORD_EXPORT QVariantMap getNewPostCountEx(const cppcms::http::request &req, const QVariantMap &numbers,
+                                             bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
                                        quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,

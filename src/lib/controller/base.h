@@ -47,7 +47,8 @@ public:
     CaptchaEngine currentCaptchaEngine;
     Locale currentLocale;
     std::string currentTime;
-    std::string custom;
+    std::string customFooterContent;
+    std::string customHeaderContent;
     std::string favoriteThreadsText;
     std::string localeLabelText;
     std::list<Locale> locales;

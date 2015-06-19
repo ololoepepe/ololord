@@ -39,7 +39,6 @@ B_DECLARE_TRANSLATE_FUNCTION
 
 static const QString IpAddressRegexpPattern =
         "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])";
-static const QString InputDateTimeFormat = "dd.MM.yyyy:hh";
 static const QString LogDateTimeFormat = "yyyy.MM.dd hh:mm:ss.zzz";
 static const QString LogFileDateTimeFormat = "yyyy.MM.dd-hh.mm.ss";
 
@@ -83,7 +82,7 @@ int main(int argc, char **argv)
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         if (!force)
             s.listen();
-        app.setApplicationVersion("0.1.0-rc7");
+        app.setApplicationVersion("0.1.0-rc8");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -96,15 +95,8 @@ int main(int argc, char **argv)
         initTerminal();
         AbstractCaptchaEngine::reloadEngines();
         AbstractBoard::reloadBoards();
-        QString captchaQuotaFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
-                + "/captcha-quota.dat";
-        QString postingSpeedFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
-                + "/posting-speed.dat";
-        QString searchIndexFile = BCoreApplication::location("storage", BCoreApplication::UserResource)
-                + "/search-index.dat";
-        AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(captchaQuotaFile));
-        AbstractBoard::restorePostingSpeed(BDirTools::readFile(postingSpeedFile));
-        Search::restoreIndex(BDirTools::readFile(searchIndexFile));
+        AbstractBoard::restoreCaptchaQuota(BDirTools::readFile(Tools::captchaQuotaFile()));
+        Search::restoreIndex(BDirTools::readFile(Tools::searchIndexFile()));
         bLogger->setDateTimeFormat(LogDateTimeFormat);
         bLogger->setFileName(logFileName());
         updateLoggingMode();
@@ -127,9 +119,8 @@ int main(int argc, char **argv)
         ret = app.exec();
         owt.shutdown();
         owt.wait(10 * BeQt::Second);
-        BDirTools::writeFile(captchaQuotaFile, AbstractBoard::saveCaptchaQuota());
-        BDirTools::writeFile(postingSpeedFile, AbstractBoard::savePostingSpeed());
-        BDirTools::writeFile(searchIndexFile, Search::saveIndex());
+        BDirTools::writeFile(Tools::captchaQuotaFile(), AbstractBoard::saveCaptchaQuota());
+        BDirTools::writeFile(Tools::searchIndexFile(), Search::saveIndex());
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
@@ -187,8 +178,8 @@ bool handleBanPoster(const QString &, const QStringList &args)
     QString reason = result.value("reason");
     QDateTime expires;
     if (result.contains("expires")) {
-        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), InputDateTimeFormat)
-                                             : QDateTime();
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"),
+                                                                     Tools::InputDateTimeFormat) : QDateTime();
         if (!expires.isValid()) {
             QString s = bReadLine(translate("handleBanPoster", "Invalid date. User will be banned forever. Continue?")
                                   + " [Yn] ");
@@ -226,8 +217,8 @@ bool handleBanUser(const QString &, const QStringList &args)
     QString reason = result.value("reason");
     QDateTime expires;
     if (result.contains("expires")) {
-        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"), InputDateTimeFormat)
-                                             : QDateTime();
+        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"),
+                                                                     Tools::InputDateTimeFormat) : QDateTime();
         if (!expires.isValid()) {
             QString s = bReadLine(translate("handleBanUser", "Invalid date. User will be banned forever. Continue?")
                                   + " [Yn] ");
@@ -824,9 +815,16 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Maximum count of extra posts a user may make before "
                                                "solving captcha again.\n"
                                                "The default is 0 (solve captcha every time)."));
-    BTranslation t = BTranslation::translate("initSettings", "MIME types of files allowed for attaching.\n"
-                                             "Must be separated by commas. Wildcard matching is used.\n"
-                                             "The default is %1.");
+    nn = new BSettingsNode(QVariant::String, "launch_date", n);
+    BTranslation t = BTranslation::translate("initSettings", "Date and time of first site launch.\n"
+                                             "Is used to calculate board speed.\n"
+                                             "Format: %1\n"
+                                             "By default, the date of creation of application settings file is used.");
+    t.setArgument(Tools::InputDateTimeFormat);
+    nn->setDescription(t);
+    t = BTranslation::translate("initSettings", "MIME types of files allowed for attaching.\n"
+                                "Must be separated by commas. Wildcard matching is used.\n"
+                                "The default is %1.");
     t.setArgument(AbstractBoard::defaultFileTypes);
     nn = new BSettingsNode(QVariant::String, "supported_file_types", n);
     nn->setDescription(t);
@@ -895,7 +893,6 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
                                                "IP's are represented as ranges and are separated by commas.\n"
                                                "Example: 127.0.0.1,192.168.0.1-192.168.0.255"));
-    /*======================================== Proxy ========================================*/
     nn = new BSettingsNode("Proxy", n);
     BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
     nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"
@@ -903,6 +900,10 @@ void initSettings()
                                                 "Works for non-transparent proxies only (X-Forwarded-For, "
                                                 "X-Client-IP).\n"
                                                 "The default is true."));
+    nn = new BSettingsNode(QVariant::String, "time_zone_offset", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Time zone offset in minutes.\n"
+                                               "The value must be between -720 and 840.\n"
+                                               "The default is -1000 (no offset)."));
     /*======================================== Cache ========================================*/
     n = new BSettingsNode("Cache", root);
     foreach (const QString &s, Cache::availableCacheNames()) {

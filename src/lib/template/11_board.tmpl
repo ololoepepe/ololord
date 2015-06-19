@@ -73,6 +73,8 @@
     <body>
         <% include baseTexts() %>
         <% include boardTexts() %>
+        <input type="hidden" id="lastPostNumber" value="<%= lastPostNumber %>" />
+        <% include customHeader() %>
         <% include navigationButton("bottom") %>
         <% include navigationButton("top") %>
         <a id="top"></a>
@@ -116,6 +118,7 @@
             </div>
         <% end %>
         <a id="bottom"></a>
+        <% include customFooter() %>
     </body>
 </html>
 <% end template %>
