@@ -60,10 +60,12 @@ static bool handleRerenderPosts(const QString &cmd, const QStringList &args);
 static bool handleSet(const QString &cmd, const QStringList &args);
 static bool handleShowPoster(const QString &cmd, const QStringList &args);
 static bool handleUnfixThread(const QString &cmd, const QStringList &args);
+static bool handleUptime(const QString &cmd, const QStringList &args);
 static void initCommands();
 static void initSettings();
 static void initTerminal();
 static QString logFileName();
+static QString msecsToString(qint64 msecs);
 static bool setDefaultThreadPassword(const BSettingsNode *node, const QVariant &value);
 static bool setLoggingMode(const BSettingsNode *, const QVariant &v);
 static bool setLoggingSkipIp(const BSettingsNode *node, const QVariant &value);
@@ -591,6 +593,16 @@ bool handleUnfixThread(const QString &, const QStringList &args)
     return true;
 }
 
+bool handleUptime(const QString &, const QStringList &)
+{
+    if (!oApp) {
+        bWriteLine(translate("handleUptime", "No OlolordApplication instance"));
+        return false;
+    }
+    bWriteLine(translate("handleUptime", "Uptime:") + " " + msecsToString(oApp->uptime()));
+    return true;
+}
+
 void initCommands()
 {
     BTerminal::setHelpDescription(BTranslation::translate("initCommands",
@@ -735,6 +747,11 @@ void initCommands()
     ch.description = BTranslation::translate("initCommands", "Finish writing to the current log file and start "
                                              "writing to a new one.");
     BTerminal::setCommandHelp("new-log", ch);
+    //
+    BTerminal::installHandler("uptime", &handleUptime);
+    ch.usage = "uptime";
+    ch.description = BTranslation::translate("initCommands", "Shows for how long the application has been running.");
+    BTerminal::setCommandHelp("uptime", ch);
 }
 
 void initSettings()
@@ -930,6 +947,21 @@ QString logFileName()
     QString fn = BCoreApplication::location(BCoreApplication::DataPath, BCoreApplication::UserResource) + "/logs/";
     fn += QDateTime::currentDateTime().toString(LogFileDateTimeFormat) + ".txt";
     return fn;
+}
+
+QString msecsToString(qint64 msecs)
+{
+    QString days = QString::number(msecs / (24 * BeQt::Hour));
+    msecs %= (24 * BeQt::Hour);
+    QString hours = QString::number(msecs / BeQt::Hour);
+    hours.prepend(QString().fill('0', 2 - hours.length()));
+    msecs %= BeQt::Hour;
+    QString minutes = QString::number(msecs / BeQt::Minute);
+    minutes.prepend(QString().fill('0', 2 - minutes.length()));
+    msecs %= BeQt::Minute;
+    QString seconds = QString::number(msecs / BeQt::Second);
+    seconds.prepend(QString().fill('0', 2 - seconds.length()));
+    return days + " " + translate("msecsToString", "day(s)") + " " + hours + ":" + minutes + ":" + seconds;
 }
 
 bool setDefaultThreadPassword(const BSettingsNode *, const QVariant &value)

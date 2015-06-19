@@ -1753,6 +1753,17 @@ Your choice:</source>
     </message>
 </context>
 <context>
+    <name>handleUptime</name>
+    <message>
+        <source>No OlolordApplication instance</source>
+        <translation>Отсутствует экземпляр OlolordApplication</translation>
+    </message>
+    <message>
+        <source>Uptime:</source>
+        <translation>Аптайм:</translation>
+    </message>
+</context>
+<context>
     <name>incrementPostCounter</name>
     <message>
         <source>Invalid database connection</source>
@@ -2503,6 +2514,10 @@ dynamic_files, static_files.
         <source>Finish writing to the current log file and start writing to a new one.</source>
         <translation>Закончить запись в текущий лог-файл и начать запись в новый.</translation>
     </message>
+    <message>
+        <source>Shows for how long the application has been running.</source>
+        <translation>Показать, сколько времени прошло с момента запуска приложения.</translation>
+    </message>
 </context>
 <context>
     <name>initSettings</name>
@@ -2841,6 +2856,13 @@ The default is -1000 (no offset).</source>
         <source>Hands off my pony!!!!!11</source>
         <comment>buttonText</comment>
         <translation>Руки прочь от моих пони!!!!!11</translation>
+    </message>
+</context>
+<context>
+    <name>msecsToString</name>
+    <message>
+        <source>day(s)</source>
+        <translation>дней</translation>
     </message>
 </context>
 <context>
