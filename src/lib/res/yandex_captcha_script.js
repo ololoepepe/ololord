@@ -17,7 +17,7 @@ lord.reloadCaptchaFunction = function() {
     response.value = "";
     if (image.firstChild)
         image.removeChild(image.firstChild);
-    lord.ajaxRequest("get_yandex_captcha_image", ["%type%"], 16, function(res) {
+    lord.ajaxRequest("get_yandex_captcha_image", ["%type%"], lord.RpcGetYandexCaptchaImageId, function(res) {
         challenge.value = res["challenge"];
         var img = lord.node("img");
         img.src = "//" + res["url"].replace("https://", "").replace("http://", "");

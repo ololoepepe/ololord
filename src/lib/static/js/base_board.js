@@ -126,7 +126,7 @@ lord.resetCaptcha = function() {
     var captcha = lord.id("captcha");
     if (!!captcha) {
         var boardName = lord.text("currentBoardName");
-        lord.ajaxRequest("get_captcha_quota", [boardName], 8, function(res) {
+        lord.ajaxRequest("get_captcha_quota", [boardName], lord.RpcGetCaptchaQuotaId, function(res) {
             res = +res;
             if (isNaN(res))
                 return;
@@ -533,7 +533,7 @@ lord.updatePost = function(boardName, postNumber, post) {
     postNumber = +postNumber;
     if (!boardName || !post || isNaN(postNumber) || postNumber <= 0)
         return;
-    lord.ajaxRequest("get_post", [boardName, postNumber], 6, function(res) {
+    lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
         var newPost = lord.createPostNode(res, true);
         if (!newPost)
             return;
@@ -826,7 +826,7 @@ lord.deletePost = function(boardName, postNumber, fromThread) {
         } else if (!lord.isHashpass(pwd)) {
             pwd = lord.toHashpass(pwd);
         }
-        lord.ajaxRequest("delete_post", [boardName, +postNumber, pwd], 1, function(res) {
+        lord.ajaxRequest("delete_post", [boardName, +postNumber, pwd], lord.RpcDeletePostId, function(res) {
             var post = lord.id("post" + postNumber);
             if (!post) {
                 if (!!fromThread) {
@@ -864,7 +864,7 @@ lord.setThreadFixed = function(boardName, postNumber, fixed) {
         return;
     if (!lord.getCookie("hashpass"))
         return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
-    lord.ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], 2, lord.reloadPage);
+    lord.ajaxRequest("set_thread_fixed", [boardName, +postNumber, !!fixed], lord.RpcSetThreadFixedId, lord.reloadPage);
 };
 
 lord.setThreadOpened = function(boardName, postNumber, opened) {
@@ -872,7 +872,7 @@ lord.setThreadOpened = function(boardName, postNumber, opened) {
         return;
     if (!lord.getCookie("hashpass"))
         return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
-    lord.ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], 3, lord.reloadPage);
+    lord.ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], lord.RpcSetThreadOpenedId, lord.reloadPage);
 };
 
 lord.banUser = function(boardName, postNumber) {
@@ -916,7 +916,7 @@ lord.banUser = function(boardName, postNumber) {
             "reason": inputReason.value,
             "expires": inputExpires.value
         };
-        lord.ajaxRequest("ban_user", [params], 4, function(res) {
+        lord.ajaxRequest("ban_user", [params], lord.RpcBanUserId, function(res) {
             lord.reloadPage();
         });
     });
@@ -1087,7 +1087,7 @@ lord.editPost = function(boardName, postNumber) {
         };
         if (lord.customEditFormGet)
             params["userData"] = lord.customEditFormGet(form, params);
-        lord.ajaxRequest("edit_post", [params], 5, function() {
+        lord.ajaxRequest("edit_post", [params], lord.RpcEditPost, function() {
             lord.updatePost(boardName, postNumber, post);
         });
     });
@@ -1135,7 +1135,7 @@ lord.deleteFile = function(boardName, postNumber, fileName) {
         } else if (!lord.isHashpass(pwd)) {
             pwd = lord.toHashpass(pwd);
         }
-        lord.ajaxRequest("delete_file", [boardName, fileName, pwd], 10, function() {
+        lord.ajaxRequest("delete_file", [boardName, fileName, pwd], lord.RpcDeleteFileId, function() {
             lord.updatePost(boardName, postNumber, post);
         });
     });
@@ -1174,7 +1174,7 @@ lord.editAudioTags = function(boardName, postNumber, fileName) {
             "title": title.value,
             "year": year.value
         };
-        lord.ajaxRequest("edit_audio_tags", [boardName, fileName, pwd, tags], 19, function() {
+        lord.ajaxRequest("edit_audio_tags", [boardName, fileName, pwd, tags], lord.RpcEditAudioTagsId, function() {
             lord.updatePost(boardName, postNumber, post);
         });
     });
@@ -1253,7 +1253,7 @@ lord.viewPost = function(link, boardName, postNumber) {
     if (!post)
         post = lord.postPreviews[boardName + "/" + postNumber];
     if (!post) {
-        lord.ajaxRequest("get_post", [boardName, +postNumber], 6, function(res) {
+        lord.ajaxRequest("get_post", [boardName, +postNumber], lord.RpcGetPostId, function(res) {
             post = lord.createPostNode(res, false, boardName);
             if (!post)
                 return;
@@ -1353,7 +1353,7 @@ lord.fileAddedCommon = function(div, file) {
         var wordArray = CryptoJS.lib.WordArray.create(e.target.result);
         var currentBoardName = lord.text("currentBoardName");
         var fileHash = lord.toHashpass(wordArray);
-        lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], 8, function(res) {
+        lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], lord.RpcGetFileExistenceId, function(res) {
             if (!res)
                 return;
             var fileHashes = lord.getFileHashes(div);
@@ -1622,7 +1622,7 @@ lord.addThreadToFavorites = function(boardName, threadNumber) {
     var fav = lord.getLocalObject("favoriteThreads", {});
     if (fav.hasOwnProperty(boardName + "/" + threadNumber))
         return;
-    lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], 7, function(res) {
+    lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], lord.RpcGetNewPostsId, function(res) {
         if (!res || res.length < 1)
             return;
         var pn = res.pop()["number"];
@@ -1751,7 +1751,7 @@ lord.posted = function(response) {
                     if (!parent.tagName)
                         parent = parent.nextSibling;
                 }
-                lord.ajaxRequest("get_post", [boardName, postNumber], 6, function(res) {
+                lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
                     var newPost = lord.createPostNode(res, true);
                     if (newPost) {
                         parent.appendChild(newPost, parent.lastChild);

@@ -112,7 +112,7 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
     if (!posts)
         return;
     var lastPostN = posts[posts.length - 1].id.replace("post", "");
-    lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], 7, function(res) {
+    lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], lord.RpcGetNewPostsId, function(res) {
         if (!res)
             return;
         var txt = lord.text((res.length >= 1) ? "newPostsText" : "noNewPostsText");

@@ -23,7 +23,7 @@ lord.addTrack = function(track) {
         var fileName = track.split("/").pop();
         if (!boardName || !fileName)
             return;
-        lord.ajaxRequest("get_file_meta_data", [boardName, fileName], 17, function(res) {
+        lord.ajaxRequest("get_file_meta_data", [boardName, fileName], lord.RpcGetFileMetaDataId, function(res) {
             var s = res["artist"] ? res["artist"] : lord.text("unknownArtistText");
             s += " - ";
             s += res["title"] ? res["title"] : lord.text("unknownTitleText");

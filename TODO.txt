@@ -22,6 +22,7 @@
 [done] Generate random thumbnails for audio files
 [done] Add ability to edit audio tags
 [done] Add tooltip tag/markup
+[done] Use "constants" for JSON-RPC method IDs
 * Improve minification
 ? Add ASCII-art tag
 ? Add ability to set limits for each thread

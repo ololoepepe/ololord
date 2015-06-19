@@ -11,6 +11,39 @@ lord.Day = 24 * lord.Hour;
 lord.Year = 365 * lord.Day;
 lord.Billion = 2 * 1000 * 1000 * 1000;
 
+lord._defineEnum = function(constName, value) {
+    if (typeof constName != "string")
+        return;
+    if (value) {
+        lord[constName] = value;
+        lord._lastEnumValue = value;
+    } else if (typeof lord._lastEnumValue == "number") {
+        lord._lastEnumValue += 1;
+        lord[constName] = _lastEnumValue;
+    }
+};
+
+lord._defineEnum("RpcBanUserId", 1);
+lord._defineEnum("RpcDeleteFileId");
+lord._defineEnum("RpcDeletePostId");
+lord._defineEnum("RpcEditAudioTagsId");
+lord._defineEnum("RpcEditPostId");
+lord._defineEnum("RpcGetBoardsId");
+lord._defineEnum("RpcGetCaptchaQuotaId");
+lord._defineEnum("RpcGetFileExistenceId");
+lord._defineEnum("RpcGetFileMetaDataId");
+lord._defineEnum("RpcGetNewPostCountId");
+lord._defineEnum("RpcGetNewPostCountExId");
+lord._defineEnum("RpcGetNewPostsId");
+lord._defineEnum("RpcGetPostId");
+lord._defineEnum("RpcGetThreadNumbersId");
+lord._defineEnum("RpcGetYandexCaptchaImageId");
+lord._defineEnum("RpcSetThreadFixedId");
+lord._defineEnum("RpcSetThreadOpenedId");
+lord._defineEnum("RpcSetVoteOpenedId");
+lord._defineEnum("RpcUnvoteId");
+lord._defineEnum("RpcVoteId");
+
 /*Variables*/
 
 lord.popups = [];
@@ -512,7 +545,7 @@ lord.showFavorites = function() {
     lord.forIn(fav, function(_, x) {
         var boardName = x.split("/").shift();
         var threadNumber = x.split("/").pop();
-        lord.ajaxRequest("get_post", [boardName, +threadNumber], 6, function(res) {
+        lord.ajaxRequest("get_post", [boardName, +threadNumber], lord.RpcGetPostId, function(res) {
             f(res, x);
         });
     });
@@ -526,7 +559,7 @@ lord.checkFavoriteThreads = function() {
     lord.forIn(fav, function(o, x) {
         var boardName = x.split("/").shift();
         var threadNumber = x.split("/").pop();
-        lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, o.lastPostNumber], 7, function(res) {
+        lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, o.lastPostNumber], lord.RpcGetNewPostsId, function(res) {
             if (!res || res.length < 1)
                 return;
             o.lastPostNumber = res.pop()["number"];
@@ -577,7 +610,7 @@ lord.initializeOnLoadSettings = function() {
             var lastPostNumber = +lastPostNumbers[boardName];
             if (isNaN(lastPostNumber))
                 lastPostNumber = 0;
-            lord.ajaxRequest("get_new_post_count", [boardName, lastPostNumber], 18, function(res) {
+            lord.ajaxRequest("get_new_post_count", [boardName, lastPostNumber], lord.RpcGetNewPostCountId, function(res) {
                 if (isNaN(res) || res < 1)
                     return;
                 var fnt = lord.node("font");
