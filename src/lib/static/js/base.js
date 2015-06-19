@@ -19,7 +19,7 @@ lord._defineEnum = function(constName, value) {
         lord._lastEnumValue = value;
     } else if (typeof lord._lastEnumValue == "number") {
         lord._lastEnumValue += 1;
-        lord[constName] = _lastEnumValue;
+        lord[constName] = lord._lastEnumValue;
     }
 };
 
