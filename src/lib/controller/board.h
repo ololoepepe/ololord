@@ -46,6 +46,7 @@ public:
 public:
     std::string boardRulesLinkText;
     unsigned int currentPage;
+    unsigned int lastPostNumber;
     std::string omittedPostsText;
     std::list<unsigned int> pages;
     std::list<Thread> threads;

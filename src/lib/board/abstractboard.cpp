@@ -767,6 +767,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             }
             c.threads.push_back(thread);
         }
+        c.lastPostNumber = Database::lastPostNumber(name());
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
         Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);

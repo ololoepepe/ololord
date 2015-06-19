@@ -1824,13 +1824,7 @@ lord.initializeOnLoadBaseBoard = function() {
     });
     if (!lord.text("currentThreadNumber")) {
         var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
-        var last = 0;
-        posts.forEach(function(post) {
-            var n = +post.id.replace("post", "");
-            if (n > last)
-                last = n;
-        });
-        lastPostNumbers[lord.text("currentBoardName")] = last;
+        lastPostNumbers[lord.text("currentBoardName")] = +lord.text("lastPostNumber");
         lord.setLocalObject("lastPostNumbers", lastPostNumbers);
     }
 };
