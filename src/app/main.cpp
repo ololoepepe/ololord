@@ -884,12 +884,6 @@ void initSettings()
                                                "  2 - log to file only\n"
                                                "  3 and more - log to console and file\n"
                                                "  The default is 2."));
-    nn = new BSettingsNode(QVariant::Int, "minification_mode", n);
-    nn->setDescription(BTranslation::translate("initSettings", "HTML/CSS/JS minification mode. Possible values:\n"
-                                               "  0 or less - don't minify anything\n"
-                                               "  1 - remove empty lines only\n"
-                                               "  2 and more - remove empty lines and extra spaces\n"
-                                               "  The default is 1."));
     nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));

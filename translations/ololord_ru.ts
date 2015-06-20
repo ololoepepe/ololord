@@ -2758,18 +2758,6 @@ It will appear in HTML.</source>
 Появляется в HTML-страницах.</translation>
     </message>
     <message>
-        <source>HTML/CSS/JS minification mode. Possible values:
-  0 or less - don&apos;t minify anything
-  1 - remove empty lines only
-  2 and more - remove empty lines and extra spaces
-  The default is 1.</source>
-        <translation>Режим минификации HTML/CSS/JS. Возможные значения:
-  0 или меньше - не минифицировать
-  1 - только убирать пустые строки
-  2 и больше - убирать пустые строки и лишние пробелы
-  Значение по умолчанию - 1.</translation>
-    </message>
-    <message>
         <source>file utility command (possibly full path).
 The default is file (UNIX) or file.exe (Windows).</source>
         <translation>Команда вызова утилиты file (возможно, полный путь).

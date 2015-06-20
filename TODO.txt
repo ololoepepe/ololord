@@ -1,8 +1,8 @@
 [done] Implement "uptime" command
 [done] Fix post number links
+[done] Remove minification feature
 * Implement "ascetic" mode
 * Use D-Pointer approach for the lib
 
-* Improve minification
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
