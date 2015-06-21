@@ -1963,6 +1963,11 @@ Your choice:</source>
         <comment>style name</comment>
         <translation>Futaba</translation>
     </message>
+    <message>
+        <source>Request entity too large</source>
+        <comment>error413Text</comment>
+        <translation>Размер запроса слишком велик</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

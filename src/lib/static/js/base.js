@@ -371,7 +371,15 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                     callback(response.result);
             } else {
                 if (!lord.unloading) {
-                    lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+                    var text = lord.text("ajaxErrorText") + " " + xhr.status;
+                    switch (+xhr.status) {
+                    case 413:
+                        text = lord.text("error" + xhr.status + "Text");
+                        break;
+                    default:
+                        break;
+                    }
+                    lord.showPopup(text, {type: "critical"});
                     if (typeof errorCallback == "function")
                         errorCallback();
                 }

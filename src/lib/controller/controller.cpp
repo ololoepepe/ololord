@@ -126,6 +126,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentTime = mreq->cookie_by_name("time").value();
     c.customFooterContent = Tools::toStd(Tools::customContent("footer", ts.locale()));
     c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
+    c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.localeLabelText = "Language:";
     c.locales = locales;

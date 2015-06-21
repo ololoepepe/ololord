@@ -49,6 +49,7 @@ public:
     std::string currentTime;
     std::string customFooterContent;
     std::string customHeaderContent;
+    std::string error413Text;
     std::string favoriteThreadsText;
     std::string localeLabelText;
     std::list<Locale> locales;

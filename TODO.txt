@@ -1,6 +1,7 @@
 [done] Implement "uptime" command
 [done] Fix post number links
 [done] Remove minification feature
+[done] Add error 413 description
 * Implement "ascetic" mode
 * Use D-Pointer approach for the lib
 

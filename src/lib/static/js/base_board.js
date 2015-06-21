@@ -1700,7 +1700,15 @@ lord.submitted = function(event, form) {
                 lord.posted(response);
             } else {
                 resetButton();
-                lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+                var text = lord.text("ajaxErrorText") + " " + xhr.status;
+                switch (+xhr.status) {
+                case 413:
+                    text = lord.text("error" + xhr.status + "Text");
+                    break;
+                default:
+                    break;
+                }
+                lord.showPopup(text, {type: "critical"});
             }
         }
     };
