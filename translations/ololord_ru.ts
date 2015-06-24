@@ -3344,6 +3344,21 @@ The default is -1000 (no offset).</source>
         <comment>error</comment>
         <translation>Нет такого поста</translation>
     </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
 </context>
 <context>
     <name>showDefaultThreadPassword</name>

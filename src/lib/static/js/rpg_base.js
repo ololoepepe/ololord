@@ -89,7 +89,7 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
         var voted = !!res["voteVoted"];
         var multiple = !!res["voteMultiple"];
         var div = lord.nameOne("voteVariants", post);
-        if (!res["voteDisabled"]) {
+        if (!disabled) {
             var closed = lord.nameOne("voteClosedImg", post);
             closed.parentNode.removeChild(closed);
         }
@@ -105,7 +105,7 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
                 inp.name = "voteGroup";
                 inp.value = v.id;
             }
-            if (!!res["ownPost"] || disabled || voted)
+            if (!!res["ownIp"] || disabled || voted)
                 inp.disabled = "true";
             inp.checked = !!v.selected;
             div.appendChild(inp);
@@ -120,31 +120,30 @@ lord.createPostNodeCustom = function(post, res, permanent, boardName) {
         var btnUnvote = lord.nameOne("buttonUnvote", tr);
         var btnClose = lord.nameOne("buttonSetVoteClosed", tr);
         var btnOpen = lord.nameOne("buttonSetVoteOpened", tr);
-        if (!!res["ownPost"]) {
-            if (!!res["voteDisabled"]) {
-                btnOpen.onclick = lord.setVoteOpened.bind(lord, res["number"], true);
-                btnClose.parentNode.removeChild(btnClose);
+        if (disabled) {
+            btnOpen.onclick = lord.setVoteOpened.bind(lord, res["number"], true);
+            btnClose.parentNode.removeChild(btnClose);
+        } else {
+            btnClose.onclick = lord.setVoteOpened.bind(lord, res["number"], false);
+            btnOpen.parentNode.removeChild(btnOpen);
+        }  
+        if (!res["ownIp"]) {
+            if (!voted) {
+                if (!disabled)
+                    btnVote.onclick = lord.vote.bind(lord, +res["number"]);
+                else
+                    btnVote.disabled = "true";
+                btnUnvote.parentNode.removeChild(btnUnvote);
             } else {
-                btnClose.onclick = lord.setVoteOpened.bind(lord, res["number"], false);
-                btnOpen.parentNode.removeChild(btnOpen);
+                if (!disabled)
+                    btnUnvote.onclick = lord.unvote.bind(lord, +res["number"]);
+                else
+                    btnUnvote.disabled = "true";
+                btnVote.parentNode.removeChild(btnVote);
             }
+        } else {
             btnVote.parentNode.removeChild(btnVote);
             btnUnvote.parentNode.removeChild(btnUnvote);
-        } else {
-            if (disabled) {
-                btnVote.disabled = "true";
-                btnUnvote.disabled = "true";
-            } else {
-                if (voted) {
-                    btnUnvote.onclick = lord.unvote.bind(lord, +res["number"]);
-                    btnVote.disabled = "true";
-                } else {
-                    btnVote.onclick = lord.vote.bind(lord, +res["number"]);
-                    btnUnvote.disabled = "true";
-                }
-            }
-            btnClose.parentNode.removeChild(btnClose);
-            btnOpen.parentNode.removeChild(btnOpen);
         }
     } else {
         tr.parentNode.removeChild(tr);
@@ -243,7 +242,19 @@ lord.setVoteOpened = function(postNumber, opened) {
     var post = lord.id("post" + postNumber);
     if (!post)
         return;
-    lord.ajaxRequest("set_vote_opened", [postNumber, !!opened], lord.RpcSetVoteOpenedId, function() {
-        lord.updatePost("rpg", postNumber, post);
+    var title = lord.text("enterPasswordTitle");
+    var label = lord.text("enterPasswordText");
+    lord.showPasswordDialog(title, label, function(pwd) {
+        if (null === pwd)
+            return;
+        if (pwd.length < 1) {
+            if (!lord.getCookie("hashpass"))
+                return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
+        } else if (!lord.isHashpass(pwd)) {
+            pwd = lord.toHashpass(pwd);
+        }
+        lord.ajaxRequest("set_vote_opened", [postNumber, !!opened, pwd], lord.RpcSetVoteOpenedId, function() {
+            lord.updatePost("rpg", postNumber, post);
+        });
     });
 };

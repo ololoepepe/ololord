@@ -1836,11 +1836,15 @@ bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened
     }
 }
 
-bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request &req, QString *error)
+bool setVoteOpened(quint64 postNumber, bool opened, const QByteArray &password, const cppcms::http::request &req,
+                   QString *error)
 {
     TranslatorQt tq(req);
     if (!postNumber)
         return bRet(error, tq.translate("setVoteOpened", "Invalid post number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (password.isEmpty() && hashpass.isEmpty())
+        return bRet(error, tq.translate("setVoteOpened", "Invalid password", "error"), false);
     try {
         Transaction t;
         if (!t)
@@ -1851,6 +1855,15 @@ bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request 
             return bRet(error, tq.translate("setVoteOpened", "Internal database error", "error"), false);
         if (!post)
             return bRet(error, tq.translate("setVoteOpened", "No such post", "error"), false);
+        if (password.isEmpty()) {
+            if (hashpass != post->hashpass()) {
+                int lvl = registeredUserLevel(req);
+                if (!moderOnBoard(req, "rpg") || registeredUserLevel(post->hashpass()) >= lvl)
+                    return bRet(error, tq.translate("setVoteOpened", "Not enough rights", "error"), false);
+            }
+        } else if (password != post->password()) {
+            return bRet(error, tq.translate("setVoteOpened", "Incorrect password", "error"), false);
+        }
         QVariantMap m = post->userData().toMap();
         if (m.value("disabled") == !opened)
             return bRet(error, QString(), true);

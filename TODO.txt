@@ -2,6 +2,7 @@
 [done] Fix post number links
 [done] Remove minification feature
 [done] Add error 413 description
+[done] Improve vote system
 * Implement "ascetic" mode
 * Use D-Pointer approach for the lib
 

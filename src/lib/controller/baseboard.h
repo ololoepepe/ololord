@@ -68,7 +68,8 @@ public:
     std::string name;
     std::string nameRaw;
     unsigned long long number;
-    bool ownPost;
+    bool ownHashpass;
+    bool ownIp;
     std::string rawName;
     bool rawHtml;
     std::string rawPostText;

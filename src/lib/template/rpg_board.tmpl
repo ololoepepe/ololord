@@ -73,7 +73,7 @@
             <% c++     } else { %>
             <% c++         out() << "<input type=\"radio\" name=\"voteGroup\" value=\"" << id << "\" "; %>
             <% c++     } %>
-            <% c++     if (post.ownPost || disabled || voted) out() << "disabled=\"true\" "; %>
+            <% c++     if (post.ownIp || disabled || voted) out() << "disabled=\"true\" "; %>
             <% c++     foreach (const QVariant &v, mm.value("users").toList()) { %>
             <% c++         if (v.toUInt() == content.userIp) { out() << "checked=\"true\" "; break; } %>
             <% c++     } %>
@@ -81,24 +81,27 @@
             <% c++     out() << voteCount << ")</span><br>"; %>
             <% c++ } %>
         </div>
-        <% if ( post.ownPost ) %>
-            <% if ( !disabled ) %>
-                <button name="buttonSetVoteClosed"
-                        onclick="lord.setVoteOpened(<%= post.number %>, false);"><%= closeVoteActionText %></button>
-            <% else %>
-                <button name="buttonSetVoteOpened"
-                        onclick="lord.setVoteOpened(<%= post.number %>, true);"><%= openVoteActionText %></button>
-            <% end %>
+        <% if ( !disabled ) %>
+            <button name="buttonSetVoteClosed"
+                    onclick="lord.setVoteOpened(<%= post.number %>, false);"><%= closeVoteActionText %></button>
         <% else %>
-            <% if ( !disabled && !voted ) %>
-                <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
+            <button name="buttonSetVoteOpened"
+                    onclick="lord.setVoteOpened(<%= post.number %>, true);"><%= openVoteActionText %></button>
+        <% end %>
+        <% if ( !post.ownIp ) %>
+            <% if ( !voted ) %>
+                <% if ( !disabled ) %>
+                    <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
+                <% else %>
+                    <button name="buttonVote" disabled="true"><%= voteActionText %></button>
+                <% end %>
             <% else %>
-                <button name="buttonVote" disabled="true"><%= voteActionText %></button>
-            <% end %>
-            <% if ( !disabled && voted ) %>
-                <button name="buttonUnvote" onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
-            <% else %>
-                <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
+                <% if ( !disabled ) %>
+                    <button name="buttonUnvote"
+                            onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
+                <% else %>
+                    <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
+                <% end %>
             <% end %>
         <% end %>
     </td>
@@ -114,10 +117,10 @@
         <div name="voteVariants">
             <input type="hidden" value="false" />
         </div>
-        <button name="buttonVote"><%= voteActionText %></button>
-        <button name="buttonUnvote"><%= unvoteActionText %></button>
         <button name="buttonSetVoteClosed"><%= closeVoteActionText %></button>
         <button name="buttonSetVoteOpened"><%= openVoteActionText %></button>
+        <button name="buttonVote"><%= voteActionText %></button>
+        <button name="buttonUnvote"><%= unvoteActionText %></button>
     </td>
 <tr>
 <% end template %>

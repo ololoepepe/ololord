@@ -604,7 +604,7 @@ void ActionAjaxHandler::setThreadOpened(std::string boardName, long long threadN
     }
 }
 
-void ActionAjaxHandler::setVoteOpened(long long postNumber, bool opened)
+void ActionAjaxHandler::setVoteOpened(long long postNumber, bool opened, std::string password)
 {
     try {
         quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
@@ -613,7 +613,8 @@ void ActionAjaxHandler::setVoteOpened(long long postNumber, bool opened)
         if (!testBan("rpg"))
             return Tools::log(server, "ajax_set_vote_opened", "fail:ban", logTarget);
         QString err;
-        if (!Database::setVoteOpened(pn, opened, server.request(), &err)) {
+        QByteArray pwd = Tools::toHashpass(Tools::fromStd(password));
+        if (!Database::setVoteOpened(pn, opened, pwd, server.request(), &err)) {
             server.return_error(Tools::toStd(err));
             Tools::log(server, "ajax_set_vote_opened", "fail:" + err, logTarget);
             return;

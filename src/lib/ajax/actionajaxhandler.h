@@ -46,7 +46,7 @@ public:
     QList<Handler> handlers() const;
     void setThreadFixed(std::string boardName, long long threadNumber, bool fixed);
     void setThreadOpened(std::string boardName, long long threadNumber, bool opened);
-    void setVoteOpened(long long postNumber, bool opened);
+    void setVoteOpened(long long postNumber, bool opened, std::string password);
     void unvote(long long postNumber);
     void vote(long long postNumber, const cppcms::json::array &votes);
 };

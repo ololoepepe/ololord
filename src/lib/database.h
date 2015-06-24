@@ -332,8 +332,8 @@ OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumb
                                     const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened,
                                     const cppcms::http::request &req, QString *error = 0);
-OLOLORD_EXPORT bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request &req,
-                                  QString *error = 0);
+OLOLORD_EXPORT bool setVoteOpened(quint64 postNumber, bool opened, const QByteArray &password,
+                                  const cppcms::http::request &req, QString *error = 0);
 OLOLORD_EXPORT bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error = 0);
 OLOLORD_EXPORT BanInfo userBanInfo(const QString &ip, const QString &boardName = QString(), bool *ok = 0,
                                    QString *error = 0, const QLocale &l = BCoreApplication::locale());
