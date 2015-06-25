@@ -279,6 +279,8 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
                                        "enterPasswordText");
     c.enterPasswordTitle = ts.translate("initBaseBoard", "Enter password", "enterPasswordTitle");
     c.expandVideoText = ts.translate("initBaseBoard", "Expand video", "expandVideoText");
+    c.fileExistsOnServerText = ts.translate("initBaseBoard", "This file exists on server. "
+                                            "It will NOT be uploaded, but WILL be copied.", "fileExistsOnServerText");
     c.findSourceWithGoogleText = ts.translate("initBaseBoard", "Find source with Google", "findSourceWithGoogleText");
     c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");

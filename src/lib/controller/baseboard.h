@@ -131,6 +131,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string enterPasswordText;
     std::string enterPasswordTitle;
     std::string expandVideoText;
+    std::string fileExistsOnServerText;
     std::string findSourceWithGoogleText;
     std::string findSourceWithIqdbText;
     std::string fixedText;

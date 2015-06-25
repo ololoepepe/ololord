@@ -558,8 +558,10 @@ lord.clearFileInput = function(div) {
     if (!!preview && div == preview.parentNode)
         preview.src = "/" + lord.text("sitePathPrefix") + "img/addfile.png";
     var span = div.querySelector("span");
-    if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
-        span.removeChild(span.childNodes[0]);
+    if (!!span && div == span.parentNode) {
+        while (span.firstChild)
+            span.removeChild(span.firstChild);
+    }
     if (div.parentNode)
         lord.removeFileHash(div);
     div.fileHash = null;
@@ -1365,6 +1367,7 @@ lord.fileAddedCommon = function(div, file) {
     div.querySelector("span").appendChild(lord.node("text", file.name + " (" + lord.readableSize(file.size) + ")"));
     lord.removeFileHash(div);
     var binaryReader = new FileReader();
+    var prefix = lord.text("sitePathPrefix");
     binaryReader.onload = function(e) {
         var wordArray = CryptoJS.lib.WordArray.create(e.target.result);
         var currentBoardName = lord.text("currentBoardName");
@@ -1372,6 +1375,11 @@ lord.fileAddedCommon = function(div, file) {
         lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], lord.RpcGetFileExistenceId, function(res) {
             if (!res)
                 return;
+            var img = lord.node("img");
+            img.src = "/" + prefix + "img/storage.png";
+            img.title = lord.text("fileExistsOnServerText");
+            div.querySelector("span").appendChild(lord.node("text", " "));
+            div.querySelector("span").appendChild(img);
             var fileHashes = lord.getFileHashes(div);
             if (fileHashes.value.indexOf(fileHash) < 0)
                 fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
@@ -1385,7 +1393,6 @@ lord.fileAddedCommon = function(div, file) {
         });
     };
     binaryReader.readAsArrayBuffer(file);
-    var prefix = lord.text("sitePathPrefix");
     if (!!file.name.match(/\.(jpe?g|png|gif)$/i)) {
         var reader = new FileReader();
         reader.readAsDataURL(file);

@@ -2406,6 +2406,11 @@ Your choice:</source>
         <comment>audioTagYearText</comment>
         <translation>Год:</translation>
     </message>
+    <message>
+        <source>This file exists on server. It will NOT be uploaded, but WILL be copied.</source>
+        <comment>fileExistsOnServerText</comment>
+        <translation>Этот файл существует на сервере. Он НЕ будет загружен, но БУДЕТ скопирован.</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
