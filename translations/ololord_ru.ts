@@ -679,6 +679,36 @@ text</source>
         <comment>tooltipText</comment>
         <translation>текст со всплывающей подсказкой</translation>
     </message>
+    <message>
+        <source>em dash</source>
+        <comment>emDash</comment>
+        <translation>длинное тире</translation>
+    </message>
+    <message>
+        <source>en dash</source>
+        <comment>enDash</comment>
+        <translation>среднее тире</translation>
+    </message>
+    <message>
+        <source>Link markup</source>
+        <comment>linkMarkup</comment>
+        <translation>Разметка ссылок</translation>
+    </message>
+    <message>
+        <source>Auto replacement</source>
+        <comment>replacementMarkup</comment>
+        <translation>Автозамена</translation>
+    </message>
+    <message>
+        <source>double hyphen</source>
+        <comment>doubleHyphen</comment>
+        <translation>двойной дефис</translation>
+    </message>
+    <message>
+        <source>quadriple hyphen</source>
+        <comment>quadripleHyphen</comment>
+        <translation>четырехкратный дефис</translation>
+    </message>
 </context>
 <context>
     <name>PlaylistRoute</name>

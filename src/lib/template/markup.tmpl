@@ -37,7 +37,7 @@
             <br />
             [i]<i><%= italics %></i>[/i]
             <br /><br />
-            --<s><%= strikedoutText %></s>--
+            ---<s><%= strikedoutText %></s>---
             <br />
             <s><%= strikedoutText %></s><%= strikedoutTextWakaba %>
             <br />
@@ -63,7 +63,7 @@
             <br />
             [spoiler]<span class="spoiler"><%= spoiler %></span>[/spoiler]
             <br /><br />
-            <%= tooltipText %>???"<%= tooltip %>" --&gt;
+            <%= tooltipText %>???"<%= tooltip %>" —&gt;
             <span class="tooltip" title="<%= tooltip %>"><%= tooltipText %></span>
             <br /><br />
             [tooltip value="<%= tooltip %>"]<span class="tooltip" title="<%= tooltip %>"><%= tooltipText %></span>[/tooltip]
@@ -73,18 +73,30 @@
             [spoiler][i][b]<span class="spoiler"><i><b><%= combinedText %></b></i></span>[/b][/i][/spoiler]
             <br /><br />
             <span class="quotation">&gt;<%= quotation %></span>
-            <br /><br />
+        </div>
+        <div class="sectionHeader">
+            <h3><%= linkMarkup %></h3>
+        </div>
+        <div class="rules">
             <a href="javascript:void(0);">&gt;&gt;1675284</a> <%= postLinkDescription %>
             <br /><br />
             <a href="javascript:void(0);">&gt;&gt;/h/127154</a> <%= postBoardLinkDescription %>
             <br /><br />
-            example.com --&gt; <a href="http://example.com">example.com</a>
+            example.com —&gt; <a href="http://example.com">example.com</a>
             <br /><br />
-            example1.com, (example2.com) --&gt; <a href="http://example1.com,">example1.com,</a> (<a href="http://example2.com)">example2.com)</a>
+            example1.com, (example2.com) —&gt; <a href="http://example1.com,">example1.com,</a> (<a href="http://example2.com)">example2.com)</a>
             <br /><br />
-            [url]example1.com[/url], ([url]example2.com[/url]) --&gt; <a href="http://example.com">example1.com</a>, (<a href="http://example.com">example2.com</a>)
+            [url]example1.com[/url], ([url]example2.com[/url]) —&gt; <a href="http://example.com">example1.com</a>, (<a href="http://example.com">example2.com</a>)
             <br /><br />
-            user@example.com --&gt; <a href="mailto:user@example.com">user@example.com</a>
+            user@example.com —&gt; <a href="mailto:user@example.com">user@example.com</a>
+        </div>
+        <div class="sectionHeader">
+            <h3><%= replacementMarkup %></h3>
+        </div>
+        <div class="rules">
+            -- (<%= doubleHyphen %>) —&gt; – (<%= enDash %>)
+            <br /><br />
+            ---- (<%= quadripleHyphen %>) —&gt; — (<%= emDash %>)
         </div>
         <div class="sectionHeader">
             <h3><%= codeMarkup %></h3>

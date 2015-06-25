@@ -16,8 +16,12 @@ struct OLOLORD_EXPORT Markup : public Base
     std::string boldText;
     std::string codeMarkup;
     std::string combinedText;
+    std::string doubleHyphen;
     std::string doubleMonospace;
+    std::string emDash;
+    std::string enDash;
     std::string italics;
+    std::string linkMarkup;
     std::string listDescription;
     std::string listItem1;
     std::string listItem2;
@@ -26,7 +30,9 @@ struct OLOLORD_EXPORT Markup : public Base
     std::string postBoardLinkDescription;
     std::string postLinkDescription;
     std::string preformattedText;
+    std::string quadripleHyphen;
     std::string quotation;
+    std::string replacementMarkup;
     std::string singleMonospace;
     std::string spoiler;
     std::string strikedoutText;

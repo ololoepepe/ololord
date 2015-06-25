@@ -34,8 +34,12 @@ void MarkupRoute::handle()
     c.boldText = ts.translate("MarkupRoute", "bold text", "boldText");
     c.codeMarkup = ts.translate("MarkupRoute", "Code markup", "codeMarkup");
     c.combinedText = ts.translate("MarkupRoute", "combined text", "combinedText");
+    c.doubleHyphen = ts.translate("MarkupRoute", "double hyphen", "doubleHyphen");
     c.doubleMonospace = ts.translate("MarkupRoute", "monospace `font` with backtics inside", "doubleMonospace");
+    c.emDash = ts.translate("MarkupRoute", "em dash", "emDash");
+    c.enDash = ts.translate("MarkupRoute", "en dash", "enDash");
     c.italics = ts.translate("MarkupRoute", "italics", "italics");
+    c.linkMarkup = ts.translate("MarkupRoute", "Link markup", "linkMarkup");
     c.listDescription = ts.translate("MarkupRoute", "Each line starts with a special symbol and a space",
                                      "listDescription");
     c.listItem1 = ts.translate("MarkupRoute", "first list item", "listItem1");
@@ -46,7 +50,9 @@ void MarkupRoute::handle()
                                               "postBoardLinkDescription");
     c.postLinkDescription = ts.translate("MarkupRoute", "Link to a post on the same board", "postLinkDescription");
     c.preformattedText = ts.translate("MarkupRoute", "Preformatted\ntext", "preformattedText");
-    c.quotation = ts.translate("MarkupRoute", "quotation", "quotation");;
+    c.quadripleHyphen = ts.translate("MarkupRoute", "quadriple hyphen", "quadripleHyphen");
+    c.quotation = ts.translate("MarkupRoute", "quotation", "quotation");
+    c.replacementMarkup = ts.translate("MarkupRoute", "Auto replacement", "replacementMarkup");
     c.singleMonospace = ts.translate("MarkupRoute", "monospace font", "singleMonospace");
     c.spoiler = ts.translate("MarkupRoute", "spoiler", "spoiler");
     c.strikedoutText = ts.translate("MarkupRoute", "striked out text", "strikedoutText");
