@@ -401,6 +401,16 @@ By default, the date of first site launch is used.</source>
 Формат: %1
 По умолчанию используется дата первого запуска сайта.</translation>
     </message>
+    <message>
+        <source>/po/litics</source>
+        <comment>title</comment>
+        <translation>Политика</translation>
+    </message>
+    <message>
+        <source>Armchair warrior</source>
+        <comment>defaultUserName</comment>
+        <translation>Диванный эксперт</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
