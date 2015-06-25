@@ -7,6 +7,7 @@
 [done] Replace two consequent hyphen by en-dash (shorter) and four consequent hyphens by em-dash (longer)
 [done] Show if file exists on server when it is uploaded
 [done] Enable access to joky boards
+[done] Fix WakabaMark markup
 * Implement "ascetic" mode
 * Use D-Pointer approach for the lib
 
