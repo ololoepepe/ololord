@@ -254,6 +254,10 @@ span.newPostCount {
     display: none;
 }
 
+.hiddenImage {
+    display: none;
+}
+
 /*
     Create action
 */

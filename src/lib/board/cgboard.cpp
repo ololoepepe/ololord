@@ -1,6 +1,6 @@
 #include "cgboard.h"
 
-#include "controller/board_image.h"
+#include "controller/cgboard.h"
 #include "controller/controller.h"
 #include "tools.h"
 #include "translator.h"
@@ -21,27 +21,25 @@ cgBoard::cgBoard()
 
 void cgBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
+    if (!Tools::cookieValue(app.request(), "no_joke_cg").compare("true", Qt::CaseInsensitive))
+        return AbstractBoard::handleBoard(app, page);
     QString logTarget = name() + "/" + QString::number(page);
     if (page > 0)
         return Tools::log(app, "board", "fail:not_found", logTarget);
-    Content::BoardImage c;
+    Content::cgBoard c;
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
     Controller::initBase(c, app.request(), title(tq.locale()));
     c.imageFileName = "drakeface.jpg";
     c.imageTitle = ts.translate("cgBoard", "No games", "imageTitle");
-    Tools::render(app, "board_image", c);
+    c.noJokeButtonText = ts.translate("cgBoard", "But there ARE games!", "imageTitle");
+    Tools::render(app, "cg_board", c);
     return Tools::log(app, "board", "success", logTarget);
 }
 
 QString cgBoard::name() const
 {
     return "cg";
-}
-
-bool cgBoard::postingEnabled() const
-{
-    return false;
 }
 
 QString cgBoard::title(const QLocale &l) const

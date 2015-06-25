@@ -21,6 +21,24 @@
                 var nsv = document.getElementById("nextStageVideo");
                 nsv.className = nsv.className.replace(" hiddenVideo", "");
                 document.getElementById("theVideo2").play();
+                var njbtn = document.getElementById("noJokeButton");
+                njbtn.className = njbtn.className.replace(" hiddenButton", "");
+            };
+            
+            lord.disableJoke = function() {
+                var expires = 2 * 1000 * 1000 * 1000;
+                var d = new Date();
+                d.setTime(d.getTime() + expires * 1000);
+                expires = d.toUTCString();
+                var updatedCookie = "no_joke_mlp=true; expires=" + expires;
+                document.cookie = updatedCookie;
+                document.getElementById("nextStageVideo").className += " hiddenVideo";
+                document.getElementById("noJokeButton").className += " hiddenButton";
+                var img = document.getElementById("okayface");
+                img.className = img.className.replace(" hiddenImage", "");
+                setTimeout(function() {
+                    window.location.reload();
+                }, 3000);
             };
         </script>
     </head>
@@ -38,6 +56,9 @@
                 <source src="/<%= sitePathPrefix %>video/<%= videoFileName2 %>" type="<%= videoType %>" />
             </video> 
         </div>
+        <button id="noJokeButton" class="button theButton hiddenButton"
+                onclick="javascript:lord.disableJoke();"><%= noJokeButtonText %></button>
+        <img id="okayface" class="theImage hiddenImage" src="/<%= sitePathPrefix %>img/okayface.png">
     </body>
 </html>
 <% end template %>

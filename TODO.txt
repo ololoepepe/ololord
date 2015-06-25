@@ -6,7 +6,7 @@
 [done] Change strikeout markup from double hyphen to triple hyphen
 [done] Replace two consequent hyphen by en-dash (shorter) and four consequent hyphens by em-dash (longer)
 [done] Show if file exists on server when it is uploaded
-* Improve joky boards
+[done] Enable access to joky boards
 * Implement "ascetic" mode
 * Use D-Pointer approach for the lib
 

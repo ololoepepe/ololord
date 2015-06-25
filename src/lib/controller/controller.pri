@@ -3,8 +3,7 @@ HEADERS += \
     $${PWD}/base.h \
     $${PWD}/baseboard.h \
     $${PWD}/board.h \
-    $${PWD}/board_image.h \
-    $${PWD}/board_video.h \
+    $${PWD}/cgboard.h \
     $${PWD}/controller.h \
     $${PWD}/echoboard.h \
     $${PWD}/echothread.h \

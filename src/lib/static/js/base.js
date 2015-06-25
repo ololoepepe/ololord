@@ -69,7 +69,7 @@ lord.setCookie = function(name, value, options) {
         options.expires = expires.toUTCString();
     value = encodeURIComponent(value);
     var updatedCookie = name + "=" + value;
-    for(var propName in options) {
+    for (var propName in options) {
         updatedCookie += "; " + propName;
         var propValue = options[propName];
         if (propValue !== true)

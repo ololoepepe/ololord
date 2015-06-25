@@ -10,10 +10,11 @@
 namespace Content
 {
 
-struct OLOLORD_EXPORT BoardImage : public Base
+struct OLOLORD_EXPORT cgBoard : public Base
 {
     std::string imageFileName;
     std::string imageTitle;
+    std::string noJokeButtonText;
 };
 
 }

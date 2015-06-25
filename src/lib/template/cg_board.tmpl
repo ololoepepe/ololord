@@ -1,0 +1,45 @@
+<% c++ #include "controller/cgboard.h" %>
+<% skin my_skin %>
+<% view cg_board uses Content::cgBoard extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(0) %>
+        <script type="text/javascript">
+            /*ololord global object*/
+
+            var lord = lord || {};
+
+            /*Functions*/
+
+            lord.disableJoke = function() {
+                var expires = 2 * 1000 * 1000 * 1000;
+                var d = new Date();
+                d.setTime(d.getTime() + expires * 1000);
+                expires = d.toUTCString();
+                var updatedCookie = "no_joke_cg=true; expires=" + expires;
+                document.cookie = updatedCookie;
+                document.getElementById("theImage").className += " hiddenImage";
+                var img = document.getElementById("okayface");
+                img.className = img.className.replace(" hiddenImage", "");
+                setTimeout(function() {
+                    window.location.reload();
+                }, 3000);
+            };
+        </script>
+    </head>
+    <body>
+        <div class="theImage">
+            <img id="theImage" src="/<%= sitePathPrefix %>img/<%= imageFileName %>" title="<%= imageTitle %>">
+        </div>
+        <button id="noJokeButton" class="button theButton"
+                onclick="javascript:lord.disableJoke();"><%= noJokeButtonText %></button>
+        <img id="okayface" class="theImage hiddenImage" src="/<%= sitePathPrefix %>img/okayface.png">
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

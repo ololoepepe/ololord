@@ -931,6 +931,11 @@ text</source>
         <comment>imageTitle</comment>
         <translation>Игор нет</translation>
     </message>
+    <message>
+        <source>But there ARE games!</source>
+        <comment>imageTitle</comment>
+        <translation>Но игры есть!</translation>
+    </message>
 </context>
 <context>
     <name>checkParsingError</name>
@@ -2884,6 +2889,11 @@ The default is -1000 (no offset).</source>
         <source>Hands off my pony!!!!!11</source>
         <comment>buttonText</comment>
         <translation>Руки прочь от моих пони!!!!!11</translation>
+    </message>
+    <message>
+        <source>Enough jokes, please!</source>
+        <comment>noJokeButtonText</comment>
+        <translation>Хватит этих ваших шуточек!</translation>
     </message>
 </context>
 <context>
