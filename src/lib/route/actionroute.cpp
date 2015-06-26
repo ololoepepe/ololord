@@ -32,74 +32,28 @@ ActionRoute::ActionRoute(cppcms::application &app) :
 
 QStringList ActionRoute::availableActions()
 {
-    init_once(QStringList, actions, QStringList()) {
-        actions << "add_file";
-        actions << "change_locale";
-        actions << "change_settings";
-        actions << "create_post";
-        actions << "create_thread";
-        actions << "login";
-        actions << "logout";
-    }
-    return actions;
+    return actionMap().keys();
 }
 
 void ActionRoute::handle(std::string action)
 {
     QString a = Tools::fromStd(action);
-    QString boardName = Tools::postParameters(application.request()).value("board");
-    QString logTarget = boardName;
+    Tools::PostParameters params = Tools::postParameters(application.request());
+    QString logTarget = params.value("board");
     Tools::log(application, a, "begin", logTarget);
     QString err;
     if (!Controller::testRequest(application, Controller::PostRequest, &err))
         return Tools::log(application, a, "fail:" + err, logTarget);
     TranslatorQt tq(application.request());
-    if (!availableActions().contains(a)) {
+    HandleActionMap map = actionMap();
+    if (!map.contains(a)) {
         err = tq.translate("ActionRoute", "Unknown action", "error");
         Controller::renderError(application, err,
                                 tq.translate("ActionRoute", "There is no such action", "description"));
         Tools::log(application, a, "fail:" + err, logTarget);
         return;
     }
-    if ("create_post" == action) {
-        AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
-        if (!testBoard(board.data(), a, logTarget, tq))
-            return;
-        board->createPost(application);
-    } else if ("create_thread" == action) {
-        AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
-        if (!testBoard(board.data(), a, logTarget, tq))
-            return;
-        board->createThread(application);
-    } else if ("add_file" == action) {
-        AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
-        if (!testBoard(board.data(), a, logTarget, tq))
-            return;
-        board->addFile(application);
-    } else if ("change_settings" == action) {
-        setCookie("mode", "modeChangeSelect");
-        setCookie("style", "styleChangeSelect");
-        setCookie("time", "timeChangeSelect");
-        setCookie("captchaEngine", "captchaEngineSelect");
-        redirect();
-    } else if ("change_locale" == action) {
-        setCookie("locale", "localeChangeSelect");
-        redirect();
-    } else if ("login" == action) {
-        QString hashpass = Tools::postParameters(application.request()).value("hashpass");
-        if (!QRegExp("").exactMatch(hashpass))
-            hashpass = Tools::toString(QCryptographicHash::hash(hashpass.toUtf8(), QCryptographicHash::Sha1));
-        application.response().set_cookie(cppcms::http::cookie("hashpass", Tools::toStd(hashpass), UINT_MAX, "/"));
-        redirect();
-    } else if ("logout" == action) {
-        application.response().set_cookie(cppcms::http::cookie("hashpass", "", UINT_MAX, "/"));
-        redirect();
-    } else {
-        err = tq.translate("ActionRoute", "Unknown action", "error");
-        Controller::renderError(application, err,
-                                tq.translate("ActionRoute", "There is no such action", "description"));
-        Tools::log(application, a, "fail:" + err, logTarget);
-    }
+    (this->*map.value(a))(a, params, tq);
 }
 
 unsigned int ActionRoute::handlerArgumentCount() const
@@ -128,17 +82,87 @@ std::string ActionRoute::url() const
     return "/action/{1}";
 }
 
+ActionRoute::HandleActionMap ActionRoute::actionMap()
+{
+    init_once(HandleActionMap, map, HandleActionMap()) {
+        map.insert("add_file", &ActionRoute::handleAddFile);
+        map.insert("change_locale", &ActionRoute::handleChangeLocale);
+        map.insert("change_settings", &ActionRoute::handleChangeSettings);
+        map.insert("create_post", &ActionRoute::handleCreatePost);
+        map.insert("create_thread", &ActionRoute::handleCreateThread);
+        map.insert("login", &ActionRoute::handleLogin);
+        map.insert("logout", &ActionRoute::handleLogout);
+    }
+    return map;
+}
+
+void ActionRoute::handleAddFile(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(params.value("board"));
+    if (!testBoard(board.data(), action, params.value("board"), tq))
+        return;
+    board->addFile(application);
+}
+
+void ActionRoute::handleChangeLocale(const QString &, const Tools::PostParameters &params, const Translator::Qt &)
+{
+    setCookie("locale", "localeChangeSelect", params);
+    redirect();
+}
+
+void ActionRoute::handleChangeSettings(const QString &, const Tools::PostParameters &params, const Translator::Qt &)
+{
+    setCookie("mode", "modeChangeSelect", params);
+    setCookie("style", "styleChangeSelect", params);
+    setCookie("time", "timeChangeSelect", params);
+    setCookie("captchaEngine", "captchaEngineSelect", params);
+    redirect();
+}
+
+void ActionRoute::handleCreatePost(const QString &action, const Tools::PostParameters &params,
+                                   const Translator::Qt &tq)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(params.value("board"));
+    if (!testBoard(board.data(), action, params.value("board"), tq))
+        return;
+    board->createPost(application);
+}
+
+void ActionRoute::handleCreateThread(const QString &action, const Tools::PostParameters &params,
+                                     const Translator::Qt &tq)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(params.value("board"));
+    if (!testBoard(board.data(), action, params.value("board"), tq))
+        return;
+    board->createThread(application);
+}
+
+void ActionRoute::handleLogin(const QString &, const Tools::PostParameters &params, const Translator::Qt &)
+{
+    QString hashpass = params.value("hashpass");
+    if (!QRegExp("").exactMatch(hashpass))
+        hashpass = Tools::toString(QCryptographicHash::hash(hashpass.toUtf8(), QCryptographicHash::Sha1));
+    application.response().set_cookie(cppcms::http::cookie("hashpass", Tools::toStd(hashpass), UINT_MAX, "/"));
+    redirect();
+}
+
+void ActionRoute::handleLogout(const QString &, const Tools::PostParameters &, const Translator::Qt &)
+{
+    application.response().set_cookie(cppcms::http::cookie("hashpass", "", UINT_MAX, "/"));
+    redirect();
+}
+
 void ActionRoute::redirect(const QString &path)
 {
     QString p = "/" + SettingsLocker()->value("Site/path_prefix").toString() + path;
     application.response().set_redirect_header(Tools::toStd(p));
 }
 
-void ActionRoute::setCookie(const QString &name, const QString &sourceName)
+void ActionRoute::setCookie(const QString &name, const QString &sourceName, const Tools::PostParameters &params)
 {
     if (name.isEmpty() || sourceName.isEmpty())
         return;
-    QString value = Tools::postParameters(application.request()).value(sourceName);
+    QString value = params.value(sourceName);
     application.response().set_cookie(cppcms::http::cookie(Tools::toStd(name), Tools::toStd(value), UINT_MAX, "/"));
 }
 
