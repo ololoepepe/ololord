@@ -9,6 +9,7 @@
 [done] Enable access to joky boards
 [done] Fix WakabaMark markup
 [done] Add /po/ board
+[done] Use AJAX or simple replies depending on situation
 * Add bump limit and post limit icons
 * Implement "ascetic" mode
 * Use D-Pointer approach for the lib

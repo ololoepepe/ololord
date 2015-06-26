@@ -507,20 +507,23 @@ void AbstractBoard::addFile(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
+    if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "add_file", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
     QString err;
-    if (!Controller::testAddFileParamsAjax(this, app, params, files, &err))
+    if (!Controller::testAddFileParams(this, app, params, files, &err))
         return Tools::log(app, "add_file", "fail:" + err, logTarget);
     QString desc;
     if (!Database::addFile(req, params, files, &err, &desc)) {
-        Controller::renderErrorAjax(app, err, desc);
+        Controller::renderError(app, err, desc);
         Tools::log(app, "add_file", "fail:" + err, logTarget);
         return;
     }
-    app.response().out() << "{}";
+    if (Controller::shouldBeAjax(app))
+        app.response().out() << "{}";
+    else
+        app.response().set_redirect_header(app.request().http_referer());
     Tools::log(app, "add_file", "success", logTarget);
 }
 
@@ -609,18 +612,18 @@ void AbstractBoard::createPost(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
+    if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_post", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
     QString err;
-    if (!Controller::testParamsAjax(this, app, params, files, true, &err))
+    if (!Controller::testParams(this, app, params, files, true, &err))
         return Tools::log(app, "create_post", "fail:" + err, logTarget);
     TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
-        Controller::renderErrorAjax(app, err,
-                                    tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
+        Controller::renderError(app, err,
+                                tq.translate("AbstractBoard", "Posting is disabled for this board","description"));
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
@@ -632,11 +635,17 @@ void AbstractBoard::createPost(cppcms::application &app)
     p.description = &desc;
     quint64 postNumber = 0L;
     if (!Database::createPost(p, &postNumber)) {
-        Controller::renderErrorAjax(app, err, desc);
+        Controller::renderError(app, err, desc);
         Tools::log(app, "create_post", "fail:" + err, logTarget);
         return;
     }
-    Controller::renderSuccessfulPostAjax(app, postNumber);
+    if (Controller::shouldBeAjax(app)) {
+        Controller::renderSuccessfulPostAjax(app, postNumber);
+    } else {
+        QString path = "/" + SettingsLocker()->value("Site/path_prefix").toString() + name() + "/thread/"
+                + params.value("thread") + ".html#" + QString::number(postNumber);
+        app.response().set_redirect_header(Tools::toStd(path));
+    }
     Tools::log(app, "create_post", "success", logTarget);
 }
 
@@ -644,18 +653,18 @@ void AbstractBoard::createThread(cppcms::application &app)
 {
     cppcms::http::request &req = app.request();
     QString logTarget = name();
-    if (!Controller::testBanAjax(app, Controller::WriteAction, name()))
+    if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_thread", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
     Tools::FileList files = Tools::postFiles(req);
     QString err;
-    if (!Controller::testParamsAjax(this, app, params, files, false, &err))
+    if (!Controller::testParams(this, app, params, files, false, &err))
         return Tools::log(app, "create_thread", "fail:" + err, logTarget);
     TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
-        Controller::renderErrorAjax(app, err,
-                                    tq.translate("AbstractBoard", "Posting is disabled for this board", "description"));
+        Controller::renderError(app, err,
+                                tq.translate("AbstractBoard", "Posting is disabled for this board", "description"));
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
@@ -667,11 +676,17 @@ void AbstractBoard::createThread(cppcms::application &app)
     p.description = &desc;
     quint64 threadNumber = Database::createThread(p);
     if (!threadNumber) {
-        Controller::renderErrorAjax(app, err, desc);
+        Controller::renderError(app, err, desc);
         Tools::log(app, "create_thread", "fail:" + err, logTarget);
         return;
     }
-    Controller::renderSuccessfulThreadAjax(app, threadNumber);
+    if (Controller::shouldBeAjax(app)) {
+        Controller::renderSuccessfulThreadAjax(app, threadNumber);
+    } else {
+        QString path = "/" + SettingsLocker()->value("Site/path_prefix").toString() + name() + "/thread/"
+                + QString::number(threadNumber) + ".html";
+        app.response().set_redirect_header(Tools::toStd(path));
+    }
     Tools::log(app, "create_thread", "success", logTarget);
 }
 
@@ -689,7 +704,7 @@ bool AbstractBoard::draftsEnabled() const
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
     QString logTarget = name() + "/" + QString::number(page);
-    if (!Controller::testBan(app, Controller::ReadAction, name()))
+    if (!Controller::testBanNonAjax(app, Controller::ReadAction, name()))
         return Tools::log(app, "board", "fail:ban", logTarget);
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
@@ -697,7 +712,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     QScopedPointer<Content::Board> cc(createBoardController(app.request(), viewName));
     if (cc.isNull()) {
         QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
-        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
@@ -710,7 +725,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         Transaction t;
         if (!t) {
             QString err = tq.translate("AbstractBoard", "Internal database error", "description");
-            Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+            Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
             Tools::log(app, "board", "fail:" + err, logTarget);
             return;
         }
@@ -731,7 +746,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         if (!pageCount)
             pageCount = 1;
         if (page >= pageCount) {
-            Controller::renderNotFound(app);
+            Controller::renderNotFoundNonAjax(app);
             Tools::log(app, "board", "fail:not_found", logTarget);
             return;
         }
@@ -748,7 +763,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             QString err;
             thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
             if (!ok) {
-                Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+                Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                 Tools::log(app, "board", "fail:" + err, logTarget);
                 return;
             }
@@ -761,7 +776,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                 }
                 thread.lastPosts.push_front(toController(post, app.request(), &ok, &err));
                 if (!ok) {
-                    Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+                    Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                     Tools::log(app, "board", "fail:" + err, logTarget);
                     return;
                 }
@@ -773,13 +788,13 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         c.lastPostNumber = Database::lastPostNumber(name());
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
-        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
     if (!Controller::initBaseBoard(c, app.request(), this, postingEn, title(ts.locale()))) {
         QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
-        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
@@ -815,7 +830,7 @@ void AbstractBoard::handleRules(cppcms::application &app)
 void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
 {
     QString logTarget = name() + "/" + QString::number(threadNumber);
-    if (!Controller::testBan(app, Controller::ReadAction, name()))
+    if (!Controller::testBanNonAjax(app, Controller::ReadAction, name()))
         return Tools::log(app, "thread", "fail:ban", logTarget);
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
@@ -823,7 +838,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     QScopedPointer<Content::Thread> cc(createThreadController(app.request(), viewName));
     if (cc.isNull()) {
         QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
-        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         Tools::log(app, "thread", "fail:" + err, logTarget);
         return;
     }
@@ -836,7 +851,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         Transaction t;
         if (!t) {
             QString err = tq.translate("AbstractBoard", "Internal database error", "description");
-            Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+            Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
             Tools::log(app, "thread", "fail:" + err, logTarget);
             return;
         }
@@ -847,19 +862,19 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         bool modOnBoard = Database::moderOnBoard(app.request(), name());
         if (thread.error) {
             QString err = tq.translate("AbstractBoard", "Internal database error", "description");
-            Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+            Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
             Tools::log(app, "thread", "fail:" + err, logTarget);
             return;
         }
         if (!thread) {
-            Controller::renderNotFound(app);
+            Controller::renderNotFoundNonAjax(app);
             Tools::log(app, "thread", "fail:not_found", logTarget);
             return;
         }
         const Thread::Posts &posts = thread->posts();
         if (posts.isEmpty()) {
             QString err = tq.translate("AbstractBoard", "Internal database error", "description");
-            Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+            Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
             Tools::log(app, "thread", "fail:" + err, logTarget);
             return;
         }
@@ -871,7 +886,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         int lvl = Database::registeredUserLevel(app.request());
         if (opPost.draft() && hashpass != opPost.hashpass()
                 && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
-            Controller::renderNotFound(app);
+            Controller::renderNotFoundNonAjax(app);
             Tools::log(app, "thread", "fail:not_found", logTarget);
             return;
         }
@@ -892,7 +907,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         QString err;
         c.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
         if (!ok)
-            return Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+            return Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         foreach (int j, bRangeD(1, posts.size() - 1)) {
             Post post = *posts.at(j).load();
             if (post.draft() && hashpass != post.hashpass()
@@ -901,20 +916,20 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
             }
             c.posts.push_back(toController(post, app.request(), &ok, &err));
             if (!ok) {
-                Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+                Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                 Tools::log(app, "thread", "fail:" + err, logTarget);
                 return;
             }
         }
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
-        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         Tools::log(app, "thread", "fail:" + err, logTarget);
         return;
     }
     if (!Controller::initBaseBoard(c, app.request(), this, postingEn, pageTitle, threadNumber)) {
         QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
-        Controller::renderError(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }

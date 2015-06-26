@@ -25,11 +25,11 @@ void ThreadRoute::handle(std::string boardName, std::string thread)
     QString logTarget = bn + "/" + t;
     Tools::log(application, "thread", "begin", logTarget);
     QString err;
-    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "thread", "fail:" + err, logTarget);
     AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
     if (board.isNull()) {
-        Controller::renderNotFound(application);
+        Controller::renderNotFoundNonAjax(application);
         Tools::log(application, "thread", "fail:not_found", logTarget);
         return;
     }

@@ -146,7 +146,7 @@ void OlolordWebApp::main(std::string url)
     try {
         if (dispatcher().dispatch(url))
             return;
-        Controller::renderNotFound(*this);
+        Controller::renderNotFoundNonAjax(*this);
         Tools::log(*this, Tools::fromStd(url), "fail:not_found:handled_by_main");
     } catch (const std::exception &e) {
         Tools::log("OlolordWebApp::main", e);

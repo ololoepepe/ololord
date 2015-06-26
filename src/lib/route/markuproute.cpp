@@ -24,7 +24,7 @@ void MarkupRoute::handle()
 {
     Tools::log(application, "markup", "begin");
     QString err;
-    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "markup", "fail:" + err);
     Content::Markup c;
     TranslatorQt tq(application.request());

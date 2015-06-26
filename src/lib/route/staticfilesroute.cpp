@@ -44,10 +44,10 @@ void StaticFilesRoute::handle(std::string p)
     typedef Cache::File *(*GetCacheFunction)(const QString &path);
     typedef Cache::File *(*SetCacheFunction)(const QString &path, const QByteArray &file);
     QString err;
-    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, logAction, "fail:" + err, logTarget);
     if (path.contains("../") || path.contains("/..")) { //NOTE: Are you trying to cheat me?
-        Controller::renderNotFound(application);
+        Controller::renderNotFoundNonAjax(application);
         Tools::log(application, logAction, "fail:cheating", logTarget);
         return;
     }
@@ -64,7 +64,7 @@ void StaticFilesRoute::handle(std::string p)
     bool ok = false;
     QByteArray ba = BDirTools::readFile(fn, -1, &ok);
     if (!ok) {
-        Controller::renderNotFound(application);
+        Controller::renderNotFoundNonAjax(application);
         Tools::log(application, logAction, "fail:not_found", logTarget);
         return;
     }

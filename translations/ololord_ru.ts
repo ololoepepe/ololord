@@ -3164,6 +3164,19 @@ The default is -1000 (no offset).</source>
     </message>
 </context>
 <context>
+    <name>renderNotFoundAjax</name>
+    <message>
+        <source>Error 404</source>
+        <comment>errorMessage</comment>
+        <translation>Ошибка 404</translation>
+    </message>
+    <message>
+        <source>Page or file not found</source>
+        <comment>errorDescription</comment>
+        <translation>Страница или файл не найдены</translation>
+    </message>
+</context>
+<context>
     <name>rerenderPosts</name>
     <message>
         <source>Internal database error</source>

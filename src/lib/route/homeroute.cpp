@@ -23,7 +23,7 @@ void HomeRoute::handle()
 {
     Tools::log(application, "home", "begin");
     QString err;
-    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "home", "fail:" + err);
     Content::Home c;
     TranslatorQt tq(application.request());

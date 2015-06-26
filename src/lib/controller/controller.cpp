@@ -49,14 +49,6 @@ static std::string speedString(const AbstractBoard::PostingSpeed &s, double dupt
     return Tools::toStd((ss.split('.').last() != "0") ? ss : ss.split('.').first());
 }
 
-static std::string zeroSpeedString(const AbstractBoard::PostingSpeed &s, const std::string &nonZero, const QLocale &l)
-{
-    if (s.postCount && s.uptimeMsecs)
-        return "1 " + nonZero;
-    else
-        return "0 " + TranslatorStd(l).translate("zeroSpeedString", "post(s) per hour.", "postingSpeed");
-}
-
 static Content::Base::Locale toWithLocale(const QLocale &l)
 {
     Content::Base::Locale ll;
@@ -64,6 +56,14 @@ static Content::Base::Locale toWithLocale(const QLocale &l)
     ll.name = Tools::toStd(l.name());
     ll.language = Tools::toStd(l.nativeLanguageName());
     return ll;
+}
+
+static std::string zeroSpeedString(const AbstractBoard::PostingSpeed &s, const std::string &nonZero, const QLocale &l)
+{
+    if (s.postCount && s.uptimeMsecs)
+        return "1 " + nonZero;
+    else
+        return "0 " + TranslatorStd(l).translate("zeroSpeedString", "post(s) per hour.", "postingSpeed");
 }
 
 void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle)
@@ -410,32 +410,10 @@ void redirect(cppcms::application &app, const QString &where)
 
 void renderBan(cppcms::application &app, const Database::BanInfo &info)
 {
-    TranslatorQt tq(app.request());
-    TranslatorStd ts(app.request());
-    Content::Ban c;
-    initBase(c, app.request(), tq.translate("renderBan", "Ban", "banBoard"));
-    c.banBoard = ("*" != info.boardName) ? Tools::toStd(info.boardName)
-                                         : ts.translate("renderBan", "all boards", "pageTitle");
-    c.banBoardLabel = ts.translate("renderBan", "Board", "banBoardLabel");
-    c.banDateTime = Tools::toStd(ts.locale().toString(Tools::dateTime(info.dateTime, app.request()),
-                                                      "dd.MM.yyyy ddd hh:mm:ss"));
-    c.banDateTimeLabel = ts.translate("renderBan", "Date", "banDateTimeLabel");
-    c.banExpires = info.expires.isValid()
-            ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
-                                                "dd.MM.yyyy ddd hh:mm:ss"))
-            : ts.translate("renderBan", "never", "banExpires");
-    c.banExpiresLabel = ts.translate("renderBan", "Expires", "banExpiresLabel");
-    if (info.level >= 10)
-        c.banLevel = ts.translate("renderBan", "reading and posting are restricted", "pageTitle");
-    else if (info.level >= 1)
-        c.banLevel = ts.translate("renderBan", "posting is restricted (read-only access)", "pageTitle");
+    if (shouldBeAjax(app))
+        renderBanAjax(app, info);
     else
-        c.banLevel = ts.translate("renderBan", "no action is restricted", "pageTitle");
-    c.banLevelLabel = ts.translate("renderBan", "Restricted actions", "banLevelLabel");
-    c.banMessage = ts.translate("renderBan", "You are banned", "banMessage");
-    c.banReason = Tools::toStd(info.reason);
-    c.banReasonLabel = ts.translate("renderBan", "Reason", "banReasonLabel");
-    Tools::render(app, "ban", c);
+        renderBanNonAjax(app, info);
 }
 
 void renderBanAjax(cppcms::application &app, const Database::BanInfo &info)
@@ -465,14 +443,42 @@ void renderBanAjax(cppcms::application &app, const Database::BanInfo &info)
     app.response().out() << cppcms::json::value(o).save();
 }
 
-void renderError(cppcms::application &app, const QString &error, const QString &description)
+void renderBanNonAjax(cppcms::application &app, const Database::BanInfo &info)
 {
     TranslatorQt tq(app.request());
-    Content::Error c;
-    initBase(c, app.request(), tq.translate("renderError", "Error", "pageTitle"));
-    c.errorMessage = !error.isEmpty() ? Tools::toStd(error) : c.pageTitle;
-    c.errorDescription = Tools::toStd(description);
-    Tools::render(app, "error", c);
+    TranslatorStd ts(app.request());
+    Content::Ban c;
+    initBase(c, app.request(), tq.translate("renderBan", "Ban", "banBoard"));
+    c.banBoard = ("*" != info.boardName) ? Tools::toStd(info.boardName)
+                                         : ts.translate("renderBan", "all boards", "pageTitle");
+    c.banBoardLabel = ts.translate("renderBan", "Board", "banBoardLabel");
+    c.banDateTime = Tools::toStd(ts.locale().toString(Tools::dateTime(info.dateTime, app.request()),
+                                                      "dd.MM.yyyy ddd hh:mm:ss"));
+    c.banDateTimeLabel = ts.translate("renderBan", "Date", "banDateTimeLabel");
+    c.banExpires = info.expires.isValid()
+            ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
+                                                "dd.MM.yyyy ddd hh:mm:ss"))
+            : ts.translate("renderBan", "never", "banExpires");
+    c.banExpiresLabel = ts.translate("renderBan", "Expires", "banExpiresLabel");
+    if (info.level >= 10)
+        c.banLevel = ts.translate("renderBan", "reading and posting are restricted", "pageTitle");
+    else if (info.level >= 1)
+        c.banLevel = ts.translate("renderBan", "posting is restricted (read-only access)", "pageTitle");
+    else
+        c.banLevel = ts.translate("renderBan", "no action is restricted", "pageTitle");
+    c.banLevelLabel = ts.translate("renderBan", "Restricted actions", "banLevelLabel");
+    c.banMessage = ts.translate("renderBan", "You are banned", "banMessage");
+    c.banReason = Tools::toStd(info.reason);
+    c.banReasonLabel = ts.translate("renderBan", "Reason", "banReasonLabel");
+    Tools::render(app, "ban", c);
+}
+
+void renderError(cppcms::application &app, const QString &error, const QString &description)
+{
+    if (shouldBeAjax(app))
+        renderErrorAjax(app, error, description);
+    else
+        renderErrorNonAjax(app, error, description);
 }
 
 void renderErrorAjax(cppcms::application &app, const QString &error, const QString &description)
@@ -484,21 +490,22 @@ void renderErrorAjax(cppcms::application &app, const QString &error, const QStri
     app.response().out() << cppcms::json::value(o).save();
 }
 
-void renderIpBan(cppcms::application &app, int level)
+void renderErrorNonAjax(cppcms::application &app, const QString &error, const QString &description)
 {
     TranslatorQt tq(app.request());
-    TranslatorStd ts(app.request());
-    Content::IpBan c;
-    initBase(c, app.request(), tq.translate("renderIpBan", "Ban", "pageTitle"));
-    c.banMessage = ts.translate("renderIpBan", "You are banned", "banMessage");
-    if (level >= 10) {
-        c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
-                                        "You are not allowed to read or make posts.", "banDescription");
-    } else if (level >= 1) {
-        c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
-                                        "You are not allowed to make posts.", "banDescription");
-    }
-    Tools::render(app, "ip_ban", c);
+    Content::Error c;
+    initBase(c, app.request(), tq.translate("renderError", "Error", "pageTitle"));
+    c.errorMessage = !error.isEmpty() ? Tools::toStd(error) : c.pageTitle;
+    c.errorDescription = Tools::toStd(description);
+    Tools::render(app, "error", c);
+}
+
+void renderIpBan(cppcms::application &app, int level)
+{
+    if (shouldBeAjax(app))
+        renderIpBanAjax(app, level);
+    else
+        renderIpBanNonAjax(app, level);
 }
 
 void renderIpBanAjax(cppcms::application &app, int level)
@@ -516,7 +523,48 @@ void renderIpBanAjax(cppcms::application &app, int level)
     app.response().out() << cppcms::json::value(o).save();
 }
 
+void renderIpBanNonAjax(cppcms::application &app, int level)
+{
+    TranslatorQt tq(app.request());
+    TranslatorStd ts(app.request());
+    Content::IpBan c;
+    initBase(c, app.request(), tq.translate("renderIpBan", "Ban", "pageTitle"));
+    c.banMessage = ts.translate("renderIpBan", "You are banned", "banMessage");
+    if (level >= 10) {
+        c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
+                                        "You are not allowed to read or make posts.", "banDescription");
+    } else if (level >= 1) {
+        c.banDescription = ts.translate("renderIpBan", "Your IP address is in the ban list. "
+                                        "You are not allowed to make posts.", "banDescription");
+    }
+    Tools::render(app, "ip_ban", c);
+}
+
 void renderNotFound(cppcms::application &app)
+{
+    if (shouldBeAjax(app))
+        renderNotFoundAjax(app);
+    else
+        renderNotFoundNonAjax(app);
+}
+
+void renderNotFoundAjax(cppcms::application &app)
+{
+    TranslatorStd ts(app.request());
+    cppcms::json::object o;
+    o["errorMessage"] = ts.translate("renderNotFoundAjax", "Error 404", "errorMessage");
+    o["errorDescription"] = ts.translate("renderNotFoundAjax", "Page or file not found", "errorDescription");
+    QStringList fns;
+    foreach (const QString &path, BCoreApplication::locations(BCoreApplication::DataPath))
+        fns << QDir(path + "/static/img/not_found").entryList(QDir::Files);
+    if (!fns.isEmpty()) {
+        qsrand((uint) QDateTime::currentMSecsSinceEpoch());
+        o["imageFileName"] = Tools::toStd("not_found/" + fns.at(qrand() % fns.size()));
+    }
+    app.response().out() << cppcms::json::value(o).save();
+}
+
+void renderNotFoundNonAjax(cppcms::application &app)
 {
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
@@ -547,6 +595,18 @@ void renderSuccessfulThreadAjax(cppcms::application &app, quint64 threadNumber)
     app.response().out() << cppcms::json::value(o).save();
 }
 
+bool shouldBeAjax(cppcms::application &app)
+{
+    return Tools::cookieValue(app.request(), "mode").compare("ascetic", Qt::CaseInsensitive);
+}
+
+bool testAddFileParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
+                       const Tools::FileList &files, QString *error)
+{
+    return shouldBeAjax(app) ? testAddFileParamsAjax(board, app, params, files, error)
+                             : testAddFileParamsNonAjax(board, app, params, files, error);
+}
+
 bool testAddFileParamsAjax(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
                            const Tools::FileList &files, QString *error)
 {
@@ -564,27 +624,26 @@ bool testAddFileParamsAjax(const AbstractBoard *board, cppcms::application &app,
     return bRet(error, QString(), true);
 }
 
+bool testAddFileParamsNonAjax(const AbstractBoard *board, cppcms::application &app,
+                              const Tools::PostParameters &params, const Tools::FileList &files, QString *error)
+{
+    TranslatorQt tq(app.request());
+    if (!board) {
+        QString err = tq.translate("testAddFileParamsAjax", "Internal logic error", "description");
+        renderErrorNonAjax(app, tq.translate("testAddFileParamsAjax", "Internal error", "error"), err);
+        return bRet(error, err, false);
+    }
+    QString err;
+    if (!board->testAddFileParams(params, files, tq.locale(), &err)){
+        renderErrorNonAjax(app, tq.translate("testAddFileParamsAjax", "Invalid parameters", "error"), err);
+        return false;
+    }
+    return bRet(error, QString(), true);
+}
+
 bool testBan(cppcms::application &app, UserActionType proposedAction, const QString &board)
 {
-    QString ip = Tools::userIp(app.request());
-    int lvl = Tools::ipBanLevel(ip);
-    if (lvl >= proposedAction) {
-        renderIpBan(app, lvl);
-        return false;
-    }
-    TranslatorQt tq(app.request());
-    bool ok = false;
-    QString err;
-    Database::BanInfo inf = Database::userBanInfo(ip, board, &ok, &err, tq.locale());
-    if (!ok) {
-        renderError(app, tq.translate("testBan", "Internal error", "error"), err);
-        return false;
-    }
-    if (inf.level >= proposedAction) {
-        renderBan(app, inf);
-        return false;
-    }
-    return true;
+    return shouldBeAjax(app) ? testBanAjax(app, proposedAction, board) : testBanNonAjax(app, proposedAction, board);
 }
 
 bool testBanAjax(cppcms::application &app, UserActionType proposedAction, const QString &board)
@@ -610,6 +669,36 @@ bool testBanAjax(cppcms::application &app, UserActionType proposedAction, const 
     return true;
 }
 
+bool testBanNonAjax(cppcms::application &app, UserActionType proposedAction, const QString &board)
+{
+    QString ip = Tools::userIp(app.request());
+    int lvl = Tools::ipBanLevel(ip);
+    if (lvl >= proposedAction) {
+        renderIpBan(app, lvl);
+        return false;
+    }
+    TranslatorQt tq(app.request());
+    bool ok = false;
+    QString err;
+    Database::BanInfo inf = Database::userBanInfo(ip, board, &ok, &err, tq.locale());
+    if (!ok) {
+        renderError(app, tq.translate("testBan", "Internal error", "error"), err);
+        return false;
+    }
+    if (inf.level >= proposedAction) {
+        renderBan(app, inf);
+        return false;
+    }
+    return true;
+}
+
+bool testParams(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
+                const Tools::FileList &files, bool post, QString *error)
+{
+    return shouldBeAjax(app) ? testParamsAjax(board, app, params, files, post, error)
+                             : testParamsNonAjax(board, app, params, files, post, error);
+}
+
 bool testParamsAjax(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
                     const Tools::FileList &files, bool post, QString *error)
 {
@@ -627,7 +716,30 @@ bool testParamsAjax(const AbstractBoard *board, cppcms::application &app, const 
     return bRet(error, QString(), true);
 }
 
+bool testParamsNonAjax(const AbstractBoard *board, cppcms::application &app, const Tools::PostParameters &params,
+                       const Tools::FileList &files, bool post, QString *error)
+{
+    TranslatorQt tq(app.request());
+    if (!board) {
+        QString err = tq.translate("testParamsAjax", "Internal logic error", "description");
+        renderErrorNonAjax(app, tq.translate("testParamsAjax", "Internal error", "error"), err);
+        return bRet(error, err, false);
+    }
+    QString err;
+    if (!board->testParams(params, files, post, tq.locale(), &err)){
+        renderErrorNonAjax(app, tq.translate("testParamsAjax", "Invalid parameters", "error"), err);
+        return false;
+    }
+    return bRet(error, QString(), true);
+}
+
 bool testRequest(cppcms::application &app, int acceptedTypes, QString *error)
+{
+    return shouldBeAjax(app) ? testRequestAjax(app, acceptedTypes, error)
+                             : testRequestNonAjax(app, acceptedTypes, error);
+}
+
+bool testRequestAjax(cppcms::application &app, int acceptedTypes, QString *error)
 {
     QString r = Tools::fromStd(app.request().request_method());
     bool b = acceptedTypes > 0;
@@ -639,7 +751,23 @@ bool testRequest(cppcms::application &app, int acceptedTypes, QString *error)
         return bRet(error, QString(), true);
     TranslatorQt tq(app.request());
     QString err = tq.translate("testRequest", "Unsupported request type", "error");
-    renderError(app, err, tq.translate("testRequest", "This request type is not supported", "error"));
+    renderErrorAjax(app, err, tq.translate("testRequest", "This request type is not supported", "error"));
+    return bRet(error, err, false);
+}
+
+bool testRequestNonAjax(cppcms::application &app, int acceptedTypes, QString *error)
+{
+    QString r = Tools::fromStd(app.request().request_method());
+    bool b = acceptedTypes > 0;
+    if ("GET" == r)
+        b = b && (acceptedTypes & GetRequest);
+    else if ("POST" == r)
+        b = b && (acceptedTypes & PostRequest);
+    if (b)
+        return bRet(error, QString(), true);
+    TranslatorQt tq(app.request());
+    QString err = tq.translate("testRequest", "Unsupported request type", "error");
+    renderErrorNonAjax(app, err, tq.translate("testRequest", "This request type is not supported", "error"));
     return bRet(error, err, false);
 }
 

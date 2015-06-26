@@ -31,7 +31,7 @@ void SettingsRoute::handle()
 {
     Tools::log(application, "settings", "begin");
     QString err;
-    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "settings", "fail:" + err);
     Content::Settings c;
     TranslatorQt tq(application.request());

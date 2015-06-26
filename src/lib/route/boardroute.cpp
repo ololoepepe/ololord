@@ -31,22 +31,22 @@ void BoardRoute::handle(std::string boardName)
     if (BoardMode == mode) {
         logTarget += "/0";
         Tools::log(application, "board", "begin", logTarget);
-        if (!Controller::testRequest(application, Controller::GetRequest, &err))
+        if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
             return Tools::log(application, "board", "fail:" + err, logTarget);
         AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
         if (board.isNull()) {
-            Controller::renderNotFound(application);
+            Controller::renderNotFoundNonAjax(application);
             Tools::log(application, "board", "fail:not_found", logTarget);
             return;
         }
         board->handleBoard(application);
     } else if (BoardRulesRoute) {
         Tools::log(application, "board_rules", "begin", logTarget);
-        if (!Controller::testRequest(application, Controller::GetRequest, &err))
+        if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
             return Tools::log(application, "board", "fail:" + err, logTarget);
         AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
         if (board.isNull()) {
-            Controller::renderNotFound(application);
+            Controller::renderNotFoundNonAjax(application);
             Tools::log(application, "board", "fail:not_found", logTarget);
             return;
         }
@@ -61,12 +61,12 @@ void BoardRoute::handle(std::string boardName, std::string page)
     QString logTarget = bn + "/" + p;
     Tools::log(application, "board", "begin", logTarget);
     QString err;
-    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "board", "fail:" + err, logTarget);
     AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
     if (board.isNull()) {
         Tools::log(application, "board", "fail:not_found", logTarget);
-        Controller::renderNotFound(application);
+        Controller::renderNotFoundNonAjax(application);
         return;
     }
     board->handleBoard(application, p.toUInt());
