@@ -20,7 +20,8 @@ HEADERS += \
     $${PWD}/rpgthread.h \
     $${PWD}/rules.h \
     $${PWD}/search.h \
-    $${PWD}/thread.h
+    $${PWD}/settings.h \
+    $${PWD}/thread.h \
 
 SOURCES += \
     $${PWD}/controller.cpp \

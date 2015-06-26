@@ -19,10 +19,12 @@
 <% template head() %>
 <% include baseHead(1) %>
 <% include boardHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/FileSaver.min.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip.min.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip-utils.min.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
+<% if ( content.mode.name != "ascetic" ) %>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/FileSaver.min.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip.min.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip-utils.min.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
+<% end %>
 <% end template %>
 
 <% template body() %>

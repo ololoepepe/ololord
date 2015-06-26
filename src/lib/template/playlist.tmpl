@@ -2,16 +2,14 @@
 <% skin my_skin %>
 <% view playlist uses Content::Playlist extends base %>
 
-<% template baseHead(bool javascript) %>
-<%include base::baseHead(javascript) %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/playlist.js"></script>
-<% end template %>
-
 <% template render() %>
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <% include baseHead(1) %>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <script type="text/javascript" src="/<%= sitePathPrefix %>js/playlist.js"></script>
+        <% end %>
     </head>
     <body>
         <% include baseTexts() %>

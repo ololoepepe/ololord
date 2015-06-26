@@ -30,6 +30,11 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
             return name == other.name;
         }
     };
+    struct Mode
+    {
+        std::string name;
+        std::string title;
+    };
     struct Style
     {
         std::string name;
@@ -60,6 +65,9 @@ public:
     std::string loginMessageWarning;
     std::string loginPlaceholderText;
     unsigned int maxSearchQueryLength;
+    Mode mode;
+    std::string modeLabelText;
+    std::list<Mode> modes;
     std::string pageTitle;
     std::string quickReplyActionAppendPostText;
     std::string quickReplyActionDoNothingText;

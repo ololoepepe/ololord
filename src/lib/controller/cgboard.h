@@ -1,5 +1,5 @@
-#ifndef CONTENT_BOARD_IMAGE_H
-#define CONTENT_BOARD_IMAGE_H
+#ifndef CONTENT_CG_BOARD_H
+#define CONTENT_CG_BOARD_H
 
 #include "controller/base.h"
 
@@ -19,4 +19,4 @@ struct OLOLORD_EXPORT cgBoard : public Base
 
 }
 
-#endif // CONTENT_BOARD_IMAGE_H
+#endif // CONTENT_CG_BOARD_H

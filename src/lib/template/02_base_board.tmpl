@@ -265,7 +265,9 @@
                 <% end %>
             <% end %>
         <% end %>
-        [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>">&gt;&gt;</a>]
+        <% if ( content.mode.name != "ascetic" ) %>
+            [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>">&gt;&gt;</a>]
+        <% end %>
         <span class="postActions">
             <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
             <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
@@ -887,8 +889,10 @@
 <% end template %>
 
 <% template boardHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/base_board.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/lib-typedarrays-min.js"></script>
+<% if ( content.mode.name != "ascetic" ) %>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/base_board.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/lib-typedarrays-min.js"></script>
+<% end %>
 <% if ( content.captchaEnabled ) %>
     <% if ( !content.captchaScriptSource.empty() ) %>
         <script type="text/javascript" src="<%= captchaScriptSource %>"></script>

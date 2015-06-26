@@ -11,6 +11,7 @@
 #include <route/MarkupRoute>
 #include <route/PlaylistRoute>
 #include <route/SearchRoute>
+#include <route/SettingsRoute>
 #include <route/StaticFilesRoute>
 #include <route/ThreadRoute>
 #include <SettingsLocker>
@@ -61,6 +62,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new PlaylistRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new SearchRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new SettingsRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new StaticFilesRoute(*this, StaticFilesRoute::StaticFilesMode);
     routesMap.insert(r->regex(), r);

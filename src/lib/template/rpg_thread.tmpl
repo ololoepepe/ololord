@@ -124,7 +124,9 @@
 
 <% template boardHead() %>
 <%include thread::boardHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/rpg_base.js"></script>
+<% if ( content.mode.name != "ascetic" ) %>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/rpg_base.js"></script>
+<% end %>
 <% end template %>
 
 <% template boardTexts() %>

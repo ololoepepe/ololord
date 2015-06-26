@@ -1,0 +1,117 @@
+<% c++ #include "controller/settings.h" %>
+<% skin my_skin %>
+<% view settings_view uses Content::Settings extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+    </head>
+    <body>
+        <% include baseTexts() %>
+        <% include customHeader() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <h1><%= pageTitle %></h1>
+        </div>        
+        <form id="settings" class="theSettings" method="post" accept-charset="utf-8" enctype="multipart/form-data"
+              action="/<%= sitePathPrefix %>action/change_settings">
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= modeLabelText %>
+                        </td>
+                        <td>
+                            <select name="modeChangeSelect" class="select">
+                                <% foreach m in modes %>
+                                    <% item %>
+                                        <% if ( m.name == content.mode.name ) %>
+                                            <option value="<%= m.name %>" selected="true">
+                                        <% else %>
+                                            <option value="<%= m.name %>">
+                                        <% end %>
+                                            <%= m.title %>
+                                        </option>
+                                    <% end %>
+                                <% end %>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= styleLabelText %>
+                        </td>
+                        <td>
+                            <select name="styleChangeSelect" class="select">
+                                <% foreach st in styles %>
+                                    <% item %>
+                                        <% if ( st.name == content.style.name ) %>
+                                            <option value="<%= st.name %>" selected="true">
+                                        <% else %>
+                                            <option value="<%= st.name %>">
+                                        <% end %>
+                                            <%= st.title %>
+                                        </option>
+                                    <% end %>
+                                <% end %>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= timeLabelText %>
+                        </td>
+                        <td>
+                            <select name="timeChangeSelect" class="select">
+                                <% if ( content.currentTime == "local" ) %>
+                                    <option value="server"><%= timeServerText %></option>
+                                    <option value="local" selected="true"><%= timeLocalText %></option>
+                                <% else %>
+                                    <option value="server" selected="true"><%= timeServerText %></option>
+                                    <option value="local"><%= timeLocalText %></option>
+                                <% end %>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= captchaLabelText %><sup><font color="red">*</font></sup>
+                        </td>
+                        <td>
+                            <select name="captchaEngineSelect" class="select">
+                                <% foreach ce in captchaEngines %>
+                                    <% item %>
+                                        <% if ( ce.id == content.currentCaptchaEngine.id ) %>
+                                            <option value="<%= ce.id %>" selected="true">
+                                        <% else %>
+                                            <option value="<%= ce.id %>">
+                                        <% end %>
+                                            <%= ce.title %>
+                                        </option>
+                                    <% end %>
+                                <% end %>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">
+                            <sup><font color="red">*</font></sup> <%= captchaLabelWarningText %>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="submit" name="submit" value="<%= confirmButtonText %>" />
+        </form>
+        <% include customFooter() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

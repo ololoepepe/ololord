@@ -7,7 +7,8 @@ HEADERS += \
     $${PWD}/playlistroute.h \
     $${PWD}/searchroute.h \
     $${PWD}/staticfilesroute.h \
-    $${PWD}/threadroute.h
+    $${PWD}/threadroute.h \
+    route/settingsroute.h
 
 SOURCES += \
     $${PWD}/abstractroute.cpp \
@@ -18,4 +19,5 @@ SOURCES += \
     $${PWD}/playlistroute.cpp \
     $${PWD}/searchroute.cpp \
     $${PWD}/staticfilesroute.cpp \
-    $${PWD}/threadroute.cpp
+    $${PWD}/threadroute.cpp \
+    route/settingsroute.cpp

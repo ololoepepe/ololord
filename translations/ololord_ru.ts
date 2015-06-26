@@ -795,6 +795,14 @@ text</source>
     </message>
 </context>
 <context>
+    <name>SettingsRoute</name>
+    <message>
+        <source>Settings</source>
+        <comment>pageTitle</comment>
+        <translation>Настройки</translation>
+    </message>
+</context>
+<context>
     <name>addFile</name>
     <message>
         <source>Internal error</source>
@@ -1909,11 +1917,6 @@ Your choice:</source>
         <translation>Показать пароль</translation>
     </message>
     <message>
-        <source>Photon</source>
-        <comment>style name</comment>
-        <translation>Photon</translation>
-    </message>
-    <message>
         <source>Style:</source>
         <comment>styleLabelText</comment>
         <translation>Стиль:</translation>
@@ -2004,14 +2007,34 @@ Your choice:</source>
         <translation>Избранные треды</translation>
     </message>
     <message>
-        <source>Futaba</source>
-        <comment>style name</comment>
-        <translation>Futaba</translation>
-    </message>
-    <message>
         <source>Request entity too large</source>
         <comment>error413Text</comment>
         <translation>Размер запроса слишком велик</translation>
+    </message>
+    <message>
+        <source>Photon</source>
+        <comment>style title</comment>
+        <translation>Photon</translation>
+    </message>
+    <message>
+        <source>Futaba</source>
+        <comment>style title</comment>
+        <translation>Futaba</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <comment>mode title</comment>
+        <translation>Нормальный</translation>
+    </message>
+    <message>
+        <source>Ascetic</source>
+        <comment>mode title</comment>
+        <translation>Аскетичный</translation>
+    </message>
+    <message>
+        <source>Mode:</source>
+        <comment>modeLabelText</comment>
+        <translation>Режим:</translation>
     </message>
 </context>
 <context>

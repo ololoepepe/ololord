@@ -4,17 +4,19 @@
 
 <% template boardHead() %>
 <%include board::boardHead() %>
-<script type="text/javascript">
-    /*ololord global object*/
+<% if ( content.mode.name != "ascetic" ) %>
+    <script type="text/javascript">
+        /*ololord global object*/
 
-    var lord = lord || {};
+        var lord = lord || {};
 
-    /*Functions*/
-    
-    lord.reloadCaptchaFunction = function() {
-        lord.reloadPage();
-    };
-</script>
+        /*Functions*/
+
+        lord.reloadCaptchaFunction = function() {
+            lord.reloadPage();
+        };
+    </script>
+<% end %>
 <% end template %>
 
 <% end view %>

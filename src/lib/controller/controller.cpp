@@ -88,8 +88,12 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     }
     typedef QMap<QString, BTranslation> TranslationMap;
     init_once(TranslationMap, styles, TranslationMap()) {
-        styles.insert("photon", BTranslation::translate("initBase", "Photon", "style name"));
-        styles.insert("futaba", BTranslation::translate("initBase", "Futaba", "style name"));
+        styles.insert("photon", BTranslation::translate("initBase", "Photon", "style title"));
+        styles.insert("futaba", BTranslation::translate("initBase", "Futaba", "style title"));
+    }
+    init_once(TranslationMap, modes, TranslationMap()) {
+        modes.insert("normal", BTranslation::translate("initBase", "Normal", "mode title"));
+        modes.insert("ascetic", BTranslation::translate("initBase", "Ascetic", "mode title"));
     }
     localeMutex.unlock();
     TranslatorStd ts(req);
@@ -150,6 +154,17 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     }
     c.loginPlaceholderText = ts.translate("initBase", "Password/hashpass", "PlaceholderText");
     c.maxSearchQueryLength = 150;
+    c.mode.name = Tools::toStd(Tools::cookieValue(req, "mode"));
+    if (c.mode.name.empty())
+        c.mode.name = "normal";
+    c.mode.title = Tools::toStd(modes.value(Tools::fromStd(c.mode.name)).translate());
+    c.modeLabelText = ts.translate("initBase", "Mode:", "modeLabelText");
+    foreach (const QString &s, modes.keys()) {
+        Content::Base::Mode m;
+        m.name = Tools::toStd(s);
+        m.title = Tools::toStd(modes.value(s).translate());
+        c.modes.push_back(m);
+    }
     c.pageTitle = Tools::toStd(pageTitle);
     c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
                                                     "quickReplyActionAppendPostText");
