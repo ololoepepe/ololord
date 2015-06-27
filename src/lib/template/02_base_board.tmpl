@@ -442,7 +442,7 @@
         <tbody>
             <% include customPostBody0(post, thread) %>
             <tr>
-                <%foreach file in post.files %>
+                <% foreach file in post.files %>
                     <% item %>
                         <% include postFile(file, post) %>
                     <% end %>
@@ -500,7 +500,7 @@
                 <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
                     <span name="referencedBy" class="referencedBy">
                         <%= referencedByText %>
-                        <%foreach ref in post.referencedBy %>
+                        <% foreach ref in post.referencedBy %>
                             <% item %>
                                 <% if ( ref.boardName != content.currentBoard.name ) %>
                                     <a href="/<%= sitePathPrefix %><%= ref.boardName %>/thread/<%= ref.threadNumber %>.html#<%= ref.postNumber %>"
@@ -684,7 +684,7 @@
             <tr>
                 <td colspan="2" class="postformRules">
                     <ul>
-                        <%foreach rule in postformRules %>
+                        <% foreach rule in postformRules %>
                             <% item %>
                                 <li><%= rule | raw %></li>
                             <% end %>
@@ -744,7 +744,7 @@
 <input type="hidden" id="addToPlaylistText" value="<%= addToPlaylistText %>" />
 <input type="hidden" id="fileExistsOnServerText" value="<%= fileExistsOnServerText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
-    <%foreach board in availableBoards %>
+    <% foreach board in availableBoards %>
         <% item %>
             <% if ( board.name == content.currentBoard.name ) %>
                 <option value="<%= board.name %>" selected="true">[<%= board.name %>] <%= board.title %></option>
@@ -755,7 +755,7 @@
     <% end %>
 </select>
 <select id="banLevelsSelect" class="select" style="display: none;">
-    <%foreach level in banLevels %>
+    <% foreach level in banLevels %>
         <% item %>
             <% if ( 1 == level.level ) %>
                 <option value="<%= level.level %>" selected="true"><%= level.description %></option>

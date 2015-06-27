@@ -96,6 +96,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("delete_file", &ActionRoute::handleDeleteFile);
         map.insert("delete_post", &ActionRoute::handleDeletePost);
         map.insert("edit_audio_tags", &ActionRoute::handleEditAudioTags);
+        map.insert("edit_post", &ActionRoute::handleEditPost);
         map.insert("login", &ActionRoute::handleLogin);
         map.insert("logout", &ActionRoute::handleLogout);
         map.insert("set_thread_fixed", &ActionRoute::handleSetThreadFixed);
@@ -235,6 +236,37 @@ void ActionRoute::handleEditAudioTags(const QString &action, const Tools::PostPa
     if (!Database::editAudioTags(boardName, fileName, application.request(), QByteArray(), m, &err)) {
         Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to edit audio tags", "error"),
                                        err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    QString path = boardName + "/thread/" + QString::number(Database::postThreadNumber(boardName, postNumber))
+            + ".html#" + QString::number(postNumber);
+    redirect(path);
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
+void ActionRoute::handleEditPost(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
+{
+    QString boardName = params.value("board");
+    quint64 postNumber = params.value("postNumber").toULongLong();
+    Database::EditPostParameters p(application.request(), boardName, postNumber);
+    QString logTarget = boardName + "/" + QString::number(p.postNumber);
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, boardName))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(params.value("board"));
+    if (!testBoard(board.data(), action, params.value("board"), tq))
+        return;
+    p.email = params.value("email");
+    p.name = params.value("name");
+    p.raw = !params.value("raw").compare("true", Qt::CaseInsensitive);
+    p.subject = params.value("subject");
+    p.text = params.value("text");
+    p.draft = !params.value("draft").compare("true", Qt::CaseInsensitive);
+    p.userData = board->editedPostUserData(params);
+    QString err;
+    p.error = &err;
+    if (!Database::editPost(p)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to edit post", "error"), err);
         Tools::log(application, "action/" + action, "fail:" + err, logTarget);
         return;
     }

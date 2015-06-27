@@ -411,6 +411,56 @@ By default, the date of first site launch is used.</source>
         <comment>defaultUserName</comment>
         <translation>Диванный эксперт</translation>
     </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Post number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер поста</translation>
+    </message>
+    <message>
+        <source>Edit post</source>
+        <comment>pageTitle</comment>
+        <translation>Редактировать пост</translation>
+    </message>
+    <message>
+        <source>Draft:</source>
+        <comment>postFormLabelDraft</comment>
+        <translation>Черновик:</translation>
+    </message>
+    <message>
+        <source>E-mail:</source>
+        <comment>postFormLabelEmail</comment>
+        <translation>Эл. почта:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <comment>postFormLabelName</comment>
+        <translation>Имя:</translation>
+    </message>
+    <message>
+        <source>Raw HTML:</source>
+        <comment>postFormLabelRaw</comment>
+        <translation>&quot;Сырой&quot; HTML:</translation>
+    </message>
+    <message>
+        <source>Subject:</source>
+        <comment>postFormLabelSubject</comment>
+        <translation>Тема:</translation>
+    </message>
+    <message>
+        <source>Post:</source>
+        <comment>postFormLabelText</comment>
+        <translation>Пост:</translation>
+    </message>
+    <message>
+        <source>Comment. Max length %1</source>
+        <comment>postFormTextPlaceholder</comment>
+        <translation>Комментарий. Макс. длина %1</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -559,6 +609,11 @@ Apperas in the HTML pages.</source>
         <source>Failed to edit audio tags</source>
         <comment>error</comment>
         <translation>Не удалось отредактировать теги аудиофайла</translation>
+    </message>
+    <message>
+        <source>Failed to edit post</source>
+        <comment>error</comment>
+        <translation>Не удалось отредактировать пост</translation>
     </message>
 </context>
 <context>
@@ -796,6 +851,39 @@ Apperas in the HTML pages.</source>
         <source>Year:</source>
         <comment>audioTagYearText</comment>
         <translation>Год:</translation>
+    </message>
+</context>
+<context>
+    <name>EditPostRoute</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
     </message>
 </context>
 <context>

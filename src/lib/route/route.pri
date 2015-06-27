@@ -5,6 +5,7 @@ HEADERS += \
     $${PWD}/banuserroute.h \
     $${PWD}/boardroute.h \
     $${PWD}/editaudiotagsroute.h \
+    $${PWD}/editpostroute.h \
     $${PWD}/homeroute.h \
     $${PWD}/markuproute.h \
     $${PWD}/playlistroute.h \
@@ -20,6 +21,7 @@ SOURCES += \
     $${PWD}/banuserroute.cpp \
     $${PWD}/boardroute.cpp \
     $${PWD}/editaudiotagsroute.cpp \
+    $${PWD}/editpostroute.cpp \
     $${PWD}/homeroute.cpp \
     $${PWD}/markuproute.cpp \
     $${PWD}/playlistroute.cpp \

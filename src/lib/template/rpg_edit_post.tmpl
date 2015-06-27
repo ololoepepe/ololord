@@ -1,0 +1,38 @@
+<% c++ #include "controller/rpgeditpost.h" %>
+<% skin my_skin %>
+<% view rpg_edit_post uses Content::rpgEditPost extends edit_post %>
+
+<% template customPostFormFieldEdit4() %>
+<tr>
+    <td class="postformLabel">
+        <b><%= postFormLabelVote %></b>
+    </td>
+    <td class="postformField">
+        <div><%= voteTextText %> <input type="text" name="voteText" size="36" value="<%= voteText %>" /></div>
+        <div><%= multipleVoteVariantsText %>
+            <% if ( content.multiple ) %>
+                <input type="checkbox" name="multipleVoteVariants" value="true" checked="true" />
+            <% else %>
+                <input type="checkbox" name="multipleVoteVariants" value="true" />
+            <% end %>
+        </div>
+        <div name="voteVariants">
+            <% foreach v in voteVariants %>
+                <% item %>
+                    <input type="text" name="voteVariant<%= v.id %>" value="<%= v.text %>" size="43" />
+                    <br />
+                <% end %>
+            <% end %>
+            <% c++ for (int i = content.voteVariants.size(); i < 10; ++i) { %>
+                <% c++ out() << "<input type=\"text\" name=\"voteVariant" << (i + 1) << "\" size=\"43\" />"; %>
+                <% c++ if (i < 9) {%>
+                    <br />
+                <% c++ } %>
+            <% c++ } %>
+        </div>
+    </td>
+</tr>
+<% end template %>
+
+<% end view %>
+<% end skin %>

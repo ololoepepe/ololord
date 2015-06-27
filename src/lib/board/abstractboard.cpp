@@ -12,6 +12,7 @@
 #include "controller/baseboard.h"
 #include "controller/board.h"
 #include "controller/controller.h"
+#include "controller/editpost.h"
 #include "controller/rules.h"
 #include "controller/thread.h"
 #include "database.h"
@@ -705,6 +706,11 @@ bool AbstractBoard::draftsEnabled() const
     return s->value("Board/" + name() + "/drafts_enabled", s->value("Board/drafts_enabled", true)).toBool();
 }
 
+cppcms::json::value AbstractBoard::editedPostUserData(const Tools::PostParameters &/*params*/) const
+{
+    return cppcms::json::value();
+}
+
 void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
     QString logTarget = name() + "/" + QString::number(page);
@@ -812,6 +818,77 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     beforeRenderBoard(app.request(), cc.data());
     Tools::render(app, viewName, c);
     Tools::log(app, "board", "success", logTarget);
+}
+
+void AbstractBoard::handleEditPost(cppcms::application &app, quint64 postNumber)
+{
+    QString logTarget = name() + "/" + QString::number(postNumber);
+    if (!Controller::testBanNonAjax(app, Controller::ReadAction, name()))
+        return Tools::log(app, "edit_post", "fail:ban", logTarget);
+    TranslatorQt tq(app.request());
+    if (!postNumber) {
+        QString err = tq.translate("AbstractBoard", "Invalid post number", "error");
+        Controller::renderErrorNonAjax(app, err, tq.translate("AbstractBoard", "Post number is null", "description"));
+        Tools::log(app, "edit_post", "fail:" + err, logTarget);
+        return;
+    }
+    QString viewName;
+    QScopedPointer<Content::EditPost> cc(createEditPostController(app.request(), viewName));
+    if (cc.isNull()) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "edit_post", "fail:" + err, logTarget);
+        return;
+    }
+    if (viewName.isEmpty())
+        viewName = "edit_post";
+    Content::EditPost &c = *cc;
+    bool ok = false;
+    QString err;
+    Post post = Database::getPost(app.request(), name(), postNumber, &ok, &err);
+    if (!ok) {
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "edit_post", "fail:" + err, logTarget);
+        return;
+    }
+    Content::Post p = toController(post, app.request(), &ok, &err);
+    if (!ok) {
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "edit_post", "fail:" + err, logTarget);
+        return;
+    }
+    Controller::initBase(c, app.request(), tq.translate("AbstractBoard", "Edit post", "pageTitle"));
+    TranslatorStd ts(app.request());
+    c.currentBoardName = Tools::toStd(name());
+    c.draft = p.draft;
+    c.draftsEnabled = draftsEnabled();
+    c.email = p.email;
+    c.maxEmailLength = Tools::maxInfo(Tools::MaxEmailFieldLength, name());
+    c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, name());
+    c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, name());
+    c.moder = Database::registeredUserLevel(app.request()) / 10;
+    if (c.moder > 0) {
+        QStringList boards = Database::registeredUserBoards(app.request());
+        if (!boards.contains("*") && !boards.contains(name()))
+            c.moder = 0;
+    }
+    c.name = p.rawName;
+    c.postFormLabelDraft = ts.translate("AbstractBoard", "Draft:", "postFormLabelDraft");
+    c.postFormLabelEmail = ts.translate("AbstractBoard", "E-mail:", "postFormLabelEmail");
+    c.postFormLabelName = ts.translate("AbstractBoard", "Name:", "postFormLabelName");
+    c.postFormLabelRaw = ts.translate("AbstractBoard", "Raw HTML:", "postFormLabelRaw");
+    c.postFormLabelSubject = ts.translate("AbstractBoard", "Subject:", "postFormLabelSubject");
+    c.postFormLabelText = ts.translate("AbstractBoard", "Post:", "postFormLabelText");
+    unsigned int maxText = Tools::maxInfo(Tools::MaxTextFieldLength, name());
+    c.postFormTextPlaceholder = Tools::toStd(tq.translate("AbstractBoard", "Comment. Max length %1",
+                                                          "postFormTextPlaceholder").arg(maxText));
+    c.postNumber = postNumber;
+    c.raw = p.rawHtml;
+    c.subject = p.rawSubject;
+    c.text = p.rawPostText;
+    beforeRenderEditPost(app.request(), cc.data(), p);
+    Tools::render(app, viewName, c);
+    Tools::log(app, "edit_post", "success", logTarget);
 }
 
 void AbstractBoard::handleRules(cppcms::application &app)
@@ -1510,6 +1587,12 @@ void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Cont
     //
 }
 
+void AbstractBoard::beforeRenderEditPost(const cppcms::http::request &/*req*/, Content::EditPost */*c*/,
+                                         const Content::Post &/*post*/)
+{
+    //
+}
+
 void AbstractBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Content::Thread */*c*/)
 {
     //
@@ -1518,6 +1601,11 @@ void AbstractBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Con
 Content::Board *AbstractBoard::createBoardController(const cppcms::http::request &/*req*/, QString &/*viewName*/)
 {
     return new Content::Board;
+}
+
+Content::EditPost *AbstractBoard::createEditPostController(const cppcms::http::request &/*req*/, QString &/*viewName*/)
+{
+    return new Content::EditPost;
 }
 
 Content::Thread *AbstractBoard::createThreadController(const cppcms::http::request &/*req*/, QString &/*viewName*/)

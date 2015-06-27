@@ -10,6 +10,7 @@ HEADERS += \
     $${PWD}/echoboard.h \
     $${PWD}/echothread.h \
     $${PWD}/editaudiotags.h \
+    $${PWD}/editpost.h \
     $${PWD}/error.h \
     $${PWD}/home.h \
     $${PWD}/ipban.h \
@@ -20,6 +21,7 @@ HEADERS += \
     $${PWD}/prboard.h \
     $${PWD}/prthread.h \
     $${PWD}/rpgboard.h \
+    $${PWD}/rpgeditpost.h \
     $${PWD}/rpgthread.h \
     $${PWD}/rules.h \
     $${PWD}/search.h \
