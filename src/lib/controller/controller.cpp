@@ -157,12 +157,16 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.mode.name = Tools::toStd(Tools::cookieValue(req, "mode"));
     if (c.mode.name.empty())
         c.mode.name = "normal";
-    c.mode.title = Tools::toStd(modes.value(Tools::fromStd(c.mode.name)).translate());
+    BTranslation t = modes.value(Tools::fromStd(c.mode.name));
+    c.mode.title = ts.translate(t.context().toUtf8().constData(), t.sourceText().toUtf8().constData(),
+                                t.disambiguation().toUtf8().constData());
     c.modeLabelText = ts.translate("initBase", "Mode:", "modeLabelText");
     foreach (const QString &s, modes.keys()) {
         Content::Base::Mode m;
         m.name = Tools::toStd(s);
-        m.title = Tools::toStd(modes.value(s).translate());
+        t = modes.value(s);
+        m.title = ts.translate(t.context().toUtf8().constData(), t.sourceText().toUtf8().constData(),
+                               t.disambiguation().toUtf8().constData());
         c.modes.push_back(m);
     }
     c.pageTitle = Tools::toStd(pageTitle);
@@ -190,12 +194,16 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.style.name = Tools::toStd(Tools::cookieValue(req, "style"));
     if (c.style.name.empty())
         c.style.name = "photon";
-    c.style.title = Tools::toStd(styles.value(Tools::fromStd(c.style.name)).translate());
+    t = styles.value(Tools::fromStd(c.style.name));
+    c.style.title = ts.translate(t.context().toUtf8().constData(), t.sourceText().toUtf8().constData(),
+                                 t.disambiguation().toUtf8().constData());
     c.styleLabelText = ts.translate("initBase", "Style:", "styleLabelText");
     foreach (const QString &s, styles.keys()) {
         Content::Base::Style st;
         st.name = Tools::toStd(s);
-        st.title = Tools::toStd(styles.value(s).translate());
+        t = styles.value(s);
+        st.title = ts.translate(t.context().toUtf8().constData(), t.sourceText().toUtf8().constData(),
+                                t.disambiguation().toUtf8().constData());
         c.styles.push_back(st);
     }
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
