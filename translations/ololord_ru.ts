@@ -520,6 +520,11 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Не удалось забанить пользователя</translation>
     </message>
+    <message>
+        <source>Failed to delete file</source>
+        <comment>error</comment>
+        <translation>Не удалось удалить файл</translation>
+    </message>
 </context>
 <context>
     <name>BanUserRoute</name>

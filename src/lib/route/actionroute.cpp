@@ -9,6 +9,7 @@
 
 #include <BeQtGlobal>
 
+#include <QByteArray>
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QRegExp>
@@ -92,6 +93,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("change_settings", &ActionRoute::handleChangeSettings);
         map.insert("create_post", &ActionRoute::handleCreatePost);
         map.insert("create_thread", &ActionRoute::handleCreateThread);
+        map.insert("delete_file", &ActionRoute::handleDeleteFile);
         map.insert("login", &ActionRoute::handleLogin);
         map.insert("logout", &ActionRoute::handleLogout);
     }
@@ -125,10 +127,8 @@ void ActionRoute::handleBanUser(const QString &action, const Tools::PostParamete
         Tools::log(application, "action/" + action, "fail:" + err, logTarget);
         return;
     }
-    QString path = "/" + SettingsLocker()->value("Site/path_prefix").toString() + sourceBoard + "/thread/"
-            + QString::number(Database::postThreadNumber(sourceBoard, postNumber)) + ".html#"
-            + QString::number(postNumber);
-    application.response().set_redirect_header(Tools::toStd(path));
+    redirect(sourceBoard + "/thread/" + QString::number(Database::postThreadNumber(sourceBoard, postNumber)) + ".html#"
+             + QString::number(postNumber));
     Tools::log(application, "action/" + action, "success", logTarget);
 }
 
@@ -146,7 +146,7 @@ void ActionRoute::handleChangeSettings(const QString &action, const Tools::PostP
     setCookie("style", "styleChangeSelect", params);
     setCookie("time", "timeChangeSelect", params);
     setCookie("captchaEngine", "captchaEngineSelect", params);
-    redirect();
+    redirect("settings");
     Tools::log(application, "action/" + action, "success");
 }
 
@@ -168,6 +168,26 @@ void ActionRoute::handleCreateThread(const QString &action, const Tools::PostPar
     board->createThread(application);
 }
 
+void ActionRoute::handleDeleteFile(const QString &action, const Tools::PostParameters &params,
+                                   const Translator::Qt &tq)
+{
+    QString boardName = params.value("boardName");
+    quint64 postNumber = params.value("postNumber").toULongLong();
+    QString fileName = params.value("fileName");
+    QString logTarget = boardName + "/" + QString::number(postNumber) + "/" + fileName;
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, boardName))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QString err;
+    if (!Database::deleteFile(boardName, fileName, application.request(), QByteArray(), &err)) {
+        Controller::renderError(application, tq.translate("ActionRoute", "Failed to delete file", "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect(boardName + "/thread/" + QString::number(Database::postThreadNumber(boardName, postNumber)) + ".html#"
+             + QString::number(postNumber));
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
 void ActionRoute::handleLogin(const QString &action, const Tools::PostParameters &params, const Translator::Qt &)
 {
     QString hashpass = params.value("hashpass");
@@ -187,8 +207,12 @@ void ActionRoute::handleLogout(const QString &action, const Tools::PostParameter
 
 void ActionRoute::redirect(const QString &path)
 {
-    QString p = "/" + SettingsLocker()->value("Site/path_prefix").toString() + path;
-    application.response().set_redirect_header(Tools::toStd(p));
+    if (path.isEmpty()) {
+        application.response().set_redirect_header(application.request().http_referer());
+    } else {
+        QString p = "/" + SettingsLocker()->value("Site/path_prefix").toString() + path;
+        application.response().set_redirect_header(Tools::toStd(p));
+    }
 }
 
 void ActionRoute::setCookie(const QString &name, const QString &sourceName, const Tools::PostParameters &params)

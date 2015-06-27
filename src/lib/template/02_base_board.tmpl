@@ -135,9 +135,20 @@
         (<%= file.size %>)
     </div>
     <div class="postFileSearch">
-        <a name="deleteFileButton"
-           href="javascript:lord.deleteFile('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');">
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteFileText %>" /></a>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <a name="deleteFileButton"
+               href="javascript:lord.deleteFile('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');">
+                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteFileText %>" /></a>
+        <% elif ( content.loggedIn ) %>
+            <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/delete_file"
+                  enctype="multipart/form-data" class="inlineForm">
+                <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                <input type="hidden" name="postNumber" value="<%= post.number %>" />
+                <input type="hidden" name="fileName" value="<%= file.sourceName %>" />
+                <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png"
+                       title="<%= deleteFileText %>" />
+           </form>
+        <% end %>
         <% if ( content.isImageType(file.type) ) %>
             <a href="//www.google.com/searchbyimage?image_url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithGoogleText %>" target="_blank">
