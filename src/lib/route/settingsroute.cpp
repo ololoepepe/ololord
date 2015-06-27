@@ -52,7 +52,7 @@ std::string SettingsRoute::key() const
 
 int SettingsRoute::priority() const
 {
-    return 7;
+    return 0;
 }
 
 std::string SettingsRoute::regex() const

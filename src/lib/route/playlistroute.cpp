@@ -51,7 +51,7 @@ std::string PlaylistRoute::key() const
 
 int PlaylistRoute::priority() const
 {
-    return 2;
+    return 0;
 }
 
 std::string PlaylistRoute::regex() const

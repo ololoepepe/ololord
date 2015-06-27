@@ -127,7 +127,7 @@ std::string SearchRoute::key() const
 
 int SearchRoute::priority() const
 {
-    return 5;
+    return 0;
 }
 
 std::string SearchRoute::regex() const
