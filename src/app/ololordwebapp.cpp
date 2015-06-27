@@ -9,6 +9,7 @@
 #include <route/AddFileRoute>
 #include <route/BanUserRoute>
 #include <route/BoardRoute>
+#include <route/EditAudioTagsRoute>
 #include <route/HomeRoute>
 #include <route/MarkupRoute>
 #include <route/PlaylistRoute>
@@ -60,6 +61,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new BoardRoute(*this, BoardRoute::BoardRulesRoute);
     routesMap.insert(r->regex(), r);
     r = new BanUserRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new EditAudioTagsRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new HomeRoute(*this);
     routesMap.insert(r->regex(), r);

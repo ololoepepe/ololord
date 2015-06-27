@@ -555,6 +555,11 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Не удалось проголосовать</translation>
     </message>
+    <message>
+        <source>Failed to edit audio tags</source>
+        <comment>error</comment>
+        <translation>Не удалось отредактировать теги аудиофайла</translation>
+    </message>
 </context>
 <context>
     <name>AddFileRoute</name>
@@ -708,6 +713,89 @@ Apperas in the HTML pages.</source>
         <source>Codecha - programmers&apos; CAPTCHA</source>
         <comment>title</comment>
         <translation>Codecha - программистская CAPTCHA</translation>
+    </message>
+</context>
+<context>
+    <name>EditAudioTagsRoute</name>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Post number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер поста</translation>
+    </message>
+    <message>
+        <source>Invalid file name</source>
+        <comment>error</comment>
+        <translation>Неправильное имя файла</translation>
+    </message>
+    <message>
+        <source>File name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя файла</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Edit audio file tags</source>
+        <comment>pageTitle</comment>
+        <translation>Редактировать теги аудиофайла</translation>
+    </message>
+    <message>
+        <source>Album:</source>
+        <comment>audioTagAlbumText</comment>
+        <translation>Альбом:</translation>
+    </message>
+    <message>
+        <source>Artist:</source>
+        <comment>audioTagArtistText</comment>
+        <translation>Исполнитель:</translation>
+    </message>
+    <message>
+        <source>Title:</source>
+        <comment>audioTagTitleText</comment>
+        <translation>Название:</translation>
+    </message>
+    <message>
+        <source>Year:</source>
+        <comment>audioTagYearText</comment>
+        <translation>Год:</translation>
     </message>
 </context>
 <context>

@@ -55,6 +55,7 @@ private:
     void handleCreateThread(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleDeleteFile(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleDeletePost(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
+    void handleEditAudioTags(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleLogin(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleLogout(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleSetThreadFixed(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);

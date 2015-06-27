@@ -95,6 +95,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("create_thread", &ActionRoute::handleCreateThread);
         map.insert("delete_file", &ActionRoute::handleDeleteFile);
         map.insert("delete_post", &ActionRoute::handleDeletePost);
+        map.insert("edit_audio_tags", &ActionRoute::handleEditAudioTags);
         map.insert("login", &ActionRoute::handleLogin);
         map.insert("logout", &ActionRoute::handleLogout);
         map.insert("set_thread_fixed", &ActionRoute::handleSetThreadFixed);
@@ -214,6 +215,31 @@ void ActionRoute::handleDeletePost(const QString &action, const Tools::PostParam
     QString path = boardName;
     if (threadNumber != postNumber)
         path += "/thread/" + QString::number(threadNumber) + ".html#" + QString::number(postNumber);
+    redirect(path);
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
+void ActionRoute::handleEditAudioTags(const QString &action, const Tools::PostParameters &params,
+                                      const Translator::Qt &tq)
+{
+    QString boardName = params.value("board");
+    quint64 postNumber = params.value("postNumber").toULongLong();
+    QString fileName = params.value("fileName");
+    QString logTarget = boardName + "/" + QString::number(postNumber) + "/" + fileName;
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, boardName))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QVariantMap m;
+    foreach (const QString &key, QStringList() << "album" << "artist" << "title" << "year")
+        m.insert(key, params.value(key));
+    QString err;
+    if (!Database::editAudioTags(boardName, fileName, application.request(), QByteArray(), m, &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to edit audio tags", "error"),
+                                       err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    QString path = boardName + "/thread/" + QString::number(Database::postThreadNumber(boardName, postNumber))
+            + ".html#" + QString::number(postNumber);
     redirect(path);
     Tools::log(application, "action/" + action, "success", logTarget);
 }

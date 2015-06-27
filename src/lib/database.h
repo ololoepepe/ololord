@@ -13,6 +13,7 @@ class Query;
 namespace Tools
 {
 
+class AudioTags;
 class File;
 class Post;
 

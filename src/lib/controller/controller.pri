@@ -9,6 +9,7 @@ HEADERS += \
     $${PWD}/controller.h \
     $${PWD}/echoboard.h \
     $${PWD}/echothread.h \
+    $${PWD}/editaudiotags.h \
     $${PWD}/error.h \
     $${PWD}/home.h \
     $${PWD}/ipban.h \
