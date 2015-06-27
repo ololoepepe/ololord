@@ -514,6 +514,16 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Капча решена неправильно</translation>
     </message>
+    <message>
+        <source>No engine for this captcha type</source>
+        <comment>error</comment>
+        <translation>Отсутствует движок для этого типа капчи</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
 </context>
 <context>
     <name>ActionAjaxHandler</name>
@@ -531,16 +541,6 @@ Apperas in the HTML pages.</source>
         <source>Invalid captcha type</source>
         <comment>error</comment>
         <translation>Недействительный тип капчи</translation>
-    </message>
-    <message>
-        <source>No engine for this captcha type</source>
-        <comment>error</comment>
-        <translation>Отсутствует движок для этого типа капчи</translation>
-    </message>
-    <message>
-        <source>Internal error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка</translation>
     </message>
 </context>
 <context>

@@ -72,13 +72,13 @@ public:
 public:
     virtual bool checkCaptcha(const cppcms::http::request &req, const Tools::PostParameters &params,
                               QString &error) const = 0;
-    virtual QString headerHtml() const;
+    virtual QString headerHtml(bool asceticMode = false) const;
     virtual QString id() const = 0;
     QString privateKey() const;
     QString publicKey() const;
-    virtual QString scriptSource() const;
+    virtual QString scriptSource(bool asceticMode = false) const;
     virtual QString title(const QLocale &l) const = 0;
-    virtual QString widgetHtml() const = 0;
+    virtual QString widgetHtml(const cppcms::http::request &req, bool asceticMode = false) const = 0;
 private:
     static void cleanupEngines();
 };

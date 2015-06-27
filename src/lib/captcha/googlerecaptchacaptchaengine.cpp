@@ -57,7 +57,7 @@ QString GoogleRecaptchaCaptchaEngine::id() const
     return "google-recaptcha";
 }
 
-QString GoogleRecaptchaCaptchaEngine::scriptSource() const
+QString GoogleRecaptchaCaptchaEngine::scriptSource(bool /*asceticMode*/) const
 {
     return "https://www.google.com/recaptcha/api.js";
 }
@@ -67,7 +67,7 @@ QString GoogleRecaptchaCaptchaEngine::title(const QLocale &/*l*/) const
     return "Google reCAPTCHA";
 }
 
-QString GoogleRecaptchaCaptchaEngine::widgetHtml() const
+QString GoogleRecaptchaCaptchaEngine::widgetHtml(const cppcms::http::request &/*req*/, bool /*asceticMode*/) const
 {
     return "<div id=\"captcha\" class=\"g-recaptcha\" data-sitekey=\"" + publicKey() + "\"></div>";
 }

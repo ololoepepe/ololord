@@ -2,7 +2,6 @@
 #define ABSTRACTYANDEXCAPTCHAENGINE_H
 
 class QLocale;
-class QString;
 
 namespace cppcms
 {
@@ -18,16 +17,26 @@ class request;
 
 #include "abstractcaptchaengine.h"
 
+#include <QString>
+
 class OLOLORD_EXPORT AbstractYandexCaptchaEngine : public AbstractCaptchaEngine
 {
+public:
+    struct CaptchaInfo
+    {
+        QString challenge;
+        QString url;
+    };
 protected:
     explicit AbstractYandexCaptchaEngine();
 public:
+    static CaptchaInfo getCaptchaInfo(const QString &type, const QLocale &l, bool *ok = 0, QString *error = 0);
+public:
     bool checkCaptcha(const cppcms::http::request &req, const Tools::PostParameters &params, QString &error) const;
-    QString headerHtml() const;
+    QString headerHtml(bool asceticMode = false) const;
     QString id() const;
     QString title(const QLocale &l) const;
-    QString widgetHtml() const;
+    QString widgetHtml(const cppcms::http::request &req, bool asceticMode = false) const;
 protected:
     virtual QString type() const = 0;
 };

@@ -277,9 +277,10 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     AbstractCaptchaEngine::LockingWrapper ce = AbstractCaptchaEngine::engine(ceid);
     if (ce.isNull())
         return false;
-    c.captchaHeaderHtml = Tools::toStd(ce->headerHtml());
-    c.captchaScriptSource = Tools::toStd(ce->scriptSource());
-    c.captchaWidgetHtml = Tools::toStd(ce->widgetHtml());
+    bool asceticMode = ("ascetic" == c.mode.name);
+    c.captchaHeaderHtml = Tools::toStd(ce->headerHtml(asceticMode));
+    c.captchaScriptSource = Tools::toStd(ce->scriptSource(asceticMode));
+    c.captchaWidgetHtml = Tools::toStd(ce->widgetHtml(req, asceticMode));
     c.captchaQuota = board->captchaQuota(ip);
     c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");

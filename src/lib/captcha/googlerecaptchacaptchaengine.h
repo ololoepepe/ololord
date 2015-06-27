@@ -25,9 +25,9 @@ public:
 public:
     bool checkCaptcha(const cppcms::http::request &req, const Tools::PostParameters &params, QString &error) const;
     QString id() const;
-    QString scriptSource() const;
+    QString scriptSource(bool asceticMode = false) const;
     QString title(const QLocale &l) const;
-    QString widgetHtml() const;
+    QString widgetHtml(const cppcms::http::request &req, bool asceticMode = false) const;
 };
 
 #endif // GOOGLERECAPTCHACAPTCHAENGINE_H
