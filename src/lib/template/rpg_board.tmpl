@@ -15,10 +15,22 @@
     <td class="postformField">
         <div><%= voteTextText %> <input type="text" name="voteText" size="36" /></div>
         <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
-        <div name="voteVariants"></div>
-        <a href="javascript:lord.addVoteVariant();">
-            <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
-        <input type="hidden" name="voteVariantCount" value="0" />
+        <% if ( content.mode.name != "ascetic" ) %>
+            <div name="voteVariants"></div>
+            <a href="javascript:lord.addVoteVariant();">
+                <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
+            <input type="hidden" name="voteVariantCount" value="0" />
+        <% else %>
+            <div name="voteVariants">
+                <% c++ for (int i = 0; i < 10; ++i) { %>
+                    <% c++ out() << "<input type=\"text\" name=\"voteVariant" << (i + 1) << "\" accept=\"" << content.supportedFileTypes << "\" />"; %>
+                    <% c++ if (i < 9) {%>
+                        <br />
+                    <% c++ } %>
+                <% c++ } %>
+            </div>
+            <input type="hidden" name="voteVariantCount" value="10" />
+        <% end %>
     </td>
 </tr>
 <% end template %>
@@ -62,6 +74,15 @@
         <% c++ } %>
         <% c++ out() << voteText << "</div>"; %>
         <div name="voteVariants">
+            <% if ( content.mode.name == "ascetic" && !disabled && !post.ownIp ) %>
+                <% if ( !voted ) %>
+                    <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                          action="/<%= sitePathPrefix %>action/vote">
+                <% else %>
+                    <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                          action="/<%= sitePathPrefix %>action/unvote">
+                <% end %>
+            <% end %>
             <% c++ out() << "<input type=\"hidden\" value=\"" << (multiple ? "true" : "false") << "\" />"; %> 
             <% c++ for (int i = 0; i < variants.size(); ++i) { %>
             <% c++     QVariantMap mm = variants.at(i).toMap(); %>
@@ -81,27 +102,57 @@
             <% c++     out() << voteCount << ")</span><br>"; %>
             <% c++ } %>
         </div>
-        <% if ( !disabled ) %>
-            <button name="buttonSetVoteClosed"
-                    onclick="lord.setVoteOpened(<%= post.number %>, false);"><%= closeVoteActionText %></button>
-        <% else %>
-            <button name="buttonSetVoteOpened"
-                    onclick="lord.setVoteOpened(<%= post.number %>, true);"><%= openVoteActionText %></button>
-        <% end %>
         <% if ( !post.ownIp ) %>
             <% if ( !voted ) %>
                 <% if ( !disabled ) %>
-                    <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <button name="buttonVote" onclick="lord.vote(<%= post.number %>);"><%= voteActionText %></button>
+                    <% else %>
+                            <input type="hidden" name="postNumber" value="<%= post.number %>" />
+                            <input type="submit" name="submit" value="<%= voteActionText %>" />
+                        </form>
+                    <% end %>
                 <% else %>
                     <button name="buttonVote" disabled="true"><%= voteActionText %></button>
                 <% end %>
             <% else %>
                 <% if ( !disabled ) %>
-                    <button name="buttonUnvote"
-                            onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <button name="buttonUnvote"
+                                onclick="lord.unvote(<%= post.number %>);"><%= unvoteActionText %></button>
+                    <% else %>
+                            <input type="hidden" name="postNumber" value="<%= post.number %>" />
+                            <input type="submit" name="submit" value="<%= unvoteActionText %>" />
+                        </form>
+                    <% end %>
                 <% else %>
                     <button name="buttonUnvote" disabled="true"><%= unvoteActionText %></button>
                 <% end %>
+            <% end %>
+        <% end %>
+        <% if ( !disabled ) %>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <button name="buttonSetVoteClosed"
+                        onclick="lord.setVoteOpened(<%= post.number %>, false);"><%= closeVoteActionText %></button>
+            <% elif ( content.loggedIn ) %>
+                <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/set_vote_opened"
+                      enctype="multipart/form-data" class="inlineForm">
+                    <input type="hidden" name="postNumber" value="<%= post.number %>" />
+                    <input type="hidden" name="opened" value="false" />
+                    <input type="submit" name="submit" value="<%= closeVoteActionText %>" />
+                </form>
+            <% end %>
+        <% else %>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <button name="buttonSetVoteOpened"
+                        onclick="lord.setVoteOpened(<%= post.number %>, true);"><%= openVoteActionText %></button>
+            <% elif ( content.loggedIn ) %>
+                <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/set_vote_opened"
+                      enctype="multipart/form-data" class="inlineForm">
+                    <input type="hidden" name="postNumber" value="<%= post.number %>" />
+                    <input type="hidden" name="opened" value="true" />
+                    <input type="submit" name="submit" value="<%= openVoteActionText %>" />
+                </form>
             <% end %>
         <% end %>
     </td>
@@ -117,10 +168,10 @@
         <div name="voteVariants">
             <input type="hidden" value="false" />
         </div>
-        <button name="buttonSetVoteClosed"><%= closeVoteActionText %></button>
-        <button name="buttonSetVoteOpened"><%= openVoteActionText %></button>
         <button name="buttonVote"><%= voteActionText %></button>
         <button name="buttonUnvote"><%= unvoteActionText %></button>
+        <button name="buttonSetVoteClosed"><%= closeVoteActionText %></button>
+        <button name="buttonSetVoteOpened"><%= openVoteActionText %></button>
     </td>
 <tr>
 <% end template %>

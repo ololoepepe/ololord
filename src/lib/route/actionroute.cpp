@@ -99,6 +99,9 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("logout", &ActionRoute::handleLogout);
         map.insert("set_thread_fixed", &ActionRoute::handleSetThreadFixed);
         map.insert("set_thread_opened", &ActionRoute::handleSetThreadOpened);
+        map.insert("set_vote_opened", &ActionRoute::handleSetVoteOpened);
+        map.insert("unvote", &ActionRoute::handleUnvote);
+        map.insert("vote", &ActionRoute::handleVote);
     }
     return map;
 }
@@ -269,6 +272,70 @@ void ActionRoute::handleSetThreadOpened(const QString &action, const Tools::Post
         return;
     }
     redirect(boardName + "/thread/" + QString::number(threadNumber) + ".html");
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
+void ActionRoute::handleSetVoteOpened(const QString &action, const Tools::PostParameters &params,
+                                      const Translator::Qt &tq)
+{
+    quint64 postNumber = params.value("postNumber").toULongLong();
+    bool opened = !params.value("opened").compare("true", Qt::CaseSensitive);
+    QString logTarget = QString::number(postNumber) + "/" + QString(opened ? "true" : "false");
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, "rpg"))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QString err;
+    if (!Database::setVoteOpened(postNumber, opened, QByteArray(), application.request(), &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to set vote opened/closed",
+                                                                 "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect("rpg/thread/" + QString::number(Database::postThreadNumber("rpg", postNumber)) + ".html#"
+             + QString::number(postNumber));
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
+void ActionRoute::handleUnvote(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
+{
+    quint64 postNumber = params.value("postNumber").toULongLong();
+    QString logTarget = QString::number(postNumber);
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, "rpg"))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QString err;
+    if (!Database::unvote(postNumber, application.request(), &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to unvote", "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect("rpg/thread/" + QString::number(Database::postThreadNumber("rpg", postNumber)) + ".html#"
+             + QString::number(postNumber));
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
+void ActionRoute::handleVote(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
+{
+    quint64 postNumber = params.value("postNumber").toULongLong();
+    QString logTarget = QString::number(postNumber);
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, "rpg"))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QStringList votes;
+    if (params.contains("voteGroup")) {
+        votes << params.value("voteGroup");
+    } else {
+        foreach (const QString &key, params.keys()) {
+            if (!key.startsWith("voteVariant") || params.value(key).compare("true", Qt::CaseInsensitive))
+                continue;
+            votes << key.mid(11);
+        }
+    }
+    QString err;
+    if (!Database::vote(postNumber, votes, application.request(), &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to vote", "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect("rpg/thread/" + QString::number(Database::postThreadNumber("rpg", postNumber)) + ".html#"
+             + QString::number(postNumber));
     Tools::log(application, "action/" + action, "success", logTarget);
 }
 

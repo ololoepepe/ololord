@@ -540,6 +540,21 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Не удалось открыть/закрыть тред</translation>
     </message>
+    <message>
+        <source>Failed to set vote opened/closed</source>
+        <comment>error</comment>
+        <translation>Не удалось открыть/закрыть голосование</translation>
+    </message>
+    <message>
+        <source>Failed to unvote</source>
+        <comment>error</comment>
+        <translation>Не удалось забрать голос</translation>
+    </message>
+    <message>
+        <source>Failed to vote</source>
+        <comment>error</comment>
+        <translation>Не удалось проголосовать</translation>
+    </message>
 </context>
 <context>
     <name>BanUserRoute</name>

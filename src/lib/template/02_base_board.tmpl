@@ -162,12 +162,18 @@
                 <img src="/<%= sitePathPrefix %>img/iqdb.png"></a>
         <% end %>
         <% if ( content.isAudioType(file.type) ) %>
-            <a href="javascript:lord.editAudioTags('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');"
-               title="<%= editAudioTagsText %>">
-                <img src="/<%= sitePathPrefix %>img/audio_edit_tags.png"></a>
-            <a href="javascript:lord.addToPlaylist('<%= currentBoard.name %>', '<%= file.sourceName %>');"
-               title="<%= addToPlaylistText %>">
-                <img src="/<%= sitePathPrefix %>img/playlist_add.png"></a>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <a href="javascript:lord.editAudioTags('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');"
+                   title="<%= editAudioTagsText %>">
+                    <img src="/<%= sitePathPrefix %>img/audio_edit_tags.png"></a>
+                <a href="javascript:lord.addToPlaylist('<%= currentBoard.name %>', '<%= file.sourceName %>');"
+                   title="<%= addToPlaylistText %>">
+                    <img src="/<%= sitePathPrefix %>img/playlist_add.png"></a>
+            <% elif ( content.loggedIn ) %>
+                <a href="/<%= sitePathPrefix %>edit_audio_tags?board=<%= currentBoard.name %>&post=<%= post.number %>&fileName=<%= file.sourceName %>"
+                   target="_blank" title="<%= editAudioTagsText %>">
+                    <img src="/<%= sitePathPrefix %>img/audio_edit_tags.png"></a>
+            <% end %>
         <% end %>
     </div>
     <div class="postFileFile">
@@ -286,14 +292,26 @@
         <span class="postActions">
             <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
             <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
-                <a name="addFileButton"
-                   href="javascript:lord.addFile('<%= currentBoard.name %>', '<%= post.number %>');">
-                    <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <a name="addFileButton"
+                       href="javascript:lord.addFile('<%= currentBoard.name %>', '<%= post.number %>');">
+                        <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                <% else %>
+                    <a name="addFileButton" target="_blank"
+                       href="/<%= sitePathPrefix %>add_file?board=<%= currentBoard.name %>&post=<%= post.number %>">
+                        <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                <% end %>
             <% end %>
             <% if ( content.moder || post.draft ) %>
-                <a name="editButton"
-                   href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
-                    <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <a name="editButton"
+                       href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
+                        <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <% else %>
+                    <a name="editButton" target="_blank"
+                       href="/<%= sitePathPrefix %>edit_post?board=<%= currentBoard.name %>&post=<%= post.number %>">
+                        <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <% end %>
             <% end %>
             <% if ( content.moder && post.number == post.threadNumber ) %>
                 <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
