@@ -2,6 +2,7 @@
 
 #include "board/abstractboard.h"
 #include "controller/controller.h"
+#include "database.h"
 #include "settingslocker.h"
 #include "tools.h"
 #include "translator.h"
@@ -40,17 +41,17 @@ void ActionRoute::handle(std::string action)
     QString a = Tools::fromStd(action);
     Tools::PostParameters params = Tools::postParameters(application.request());
     QString logTarget = params.value("board");
-    Tools::log(application, a, "begin", logTarget);
+    Tools::log(application, "action/" + a, "begin", logTarget);
     QString err;
     if (!Controller::testRequest(application, Controller::PostRequest, &err))
-        return Tools::log(application, a, "fail:" + err, logTarget);
+        return Tools::log(application, "action/" + a, "fail:" + err, logTarget);
     TranslatorQt tq(application.request());
     HandleActionMap map = actionMap();
     if (!map.contains(a)) {
         err = tq.translate("ActionRoute", "Unknown action", "error");
         Controller::renderError(application, err,
                                 tq.translate("ActionRoute", "There is no such action", "description"));
-        Tools::log(application, a, "fail:" + err, logTarget);
+        Tools::log(application, "action/" + a, "fail:" + err, logTarget);
         return;
     }
     (this->*map.value(a))(a, params, tq);
@@ -86,6 +87,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
 {
     init_once(HandleActionMap, map, HandleActionMap()) {
         map.insert("add_file", &ActionRoute::handleAddFile);
+        map.insert("ban_user", &ActionRoute::handleBanUser);
         map.insert("change_locale", &ActionRoute::handleChangeLocale);
         map.insert("change_settings", &ActionRoute::handleChangeSettings);
         map.insert("create_post", &ActionRoute::handleCreatePost);
@@ -104,19 +106,48 @@ void ActionRoute::handleAddFile(const QString &action, const Tools::PostParamete
     board->addFile(application);
 }
 
-void ActionRoute::handleChangeLocale(const QString &, const Tools::PostParameters &params, const Translator::Qt &)
+void ActionRoute::handleBanUser(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
+{
+    QString sourceBoard = params.value("boardName");
+    quint64 postNumber = params.value("postNumber").toULongLong();
+    QString board = params.value("board");
+    QString logTarget = sourceBoard + "/" + QString::number(postNumber);
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, sourceBoard)
+            || !Controller::testBanNonAjax(application, Controller::WriteAction, board)) {
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    }
+    QString reason = params.value("reason");
+    int level = params.value("level").toInt();
+    QDateTime expires = QDateTime::fromString(params.value("expires"), "dd.MM.yyyy:hh");
+    QString err;
+    if (!Database::banUser(application.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
+        Controller::renderError(application, tq.translate("ActionRoute", "Failed to ban user", "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    QString path = "/" + SettingsLocker()->value("Site/path_prefix").toString() + sourceBoard + "/thread/"
+            + QString::number(Database::postThreadNumber(sourceBoard, postNumber)) + ".html#"
+            + QString::number(postNumber);
+    application.response().set_redirect_header(Tools::toStd(path));
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
+void ActionRoute::handleChangeLocale(const QString &action, const Tools::PostParameters &params, const Translator::Qt &)
 {
     setCookie("locale", "localeChangeSelect", params);
     redirect();
+    Tools::log(application, "action/" + action, "success");
 }
 
-void ActionRoute::handleChangeSettings(const QString &, const Tools::PostParameters &params, const Translator::Qt &)
+void ActionRoute::handleChangeSettings(const QString &action, const Tools::PostParameters &params,
+                                       const Translator::Qt &)
 {
     setCookie("mode", "modeChangeSelect", params);
     setCookie("style", "styleChangeSelect", params);
     setCookie("time", "timeChangeSelect", params);
     setCookie("captchaEngine", "captchaEngineSelect", params);
     redirect();
+    Tools::log(application, "action/" + action, "success");
 }
 
 void ActionRoute::handleCreatePost(const QString &action, const Tools::PostParameters &params,
@@ -137,19 +168,21 @@ void ActionRoute::handleCreateThread(const QString &action, const Tools::PostPar
     board->createThread(application);
 }
 
-void ActionRoute::handleLogin(const QString &, const Tools::PostParameters &params, const Translator::Qt &)
+void ActionRoute::handleLogin(const QString &action, const Tools::PostParameters &params, const Translator::Qt &)
 {
     QString hashpass = params.value("hashpass");
     if (!QRegExp("").exactMatch(hashpass))
         hashpass = Tools::toString(QCryptographicHash::hash(hashpass.toUtf8(), QCryptographicHash::Sha1));
     application.response().set_cookie(cppcms::http::cookie("hashpass", Tools::toStd(hashpass), UINT_MAX, "/"));
     redirect();
+    Tools::log(application, "action/" + action, "success");
 }
 
-void ActionRoute::handleLogout(const QString &, const Tools::PostParameters &, const Translator::Qt &)
+void ActionRoute::handleLogout(const QString &action, const Tools::PostParameters &, const Translator::Qt &)
 {
     application.response().set_cookie(cppcms::http::cookie("hashpass", "", UINT_MAX, "/"));
     redirect();
+    Tools::log(application, "action/" + action, "success");
 }
 
 void ActionRoute::redirect(const QString &path)
@@ -173,6 +206,6 @@ bool ActionRoute::testBoard(AbstractBoard *board, const QString &action, const Q
         return true;
     QString err = tq.translate("ActionRoute", "Unknown board", "error");
     Controller::renderError(application, err, tq.translate("ActionRoute", "There is no such board", "description"));
-    Tools::log(application, action, "fail:" + err, logTarget);
+    Tools::log(application, "action/" + action, "fail:" + err, logTarget);
     return false;
 }

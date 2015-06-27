@@ -301,8 +301,15 @@
                 <% end %>
             <% end %>
             <% if ( content.moder ) %>
-                <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
-                    <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <a name="banButton"
+                       href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
+                        <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                <% else %>
+                    <a name="banButton" target="_blank"
+                       href="/<%= sitePathPrefix %>ban_user?board=<%= currentBoard.name %>&post=<%= post.number %>">
+                        <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                <% end %>
             <% end %>
             <% if ( !thread && post.number == post.threadNumber ) %>
                 <a name="downloadButton" href="javascript:lord.downloadThread();">

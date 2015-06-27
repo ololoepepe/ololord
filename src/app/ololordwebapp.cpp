@@ -6,6 +6,7 @@
 #include <plugin/RouteFactoryPluginInterface>
 #include <route/AbstractRoute>
 #include <route/ActionRoute>
+#include <route/BanUserRoute>
 #include <route/BoardRoute>
 #include <route/HomeRoute>
 #include <route/MarkupRoute>
@@ -54,6 +55,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new BoardRoute(*this, BoardRoute::BoardPageMode);
     routesMap.insert(r->regex(), r);
     r = new BoardRoute(*this, BoardRoute::BoardRulesRoute);
+    routesMap.insert(r->regex(), r);
+    r = new BanUserRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new HomeRoute(*this);
     routesMap.insert(r->regex(), r);

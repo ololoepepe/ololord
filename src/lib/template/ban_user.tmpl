@@ -1,0 +1,91 @@
+<% c++ #include "controller/banuser.h" %>
+<% skin my_skin %>
+<% view ban_user uses Content::BanUser extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+    </head>
+    <body>
+        <% include baseTexts() %>
+        <% include customHeader() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <h1><%= pageTitle %></h1>
+        </div>
+        <form id="settings" class="centerForm" method="post" accept-charset="utf-8" enctype="multipart/form-data"
+              action="/<%= sitePathPrefix %>action/ban_user">
+            <input type="hidden" name="boardName" value="<%= currentBoardName %>" />
+            <input type="hidden" name="postNumber" value="<%= postNumber %>" />
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= boardLabelText %>
+                        </td>
+                        <td>
+                            <select name="board" class="select">
+                                <%foreach board in availableBoards %>
+                                    <% item %>
+                                        <% if ( board.name == content.currentBoardName ) %>
+                                            <option value="<%= board.name %>"
+                                                    selected="true">[<%= board.name %>] <%= board.title %></option>
+                                        <% else %>
+                                            <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+                                        <% end %>
+                                    <% end %>
+                                <% end %>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= banLevelLabelText %>
+                        </td>
+                        <td>
+                            <select name="level" class="select">
+                                <%foreach level in banLevels %>
+                                    <% item %>
+                                        <% if ( 1 == level.level ) %>
+                                            <option value="<%= level.level %>" selected="true"><%= level.description %></option>
+                                        <% else %>
+                                            <option value="<%= level.level %>"><%= level.description %></option>
+                                        <% end %>
+                                    <% end %>
+                                <% end %>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= banReasonLabelText %>
+                        </td>
+                        <td>
+                            <input type="text" name="reason" size="43" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= banExpiresLabelText %>
+                        </td>
+                        <td>
+                            <input type="text" name="expires" placeholder="dd.MM.yyyy:hh" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="submit" name="submit" value="<%= confirmButtonText %>" />
+        </form>
+        <% include customHeader() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

@@ -515,6 +515,89 @@ Apperas in the HTML pages.</source>
         <comment>description</comment>
         <translation>Нет такой доски</translation>
     </message>
+    <message>
+        <source>Failed to ban user</source>
+        <comment>error</comment>
+        <translation>Не удалось забанить пользователя</translation>
+    </message>
+</context>
+<context>
+    <name>BanUserRoute</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Post number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер поста</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Ban user</source>
+        <comment>pageTitle</comment>
+        <translation>Забанить пользователя</translation>
+    </message>
+    <message>
+        <source>All boards</source>
+        <comment>boardName</comment>
+        <translation>Все доски</translation>
+    </message>
+    <message>
+        <source>Expires:</source>
+        <comment>banExpiresLabelText</comment>
+        <translation>Истекает:</translation>
+    </message>
+    <message>
+        <source>Level:</source>
+        <comment>banLevelLabelText</comment>
+        <translation>Уровень:</translation>
+    </message>
+    <message>
+        <source>Not banned</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Не забанен</translation>
+    </message>
+    <message>
+        <source>Posting prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещен постинг</translation>
+    </message>
+    <message>
+        <source>Posting and reading prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещены постинг и чтение</translation>
+    </message>
+    <message>
+        <source>Reason:</source>
+        <comment>banReasonLabelText</comment>
+        <translation>Причина:</translation>
+    </message>
+    <message>
+        <source>Board:</source>
+        <comment>boardLabelText</comment>
+        <translation>Доска:</translation>
+    </message>
 </context>
 <context>
     <name>CodechaCaptchaEngine</name>

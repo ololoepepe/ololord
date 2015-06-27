@@ -1616,6 +1616,23 @@ QString posterIp(const QString &boardName, quint64 postNumber)
     }
 }
 
+quint64 postThreadNumber(const QString &boardName, quint64 postNumber)
+{
+    try {
+        Transaction t;
+        if (!t)
+            return 0;
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error || !post)
+            return 0;
+        return post->thread().load()->number();
+    }  catch (const odb::exception &e) {
+        Tools::log("Database::postThreadNumber", e);
+        return 0;
+    }
+}
+
 QStringList registeredUserBoards(const cppcms::http::request &req)
 {
     QByteArray hp = Tools::hashpass(req);

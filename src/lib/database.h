@@ -315,6 +315,7 @@ OLOLORD_EXPORT bool moderOnBoard(const QByteArray &hashpass, const QString &boar
                                  const QString &board2 = QString());
 OLOLORD_EXPORT bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNumber = 0);
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
+OLOLORD_EXPORT quint64 postThreadNumber(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req);
 OLOLORD_EXPORT QStringList registeredUserBoards(const QByteArray &hashpass);
 OLOLORD_EXPORT int registeredUserLevel(const cppcms::http::request &req);

@@ -22,6 +22,7 @@ HEADERS += \
     $${PWD}/search.h \
     $${PWD}/settings.h \
     $${PWD}/thread.h \
+    controller/banuser.h
 
 SOURCES += \
     $${PWD}/controller.cpp \
