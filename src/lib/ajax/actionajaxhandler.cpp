@@ -74,30 +74,6 @@ void ActionAjaxHandler::banUser(const cppcms::json::object &params)
     }
 }
 
-void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string password)
-{
-    try {
-        QString bn = Tools::fromStd(boardName);
-        quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
-        QString logTarget = bn + "/" + QString::number(pn);
-        Tools::log(server, "ajax_delete_post", "begin", logTarget);
-        if (!testBan(bn))
-            return Tools::log(server, "ajax_delete_post", "fail:ban", logTarget);
-        QString err;
-        if (!Database::deletePost(bn, pn, server.request(), Tools::toHashpass(Tools::fromStd(password)), &err)) {
-            server.return_error(Tools::toStd(err));
-            Tools::log(server, "ajax_delete_post", "fail:" + err, logTarget);
-            return;
-        }
-        server.return_result(true);
-        Tools::log(server, "ajax_delete_post", "success", logTarget);
-    } catch (const std::exception &e) {
-        QString err = Tools::fromStd(e.what());
-        server.return_error(Tools::toStd(err));
-        Tools::log(server, "ajax_delete_post", "fail:" + err);
-    }
-}
-
 void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, std::string password)
 {
     try {
@@ -119,6 +95,30 @@ void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, 
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_delete_file", "fail:" + err);
+    }
+}
+
+void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string password)
+{
+    try {
+        QString bn = Tools::fromStd(boardName);
+        quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
+        QString logTarget = bn + "/" + QString::number(pn);
+        Tools::log(server, "ajax_delete_post", "begin", logTarget);
+        if (!testBan(bn))
+            return Tools::log(server, "ajax_delete_post", "fail:ban", logTarget);
+        QString err;
+        if (!Database::deletePost(bn, pn, server.request(), Tools::toHashpass(Tools::fromStd(password)), &err)) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_delete_post", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(true);
+        Tools::log(server, "ajax_delete_post", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_delete_post", "fail:" + err);
     }
 }
 

@@ -331,18 +331,37 @@
                    href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
                     <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
             <% end %>
-            <a name="complainButton" href="javascript:lord.complain();">
-                <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
-            <a name="deleteButton"
-               href="javascript:lord.deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
-            <% if ( post.number == post.threadNumber ) %>
-                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
-            <% else %>
-                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <a name="complainButton" href="javascript:lord.complain();">
+                    <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
             <% end %>
-            <a name="hideButton" id="hidePost<%= post.number %>"
-               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>');">
-                <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <a name="deleteButton"
+                   href="javascript:lord.deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <% if ( post.number == post.threadNumber ) %>
+                        <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
+                    <% else %>
+                        <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+                    <% end %>
+            <% elif ( content.loggedIn ) %>
+                <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/delete_post"
+                      enctype="multipart/form-data" class="inlineForm">
+                    <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                    <input type="hidden" name="postNumber" value="<%= post.number %>" />
+                    <% if ( post.number == post.threadNumber ) %>
+                        <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png"
+                               title="<%= deleteThreadText %>" />
+                    <% else %>
+                        <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png"
+                               title="<%= deletePostText %>" />
+                    <% end %>
+                </form>
+            <% end %>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <a name="hideButton" id="hidePost<%= post.number %>"
+                   href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>');">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+            <% end %>
         </span>
         <% if ( thread && post.number == post.threadNumber ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]

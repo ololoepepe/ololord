@@ -283,7 +283,7 @@ OLOLORD_EXPORT bool deleteFile(const QString &boardName, const QString &fileName
                                const QByteArray &password, QString *error = 0);
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QString *error = 0,
                                const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
+OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
 OLOLORD_EXPORT bool editAudioTags(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
                                   const QByteArray &password, const QVariantMap &tags, QString *error = 0);

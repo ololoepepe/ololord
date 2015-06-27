@@ -32,6 +32,13 @@ void BanUserRoute::handle()
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "ban_user", "fail:" + err, logTarget);
     TranslatorQt tq(application.request());
+    if (!Database::moderOnBoard(application.request(), boardName)) {
+        QString err = tq.translate("BanUserRoute", "Access error", "error");
+        Controller::renderErrorNonAjax(application, err,
+                                       tq.translate("BanUserRoute", "Not enough rights", "description"));
+        Tools::log(application, "ban_user", "fail:" + err, logTarget);
+        return;
+    }
     if (boardName.isEmpty()) {
         QString err = tq.translate("BanUserRoute", "Invalid board name", "error");
         Controller::renderErrorNonAjax(application, err,

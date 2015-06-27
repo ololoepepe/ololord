@@ -440,18 +440,19 @@ span.newPostCount {
     color: #444444;
 }
 
-.postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img {
+.postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img, .postFileSearch > form,
+.postHeader > span > form {
     opacity: 0.65;
     filter: alpha(opacity=65);
 }
 
 .postHeader > a:not(.disabled) > img:hover, .postFileSearch > a:not(.disabled) > img:hover,
-.postHeader > span > a:not(.disabled) > img:hover {
+.postHeader > span > a:not(.disabled) > img:hover, .postFileSearch > form:hover, .postHeader > span > form:hover {
     opacity: 1;
     filter: alpha(opacity=100);
 }
 
-.postActions > a {
+.postActions > a, .postActions > form {
     display: none;
 }
 
@@ -460,7 +461,7 @@ span.newPostCount {
     filter: alpha(opacity=65);
 }
 
-.postActions:hover > a {
+.postActions:hover > a, .postActions:hover > form {
     display: inline;
 }
 

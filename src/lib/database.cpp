@@ -1088,7 +1088,7 @@ bool deletePost(const QString &boardName, quint64 postNumber, QString *error, co
     return b;
 }
 
-bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
+bool deletePost(const QString &boardName, quint64 postNumber, const cppcms::http::request &req,
                 const QByteArray &password, QString *error)
 {
     TranslatorQt tq(req);

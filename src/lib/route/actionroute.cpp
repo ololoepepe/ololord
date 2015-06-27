@@ -94,6 +94,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("create_post", &ActionRoute::handleCreatePost);
         map.insert("create_thread", &ActionRoute::handleCreateThread);
         map.insert("delete_file", &ActionRoute::handleDeleteFile);
+        map.insert("delete_post", &ActionRoute::handleDeletePost);
         map.insert("login", &ActionRoute::handleLogin);
         map.insert("logout", &ActionRoute::handleLogout);
     }
@@ -123,7 +124,7 @@ void ActionRoute::handleBanUser(const QString &action, const Tools::PostParamete
     QDateTime expires = QDateTime::fromString(params.value("expires"), "dd.MM.yyyy:hh");
     QString err;
     if (!Database::banUser(application.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
-        Controller::renderError(application, tq.translate("ActionRoute", "Failed to ban user", "error"), err);
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to ban user", "error"), err);
         Tools::log(application, "action/" + action, "fail:" + err, logTarget);
         return;
     }
@@ -179,12 +180,36 @@ void ActionRoute::handleDeleteFile(const QString &action, const Tools::PostParam
         return Tools::log(application, "action/" + action, "fail:ban", logTarget);
     QString err;
     if (!Database::deleteFile(boardName, fileName, application.request(), QByteArray(), &err)) {
-        Controller::renderError(application, tq.translate("ActionRoute", "Failed to delete file", "error"), err);
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to delete file", "error"),
+                                       err);
         Tools::log(application, "action/" + action, "fail:" + err, logTarget);
         return;
     }
     redirect(boardName + "/thread/" + QString::number(Database::postThreadNumber(boardName, postNumber)) + ".html#"
              + QString::number(postNumber));
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
+void ActionRoute::handleDeletePost(const QString &action, const Tools::PostParameters &params,
+                                   const Translator::Qt &tq)
+{
+    QString boardName = params.value("boardName");
+    quint64 postNumber = params.value("postNumber").toULongLong();
+    QString logTarget = boardName + "/" + QString::number(postNumber);
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, boardName))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    quint64 threadNumber = Database::postThreadNumber(boardName, postNumber);
+    QString err;
+    if (!Database::deletePost(boardName, postNumber, application.request(), QByteArray(), &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to delete post", "error"),
+                                       err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    QString path = boardName;
+    if (threadNumber != postNumber)
+        path += "/thread/" + QString::number(threadNumber) + ".html#" + QString::number(postNumber);
+    redirect(path);
     Tools::log(application, "action/" + action, "success", logTarget);
 }
 

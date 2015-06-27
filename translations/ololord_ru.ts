@@ -525,6 +525,11 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Не удалось удалить файл</translation>
     </message>
+    <message>
+        <source>Failed to delete post</source>
+        <comment>error</comment>
+        <translation>Не удалось удалить пост</translation>
+    </message>
 </context>
 <context>
     <name>BanUserRoute</name>
@@ -602,6 +607,16 @@ Apperas in the HTML pages.</source>
         <source>Board:</source>
         <comment>boardLabelText</comment>
         <translation>Доска:</translation>
+    </message>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
     </message>
 </context>
 <context>
