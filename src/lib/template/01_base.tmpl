@@ -105,7 +105,9 @@
                   title="<%= board.title %>"><%= board.name %></a>] </span>
         <% end %>
     <% end %>
-    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>playlist"><%= toPlaylistPageText %></a>]</span>
+    <% if ( content.mode.name != "ascetic" ) %>
+        <span class="navbarItem">[<a href="/<%= sitePathPrefix %>playlist"><%= toPlaylistPageText %></a>]</span>
+    <% end %>
     <span class="navbarItem">[<a href="/<%= sitePathPrefix %>markup"><%= toMarkupPageText %></a>]</span>
     <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"><%= toHomePageText %></a>]</span>
 </div>
