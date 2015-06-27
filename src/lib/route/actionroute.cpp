@@ -97,6 +97,8 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("delete_post", &ActionRoute::handleDeletePost);
         map.insert("login", &ActionRoute::handleLogin);
         map.insert("logout", &ActionRoute::handleLogout);
+        map.insert("set_thread_fixed", &ActionRoute::handleSetThreadFixed);
+        map.insert("set_thread_opened", &ActionRoute::handleSetThreadOpened);
     }
     return map;
 }
@@ -228,6 +230,46 @@ void ActionRoute::handleLogout(const QString &action, const Tools::PostParameter
     application.response().set_cookie(cppcms::http::cookie("hashpass", "", UINT_MAX, "/"));
     redirect();
     Tools::log(application, "action/" + action, "success");
+}
+
+void ActionRoute::handleSetThreadFixed(const QString &action, const Tools::PostParameters &params,
+                                       const Translator::Qt &tq)
+{
+    QString boardName = params.value("boardName");
+    quint64 threadNumber = params.value("threadNumber").toULongLong();
+    bool fixed = !params.value("fixed").compare("true", Qt::CaseSensitive);
+    QString logTarget = boardName + "/" + QString::number(threadNumber) + "/" + QString(fixed ? "true" : "false");
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, boardName))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QString err;
+    if (!Database::setThreadFixed(boardName, threadNumber, fixed, application.request(), &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to set thread fixed/unfixed",
+                                                                 "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect(boardName + "/thread/" + QString::number(threadNumber) + ".html");
+    Tools::log(application, "action/" + action, "success", logTarget);
+}
+
+void ActionRoute::handleSetThreadOpened(const QString &action, const Tools::PostParameters &params,
+                                        const Translator::Qt &tq)
+{
+    QString boardName = params.value("boardName");
+    quint64 threadNumber = params.value("threadNumber").toULongLong();
+    bool opened = !params.value("opened").compare("true", Qt::CaseSensitive);
+    QString logTarget = boardName + "/" + QString::number(threadNumber) + "/" + QString(opened ? "true" : "false");
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, boardName))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QString err;
+    if (!Database::setThreadOpened(boardName, threadNumber, opened, application.request(), &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to set thread opened/closed",
+                                                                 "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect(boardName + "/thread/" + QString::number(threadNumber) + ".html");
+    Tools::log(application, "action/" + action, "success", logTarget);
 }
 
 void ActionRoute::redirect(const QString &path)

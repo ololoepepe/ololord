@@ -530,6 +530,16 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Не удалось удалить пост</translation>
     </message>
+    <message>
+        <source>Failed to set thread fixed/unfixed</source>
+        <comment>error</comment>
+        <translation>Не удалось закрепить/открепить тред</translation>
+    </message>
+    <message>
+        <source>Failed to set thread opened/closed</source>
+        <comment>error</comment>
+        <translation>Не удалось открыть/закрыть тред</translation>
+    </message>
 </context>
 <context>
     <name>BanUserRoute</name>

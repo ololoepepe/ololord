@@ -293,22 +293,66 @@
             <% end %>
             <% if ( content.moder && post.number == post.threadNumber ) %>
                 <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
-                    <a name="fixButton"
-                       href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                        <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <a name="fixButton"
+                           href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                            <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                    <% elif ( content.loggedIn ) %>
+                        <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                              action="/<%= sitePathPrefix %>action/set_thread_fixed">
+                            <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                            <input type="hidden" name="threadNumber" value="<%= post.number %>" />
+                            <input type="hidden" name="fixed" value="false" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/unfix.png"
+                                   title="<%= unfixThreadText %>" />
+                        </form>
+                    <% end %>
                 <% else %>
-                    <a name="fixButton"
-                       href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                        <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <a name="fixButton"
+                           href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                            <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                    <% elif ( content.loggedIn ) %>
+                        <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                              action="/<%= sitePathPrefix %>action/set_thread_fixed">
+                            <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                            <input type="hidden" name="threadNumber" value="<%= post.number %>" />
+                            <input type="hidden" name="fixed" value="true" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/fixed.png"
+                                   title="<%= fixThreadText %>" />
+                        </form>
+                    <% end %>
                 <% end %>
                 <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
-                    <a name="closeButton"
-                       href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                        <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <a name="closeButton"
+                           href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                            <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                    <% elif ( content.loggedIn ) %>
+                        <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                              action="/<%= sitePathPrefix %>action/set_thread_opened">
+                            <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                            <input type="hidden" name="threadNumber" value="<%= post.number %>" />
+                            <input type="hidden" name="opened" value="true" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/open.png"
+                                   title="<%= openThreadText %>" />
+                        </form>
+                    <% end %>
                 <% else %>
-                    <a name="closeButton"
-                       href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                        <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <a name="closeButton"
+                           href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                            <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                    <% elif ( content.loggedIn ) %>
+                        <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                              action="/<%= sitePathPrefix %>action/set_thread_opened">
+                            <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                            <input type="hidden" name="threadNumber" value="<%= post.number %>" />
+                            <input type="hidden" name="opened" value="false" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/closed.png"
+                                   title="<%= closeThreadText %>" />
+                        </form>
+                    <% end %>
                 <% end %>
             <% end %>
             <% if ( content.moder ) %>
@@ -322,16 +366,16 @@
                         <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
                 <% end %>
             <% end %>
-            <% if ( !thread && post.number == post.threadNumber ) %>
-                <a name="downloadButton" href="javascript:lord.downloadThread();">
-                    <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
-            <% end %>
-            <% if ( post.number == post.threadNumber ) %>
-                <a name="addToFavoritesButton"
-                   href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
-                    <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
-            <% end %>
             <% if ( content.mode.name != "ascetic" ) %>
+                <% if ( !thread && post.number == post.threadNumber ) %>
+                    <a name="downloadButton" href="javascript:lord.downloadThread();">
+                        <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+                <% end %>
+                <% if ( post.number == post.threadNumber ) %>
+                    <a name="addToFavoritesButton"
+                       href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
+                        <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+                <% end %>
                 <a name="complainButton" href="javascript:lord.complain();">
                     <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
             <% end %>

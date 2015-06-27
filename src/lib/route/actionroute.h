@@ -57,6 +57,8 @@ private:
     void handleDeletePost(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleLogin(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleLogout(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
+    void handleSetThreadFixed(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
+    void handleSetThreadOpened(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void redirect(const QString &path = QString());
     void setCookie(const QString &name, const QString &sourceName, const Tools::PostParameters &params);
     bool testBoard(AbstractBoard *board, const QString &action, const QString &logTarget, const Translator::Qt &tq);
