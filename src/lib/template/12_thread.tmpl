@@ -29,7 +29,9 @@
 
 <% template body() %>
 <% include baseTexts() %>
-<% include boardTexts() %>
+<% if ( content.mode.name != "ascetic" ) %>
+    <% include boardTexts() %>
+<% end %>
 <% include customHeader() %>
 <% include navigationButton("bottom") %>
 <% include navigationButton("top") %>
@@ -82,7 +84,7 @@
 <input id="afterAllPosts" type="hidden" />
 <hr />
 <% include threadActions("bottom") %>
-<% if ( content.postingEnabled && !content.postLimitReached() ) %>
+<% if ( content.mode.name != "ascetic" && content.postingEnabled && !content.postLimitReached() ) %>
     <hr />
     <% include createAction("Bottom") %>
 <% end %>

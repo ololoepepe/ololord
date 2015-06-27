@@ -113,17 +113,24 @@
 
 <% template searchAction() %>
 <div class="searchAction">
-    <input id="searchFormInputQuery" type="text" class="input" maxlength="<%= maxSearchQueryLength %>" name="query"
-           size="43" onkeypress="lord.searchKeyPress(event);" placeholder="<%= searchInputPlaceholder %>" />
-    <select id="searchFormSelectBoard" class="select">
-        <option value="*" selected="true">[*] <%= allBoardsText %></option>
-        <%foreach board in boards %>
-            <% item %>
-                <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+    <form method="get" accept-charset="utf-8" action="/<%= sitePathPrefix %>search"
+          enctype="multipart/form-data" class="inlineForm">
+        <input id="searchFormInputQuery" type="text" class="input" maxlength="<%= maxSearchQueryLength %>" name="query"
+               size="43" onkeypress="lord.searchKeyPress(event);" placeholder="<%= searchInputPlaceholder %>" />
+        <select id="searchFormSelectBoard" name="board" class="select">
+            <option value="*" selected="true">[*] <%= allBoardsText %></option>
+            <%foreach board in boards %>
+                <% item %>
+                    <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+                <% end %>
             <% end %>
+        </select>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <button class="button" onclick="javascript:lord.doSearch();"><%= searchButtonText %></button>
+        <% else %>
+            <input type="submit" class="button" value="<%= searchButtonText %>" />
         <% end %>
-    </select>
-    <button class="button" onclick="javascript:lord.doSearch();"><%= searchButtonText %></button>
+    </form>
 </div>
 <% end template %>
 
