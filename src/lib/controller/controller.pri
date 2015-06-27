@@ -1,5 +1,7 @@
 HEADERS += \
+    $${PWD}/addfile.h \
     $${PWD}/ban.h \
+    $${PWD}/banuser.h \
     $${PWD}/base.h \
     $${PWD}/baseboard.h \
     $${PWD}/board.h \
@@ -21,8 +23,7 @@ HEADERS += \
     $${PWD}/rules.h \
     $${PWD}/search.h \
     $${PWD}/settings.h \
-    $${PWD}/thread.h \
-    controller/banuser.h
+    $${PWD}/thread.h
 
 SOURCES += \
     $${PWD}/controller.cpp \

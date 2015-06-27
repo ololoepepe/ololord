@@ -1,0 +1,38 @@
+<% c++ #include "controller/addfile.h" %>
+<% skin my_skin %>
+<% view add_file uses Content::AddFile extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+    </head>
+    <body>
+        <% include baseTexts() %>
+        <% include customHeader() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <h1><%= pageTitle %></h1>
+        </div>
+        <form class="centerForm" method="post" accept-charset="utf-8" enctype="multipart/form-data"
+              action="/<%= sitePathPrefix %>action/add_file">
+            <input type="hidden" name="board" value="<%= currentBoardName %>" />
+            <input type="hidden" name="postNumber" value="<%= postNumber %>" />
+            <% c++ for (int i = 0; i < int(content.maxFileCount); ++i) { %>
+                <input type="file" name="file" accept="<%= supportedFileTypes %>" />
+                <br />
+            <% c++ } %>
+            <input type="submit" name="submit" value="<%= confirmButtonText %>" />
+        </form>
+        <% include customHeader() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

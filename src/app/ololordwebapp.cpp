@@ -6,6 +6,7 @@
 #include <plugin/RouteFactoryPluginInterface>
 #include <route/AbstractRoute>
 #include <route/ActionRoute>
+#include <route/AddFileRoute>
 #include <route/BanUserRoute>
 #include <route/BoardRoute>
 #include <route/HomeRoute>
@@ -49,6 +50,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     attach(new OlolordAjaxWebApp(service), "/api", 0);
     QMap<std::string, AbstractRoute *> routesMap;
     AbstractRoute *r = new ActionRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new AddFileRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new BoardRoute(*this, BoardRoute::BoardMode);
     routesMap.insert(r->regex(), r);

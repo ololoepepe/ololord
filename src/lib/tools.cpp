@@ -768,6 +768,16 @@ cppcms::json::value readJsonValue(const QString &fileName, bool *ok)
         return bRet(ok, false, cppcms::json::value());
 }
 
+void redirect(cppcms::application &app, const QString &path)
+{
+    if (path.isEmpty()) {
+        app.response().set_redirect_header(app.request().http_referer());
+    } else {
+        QString p = "/" + SettingsLocker()->value("Site/path_prefix").toString() + path;
+        app.response().set_redirect_header(toStd(p));
+    }
+}
+
 void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
 {
     return app.render(toStd(templateName), content);

@@ -1268,6 +1268,28 @@ bool editPost(EditPostParameters &p)
     }
 }
 
+unsigned int fileCount(const QString &boardName, quint64 postNumber)
+{
+    if (boardName.isEmpty() || !postNumber)
+        return 0;
+    try {
+        Transaction t;
+        if (!t)
+            return 0;
+        Result<PostId> postId = queryOne<PostId, Post>(odb::query<Post>::board == boardName
+                                                       && odb::query<Post>::number == postNumber);
+        if (postId.error || !postId)
+            return 0;
+        Result<FileInfoCount> count = queryOne<FileInfoCount, FileInfo>(odb::query<FileInfo>::post == postId->id);
+        if (count.error || !count)
+            return 0;
+        return count->count;
+    } catch (const odb::exception &e) {
+        Tools::log("Database::fileCount", e);
+        return 0;
+    }
+}
+
 bool fileExists(const QByteArray &hash, bool *ok)
 {
     if (hash.isEmpty())

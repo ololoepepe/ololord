@@ -557,6 +557,54 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>AddFileRoute</name>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Post number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер поста</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Add file</source>
+        <comment>pageTitle</comment>
+        <translation>Добавить файл</translation>
+    </message>
+</context>
+<context>
     <name>BanUserRoute</name>
     <message>
         <source>Invalid board name</source>

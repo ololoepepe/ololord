@@ -288,6 +288,7 @@ OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, con
 OLOLORD_EXPORT bool editAudioTags(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
                                   const QByteArray &password, const QVariantMap &tags, QString *error = 0);
 OLOLORD_EXPORT bool editPost(EditPostParameters &p);
+OLOLORD_EXPORT unsigned int fileCount(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT bool fileExists(const QByteArray &hash, bool *ok = 0);
 OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);
 OLOLORD_EXPORT QList<Post> findPosts(const Search::Query &query, const QString &boardName = QString(), bool *ok = 0,

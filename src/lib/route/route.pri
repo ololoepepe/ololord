@@ -1,6 +1,7 @@
 HEADERS += \
     $${PWD}/abstractroute.h \
     $${PWD}/actionroute.h \
+    $${PWD}/addfileroute.h \
     $${PWD}/banuserroute.h \
     $${PWD}/boardroute.h \
     $${PWD}/homeroute.h \
@@ -14,6 +15,7 @@ HEADERS += \
 SOURCES += \
     $${PWD}/abstractroute.cpp \
     $${PWD}/actionroute.cpp \
+    $${PWD}/addfileroute.cpp \
     $${PWD}/banuserroute.cpp \
     $${PWD}/boardroute.cpp \
     $${PWD}/homeroute.cpp \

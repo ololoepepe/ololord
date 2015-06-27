@@ -178,6 +178,12 @@ struct OLOLORD_EXPORT PostCount
 };
 
 PRAGMA_DB(view object(Post))
+struct OLOLORD_EXPORT PostId
+{
+    quint64 id;
+};
+
+PRAGMA_DB(view object(Post))
 struct OLOLORD_EXPORT PostIdBoardRawText
 {
     quint64 id;

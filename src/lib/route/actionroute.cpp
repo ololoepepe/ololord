@@ -341,12 +341,7 @@ void ActionRoute::handleVote(const QString &action, const Tools::PostParameters 
 
 void ActionRoute::redirect(const QString &path)
 {
-    if (path.isEmpty()) {
-        application.response().set_redirect_header(application.request().http_referer());
-    } else {
-        QString p = "/" + SettingsLocker()->value("Site/path_prefix").toString() + path;
-        application.response().set_redirect_header(Tools::toStd(p));
-    }
+    Tools::redirect(application, path);
 }
 
 void ActionRoute::setCookie(const QString &name, const QString &sourceName, const Tools::PostParameters &params)

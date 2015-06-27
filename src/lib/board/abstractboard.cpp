@@ -520,10 +520,14 @@ void AbstractBoard::addFile(cppcms::application &app)
         Tools::log(app, "add_file", "fail:" + err, logTarget);
         return;
     }
-    if (Controller::shouldBeAjax(app))
+    if (Controller::shouldBeAjax(app)) {
         app.response().out() << "{}";
-    else
-        app.response().set_redirect_header(app.request().http_referer());
+    } else {
+        QString pn = params.value("postNumber");
+        QString path = name() + "/thread/" + QString::number(Database::postThreadNumber(name(), pn.toULongLong()))
+                + ".html#" + pn;
+        Tools::redirect(app, path);
+    }
     Tools::log(app, "add_file", "success", logTarget);
 }
 
