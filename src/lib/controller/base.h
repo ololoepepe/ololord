@@ -56,6 +56,7 @@ public:
     std::string customHeaderContent;
     std::string error413Text;
     std::string favoriteThreadsText;
+    std::string generalSettingsLegendText;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;
@@ -74,6 +75,7 @@ public:
     std::string quickReplyActionGotoThreadText;
     std::string quickReplyActionLabelText;
     std::string removeFromFavoritesText;
+    std::string scriptSettingsLegendText;
     std::string searchButtonText;
     std::string searchInputPlaceholder;
     std::string settingsButtonText;

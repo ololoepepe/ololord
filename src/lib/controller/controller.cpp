@@ -132,6 +132,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
     c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
+    c.generalSettingsLegendText = ts.translate("initBase", "General settings", "generalSettingsLegendText");
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.loggedIn = !Tools::hashpassString(req).isEmpty();
@@ -178,6 +179,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                     "quickReplyActionGotoThreadText");
     c.quickReplyActionLabelText = ts.translate("initBase", "Quick reply outside thread:", "quickReplyActionLabelText");
     c.removeFromFavoritesText = ts.translate("initBase", "Remove from favorites", "removeFromFavoritesText");
+    c.scriptSettingsLegendText = ts.translate("initBase", "Script settings", "scriptSettingsLegendText");
     SettingsLocker s;
     c.searchButtonText = ts.translate("initBase", "Search", "searchButtonText");
     c.searchInputPlaceholder = ts.translate("initBase", "Search: possible +required -excluded",

@@ -2388,6 +2388,16 @@ Your choice:</source>
         <comment>modeLabelText</comment>
         <translation>Режим:</translation>
     </message>
+    <message>
+        <source>General settings</source>
+        <comment>generalSettingsLegendText</comment>
+        <translation>Общие настройки</translation>
+    </message>
+    <message>
+        <source>Script settings</source>
+        <comment>scriptSettingsLegendText</comment>
+        <translation>Настройки скрипта</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
