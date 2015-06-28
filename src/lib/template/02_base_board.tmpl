@@ -225,6 +225,11 @@
             <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
                 <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
             <% end %>
+            <% if ( thread && thread->postLimitReached() ) %>
+                <img src="/<%= sitePathPrefix %>img/postlimit.png" title="<%= postLimitReachedText %>">
+            <% elif ( thread && thread->bumpLimitReached() ) %>
+                <img src="/<%= sitePathPrefix %>img/bumplimit.png" title="<%= bumpLimitReachedText %>">
+            <% end %>
         <% end %>
         <span class="postSubject">
             <% if ( post.subjectIsRaw ) %>
@@ -286,7 +291,7 @@
                 <% end %>
             <% end %>
         <% end %>
-        <% if ( content.mode.name != "ascetic" ) %>
+        <% if ( content.mode.name != "ascetic" && content.postingEnabled && ((thread && !thread->postLimitReached() && thread->postingEnabled) || (!thread && !dynamic_cast<Content::Thread *>(&content)->postLimitReached())) ) %>
             [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>">&gt;&gt;</a>]
         <% end %>
         <span class="postActions">
@@ -431,11 +436,6 @@
         </span>
         <% if ( thread && post.number == post.threadNumber ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
-            <% if ( thread->postLimitReached() ) %>
-                <span name="postLimit" class="postLimitReached"><%= postLimitReachedText %></span>
-            <% elif ( thread->bumpLimitReached() ) %>
-                <span name="bumpLimit" class="bumpLimitReached"><%= bumpLimitReachedText %></span>
-            <% end %>
         <% end %>
     </div>
     <table class="threadPost">

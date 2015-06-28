@@ -12,7 +12,7 @@
 [done] Use AJAX or simple replies depending on situation
 [done] Fix translations
 [done] Implement "ascetic" mode
-* Add bump limit and post limit icons
+[done] Add bump limit and post limit icons
 * Use D-Pointer approach for the lib
 
 * Reload codecha instead of reloading a page

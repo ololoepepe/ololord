@@ -11,8 +11,10 @@
     <% else %>
         [<a href="#top"><%= toTopText %></a>]
     <% end %>
-    [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
-            type="checkbox"><%= autoUpdateText %></input>]
+    <% if ( content.mode.name != "ascetic" ) %>
+        [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
+                type="checkbox"><%= autoUpdateText %></input>]
+    <% end %>
 </div>
 <% end template %>
 
@@ -61,7 +63,7 @@
     </div>
 <% elif ( content.postLimitReached() ) %>
     <div class="theMessage">
-        <h2><%= postLimitReachedText %></h2>
+        <h2 class="postLimitReached"><%= postLimitReachedText %></h2>
     </div>
 <% else %>
     <hr />
@@ -69,7 +71,7 @@
 <% end %>
 <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
     <div class="theMessage">
-        <h3><%= bumpLimitReachedText %></h3>
+        <h3 class="bumpLimitReached"><%= bumpLimitReachedText %></h3>
     </div>
 <% end %>
 <hr />

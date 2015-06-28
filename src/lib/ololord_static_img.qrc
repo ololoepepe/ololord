@@ -274,5 +274,7 @@
         <file>static/img/audio_edit_tags.png</file>
         <file>static/img/storage.png</file>
         <file>static/img/okayface.png</file>
+        <file>static/img/bumplimit.png</file>
+        <file>static/img/postlimit.png</file>
     </qresource>
 </RCC>
