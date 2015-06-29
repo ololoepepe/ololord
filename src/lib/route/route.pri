@@ -6,6 +6,8 @@ HEADERS += \
     $${PWD}/boardroute.h \
     $${PWD}/editaudiotagsroute.h \
     $${PWD}/editpostroute.h \
+    $${PWD}/framelistroute.h \
+    $${PWD}/frameroute.h \
     $${PWD}/homeroute.h \
     $${PWD}/markuproute.h \
     $${PWD}/playlistroute.h \
@@ -22,6 +24,8 @@ SOURCES += \
     $${PWD}/boardroute.cpp \
     $${PWD}/editaudiotagsroute.cpp \
     $${PWD}/editpostroute.cpp \
+    $${PWD}/framelistroute.cpp \
+    $${PWD}/frameroute.cpp \
     $${PWD}/homeroute.cpp \
     $${PWD}/markuproute.cpp \
     $${PWD}/playlistroute.cpp \

@@ -135,6 +135,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                               "draftsByDefaultLabelText");
     c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
+    c.framedVersionText = ts.translate("initBase", "Framed version", "framedVersionText");
     c.generalSettingsLegendText = ts.translate("initBase", "General settings", "generalSettingsLegendText");
     c.localeLabelText = "Language:";
     c.locales = locales;
@@ -174,6 +175,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         c.modes.push_back(m);
     }
     c.pageTitle = Tools::toStd(pageTitle);
+    c.path = const_cast<cppcms::http::request *>(&req)->path_info();
     c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
                                                     "quickReplyActionAppendPostText");
     c.quickReplyActionDoNothingText = ts.translate("initBase", "Leaves page unmodified",

@@ -1,0 +1,20 @@
+<% c++ #include "controller/frame.h" %>
+<% skin my_skin %>
+<% view frame uses Content::Frame extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(0) %>
+    </head>
+    <frameset cols="210,*">
+        <frame src="/<%= sitePathPrefix %>frame_list" name="list" noresize=""
+               scrolling="auto" frameborder="1"></frame>
+        <frame src="<%= sourcePath %>" name="page" noresize=""></frame>
+    </frameset>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

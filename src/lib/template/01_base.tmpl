@@ -106,10 +106,15 @@
         <% end %>
     <% end %>
     <% if ( content.mode.name != "ascetic" ) %>
-        <span class="navbarItem">[<a href="/<%= sitePathPrefix %>playlist"><%= toPlaylistPageText %></a>]</span>
+        <span class="navbarItem">[<a href="/<%= sitePathPrefix %>playlist"
+                                     title="<%= toPlaylistPageText %>"><img src="/<%= sitePathPrefix %>img/playlist.png"></a>]</span>
     <% end %>
-    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>markup"><%= toMarkupPageText %></a>]</span>
-    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"><%= toHomePageText %></a>]</span>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>markup"
+                                 title="<%= toMarkupPageText %>"><img src="/<%= sitePathPrefix %>img/markup.png"></a>]</span>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"
+                                 title="<%= toHomePageText %>"><img src="/<%= sitePathPrefix %>img/homepage.png"></a>]</span>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>frame?path=<%= path %>" target="_top"
+                                 title="<%= framedVersionText %>"><img src="/<%= sitePathPrefix %>img/frame.png"></a>]</span>
 </div>
 <% end template %>
 

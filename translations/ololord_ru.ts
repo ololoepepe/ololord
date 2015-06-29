@@ -887,6 +887,19 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>FrameListRoute</name>
+    <message>
+        <source>Version without frame</source>
+        <comment>normalVersionText</comment>
+        <translation>Версия без фрейма</translation>
+    </message>
+    <message>
+        <source>ololord - (almost) free communication</source>
+        <comment>pageTitle</comment>
+        <translation>ololord - (почти) свободное общение</translation>
+    </message>
+</context>
+<context>
     <name>GoogleRecaptchaCaptchaEngine</name>
     <message>
         <source>Captcha is empty</source>
@@ -1103,6 +1116,14 @@ text</source>
         <source>Download file</source>
         <comment>downloadPlaylistFileText</comment>
         <translation>Скачать файл</translation>
+    </message>
+</context>
+<context>
+    <name>Route</name>
+    <message>
+        <source>ololord - (almost) free communication</source>
+        <comment>pageTitle</comment>
+        <translation>ololord - (почти) свободное общение</translation>
     </message>
 </context>
 <context>
@@ -2402,6 +2423,11 @@ Your choice:</source>
         <source>Mark posts as drafts by default:</source>
         <comment>draftsByDefaultLabelText</comment>
         <translation>По умолчанию отмечать посты как черновики:</translation>
+    </message>
+    <message>
+        <source>Framed version</source>
+        <comment>framedVersionText</comment>
+        <translation>Версия с фреймом</translation>
     </message>
 </context>
 <context>

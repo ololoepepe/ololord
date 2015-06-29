@@ -276,5 +276,10 @@
         <file>static/img/okayface.png</file>
         <file>static/img/bumplimit.png</file>
         <file>static/img/postlimit.png</file>
+        <file>static/img/markup.png</file>
+        <file>static/img/playlist.png</file>
+        <file>static/img/frame.png</file>
+        <file>static/img/homepage.png</file>
+        <file>static/img/noframe.png</file>
     </qresource>
 </RCC>

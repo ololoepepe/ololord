@@ -384,6 +384,12 @@ span.newPostCount {
     width: 70%;
 }
 
+.navbar.navbarFrame {
+    text-align: left;
+    margin-left: 4px;
+    font-size: 0.8em;
+}
+
 .navbarItem {
     white-space: nowrap;
 }

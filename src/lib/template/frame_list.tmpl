@@ -1,0 +1,54 @@
+<% c++ #include "controller/framelist.h" %>
+<% skin my_skin %>
+<% view frame_list uses Content::FrameList extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+    </head>
+        <body>
+            <% include baseTexts() %>
+            <div class="theTitle">
+                <img src="/<%= sitePathPrefix %>favicon.ico" title="<%= pageTitle %>">
+            </div>
+            <br />
+            <div>
+                <div class="navbar navbarFrame">
+                    <% foreach board in boards %>
+                        <% item %>
+                            <span class="navbarItem navbarItemBoard">
+                                [<%= board.name %>]
+                                <a href="/<%= sitePathPrefix %><%= board.name %>" target="page"><%= board.title %></a>
+                            </span>
+                            <br />
+                        <% end %>
+                    <% end %>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <span class="navbarItem">
+                            <img src="/<%= sitePathPrefix %>img/playlist.png">
+                            <a href="/<%= sitePathPrefix %>playlist" target="page"><%= toPlaylistPageText %></a>
+                        </span>
+                        <br />
+                    <% end %>
+                    <span class="navbarItem">
+                        <img src="/<%= sitePathPrefix %>img/markup.png">
+                        <a href="/<%= sitePathPrefix %>markup" target="page"><%= toMarkupPageText %></a>
+                    </span>
+                    <br />
+                    <span class="navbarItem">
+                        <img src="/<%= sitePathPrefix %>img/homepage.png">
+                        <a href="/<%= sitePathPrefix %>" target="page"><%= toHomePageText %></a>
+                    </span>
+                    <span class="navbarItem">
+                        <img src="/<%= sitePathPrefix %>img/noframe.png">
+                        <a href="/<%= sitePathPrefix %>" target="_top"><%= normalVersionText %></a></span>
+                </div>
+            </div>
+            </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

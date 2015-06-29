@@ -58,6 +58,7 @@ public:
     std::string draftsByDefaultLabelText;
     std::string error413Text;
     std::string favoriteThreadsText;
+    std::string framedVersionText;
     std::string generalSettingsLegendText;
     std::string localeLabelText;
     std::list<Locale> locales;
@@ -72,6 +73,7 @@ public:
     std::string modeLabelText;
     std::list<Mode> modes;
     std::string pageTitle;
+    std::string path;
     std::string quickReplyActionAppendPostText;
     std::string quickReplyActionDoNothingText;
     std::string quickReplyActionGotoThreadText;
