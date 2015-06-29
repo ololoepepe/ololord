@@ -2398,6 +2398,11 @@ Your choice:</source>
         <comment>scriptSettingsLegendText</comment>
         <translation>Настройки скрипта</translation>
     </message>
+    <message>
+        <source>Mark posts as drafts by default:</source>
+        <comment>draftsByDefaultLabelText</comment>
+        <translation>По умолчанию отмечать посты как черновики:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -2810,6 +2815,11 @@ Your choice:</source>
         <source>This file exists on server. It will NOT be uploaded, but WILL be copied.</source>
         <comment>fileExistsOnServerText</comment>
         <translation>Этот файл существует на сервере. Он НЕ будет загружен, но БУДЕТ скопирован.</translation>
+    </message>
+    <message>
+        <source>Draft</source>
+        <comment>draftText</comment>
+        <translation>Черновик</translation>
     </message>
 </context>
 <context>

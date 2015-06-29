@@ -14,6 +14,8 @@
 [done] Implement "ascetic" mode
 [done] Add bump limit and post limit icons
 [done] Add framesets for settings groups
+[done] Add draft icon
+[done] Add settings option to make posts drafts by default
 * Use D-Pointer approach for the lib
 
 * Reload codecha instead of reloading a page

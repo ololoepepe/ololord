@@ -230,6 +230,18 @@
                     </td>
                 </tr>
                 <tr>
+                    <td>
+                        <%= draftsByDefaultLabelText %>
+                    </td>
+                    <td>
+                        <% if ( content.draftsByDefault ) %>
+                            <input type="checkbox" name="draftsByDefault" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="draftsByDefault" value="true" />
+                        <% end %>
+                    </td>
+                </tr>
+                <tr>
                     <td colspan="2">
                         <sup><font color="red">*</font></sup> <%= captchaLabelWarningText %>
                     </td>

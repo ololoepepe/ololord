@@ -130,6 +130,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentTime = mreq->cookie_by_name("time").value();
     c.customFooterContent = Tools::toStd(Tools::customContent("footer", ts.locale()));
     c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
+    c.draftsByDefault = !Tools::cookieValue(req, "drafts_by_default").compare("true", Qt::CaseInsensitive);
+    c.draftsByDefaultLabelText = ts.translate("initBase", "Mark posts as drafts by default:",
+                                              "draftsByDefaultLabelText");
     c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.generalSettingsLegendText = ts.translate("initBase", "General settings", "generalSettingsLegendText");
@@ -299,6 +302,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.downloadThreadText = ts.translate("initBaseBoard", "Download all thread files as a .zip archive",
                                         "downloadThreadText");
     c.draftsEnabled = board->draftsEnabled();
+    c.draftText = ts.translate("initBaseBoard", "Draft", "draftText");
     c.editAudioTagsText = ts.translate("initBaseBoard", "Edit audio file tags", "editAudioTagsText");
     c.editPostText = ts.translate("initBaseBoard", "Edit post", "editPostText");
     c.enterPasswordText = ts.translate("initBaseBoard", "If password is empty, current hashpass will be used",

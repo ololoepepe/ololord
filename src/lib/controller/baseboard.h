@@ -126,6 +126,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string deleteThreadText;
     std::string downloadThreadText;
     bool draftsEnabled;
+    std::string draftText;
     std::string editAudioTagsText;
     std::string editPostText;
     std::string enterPasswordText;

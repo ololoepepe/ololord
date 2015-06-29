@@ -94,6 +94,10 @@ lord.showSettings = function() {
         sel = lord.nameOne("quickReplyActionSelect", div);
         var act = sel.options[sel.selectedIndex].value;
         lord.setLocalObject("quickReplyAction", act);
+        var dd = !!lord.nameOne("draftsByDefault", div).checked;
+        lord.setCookie("drafts_by_default", dd, {
+            "expires": lord.Billion, "path": "/"
+        });
         lord.reloadPage();
     });
 };

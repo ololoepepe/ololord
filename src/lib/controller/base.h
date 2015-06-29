@@ -54,6 +54,8 @@ public:
     std::string currentTime;
     std::string customFooterContent;
     std::string customHeaderContent;
+    bool draftsByDefault;
+    std::string draftsByDefaultLabelText;
     std::string error413Text;
     std::string favoriteThreadsText;
     std::string generalSettingsLegendText;

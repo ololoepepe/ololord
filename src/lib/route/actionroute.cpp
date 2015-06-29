@@ -154,6 +154,7 @@ void ActionRoute::handleChangeSettings(const QString &action, const Tools::PostP
     setCookie("style", "styleChangeSelect", params);
     setCookie("time", "timeChangeSelect", params);
     setCookie("captchaEngine", "captchaEngineSelect", params);
+    setCookie("drafts_by_default", "draftsByDefault", params);
     redirect("settings");
     Tools::log(application, "action/" + action, "success");
 }

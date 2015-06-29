@@ -231,6 +231,9 @@
                 <img src="/<%= sitePathPrefix %>img/bumplimit.png" title="<%= bumpLimitReachedText %>">
             <% end %>
         <% end %>
+        <% if ( post.draft ) %>
+            <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= draftText %>" />
+        <% end %>
         <span class="postSubject">
             <% if ( post.subjectIsRaw ) %>
                 <%= post.subject | raw %>
@@ -617,7 +620,11 @@
                         <b><%= postFormLabelDraft %></b>
                     </td>
                     <td class="postformField">
-                        <input type="checkbox" name="draft" value="true" />
+                        <% if ( content.draftsByDefault ) %>
+                            <input type="checkbox" name="draft" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="draft" value="true" />
+                        <% end %>
                     </td>
                 </tr>
             <% end %>
