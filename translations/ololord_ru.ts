@@ -900,6 +900,14 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>FrameRoute</name>
+    <message>
+        <source>ololord - (almost) free communication</source>
+        <comment>pageTitle</comment>
+        <translation>ololord - (почти) свободное общение</translation>
+    </message>
+</context>
+<context>
     <name>GoogleRecaptchaCaptchaEngine</name>
     <message>
         <source>Captcha is empty</source>
@@ -1116,14 +1124,6 @@ text</source>
         <source>Download file</source>
         <comment>downloadPlaylistFileText</comment>
         <translation>Скачать файл</translation>
-    </message>
-</context>
-<context>
-    <name>Route</name>
-    <message>
-        <source>ololord - (almost) free communication</source>
-        <comment>pageTitle</comment>
-        <translation>ololord - (почти) свободное общение</translation>
     </message>
 </context>
 <context>

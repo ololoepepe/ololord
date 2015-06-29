@@ -31,7 +31,7 @@ void FrameRoute::handle()
     Content::Frame c;
     TranslatorQt tq(application.request());
     Controller::initBase(c, application.request(),
-                         tq.translate("Route", "ololord - (almost) free communication", "pageTitle"));
+                         tq.translate("FrameRoute", "ololord - (almost) free communication", "pageTitle"));
     c.sourcePath = Tools::toStd(path);
     Tools::render(application, "frame", c);
     Tools::log(application, "frame", "success", logTarget);
