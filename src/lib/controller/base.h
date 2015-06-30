@@ -88,7 +88,9 @@ public:
     std::string settingsButtonText;
     std::string settingsDialogTitle;
     std::string showFavoriteText;
+    std::string showNewPostsLabelText;
     std::string showPasswordText;
+    std::string showYoutubeVideoTitleLabelText;
     std::string siteDomain;
     std::string sitePathPrefix;
     std::string siteProtocol;

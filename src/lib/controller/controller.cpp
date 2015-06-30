@@ -195,7 +195,10 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.settingsButtonText = ts.translate("initBase", "Settings", "settingsButtonText");
     c.settingsDialogTitle = ts.translate("initBase", "Settings", "settingsDialogTitle");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
+    c.showNewPostsLabelText = ts.translate("initBase", "Show new posts:", "showNewPostsLabelText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
+    c.showYoutubeVideoTitleLabelText = ts.translate("initBase", "Show titles of YouTube videos:",
+                                                    "showYoutubeVideoTitleLabelText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());

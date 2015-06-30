@@ -2434,6 +2434,16 @@ Your choice:</source>
         <comment>hiddenBoardsLabelText</comment>
         <translation>Скрыть доски:</translation>
     </message>
+    <message>
+        <source>Show new posts:</source>
+        <comment>showNewPostsLabelText</comment>
+        <translation>Показывать новые посты:</translation>
+    </message>
+    <message>
+        <source>Show titles of YouTube videos:</source>
+        <comment>showYoutubeVideoTitleLabelText</comment>
+        <translation>Показывать названия видео с YouTube:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

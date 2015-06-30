@@ -64,6 +64,10 @@ lord.showSettings = function() {
     var sel = lord.nameOne("quickReplyActionSelect", div);
     var act = lord.getLocalObject("quickReplyAction", "goto_thread");
     lord.queryOne("[value='" + act + "']", sel).selected = true;
+    var showNewPosts = lord.nameOne("showNewPosts", div);
+    showNewPosts.checked = lord.getLocalObject("showNewPosts", true);
+    var showYoutubeVideosTitles = lord.nameOne("showYoutubeVideosTitles", div);
+    showYoutubeVideosTitles.checked = lord.getLocalObject("showYoutubeVideosTitles", true);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
         var sel = lord.nameOne("modeChangeSelect", div);
         var md = sel.options[sel.selectedIndex].value;
@@ -91,9 +95,6 @@ lord.showSettings = function() {
         lord.setCookie("captchaEngine", ce, {
             "expires": lord.Billion, "path": "/"
         });
-        sel = lord.nameOne("quickReplyActionSelect", div);
-        var act = sel.options[sel.selectedIndex].value;
-        lord.setLocalObject("quickReplyAction", act);
         var dd = !!lord.nameOne("draftsByDefault", div).checked;
         lord.setCookie("drafts_by_default", dd, {
             "expires": lord.Billion, "path": "/"
@@ -106,6 +107,11 @@ lord.showSettings = function() {
         lord.setCookie("hiddenBoards", hiddenBoards.join("|"), {
             "expires": lord.Billion, "path": "/"
         });
+        sel = lord.nameOne("quickReplyActionSelect", div);
+        var act = sel.options[sel.selectedIndex].value;
+        lord.setLocalObject("quickReplyAction", act);
+        lord.setLocalObject("showNewPosts", !!showNewPosts.checked);
+        lord.setLocalObject("showYoutubeVideosTitles", !!showYoutubeVideosTitles.checked);
         lord.reloadPage();
     });
 };
@@ -224,9 +230,7 @@ lord.checkFavoriteThreads = function() {
     }, 5 * lord.Second);
 };
 
-lord.initializeOnLoadSettings = function() {
-    if (lord.getCookie("show_tripcode") === "true")
-        lord.id("showTripcodeCheckbox").checked = true;
+lord.showNewPosts = function() {
     var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
     var currentBoardName = lord.text("currentBoardName");
     var numbers = {};
@@ -259,6 +263,13 @@ lord.initializeOnLoadSettings = function() {
             });
         });
     });
+};
+
+lord.initializeOnLoadSettings = function() {
+    if (lord.getCookie("show_tripcode") === "true")
+        lord.id("showTripcodeCheckbox").checked = true;
+    if (lord.getLocalObject("showNewPosts", true))
+        lord.showNewPosts();
 };
 
 window.addEventListener("load", function load() {

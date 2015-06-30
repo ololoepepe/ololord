@@ -19,6 +19,7 @@
 [done] Add playlist, markup and homepage icons to navbar
 [done] Add framed version
 [done] Add ability to hide selected boards
+[done] Add ability to set whether to show new posts and whether to show YouTube videos titles
 * Use D-Pointer approach for the lib
 
 * Reload codecha instead of reloading a page

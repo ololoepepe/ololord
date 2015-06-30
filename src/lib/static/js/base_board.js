@@ -746,7 +746,8 @@ lord.tryHidePost = function(post, list) {
 lord.postNodeInserted = function(post) {
     if (!post)
         return;
-    lord.addYoutubeButton(post);
+    if (lord.getLocalObject("showYoutubeVideosTitles", true))
+        lord.addYoutubeButton(post);
     lord.tryHidePost(post);
     var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
     lastPostNumbers[lord.text("currentBoardName")] = +post.id.replace("post", "");
@@ -1850,7 +1851,8 @@ lord.initializeOnLoadBaseBoard = function() {
     var list = lord.getLocalObject("hiddenPosts", {});
     var posts = lord.query(".post, .opPost");
     posts.forEach(function(post) {
-        lord.addYoutubeButton(post);
+        if (lord.getLocalObject("showYoutubeVideosTitles", true))
+            lord.addYoutubeButton(post);
         lord.tryHidePost(post, list);
     });
     if (!lord.text("currentThreadNumber")) {
