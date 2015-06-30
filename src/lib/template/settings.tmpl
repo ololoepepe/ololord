@@ -114,6 +114,27 @@
                             </td>
                         </tr>
                         <tr>
+                            <td>
+                                <%= hiddenBoardsLabelText %>
+                            </td>
+                            <td>
+                                <div class="scrollAreaH60">
+                                    <% foreach board in boards %>
+                                        <% item %>
+                                            <% if ( content.hiddenBoards.count(board.name) ) %>
+                                                <input type="checkbox" name="board_<%= board.name %>" value="true"
+                                                       checked="true">[<%= board.name %>] <%= board.title %></input>
+                                            <% else %>
+                                                <input type="checkbox" name="board_<%= board.name %>"
+                                                       value="true">[<%= board.name %>] <%= board.title %></input>
+                                            <% end %>
+                                            <br />
+                                        <% end %>
+                                    <% end %>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
                             <td colspan="2">
                                 <sup><font color="red">*</font></sup> <%= captchaLabelWarningText %>
                             </td>

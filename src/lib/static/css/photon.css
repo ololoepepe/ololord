@@ -123,6 +123,12 @@ hr {
     display: inline;
 }
 
+.scrollAreaH60 {
+    overflow: auto;
+    max-height: 60px;
+    border: 1px solid #CCCCCC;
+}
+
 /*
     Ban
 */

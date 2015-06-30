@@ -18,6 +18,7 @@
 [done] Add settings option to make posts drafts by default
 [done] Add playlist, markup and homepage icons to navbar
 [done] Add framed version
+[done] Add ability to hide selected boards
 * Use D-Pointer approach for the lib
 
 * Reload codecha instead of reloading a page

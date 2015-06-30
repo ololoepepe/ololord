@@ -98,6 +98,14 @@ lord.showSettings = function() {
         lord.setCookie("drafts_by_default", dd, {
             "expires": lord.Billion, "path": "/"
         });
+        var hiddenBoards = [];
+        lord.query("input", lord.nameOne("hiddenBoards", div)).forEach(function(inp) {
+            if (!!inp.checked)
+                hiddenBoards.push(inp.name.replace("board_", ""));
+        });
+        lord.setCookie("hiddenBoards", hiddenBoards.join("|"), {
+            "expires": lord.Billion, "path": "/"
+        });
         lord.reloadPage();
     });
 };

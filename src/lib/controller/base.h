@@ -7,6 +7,7 @@
 #include <cppcms/view.h>
 
 #include <list>
+#include <set>
 #include <string>
 
 namespace Content
@@ -60,6 +61,8 @@ public:
     std::string favoriteThreadsText;
     std::string framedVersionText;
     std::string generalSettingsLegendText;
+    std::set<std::string> hiddenBoards;
+    std::string hiddenBoardsLabelText;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;

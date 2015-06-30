@@ -2429,6 +2429,11 @@ Your choice:</source>
         <comment>framedVersionText</comment>
         <translation>Версия с фреймом</translation>
     </message>
+    <message>
+        <source>Hide boards:</source>
+        <comment>hiddenBoardsLabelText</comment>
+        <translation>Скрыть доски:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

@@ -35,6 +35,7 @@
 #include <QTemporaryFile>
 #include <QTextCodec>
 #include <QTime>
+#include <QUrl>
 #include <QVariant>
 #include <QVariantList>
 #include <QVariantMap>
@@ -282,7 +283,8 @@ QString cookieValue(const cppcms::http::request &req, const QString &name)
 {
     if (name.isEmpty())
         return "";
-    return fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name(toStd(name)).value());
+    QByteArray ba = const_cast<cppcms::http::request *>(&req)->cookie_by_name(toStd(name)).value().data();
+    return QUrl::fromPercentEncoding(ba);
 }
 
 QString countryCode(const QString &ip)

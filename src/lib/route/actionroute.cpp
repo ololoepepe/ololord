@@ -155,6 +155,14 @@ void ActionRoute::handleChangeSettings(const QString &action, const Tools::PostP
     setCookie("time", "timeChangeSelect", params);
     setCookie("captchaEngine", "captchaEngineSelect", params);
     setCookie("drafts_by_default", "draftsByDefault", params);
+    QStringList hiddenBoards;
+    foreach (const QString &key, params.keys()) {
+        if (!key.startsWith("board_") || params.value(key).compare("true", Qt::CaseInsensitive))
+            continue;
+        hiddenBoards += key.mid(6);
+    }
+    application.response().set_cookie(cppcms::http::cookie("hiddenBoards", Tools::toStd(hiddenBoards.join("|")),
+                                                           UINT_MAX, "/"));
     redirect("settings");
     Tools::log(application, "action/" + action, "success");
 }

@@ -137,6 +137,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.framedVersionText = ts.translate("initBase", "Framed version", "framedVersionText");
     c.generalSettingsLegendText = ts.translate("initBase", "General settings", "generalSettingsLegendText");
+    foreach (const QString &bn, Tools::cookieValue(req, "hiddenBoards").split('|', QString::SkipEmptyParts))
+        c.hiddenBoards.insert(Tools::toStd(bn));
+    c.hiddenBoardsLabelText = ts.translate("initBase", "Hide boards:", "hiddenBoardsLabelText");
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.loggedIn = !Tools::hashpassString(req).isEmpty();
