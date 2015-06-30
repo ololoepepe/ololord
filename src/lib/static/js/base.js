@@ -68,6 +68,10 @@ lord.showSettings = function() {
     showNewPosts.checked = lord.getLocalObject("showNewPosts", true);
     var showYoutubeVideosTitles = lord.nameOne("showYoutubeVideosTitles", div);
     showYoutubeVideosTitles.checked = lord.getLocalObject("showYoutubeVideosTitles", true);
+    var checkFileExistence = lord.nameOne("checkFileExistence", div);
+    checkFileExistence.checked = lord.getLocalObject("checkFileExistence", true);
+    var showAttachedFilePreview = lord.nameOne("showAttachedFilePreview", div);
+    showAttachedFilePreview.checked = lord.getLocalObject("showAttachedFilePreview", true);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
         var sel = lord.nameOne("modeChangeSelect", div);
         var md = sel.options[sel.selectedIndex].value;
@@ -112,6 +116,8 @@ lord.showSettings = function() {
         lord.setLocalObject("quickReplyAction", act);
         lord.setLocalObject("showNewPosts", !!showNewPosts.checked);
         lord.setLocalObject("showYoutubeVideosTitles", !!showYoutubeVideosTitles.checked);
+        lord.setLocalObject("checkFileExistence", !!checkFileExistence.checked);
+        lord.setLocalObject("showAttachedFilePreview", !!showAttachedFilePreview.checked);
         lord.reloadPage();
     });
 };

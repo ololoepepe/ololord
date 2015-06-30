@@ -2444,6 +2444,16 @@ Your choice:</source>
         <comment>showYoutubeVideoTitleLabelText</comment>
         <translation>Показывать названия видео с YouTube:</translation>
     </message>
+    <message>
+        <source>Check if attached file exists on server:</source>
+        <comment>checkFileExistenceLabelText</comment>
+        <translation>Проверять, есть ли прикрепленный файл на сервере:</translation>
+    </message>
+    <message>
+        <source>Show previews when attaching files:</source>
+        <comment>showAttachedFilePreviewLabelText</comment>
+        <translation>Показывать превью прикрепляемых файлов:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

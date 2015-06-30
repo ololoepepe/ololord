@@ -48,6 +48,7 @@ public:
     std::list<CaptchaEngine> captchaEngines;
     std::string captchaLabelText;
     std::string captchaLabelWarningText;
+    std::string checkFileExistenceLabelText;
     std::string closeButtonText;
     std::string confirmButtonText;
     CaptchaEngine currentCaptchaEngine;
@@ -87,6 +88,7 @@ public:
     std::string searchInputPlaceholder;
     std::string settingsButtonText;
     std::string settingsDialogTitle;
+    std::string showAttachedFilePreviewLabelText;
     std::string showFavoriteText;
     std::string showNewPostsLabelText;
     std::string showPasswordText;

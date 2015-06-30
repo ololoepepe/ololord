@@ -1393,13 +1393,20 @@ lord.fileAddedCommon = function(div, file) {
                 delete div.droppedFile;
         });
     };
-    binaryReader.readAsArrayBuffer(file);
-    if (!!file.name.match(/\.(jpe?g|png|gif)$/i)) {
+    if (lord.getLocalObject("checkFileExistence", true))
+        binaryReader.readAsArrayBuffer(file);
+    if (!!file.name.match(/\.(jpe?g|png|gif)$/i) && lord.getLocalObject("showAttachedFilePreview", true)) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function(e) {
             div.querySelector("img").src = e.target.result;
         };
+    } else if (!!file.name.match(/\.(jpe?g)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/jpeg_file.png";
+    } else if (!!file.name.match(/\.(png)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/png_file.png";
+    } else if (!!file.name.match(/\.(gif)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/gif_file.png";
     } else if (!!file.name.match(/\.(mp3)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/mp3_file.png";
     } else if (!!file.name.match(/\.(mp4)$/i)) {

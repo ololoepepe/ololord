@@ -281,5 +281,8 @@
         <file>static/img/frame.png</file>
         <file>static/img/homepage.png</file>
         <file>static/img/noframe.png</file>
+        <file>static/img/gif_file.png</file>
+        <file>static/img/jpeg_file.png</file>
+        <file>static/img/png_file.png</file>
     </qresource>
 </RCC>

@@ -123,6 +123,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         c.currentCaptchaEngine.title = eilist.first().title;
     }
     c.cancelButtonText = ts.translate("initBase", "Cancel", "cancelButtonText");
+    c.checkFileExistenceLabelText = ts.translate("initBase", "Check if attached file exists on server:",
+                                                 "checkFileExistenceLabelText");
     c.closeButtonText = ts.translate("initBase", "Close", "closeButtonText");
     c.confirmButtonText = ts.translate("initBase", "Confirm", "confirmButtonText");
     c.currentLocale = toWithLocale(ts.locale());
@@ -194,6 +196,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                             "searchInputPlaceholder");
     c.settingsButtonText = ts.translate("initBase", "Settings", "settingsButtonText");
     c.settingsDialogTitle = ts.translate("initBase", "Settings", "settingsDialogTitle");
+    c.showAttachedFilePreviewLabelText = ts.translate("initBase", "Show previews when attaching files:",
+                                                      "showAttachedFilePreviewLabelText");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
     c.showNewPostsLabelText = ts.translate("initBase", "Show new posts:", "showNewPostsLabelText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
