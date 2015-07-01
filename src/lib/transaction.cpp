@@ -6,8 +6,6 @@
 
 #include <QDebug>
 #include <QMap>
-#include <QMutex>
-#include <QMutexLocker>
 #include <QScopedPointer>
 #include <QString>
 
@@ -24,22 +22,13 @@ class Hack : public odb::transaction
 {
 public:
     int counter;
-private:
-    static QMutex mutex;
 public:
     explicit Hack(odb::transaction_impl *impl) :
         odb::transaction(impl)
     {
-        mutex.lock();
         counter = 1;
     }
-    ~Hack()
-    {
-        mutex.unlock();
-    }
 };
-
-QMutex Hack::mutex;
 
 Transaction::Transaction(bool commitOnDestruction) :
     CommitOnDestruction(commitOnDestruction)
