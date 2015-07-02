@@ -284,5 +284,9 @@
         <file>static/img/gif_file.png</file>
         <file>static/img/jpeg_file.png</file>
         <file>static/img/png_file.png</file>
+        <file>static/img/admin.png</file>
+        <file>static/img/moder.png</file>
+        <file>static/img/user.png</file>
+        <file>static/img/user_registered.png</file>
     </qresource>
 </RCC>

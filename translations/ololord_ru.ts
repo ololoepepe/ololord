@@ -2245,31 +2245,6 @@ Your choice:</source>
         <translation>Залогиниться</translation>
     </message>
     <message>
-        <source>Logged in, but not registered</source>
-        <comment>loginMessageWarning</comment>
-        <translation>Залогинен, но не зарегистрирован</translation>
-    </message>
-    <message>
-        <source>Registered and logged in</source>
-        <comment>loginMessageOk</comment>
-        <translation>Зарегистрирован и залогинен</translation>
-    </message>
-    <message>
-        <source>admin</source>
-        <comment>loginMessageOk</comment>
-        <translation>админ</translation>
-    </message>
-    <message>
-        <source>moder</source>
-        <comment>loginMessageOk</comment>
-        <translation>модер</translation>
-    </message>
-    <message>
-        <source>user</source>
-        <comment>loginMessageOk</comment>
-        <translation>юзер</translation>
-    </message>
-    <message>
         <source>Password/hashpass</source>
         <comment>PlaceholderText</comment>
         <translation>Пароль/хешпасс</translation>
@@ -2453,6 +2428,31 @@ Your choice:</source>
         <source>Show previews when attaching files:</source>
         <comment>showAttachedFilePreviewLabelText</comment>
         <translation>Показывать превью прикрепляемых файлов:</translation>
+    </message>
+    <message>
+        <source>Logged in, but not registered</source>
+        <comment>loginMessageText</comment>
+        <translation>Залогинен, но не зарегистрирован</translation>
+    </message>
+    <message>
+        <source>Registered and logged in</source>
+        <comment>loginMessageText</comment>
+        <translation>Зарегистрирован и залогинен</translation>
+    </message>
+    <message>
+        <source>admin</source>
+        <comment>loginMessageText</comment>
+        <translation>админ</translation>
+    </message>
+    <message>
+        <source>moder</source>
+        <comment>loginMessageText</comment>
+        <translation>модер</translation>
+    </message>
+    <message>
+        <source>user</source>
+        <comment>loginMessageText</comment>
+        <translation>юзер</translation>
     </message>
 </context>
 <context>

@@ -68,9 +68,9 @@ public:
     std::list<Locale> locales;
     bool loggedIn;
     std::string loginButtonText;
+    std::string loginIconName;
     std::string loginLabelText;
-    std::string loginMessageOk;
-    std::string loginMessageWarning;
+    std::string loginMessageText;
     std::string loginPlaceholderText;
     unsigned int maxSearchQueryLength;
     Mode mode;

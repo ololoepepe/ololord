@@ -88,10 +88,8 @@
                 </form>
             <% end %>
         <% end %>
-        <% if ( !content.loginMessageWarning.empty() ) %>
-            <span class="loginMessageWarning"><%= loginMessageWarning %></span>
-        <% elif ( !content.loginMessageOk.empty() ) %>
-            <span class="loginMessageOk"><%= loginMessageOk %></span>
+        <% if ( !content.loginMessageText.empty() ) %>
+            <img src="/<%= sitePathPrefix %>img/<%= loginIconName %>" title="<%= loginMessageText %>">
         <% end %>
     </span>
 </div>

@@ -23,6 +23,7 @@
 [done] Add ability to disable checking existence of a file on server
 [done] Add ability to disable loading previews of attached image files
 [done] Allow multiple simultaneous transactions
+[done] Replace login info text with icon
 * Use D-Pointer approach for the lib
 
 * Reload codecha instead of reloading a page

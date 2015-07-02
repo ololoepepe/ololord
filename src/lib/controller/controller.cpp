@@ -151,15 +151,20 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     if (c.loggedIn) {
         int lvl = Database::registeredUserLevel(req);
         if (lvl < 0) {
-            c.loginMessageWarning = ts.translate("initBase", "Logged in, but not registered", "loginMessageWarning");
+            c.loginIconName = "user.png";
+            c.loginMessageText = ts.translate("initBase", "Logged in, but not registered", "loginMessageText");
         } else {
-            c.loginMessageOk = ts.translate("initBase", "Registered and logged in", "loginMessageOk");
-            if (lvl >= RegisteredUser::AdminLevel)
-                c.loginMessageOk += " (" + ts.translate("initBase", "admin", "loginMessageOk") + ")";
-            else if (lvl >= RegisteredUser::ModerLevel)
-                c.loginMessageOk += " (" + ts.translate("initBase", "moder", "loginMessageOk") + ")";
-            else if (lvl >= RegisteredUser::ModerLevel)
-                c.loginMessageOk += " (" + ts.translate("initBase", "user", "loginMessageOk") + ")";
+            c.loginMessageText = ts.translate("initBase", "Registered and logged in", "loginMessageText");
+            if (lvl >= RegisteredUser::AdminLevel) {
+                c.loginIconName = "admin.png";
+                c.loginMessageText += " (" + ts.translate("initBase", "admin", "loginMessageText") + ")";
+            } else if (lvl >= RegisteredUser::ModerLevel) {
+                c.loginIconName = "moder.png";
+                c.loginMessageText += " (" + ts.translate("initBase", "moder", "loginMessageText") + ")";
+            } else if (lvl >= RegisteredUser::ModerLevel) {
+                c.loginIconName = "user_registered.png";
+                c.loginMessageText += " (" + ts.translate("initBase", "user", "loginMessageText") + ")";
+            }
         }
     }
     c.loginPlaceholderText = ts.translate("initBase", "Password/hashpass", "PlaceholderText");

@@ -630,14 +630,6 @@ span.newPostCount {
     white-spcace: nowrap;
 }
 
-.loginMessageWarning {
-    color: orange;
-}
-
-.loginMessageOk {
-    color: green;
-}
-
 /*
     Thread
 */
