@@ -2245,11 +2245,6 @@ Your choice:</source>
         <translation>Залогиниться</translation>
     </message>
     <message>
-        <source>Password/hashpass</source>
-        <comment>PlaceholderText</comment>
-        <translation>Пароль/хешпасс</translation>
-    </message>
-    <message>
         <source>Cancel</source>
         <comment>cancelButtonText</comment>
         <translation>Отмена</translation>
@@ -2453,6 +2448,24 @@ Your choice:</source>
         <source>user</source>
         <comment>loginMessageText</comment>
         <translation>юзер</translation>
+    </message>
+    <message>
+        <source>Password/hashpass</source>
+        <comment>loginPlaceholderText</comment>
+        <translation>Пароль/хешпасс</translation>
+    </message>
+    <message>
+        <source>&quot;Login&quot;, you say? On an imageboard? I am out!
+
+Please, wait a sec. The login systyem does NOT store any data on the server. It only stores a cookie on your PC to allow post editing, deleting, etc. without entering password every time, and nothing else.
+
+Well, actually, the admin may register someone manually (if he is a fag), but there is no way to register through the web.</source>
+        <comment>loginSystemDescriptionText</comment>
+        <translation>&quot;Залогиниться&quot;, говоришь? На имиджборде? Я сваливаю!
+
+Погоди секундочку. Система логина НЕ СОХРАНЯЕТ никаких данных на сервере. Она только хранит cookie на вашем ПК, что позволяет редактировать, удалять посты и т.д. без ввода пароля каждый раз, и ничего более.
+
+Ну, на самом деле админ может кого-то зарегистрировать вручную (если он мудак), но способ зарегистрироваться через веб-интерфейс отсутствует.</translation>
     </message>
 </context>
 <context>
@@ -3291,6 +3304,12 @@ The default is -1000 (no offset).</source>
         <translation>Смещение временной зоны в минутах.
 Значение должно быть в пределах от -720 до 840.
 По умолчанию -1000 (без смещения).</translation>
+    </message>
+    <message>
+        <source>convert utility command from ImageMagick (possibly full path).
+The default is convert (UNIX) or convert.exe (Windows).</source>
+        <translation>Команда вызова утилиты convert из пакета ImageMagick (возможно, полный путь).
+По умолчанию convert (UNIX) или convert.exe (Windows).</translation>
     </message>
 </context>
 <context>

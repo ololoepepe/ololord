@@ -167,7 +167,15 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
             }
         }
     }
-    c.loginPlaceholderText = ts.translate("initBase", "Password/hashpass", "PlaceholderText");
+    c.loginPlaceholderText = ts.translate("initBase", "Password/hashpass", "loginPlaceholderText");
+    c.loginSystemDescriptionText = ts.translate("initBase", "\"Login\", you say? On an imageboard? I am out!\n\n"
+                                                "Please, wait a sec. The login systyem does NOT store any data on the "
+                                                "server. It only stores a cookie on your PC to allow post editing, "
+                                                "deleting, etc. without entering password every time, and nothing "
+                                                "else.\n\n"
+                                                "Well, actually, the admin may register someone manually (if he is a "
+                                                "fag), but there is no way to register through the web.",
+                                                "loginSystemDescriptionText");
     c.maxSearchQueryLength = 150;
     c.mode.name = Tools::toStd(Tools::cookieValue(req, "mode"));
     if (c.mode.name.empty())

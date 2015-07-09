@@ -72,6 +72,7 @@ public:
     std::string loginLabelText;
     std::string loginMessageText;
     std::string loginPlaceholderText;
+    std::string loginSystemDescriptionText;
     unsigned int maxSearchQueryLength;
     Mode mode;
     std::string modeLabelText;

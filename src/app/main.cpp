@@ -884,10 +884,14 @@ void initSettings()
                                                "  2 - log to file only\n"
                                                "  3 and more - log to console and file\n"
                                                "  The default is 2."));
-    nn = new BSettingsNode(QVariant::String, "ffmpeg_commande", n);
+    nn = new BSettingsNode(QVariant::String, "convert_command", n);
+    nn->setDescription(BTranslation::translate("initSettings", "convert utility command from ImageMagick (possibly "
+                                               "full path).\n"
+                                               "The default is convert (UNIX) or convert.exe (Windows)."));
+    nn = new BSettingsNode(QVariant::String, "ffmpeg_command", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffmpeg utility command (possibly full path).\n"
                                                "The default is ffmpeg (UNIX) or ffmpeg.exe (Windows)."));
-    nn = new BSettingsNode(QVariant::String, "ffprobe_commande", n);
+    nn = new BSettingsNode(QVariant::String, "ffprobe_command", n);
     nn->setDescription(BTranslation::translate("initSettings", "ffprobe utility command (possibly full path).\n"
                                                "The default is ffprobe (UNIX) or ffprobe.exe (Windows)."));
     nn = new BSettingsNode(QVariant::String, "file_command", n);

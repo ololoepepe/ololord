@@ -194,8 +194,8 @@ void AbstractBoard::FileTransaction::setMetaData(const QVariant &metaData)
 QMap<QString, AbstractBoard *> AbstractBoard::boards;
 bool AbstractBoard::boardsInitialized = false;
 QReadWriteLock AbstractBoard::boardsLock(QReadWriteLock::Recursive);
-const QString AbstractBoard::defaultFileTypes = "audio/mpeg,audio/ogg,audio/wav,image/gif,image/jpeg,image/png,"
-                                                "video/mp4,video/ogg,video/webm";
+const QString AbstractBoard::defaultFileTypes = "application/pdf,audio/mpeg,audio/ogg,audio/wav,image/gif,image/jpeg,"
+                                                "image/png,video/mp4,video/ogg,video/webm";
 bool AbstractBoard::globalCaptchaQuotaModified = false;
 QMutex AbstractBoard::globalCaptchaQuotaMutex(QMutex::Recursive);
 
@@ -1099,14 +1099,17 @@ QStringList AbstractBoard::rules(const QLocale &l) const
 bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
 {
 #if defined(Q_OS_WIN)
+    static const QString ConvertDefault = "convert.exe";
     static const QString FfmpegDefault = "ffmpeg.exe";
     static const QString FfprobeDefault = "ffprobe.exe";
 #elif defined(Q_OS_UNIX)
+    static const QString ConvertDefault = "convert";
     static const QString FfmpegDefault = "ffmpeg";
     static const QString FfprobeDefault = "ffprobe";
 #endif
     typedef QMap<QString, QString> StringMap;
     init_once(StringMap, suffixes, StringMap()) {
+        suffixes.insert("application/pdf", "pdf");
         suffixes.insert("audio/mpeg", "mpeg");
         suffixes.insert("audio/ogg", "ogg");
         suffixes.insert("audio/wav", "wav");
@@ -1118,6 +1121,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         suffixes.insert("video/webm", "webm");
     }
     init_once(StringMap, formatsForSuffixes, StringMap()) {
+        formatsForSuffixes.insert("pdf", "application/pdf");
         formatsForSuffixes.insert("mpeg", "audio/mpeg");
         formatsForSuffixes.insert("mp1", "audio/mpeg");
         formatsForSuffixes.insert("m1a", "audio/mpeg");
@@ -1157,6 +1161,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         return false;
     QImage img;
     SettingsLocker sl;
+    QString convert = sl->value("System/convert_command", ConvertDefault).toString();
     QString ffmpeg = sl->value("System/ffmpeg_command", FfmpegDefault).toString();
     QString ffprobe = sl->value("System/ffprobe_command", FfprobeDefault).toString();
     QStringList ffprobeArgs = QStringList() << "-i" << QDir::toNativeSeparators(sfn);
@@ -1214,6 +1219,22 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         }
         if (!m.isEmpty())
             ft.setMetaData(m);
+    } else if ("application/pdf" == mimeType) {
+        QStringList args = QStringList() << "-density" << "300" << (QDir::toNativeSeparators(sfn) + "[0]")
+                                         << "-quality" << "100" << "+adjoin" << (dt + "s.png");
+        ft.setThumbFile(path + "/" + dt + "s.png");
+        if (!BeQt::execProcess(path, convert, args, BeQt::Second, 5 * BeQt::Second)) {
+            if (!img.load(path + "/" + dt + "s.png"))
+                return false;
+            scaleThumbnail(img, ft);
+        } else {
+            img = generateRandomImage(hash, mimeType);
+            if (img.isNull())
+                return false;
+            ft.setThumbFileSize(200, 200);
+        }
+        if (!img.save(path + "/" + dt + "s.png", "png"))
+            return false;
     } else {
         QByteArray data = f.data;
         QBuffer buff(&data);

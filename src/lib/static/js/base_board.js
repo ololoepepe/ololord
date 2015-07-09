@@ -1417,6 +1417,8 @@ lord.fileAddedCommon = function(div, file) {
         div.querySelector("img").src = "/" + prefix + "img/webm_file.png";
     } else if (!!file.name.match(/\.(wav)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/wav_file.png";
+    } else if (!!file.name.match(/\.(pdf)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/pdf_file.png";
     } else {
         div.querySelector("img").src = "/" + prefix + "img/file.png";
     }
