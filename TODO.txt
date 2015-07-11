@@ -1,33 +1,3 @@
-[done] Implement "uptime" command
-[done] Fix post number links
-[done] Remove minification feature
-[done] Add error 413 description
-[done] Improve vote system
-[done] Change strikeout markup from double hyphen to triple hyphen
-[done] Replace two consequent hyphen by en-dash (shorter) and four consequent hyphens by em-dash (longer)
-[done] Show if file exists on server when it is uploaded
-[done] Enable access to joky boards
-[done] Fix WakabaMark markup
-[done] Add /po/ board
-[done] Use AJAX or simple replies depending on situation
-[done] Fix translations
-[done] Implement "ascetic" mode
-[done] Add bump limit and post limit icons
-[done] Add framesets for settings groups
-[done] Add draft icon
-[done] Add settings option to make posts drafts by default
-[done] Add playlist, markup and homepage icons to navbar
-[done] Add framed version
-[done] Add ability to hide selected boards
-[done] Add ability to set whether to show new posts and whether to show YouTube videos titles
-[done] Add ability to disable checking existence of a file on server
-[done] Add ability to disable loading previews of attached image files
-[done] Allow multiple simultaneous transactions
-[done] Replace login info text with icon
-[done] Add PDF support
-[done] Add login system description
-[done] Update README
-* Use D-Pointer approach for the lib
-
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
+* Use D-Pointer approach for the lib
