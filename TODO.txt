@@ -1,3 +1,5 @@
+[done] Fix /rpg/ JS
+
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Use D-Pointer approach for the lib

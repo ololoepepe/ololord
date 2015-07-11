@@ -190,7 +190,7 @@ lord.removeVoteVariant = function(div) {
     var count = lord.nameOne("voteVariantCount", parent.parentNode);
     var i = 0;
     count.value = i;
-    lord.query("div > input", div).forEach(function(inp) {
+    lord.query("div > input", parent).forEach(function(inp) {
         ++i;
         inp.name = "voteVariant" + i;
         count.value = i;
