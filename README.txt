@@ -46,6 +46,12 @@ The following libraries are also required:
  * libmagic (http://www.darwinsys.com/file/)
  * libid3 (http://id3lib.sourceforge.net/)
 
+ImageMagick is used for creating PDF thumbnails. It may be downloaded here:
+http://www.imagemagick.org/script/binary-releases.php
+
+ffmpeg is used for creating video thumbnail. It may be downloaded here:
+https://www.ffmpeg.org/download.html
+
 ==============================================================================
  Building and installing (briefly)
 ==============================================================================

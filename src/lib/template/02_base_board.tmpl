@@ -255,7 +255,7 @@
         <% if ( content.showWhois && !post.flagName.empty() ) %>
             <% if ( !post.cityName.empty() ) %>
                 <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>"
-                     title="<%= post.countryName %>: <%= post.cityName %>">
+                     title="<%= post.cityName %>, <%= post.countryName %>">
             <% else %>
                 <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>" title="<%= post.countryName %>">
             <% end %>

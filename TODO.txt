@@ -26,6 +26,7 @@
 [done] Replace login info text with icon
 [done] Add PDF support
 [done] Add login system description
+[done] Update README
 * Use D-Pointer approach for the lib
 
 * Reload codecha instead of reloading a page
