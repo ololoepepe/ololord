@@ -278,110 +278,130 @@
     </fieldset>
     <fieldset>
         <legend><%= scriptSettingsLegendText %></legend>
-        <table>
-            <tbody>
-                <tr>
-                    <td>
-                        <%= quickReplyActionLabelText %>
-                    </td>
-                    <td>
-                        <select name="quickReplyActionSelect" class="select">
-                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
-                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
-                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showNewPostsLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showNewPosts" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showYoutubeVideoTitleLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showYoutubeVideosTitles" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= checkFileExistenceLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="checkFileExistence" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showAttachedFilePreviewLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showAttachedFilePreview" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showLeafButtonsLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showLeafButtons" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= leafThroughImagesOnlyLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="leafThroughImagesOnly" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= imageZoomSensitivityLabelText %>
-                    </td>
-                    <td>
-                        <input type="number" min="1" name="imageZoomSensitivity" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= autoUpdateThreadsByDefaultLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="autoUpdateThreadsByDefault" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= autoUpdateIntervalLabelText %>
-                    </td>
-                    <td>
-                        <input type="number" min="1" name="autoUpdateInterval" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showAutoUpdateTimerLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showAutoUpdateTimer" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showAutoUpdateDesktopNotificationsLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showAutoUpdateDesktopNotifications" />
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <ul class="tabWidget">
+            <li name="1" class="activated"><a onclick="lord.activateTab(this, 1); return false;"><%= postsTabText %></a></li>
+            <li name="2" ><a onclick="lord.activateTab(this, 2); return false;"><%= filesTabText %></a></li>
+            <li name="3" ><a onclick="lord.activateTab(this, 3); return false;"><%= postformTabText %></a></li>
+            <li name="4" ><a onclick="lord.activateTab(this, 4); return false;"><%= otherTabText %></a></li>
+        </ul>
+        <div>
+            <table name="1">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= quickReplyActionLabelText %>
+                        </td>
+                        <td>
+                            <select name="quickReplyActionSelect" class="select">
+                                <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                                <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                                <option value="append_post"><%= quickReplyActionAppendPostText %></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= showNewPostsLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showNewPosts" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= autoUpdateThreadsByDefaultLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="autoUpdateThreadsByDefault" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= autoUpdateIntervalLabelText %>
+                        </td>
+                        <td>
+                            <input type="number" min="1" name="autoUpdateInterval" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= showAutoUpdateTimerLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showAutoUpdateTimer" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= showAutoUpdateDesktopNotificationsLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showAutoUpdateDesktopNotifications" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table name="2">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= showLeafButtonsLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showLeafButtons" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= leafThroughImagesOnlyLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="leafThroughImagesOnly" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= imageZoomSensitivityLabelText %>
+                        </td>
+                        <td>
+                            <input type="number" min="1" name="imageZoomSensitivity" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table name="3" style="display: none;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= checkFileExistenceLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="checkFileExistence" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= showAttachedFilePreviewLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showAttachedFilePreview" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table name="4" style="display: none;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= showYoutubeVideoTitleLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showYoutubeVideosTitles" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </fieldset>
 </div>
 <% end template %>

@@ -406,3 +406,30 @@ lord.toHashpass = function(s) {
     var parts = hash.match(/.{1,8}/g);
     return parts.join("-");
 };
+
+lord.activateTab = function(a, tabIndex, display) {
+    if (!a)
+        return;
+    tabIndex = +tabIndex;
+    if (isNaN(tabIndex))
+        return;
+    var tab = a.parentNode;
+    var header = tab.parentNode;
+    var widget = header.nextSibling.nextSibling;
+    var page = lord.nameOne(tabIndex, widget);
+    if (typeof display != "string")
+        display = "block";
+    lord.arr(widget.childNodes).forEach(function(node) {
+        if (node.nodeType != 1) //Element
+            return;
+        node.style.display = ((node == page) ? display : "none");
+    });
+    lord.arr(header.childNodes).forEach(function(node) {
+        if (node.nodeType != 1) //Element
+            return;
+        if (node == tab)
+            lord.addClass(node, "activated");
+        else
+            lord.removeClass(node, "activated");
+    });
+};

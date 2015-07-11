@@ -141,6 +141,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                               "draftsByDefaultLabelText");
     c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
+    c.filesTabText = ts.translate("initBase", "Files", "filesTabText");
     c.framedVersionText = ts.translate("initBase", "Framed version", "framedVersionText");
     c.generalSettingsLegendText = ts.translate("initBase", "General settings", "generalSettingsLegendText");
     foreach (const QString &bn, Tools::cookieValue(req, "hiddenBoards").split('|', QString::SkipEmptyParts))
@@ -200,8 +201,11 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                t.disambiguation().toUtf8().constData());
         c.modes.push_back(m);
     }
+    c.otherTabText = ts.translate("initBase", "Other", "otherTabText");
     c.pageTitle = Tools::toStd(pageTitle);
     c.path = const_cast<cppcms::http::request *>(&req)->path_info();
+    c.postformTabText = ts.translate("initBase", "Postform", "postformTabText");
+    c.postsTabText = ts.translate("initBase", "Posts", "postsTabText");
     c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
                                                     "quickReplyActionAppendPostText");
     c.quickReplyActionDoNothingText = ts.translate("initBase", "Leaves page unmodified",

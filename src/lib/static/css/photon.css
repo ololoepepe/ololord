@@ -624,6 +624,23 @@ span.newPostCount {
     color: #555555;
 }
 
+ul.tabWidget > li {
+    display: inline;
+    background-color: #DDDDDD;
+    padding: 5px 10px 5px 10px;
+    border: 1px solid #CCCCCC;
+    border-left: none;
+}
+
+ul.tabWidget > li > a {
+    color: black;
+    text-decoration: none;
+}
+
+ul.tabWidget > li.activated {
+    background-color: #AAAAAA;
+}
+
 /*
     Rules
 */

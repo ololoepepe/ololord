@@ -62,6 +62,7 @@ public:
     std::string draftsByDefaultLabelText;
     std::string error413Text;
     std::string favoriteThreadsText;
+    std::string filesTabText;
     std::string framedVersionText;
     std::string generalSettingsLegendText;
     std::set<std::string> hiddenBoards;
@@ -81,8 +82,11 @@ public:
     Mode mode;
     std::string modeLabelText;
     std::list<Mode> modes;
+    std::string otherTabText;
     std::string pageTitle;
     std::string path;
+    std::string postformTabText;
+    std::string postsTabText;
     std::string quickReplyActionAppendPostText;
     std::string quickReplyActionDoNothingText;
     std::string quickReplyActionGotoThreadText;

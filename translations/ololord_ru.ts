@@ -2502,6 +2502,26 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>showAutoUpdateDesktopNotificationsLabelText</comment>
         <translation>Показывать уведомления на рабочем столе:</translation>
     </message>
+    <message>
+        <source>Files</source>
+        <comment>filesTabText</comment>
+        <translation>Файлы</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <comment>otherTabText</comment>
+        <translation>Прочее</translation>
+    </message>
+    <message>
+        <source>Postform</source>
+        <comment>postformTabText</comment>
+        <translation>Форма постинга</translation>
+    </message>
+    <message>
+        <source>Posts</source>
+        <comment>postsTabText</comment>
+        <translation>Посты</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
