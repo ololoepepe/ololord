@@ -20,6 +20,16 @@
 <% end %>
 <% end template %>
 
+<% template leafButton(std::string target) %>
+<% if ( "previous" == target ) %>
+    <a class="leafButton leafButtonPrevious" title="<%= previousFileText %>" href="javascript:lord.previousFile();"
+       style="display: none;"><img src="/<%= sitePathPrefix %>img/left.png"></a>
+<% elif ( "next" == target ) %>
+    <a class="leafButton leafButtonNext" title="<%= nextFileText %>" href="javascript:lord.nextFile();"
+       style="display: none;"><img src="/<%= sitePathPrefix %>img/right.png"></a>
+<% end %>
+<% end template %>
+
 <% template customPostFormField0() %>
 <% end template %>
 
@@ -177,6 +187,9 @@
         <% end %>
     </div>
     <div class="postFileFile">
+        <input name="type" type="hidden" value="<%= file.type %>" />
+        <input name="sizeX" type="hidden" value="<%= file.sizeX %>" />
+        <input name="sizeY" type="hidden" value="<%= file.sizeY %>" />
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
             <% if ( content.isSpecialThumbName(file.thumbName) ) %>

@@ -148,6 +148,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string megabytesText;
     int moder;
     std::string modificationDateTimeText;
+    std::string nextFileText;
     std::string noCaptchaText;
     std::string notLoggedInText;
     std::string openThreadText;
@@ -172,6 +173,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postingSpeed;
     std::string postingSpeedText;
     std::string postLimitReachedText;
+    std::string previousFileText;
     std::string quickReplyText;
     std::string referencedByText;
     std::string registeredText;

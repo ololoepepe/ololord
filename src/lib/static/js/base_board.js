@@ -18,6 +18,8 @@ lord.postForm = {
     "quickReply": false
 };
 lord.complainVideo = null;
+lord.files = null;
+lord.filesMap = null;
 
 /*Functions*/
 
@@ -622,6 +624,9 @@ lord.hideImage = function() {
         }
         lord.img.style.display = "none";
         lord.img = null;
+        lord.query(".leafButton").forEach(function(a) {
+            a.style.display = "none";
+        });
     }
 };
 
@@ -637,6 +642,45 @@ lord.globalOnclick = function(e) {
         t = t.parentNode;
     }
     lord.hideImage();
+};
+
+lord.initFiles = function() {
+    if (!!lord.files)
+        return;
+    lord.files = [];
+    lord.filesMap = {};
+    lord.query(".postFileFile").forEach(function(div) {
+        var href = lord.queryOne("a", div).href;
+        var type = lord.nameOne("type", div).value;
+        if ("application/pdf" == type)
+            return;
+        if (lord.getLocalObject("leafThroughImagesOnly", false) && !lord.isImageType(type))
+            return;
+        lord.files.push({
+            "href": href,
+            "type": type,
+            "sizeX": lord.nameOne("sizeX", div).value,
+            "sizeY": lord.nameOne("sizeY", div).value
+        });
+        lord.filesMap[href] = lord.files.length - 1;
+    });
+};
+
+lord.nextOrPreviousFile = function(previous) {
+    if (!lord.img || !lord.files || !lord.filesMap || lord.files.length < 1)
+        return null;
+    var href = lord.img.src;
+    if (!href)
+        href = lord.queryOne("source", lord.img).src;
+    if (!href)
+        return null;
+    var ind = lord.filesMap[href];
+    if (ind < 0)
+        return null;
+    if (!!previous)
+        return lord.files[(ind > 0) ? (ind - 1) : (lord.files.length - 1)];
+    else
+        return lord.files[(ind < lord.files.length - 1) ? (ind + 1) : 0];
 };
 
 lord.addYoutubeButton = function(post) {
@@ -752,6 +796,9 @@ lord.postNodeInserted = function(post) {
     var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
     lastPostNumbers[lord.text("currentBoardName")] = +post.id.replace("post", "");
     lord.setLocalObject("lastPostNumbers", lastPostNumbers);
+    lord.files = null;
+    lord.filesMap = null;
+    lord.initFiles();
 };
 
 lord.showPasswordDialog = function(title, label, callback) {
@@ -1549,6 +1596,11 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
                 lord.img.play();
             }, 500);
         }
+        if (lord.getLocalObject("showLeafButtons", true)) {
+            lord.query(".leafButton").forEach(function(a) {
+                a.style.display = "";
+            });
+        }
         return false;
     }
     if (lord.isAudioType(type)) {
@@ -1623,6 +1675,9 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
                     lord.img.currentTime = 0;
                 }
                 lord.img.style.display = "none";
+                lord.query(".leafButton").forEach(function(a) {
+                    a.style.display = "none";
+                });
             }
         };
         lord.img.onmousemove = function(e) {
@@ -1645,7 +1700,26 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         }, 500);
     }
     lord.images[href] = lord.img;
+    if (lord.getLocalObject("showLeafButtons", true)) {
+        lord.query(".leafButton").forEach(function(a) {
+            a.style.display = "";
+        });
+    }
     return false;
+};
+
+lord.previousFile = function() {
+    var f = lord.nextOrPreviousFile(true);
+    if (!f)
+        return;
+    lord.showImage(f.href, f.type, f.sizeX, f.sizeY);
+};
+
+lord.nextFile = function() {
+    var f = lord.nextOrPreviousFile(false);
+    if (!f)
+        return;
+    lord.showImage(f.href, f.type, f.sizeX, f.sizeY);
 };
 
 lord.addThreadToFavorites = function(boardName, threadNumber) {
@@ -1869,6 +1943,7 @@ lord.initializeOnLoadBaseBoard = function() {
         lastPostNumbers[lord.text("currentBoardName")] = +lord.text("lastPostNumber");
         lord.setLocalObject("lastPostNumbers", lastPostNumbers);
     }
+    lord.initFiles();
 };
 
 window.addEventListener("load", function load() {

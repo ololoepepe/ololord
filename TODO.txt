@@ -1,4 +1,5 @@
 [done] Fix /rpg/ JS
+[done] Add ability to leaf through files
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

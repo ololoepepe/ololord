@@ -64,6 +64,7 @@ public:
     std::string generalSettingsLegendText;
     std::set<std::string> hiddenBoards;
     std::string hiddenBoardsLabelText;
+    std::string leafThroughImagesOnlyLabelText;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;
@@ -91,6 +92,7 @@ public:
     std::string settingsDialogTitle;
     std::string showAttachedFilePreviewLabelText;
     std::string showFavoriteText;
+    std::string showLeafButtonsLabelText;
     std::string showNewPostsLabelText;
     std::string showPasswordText;
     std::string showYoutubeVideoTitleLabelText;

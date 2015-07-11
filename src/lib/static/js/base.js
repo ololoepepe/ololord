@@ -72,6 +72,10 @@ lord.showSettings = function() {
     checkFileExistence.checked = lord.getLocalObject("checkFileExistence", true);
     var showAttachedFilePreview = lord.nameOne("showAttachedFilePreview", div);
     showAttachedFilePreview.checked = lord.getLocalObject("showAttachedFilePreview", true);
+    var showLeafButtons = lord.nameOne("showLeafButtons", div);
+    showLeafButtons.checked = lord.getLocalObject("showLeafButtons", true);
+    var leafThroughImagesOnly = lord.nameOne("leafThroughImagesOnly", div);
+    leafThroughImagesOnly.checked = lord.getLocalObject("leafThroughImagesOnly", false);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
         var sel = lord.nameOne("modeChangeSelect", div);
         var md = sel.options[sel.selectedIndex].value;
@@ -118,6 +122,8 @@ lord.showSettings = function() {
         lord.setLocalObject("showYoutubeVideosTitles", !!showYoutubeVideosTitles.checked);
         lord.setLocalObject("checkFileExistence", !!checkFileExistence.checked);
         lord.setLocalObject("showAttachedFilePreview", !!showAttachedFilePreview.checked);
+        lord.setLocalObject("showLeafButtons", !!showLeafButtons.checked);
+        lord.setLocalObject("leafThroughImagesOnly", !!leafThroughImagesOnly.checked);
         lord.reloadPage();
     });
 };

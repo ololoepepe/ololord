@@ -2467,6 +2467,16 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
 
 Ну, на самом деле админ может кого-то зарегистрировать вручную (если он мудак), но способ зарегистрироваться через веб-интерфейс отсутствует.</translation>
     </message>
+    <message>
+        <source>Leaf through images only</source>
+        <comment>leafThroughImagesOnlyLabelText</comment>
+        <translation>Пролистывать только картинки</translation>
+    </message>
+    <message>
+        <source>Show file leaf buttons</source>
+        <comment>showLeafButtonsLabelText</comment>
+        <translation>Показывать кнопки пролистывания файлов</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -2884,6 +2894,16 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <source>Draft</source>
         <comment>draftText</comment>
         <translation>Черновик</translation>
+    </message>
+    <message>
+        <source>Next file</source>
+        <comment>nextFileText</comment>
+        <translation>Следующий файл</translation>
+    </message>
+    <message>
+        <source>Previous file</source>
+        <comment>previousFileText</comment>
+        <translation>Предыдущий файл</translation>
     </message>
 </context>
 <context>

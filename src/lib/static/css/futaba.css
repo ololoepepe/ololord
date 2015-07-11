@@ -542,6 +542,27 @@ span.newPostCount {
     top: 30px;
 }
 
+.leafButton {
+    position: fixed;
+    top: 50%;
+    z-index: 9910;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
+
+.leafButton:hover {
+    opacity: 1;
+    filter: alpha(opacity=100);
+}
+
+.leafButtonPrevious {
+    left: 20px;
+}
+
+.leafButtonNext {
+    right: 20px;
+}
+
 .movableImage {
     position: fixed;
     z-index: 9905;

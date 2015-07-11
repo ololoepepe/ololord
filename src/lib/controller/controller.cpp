@@ -142,6 +142,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     foreach (const QString &bn, Tools::cookieValue(req, "hiddenBoards").split('|', QString::SkipEmptyParts))
         c.hiddenBoards.insert(Tools::toStd(bn));
     c.hiddenBoardsLabelText = ts.translate("initBase", "Hide boards:", "hiddenBoardsLabelText");
+    c.leafThroughImagesOnlyLabelText = ts.translate("initBase", "Leaf through images only",
+                                                    "leafThroughImagesOnlyLabelText");
     c.localeLabelText = "Language:";
     c.locales = locales;
     c.loggedIn = !Tools::hashpassString(req).isEmpty();
@@ -212,6 +214,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showAttachedFilePreviewLabelText = ts.translate("initBase", "Show previews when attaching files:",
                                                       "showAttachedFilePreviewLabelText");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
+    c.showLeafButtonsLabelText = ts.translate("initBase", "Show file leaf buttons", "showLeafButtonsLabelText");
     c.showNewPostsLabelText = ts.translate("initBase", "Show new posts:", "showNewPostsLabelText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showYoutubeVideoTitleLabelText = ts.translate("initBase", "Show titles of YouTube videos:",
@@ -356,6 +359,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             c.moder = 0;
     }
     c.modificationDateTimeText = ts.translate("initBaseBoard", "Last modified:", "modificationDateTimeText");
+    c.nextFileText = ts.translate("initBaseBoard", "Next file", "nextFileText");
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
@@ -425,6 +429,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
     foreach (QString r, board->postformRules(tq.locale()))
         c.postformRules.push_back(Tools::toStd(r.replace("%currentBoard.name%", board->name())));
+    c.previousFileText = ts.translate("initBaseBoard", "Previous file", "previousFileText");
     c.quickReplyText = ts.translate("initBaseBoard", "Quick reply", "quickReplyText");
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
