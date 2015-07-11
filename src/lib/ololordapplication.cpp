@@ -10,6 +10,7 @@
 #include <BDirTools>
 #include <BeQt>
 
+#include <QElapsedTimer>
 #include <QString>
 #include <QTimerEvent>
 
@@ -29,6 +30,7 @@ OlolordApplication::OlolordApplication(int &argc, char **argv, const QString &ap
     captchaQuotaTimerId = startTimer(10 * BeQt::Minute);
     outdatedTimerId = startTimer(BeQt::Hour);
     searchTimerId = startTimer(10 * BeQt::Minute);
+    uptimeTimer.start();
 }
 
 OlolordApplication::OlolordApplication(int &argc, char **argv, const InitialSettings &s) :
@@ -46,6 +48,7 @@ OlolordApplication::OlolordApplication(int &argc, char **argv, const InitialSett
     captchaQuotaTimerId = startTimer(10 * BeQt::Minute);
     outdatedTimerId = startTimer(BeQt::Hour);
     searchTimerId = startTimer(10 * BeQt::Minute);
+    uptimeTimer.start();
 }
 
 OlolordApplication::~OlolordApplication()
@@ -58,6 +61,11 @@ OlolordApplication::~OlolordApplication()
     Q_CLEANUP_RESOURCE(ololord_static_js);
     Q_CLEANUP_RESOURCE(ololord_static_video);
 #endif
+}
+
+qint64 OlolordApplication::uptime() const
+{
+    return uptimeTimer.elapsed();
 }
 
 void OlolordApplication::timerEvent(QTimerEvent *e)

@@ -1,6 +1,7 @@
 #include "rpgboard.h"
 
 #include "controller/rpgboard.h"
+#include "controller/rpgeditpost.h"
 #include "controller/rpgthread.h"
 #include "database.h"
 #include "stored/thread.h"
@@ -30,15 +31,15 @@ bool rpgBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms:
         if (userData.is_null() || userData.is_undefined())
             return bRet(error, QString(), true);
         TranslatorQt tq(req);
-        cppcms::json::object o = userData.object();
+        QVariantMap o = Tools::fromJson(userData).toMap();
         QVariantMap m = post.userData().toMap();
-        cppcms::json::array arr = o["variants"].array();
+        QVariantList arr = o.value("variants").toList();
         QVariantList variants = m.value("variants").toList();
         QStringList ids;
         for (int i = 0; i < int(arr.size()); ++i) {
-            cppcms::json::object oo = arr.at(i).object();
-            QString id = Tools::fromStd(oo["id"].str());
-            QString text = Tools::fromStd(oo["text"].str());
+            QVariantMap oo = arr.at(i).toMap();
+            QString id = oo.value("id").toString();
+            QString text = oo.value("text").toString();
             if (text.isEmpty())
                 continue;
             if (!id.isEmpty()) {
@@ -70,14 +71,15 @@ bool rpgBoard::beforeStoringEditedPost(const cppcms::http::request &req, cppcms:
             post.setUserData(QVariant());
             return bRet(error, QString(), true);
         }
-        QString text = Tools::fromStd(o["text"].str());
+        QString text = o.value("text").toString();
         if ((!thread.number() == post.number()
              && !Database::isOp(post.board(), thread.number(), post.posterIp(), post.hashpass()))
-                && (m["variants"] != variants || m["multiple"] != o["multiple"].boolean() || m["text"] != text)) {
-            return bRet(error, tq.translate("rpgBoard", "Attempt to edit voting while not being the OP", "error"), false);
+                && (m["variants"] != variants || m["multiple"] != o.value("multiple").toBool() || m["text"] != text)) {
+            return bRet(error, tq.translate("rpgBoard", "Attempt to edit voting while not being the OP", "error"),
+                        false);
         }
         m["variants"] = variants;
-        m["multiple"] = o["multiple"].boolean();
+        m["multiple"] = o.value("multiple").toBool();
         m["text"] = text;
         post.setUserData(m);
         return bRet(error, QString(), true);
@@ -185,6 +187,27 @@ void rpgBoard::beforeRenderBoard(const cppcms::http::request &req, Content::Boar
     cc->voteTextText = ts.translate("rpgBoard", "Text:", "voteTextText");
 }
 
+void rpgBoard::beforeRenderEditPost(const cppcms::http::request &req, Content::EditPost *c, const Content::Post &post)
+{
+    Content::rpgEditPost *cc = dynamic_cast<Content::rpgEditPost *>(c);
+    if (!cc)
+        return;
+    QVariantMap m = post.userData.toMap();
+    TranslatorStd ts(req);
+    cc->multiple = m.value("multiple").toBool();
+    cc->multipleVoteVariantsText = ts.translate("rpgBoard", "Multiple variants allowed:", "multipleVoteVariantsText");
+    cc->postFormLabelVote = ts.translate("rpgBoard", "Vote:", "postFormLabelVote");
+    cc->voteText = Tools::toStd(m.value("text").toString());
+    cc->voteTextText = ts.translate("rpgBoard", "Text:", "voteTextText");
+    foreach (const QVariant &v, m.value("variants").toList()) {
+        QVariantMap mm = v.toMap();
+        Content::rpgEditPost::VoteVariant vv;
+        vv.id = Tools::toStd(mm.value("id").toString());
+        vv.text = Tools::toStd(mm.value("text").toString());
+        cc->voteVariants.push_back(vv);
+    }
+}
+
 void rpgBoard::beforeRenderThread(const cppcms::http::request &req, Content::Thread *c)
 {
     Content::rpgThread *cc = dynamic_cast<Content::rpgThread *>(c);
@@ -206,10 +229,39 @@ void rpgBoard::beforeRenderThread(const cppcms::http::request &req, Content::Thr
     cc->voteTextText = ts.translate("rpgBoard", "Text:", "voteTextText");
 }
 
+cppcms::json::value rpgBoard::editedPostUserData(const Tools::PostParameters &params) const
+{
+    QVariantMap m;
+    m.insert("text", params.value("voteText"));
+    m.insert("multiple", !params.value("multipleVoteVariants").compare("true", Qt::CaseInsensitive));
+    QVariantList list;
+    foreach (const QString &key, params.keys()) {
+        if (!key.startsWith("voteVariant"))
+            continue;
+        QVariantMap mm;
+        QString t = params.value(key);
+        QString id = key.mid(11);
+        if (!BUuid(id).isNull())
+            mm.insert("id", id);
+        else if (params.value(key).isEmpty())
+            continue;
+        mm.insert("text", t);
+        list << mm;
+    }
+    m.insert("variants", list);
+    return Tools::toJson(m);
+}
+
 Content::Board *rpgBoard::createBoardController(const cppcms::http::request &/*req*/, QString &viewName)
 {
     viewName = "rpg_board";
     return new Content::rpgBoard;
+}
+
+Content::EditPost *rpgBoard::createEditPostController(const cppcms::http::request &/*req*/, QString &viewName)
+{
+    viewName = "rpg_edit_post";
+    return new Content::rpgEditPost;
 }
 
 Content::Thread *rpgBoard::createThreadController(const cppcms::http::request &/*req*/, QString &viewName)

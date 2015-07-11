@@ -334,10 +334,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var postingEnabled = (lord.text("postingEnabled") === "true");
     var inp = lord.id("currentThreadNumber");
     if (!!inp && +inp.value === res["threadNumber"]) {
-        if (postingEnabled)
-            number.href = "javascript:lord.insertPostNumber(" + res["number"] + ");";
-        else
-            number.href = "#" + res["number"];
+        number.href = "#" + res["number"];
     } else {
         number.href = "/" + sitePathPrefix + boardName + "/thread/" + res["threadNumber"] + ".html#"
         if (postingEnabled)
@@ -440,10 +437,15 @@ lord.createPostNode = function(res, permanent, boardName) {
     number.parentNode.removeChild(number);
     anumber.title = number.title;
     anumber.appendChild(number);
-    if (postingEnabled)
-        anumber.href = "javascript:lord.insertPostNumber(" + res["number"] + ");";
-    else
-        anumber.href = "#" + res["number"];
+    anumber.href = "#" + res["number"];
+    (function(pn) {
+        if (postingEnabled) {
+            anumber.onclick = function() {
+                lord.insertPostNumber(pn);
+                return false;
+            };
+        }
+    })(res["number"]);
     var deleteButton = lord.nameOne("deleteButton", post);
     deleteButton.href = deleteButton.href.replace("%postNumber%", res["number"]);
     var hideButton = lord.nameOne("hideButton", post);
@@ -556,8 +558,10 @@ lord.clearFileInput = function(div) {
     if (!!preview && div == preview.parentNode)
         preview.src = "/" + lord.text("sitePathPrefix") + "img/addfile.png";
     var span = div.querySelector("span");
-    if (!!span && div == span.parentNode && !!span.childNodes && !!span.childNodes[0])
-        span.removeChild(span.childNodes[0]);
+    if (!!span && div == span.parentNode) {
+        while (span.firstChild)
+            span.removeChild(span.firstChild);
+    }
     if (div.parentNode)
         lord.removeFileHash(div);
     div.fileHash = null;
@@ -742,7 +746,8 @@ lord.tryHidePost = function(post, list) {
 lord.postNodeInserted = function(post) {
     if (!post)
         return;
-    lord.addYoutubeButton(post);
+    if (lord.getLocalObject("showYoutubeVideosTitles", true))
+        lord.addYoutubeButton(post);
     lord.tryHidePost(post);
     var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
     lastPostNumbers[lord.text("currentBoardName")] = +post.id.replace("post", "");
@@ -923,21 +928,25 @@ lord.banUser = function(boardName, postNumber) {
 };
 
 lord.insertPostNumber = function(postNumber) {
-    var field = lord.nameOne("text", lord.id("postForm"));
-    var value = ">>" + postNumber + "\n";
-    if (document.selection) {
-        var sel = document.selection.createRange();
-        sel.text = value;
-    } else if (field.selectionStart || field.selectionStart == "0") {
-        var startPos = field.selectionStart;
-        var endPos = field.selectionEnd;
-        field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
-        var pos = ((startPos < endPos) ? startPos : endPos) + value.length;
-        field.setSelectionRange(pos, pos);
-    } else {
-        field.value += value;
+    try {
+        var field = lord.nameOne("text", lord.id("postForm"));
+        var value = ">>" + postNumber + "\n";
+        if (document.selection) {
+            var sel = document.selection.createRange();
+            sel.text = value;
+        } else if (field.selectionStart || field.selectionStart == "0") {
+            var startPos = field.selectionStart;
+            var endPos = field.selectionEnd;
+            field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+            var pos = ((startPos < endPos) ? startPos : endPos) + value.length;
+            field.setSelectionRange(pos, pos);
+        } else {
+            field.value += value;
+        }
+        field.focus();
+    } catch (ex) {
+        //Do nothing
     }
-    field.focus();
 };
 
 lord.quickReply = function(postNumber) {
@@ -1359,6 +1368,7 @@ lord.fileAddedCommon = function(div, file) {
     div.querySelector("span").appendChild(lord.node("text", file.name + " (" + lord.readableSize(file.size) + ")"));
     lord.removeFileHash(div);
     var binaryReader = new FileReader();
+    var prefix = lord.text("sitePathPrefix");
     binaryReader.onload = function(e) {
         var wordArray = CryptoJS.lib.WordArray.create(e.target.result);
         var currentBoardName = lord.text("currentBoardName");
@@ -1366,6 +1376,11 @@ lord.fileAddedCommon = function(div, file) {
         lord.ajaxRequest("get_file_existence", [currentBoardName, fileHash], lord.RpcGetFileExistenceId, function(res) {
             if (!res)
                 return;
+            var img = lord.node("img");
+            img.src = "/" + prefix + "img/storage.png";
+            img.title = lord.text("fileExistsOnServerText");
+            div.querySelector("span").appendChild(lord.node("text", " "));
+            div.querySelector("span").appendChild(img);
             var fileHashes = lord.getFileHashes(div);
             if (fileHashes.value.indexOf(fileHash) < 0)
                 fileHashes.value = fileHashes.value + (fileHashes.value.length > 0 ? "," : "") + fileHash;
@@ -1378,14 +1393,20 @@ lord.fileAddedCommon = function(div, file) {
                 delete div.droppedFile;
         });
     };
-    binaryReader.readAsArrayBuffer(file);
-    var prefix = lord.text("sitePathPrefix");
-    if (!!file.name.match(/\.(jpe?g|png|gif)$/i)) {
+    if (lord.getLocalObject("checkFileExistence", true))
+        binaryReader.readAsArrayBuffer(file);
+    if (!!file.name.match(/\.(jpe?g|png|gif)$/i) && lord.getLocalObject("showAttachedFilePreview", true)) {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function(e) {
             div.querySelector("img").src = e.target.result;
         };
+    } else if (!!file.name.match(/\.(jpe?g)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/jpeg_file.png";
+    } else if (!!file.name.match(/\.(png)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/png_file.png";
+    } else if (!!file.name.match(/\.(gif)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/gif_file.png";
     } else if (!!file.name.match(/\.(mp3)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/mp3_file.png";
     } else if (!!file.name.match(/\.(mp4)$/i)) {
@@ -1396,6 +1417,8 @@ lord.fileAddedCommon = function(div, file) {
         div.querySelector("img").src = "/" + prefix + "img/webm_file.png";
     } else if (!!file.name.match(/\.(wav)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/wav_file.png";
+    } else if (!!file.name.match(/\.(pdf)$/i)) {
+        div.querySelector("img").src = "/" + prefix + "img/pdf_file.png";
     } else {
         div.querySelector("img").src = "/" + prefix + "img/file.png";
     }
@@ -1694,7 +1717,15 @@ lord.submitted = function(event, form) {
                 lord.posted(response);
             } else {
                 resetButton();
-                lord.showPopup(lord.text("ajaxErrorText") + " " + xhr.status, {type: "critical"});
+                var text = lord.text("ajaxErrorText") + " " + xhr.status;
+                switch (+xhr.status) {
+                case 413:
+                    text = lord.text("error" + xhr.status + "Text");
+                    break;
+                default:
+                    break;
+                }
+                lord.showPopup(text, {type: "critical"});
             }
         }
     };
@@ -1829,7 +1860,8 @@ lord.initializeOnLoadBaseBoard = function() {
     var list = lord.getLocalObject("hiddenPosts", {});
     var posts = lord.query(".post, .opPost");
     posts.forEach(function(post) {
-        lord.addYoutubeButton(post);
+        if (lord.getLocalObject("showYoutubeVideosTitles", true))
+            lord.addYoutubeButton(post);
         lord.tryHidePost(post, list);
     });
     if (!lord.text("currentThreadNumber")) {

@@ -11,23 +11,29 @@
     <% else %>
         [<a href="#top"><%= toTopText %></a>]
     <% end %>
-    [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
-            type="checkbox"><%= autoUpdateText %></input>]
+    <% if ( content.mode.name != "ascetic" ) %>
+        [<input onclick="lord.setAutoUpdateEnabled(this);" id="autoUpdate_<%= position %>"
+                type="checkbox"><%= autoUpdateText %></input>]
+    <% end %>
 </div>
 <% end template %>
 
 <% template head() %>
 <% include baseHead(1) %>
 <% include boardHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/FileSaver.min.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip.min.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip-utils.min.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
+<% if ( content.mode.name != "ascetic" ) %>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/FileSaver.min.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip.min.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/jszip-utils.min.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/thread.js"></script>
+<% end %>
 <% end template %>
 
 <% template body() %>
 <% include baseTexts() %>
-<% include boardTexts() %>
+<% if ( content.mode.name != "ascetic" ) %>
+    <% include boardTexts() %>
+<% end %>
 <% include customHeader() %>
 <% include navigationButton("bottom") %>
 <% include navigationButton("top") %>
@@ -57,7 +63,7 @@
     </div>
 <% elif ( content.postLimitReached() ) %>
     <div class="theMessage">
-        <h2><%= postLimitReachedText %></h2>
+        <h2 class="postLimitReached"><%= postLimitReachedText %></h2>
     </div>
 <% else %>
     <hr />
@@ -65,7 +71,7 @@
 <% end %>
 <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
     <div class="theMessage">
-        <h3><%= bumpLimitReachedText %></h3>
+        <h3 class="bumpLimitReached"><%= bumpLimitReachedText %></h3>
     </div>
 <% end %>
 <hr />
@@ -80,7 +86,7 @@
 <input id="afterAllPosts" type="hidden" />
 <hr />
 <% include threadActions("bottom") %>
-<% if ( content.postingEnabled && !content.postLimitReached() ) %>
+<% if ( content.mode.name != "ascetic" && content.postingEnabled && !content.postLimitReached() ) %>
     <hr />
     <% include createAction("Bottom") %>
 <% end %>

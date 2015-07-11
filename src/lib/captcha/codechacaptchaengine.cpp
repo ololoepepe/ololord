@@ -65,7 +65,7 @@ QString CodechaCaptchaEngine::title(const QLocale &l) const
     return TranslatorQt(l).translate("CodechaCaptchaEngine", "Codecha - programmers' CAPTCHA", "title");
 }
 
-QString CodechaCaptchaEngine::widgetHtml() const
+QString CodechaCaptchaEngine::widgetHtml(const cppcms::http::request &/*req*/, bool /*asceticMode*/) const
 {
     QString s = "<div id=\"captcha\" class=\"codechaContainer\">";
     s += "<script type=\"text/javascript\" src=\"//codecha.org/api/challenge?k=" + publicKey() + "\"></script>";

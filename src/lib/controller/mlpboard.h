@@ -14,6 +14,7 @@ struct OLOLORD_EXPORT mlpBoard : public Base
 {
     std::string altVideoText;
     std::string buttonText;
+    std::string noJokeButtonText;
     std::string videoFileName;
     std::string videoFileName2;
     std::string videoType;

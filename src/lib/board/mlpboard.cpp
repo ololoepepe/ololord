@@ -24,6 +24,8 @@ mlpBoard::mlpBoard()
 
 void mlpBoard::handleBoard(cppcms::application &app, unsigned int page)
 {
+    if (!Tools::cookieValue(app.request(), "no_joke_mlp").compare("true", Qt::CaseInsensitive))
+        return AbstractBoard::handleBoard(app, page);
     QString logTarget = name() + "/" + QString::number(page);
     if (page > 0)
         return Tools::log(app, "board", "fail:not_found", logTarget);
@@ -34,6 +36,7 @@ void mlpBoard::handleBoard(cppcms::application &app, unsigned int page)
     Controller::initBase(c, app.request(), title(tq.locale()));
     c.altVideoText = ts.translate("mlpBoard", "Friendship is magic", "altVideoText");
     c.buttonText = ts.translate("mlpBoard", "Hands off my pony!!!!!11", "buttonText");
+    c.noJokeButtonText = ts.translate("mlpBoard", "Enough jokes, please!", "noJokeButtonText");
     c.videoFileName = Tools::toStd(QString("friendship_is_magic_%1.webm").arg((qrand() % 3) + 1));
     c.videoFileName2 = "bombanoolow.webm";
     c.videoType = "video/webm";
@@ -44,11 +47,6 @@ void mlpBoard::handleBoard(cppcms::application &app, unsigned int page)
 QString mlpBoard::name() const
 {
     return "mlp";
-}
-
-bool mlpBoard::postingEnabled() const
-{
-    return false;
 }
 
 QString mlpBoard::title(const QLocale &l) const

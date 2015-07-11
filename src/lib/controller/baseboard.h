@@ -68,7 +68,8 @@ public:
     std::string name;
     std::string nameRaw;
     unsigned long long number;
-    bool ownPost;
+    bool ownHashpass;
+    bool ownIp;
     std::string rawName;
     bool rawHtml;
     std::string rawPostText;
@@ -125,11 +126,13 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string deleteThreadText;
     std::string downloadThreadText;
     bool draftsEnabled;
+    std::string draftText;
     std::string editAudioTagsText;
     std::string editPostText;
     std::string enterPasswordText;
     std::string enterPasswordTitle;
     std::string expandVideoText;
+    std::string fileExistsOnServerText;
     std::string findSourceWithGoogleText;
     std::string findSourceWithIqdbText;
     std::string fixedText;

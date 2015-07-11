@@ -11,5 +11,6 @@
         <file>static/js/base_board.js</file>
         <file>static/js/rpg_base.js</file>
         <file>static/js/playlist.js</file>
+        <file>static/js/api.js</file>
     </qresource>
 </RCC>

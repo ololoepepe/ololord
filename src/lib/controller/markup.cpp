@@ -255,7 +255,7 @@ static void processSimmetric(ProcessPostTextContext &c, ProcessPostTextFunction 
                 }
                 s = -1;
                 last = '\0';
-            } else {
+            } else if (QChar('\0') == last) {
                 s = i;
                 last = t.at(i);
             }
@@ -265,6 +265,15 @@ static void processSimmetric(ProcessPostTextContext &c, ProcessPostTextFunction 
         }
     }
     c.process(t, skip, next);
+}
+
+static void processWakabaMarkReplaceDoubleDash(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    QString t = c.mid();
+    t.replace("--", "\u2013");
+    c.process(t, SkipList(), &toHtml);
 }
 
 static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
@@ -294,7 +303,7 @@ static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
         skip << qMakePair(ind + ml + cap.length() + 11, 4);
         ind = rx.indexIn(t, ind + ml + cap.length() + 15);
     }
-    c.process(t, skip, &toHtml);
+    c.process(t, skip, &processWakabaMarkReplaceDoubleDash);
 }
 
 static void processWakabaMarkLink(ProcessPostTextContext &c)
@@ -321,7 +330,7 @@ static void processWakabaMarkLink(ProcessPostTextContext &c)
         if (ok && pn && (pn != c.deletedPost) && Database::postExists(boardName, pn, &tn)) {
             QString threadNumber = QString::number(tn);
             QString href = "href=\"/" + prefix + boardName + "/thread/" + threadNumber + ".html#" + postNumber + "\"";
-            QString a = "<a " + href + /*" " + mouseover + " " + mouseout*/ + ">" + cap.replace(">", "&gt;") + "</a>";
+            QString a = "<a " + href + ">" + cap.replace(">", "&gt;") + "</a>";
             t.replace(ind, rx.matchedLength(), a);
             skip << qMakePair(ind, a.length());
             ind = rx.indexIn(t, ind + a.length());
@@ -405,12 +414,21 @@ static void processWakabaMarkStrikeoutShitty(ProcessPostTextContext &c)
 
 static void processWakabaMarkStrikeout(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processWakabaMarkStrikeoutShitty, "--", "", "s");
+    processSimmetric(c, &processWakabaMarkStrikeoutShitty, "---", "", "s");
+}
+
+static void processWakabaMarkReplaceQuadripleDash(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    QString t = c.mid();
+    t.replace("----", "\u2014");
+    c.process(t, SkipList(), &processWakabaMarkStrikeout);
 }
 
 static void processWakabaMarkItalicExtra(ProcessPostTextContext &c)
 {
-    processSimmetric(c, &processWakabaMarkStrikeout, "///", "", "em");
+    processSimmetric(c, &processWakabaMarkReplaceQuadripleDash, "///", "", "em");
 }
 
 static void processWakabaMarkItalic(ProcessPostTextContext &c)

@@ -1,4 +1,3 @@
-* Improve minification
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
-* Make HTML compatible with Dollchan Extension Tools
+* Use D-Pointer approach for the lib

@@ -23,42 +23,74 @@
 <% template settings() %>
 <div class="settingsBar">
     <span>
-        <%= localeLabelText %>
-        <select id="localeChangeSelect" class="select" onchange="javascript:lord.changeLocale();">
-            <% foreach locale in locales %>
-                <% item %>
-                    <% if ( locale.name == content.currentLocale.name ) %>
-                        <option value="<%= locale.name %>" selected="true">
-                    <% else %>
-                        <option value="<%= locale.name %>">
-                    <% end %>
-                        <%= locale.language %> (<%= locale.country %>)
-                    </option>
-                <% end %>
+        <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/change_locale"
+              enctype="multipart/form-data" class="inlineForm">
+            <%= localeLabelText %>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <select id="localeChangeSelect" class="select" onchange="javascript:lord.changeLocale();">
+            <% else %>
+                <select id="localeChangeSelect" name="localeChangeSelect" class="select">
             <% end %>
-        </select>
+                <% foreach locale in locales %>
+                    <% item %>
+                        <% if ( locale.name == content.currentLocale.name ) %>
+                            <option value="<%= locale.name %>" selected="true">
+                        <% else %>
+                            <option value="<%= locale.name %>">
+                        <% end %>
+                            <%= locale.language %> (<%= locale.country %>)
+                        </option>
+                    <% end %>
+                <% end %>
+            </select>
+            <% if ( content.mode.name == "ascetic" ) %>
+                <input type="submit" name="submit" value="OK" class="button" />
+            <% end %>
+        </form>
     </span>
     <span>
-        <button class="button" onclick="javascript:lord.showSettings();"><%= settingsButtonText %></button>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <button class="button" onclick="javascript:lord.showSettings();"><%= settingsButtonText %></button>
+        <% else %>
+            <a href="/<%= sitePathPrefix %>settings"
+               target="_blank"><button class="button"><%= settingsButtonText %></button></a>
+        <% end %>
     </span>
     <span>
-        <button class="button" onclick="javascript:lord.showFavorites();"><%= showFavoriteText %></button>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <button class="button" onclick="javascript:lord.showFavorites();"><%= showFavoriteText %></button>
+        <% end %>
     </span>
     <span>
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
-            <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
+            <% else %>
+                <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/logout"
+                      enctype="multipart/form-data" class="inlineForm">
+                    <input type="submit" name="submit" value="<%= loginButtonText %>" class="button" />
+                </form>
+            <% end %>
         <% else %>
-            <input id="loginInput" type="password" class="input" name="hashpass"
-                   placeholder="<%= loginPlaceholderText %>" />
-            <input id="showLoginCheckbox" type="checkbox" class="checkbox" onclick="javascript:lord.switchShowLogin();"
-                   name="showLogin" title="<%= showPasswordText %>" />
-            <button class="button" onclick="javascript:lord.doLogin();"><%= loginButtonText %></button>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <input id="loginInput" type="password" class="input" name="hashpass"
+                       placeholder="<%= loginPlaceholderText %>" />
+                <input id="showLoginCheckbox" type="checkbox" onclick="javascript:lord.switchShowLogin();"
+                       name="showLogin" title="<%= showPasswordText %>" class="checkbox" />
+                <button class="button" onclick="javascript:lord.doLogin();"><%= loginButtonText %></button>
+            <% else %>
+                <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/login"
+                      enctype="multipart/form-data" class="inlineForm">
+                    <input id="loginInput" type="password" class="input" name="hashpass"
+                           placeholder="<%= loginPlaceholderText %>" />
+                    <input type="submit" name="submit" value="<%= loginButtonText %>" class="button" />
+                </form>
+            <% end %>
+            <img src="/<%= sitePathPrefix %>img/question.png" title="<%= loginSystemDescriptionText %>">
         <% end %>
-        <% if ( !content.loginMessageWarning.empty() ) %>
-            <span class="loginMessageWarning"><%= loginMessageWarning %></span>
-        <% elif ( !content.loginMessageOk.empty() ) %>
-            <span class="loginMessageOk"><%= loginMessageOk %></span>
+        <% if ( !content.loginMessageText.empty() ) %>
+            <img src="/<%= sitePathPrefix %>img/<%= loginIconName %>" title="<%= loginMessageText %>">
         <% end %>
     </span>
 </div>
@@ -68,29 +100,45 @@
 <div class="navbar">
     <% foreach board in boards %>
         <% item %>
-            <span class="navbarItem navbarItemBoard">[<a href="/<%= sitePathPrefix %><%= board.name %>"
-                  title="<%= board.title %>"><%= board.name %></a>] </span>
+            <% if ( !content.hiddenBoards.count(board.name) ) %>
+                <span class="navbarItem navbarItemBoard">[<a href="/<%= sitePathPrefix %><%= board.name %>"
+                      title="<%= board.title %>"><%= board.name %></a>] </span>
+            <% end %>
         <% end %>
     <% end %>
-    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>playlist"><%= toPlaylistPageText %></a>]</span>
-    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>markup"><%= toMarkupPageText %></a>]</span>
-    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"><%= toHomePageText %></a>]</span>
+    <% if ( content.mode.name != "ascetic" ) %>
+        <span class="navbarItem">[<a href="/<%= sitePathPrefix %>playlist"
+                                     title="<%= toPlaylistPageText %>"><img src="/<%= sitePathPrefix %>img/playlist.png"></a>]</span>
+    <% end %>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>markup"
+                                 title="<%= toMarkupPageText %>"><img src="/<%= sitePathPrefix %>img/markup.png"></a>]</span>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"
+                                 title="<%= toHomePageText %>"><img src="/<%= sitePathPrefix %>img/homepage.png"></a>]</span>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>frame?path=<%= path %>" target="_top"
+                                 title="<%= framedVersionText %>"><img src="/<%= sitePathPrefix %>img/frame.png"></a>]</span>
 </div>
 <% end template %>
 
 <% template searchAction() %>
 <div class="searchAction">
-    <input id="searchFormInputQuery" type="text" class="input" maxlength="<%= maxSearchQueryLength %>" name="query"
-           size="43" onkeypress="lord.searchKeyPress(event);" placeholder="<%= searchInputPlaceholder %>" />
-    <select id="searchFormSelectBoard" class="select">
-        <option value="*" selected="true">[*] <%= allBoardsText %></option>
-        <%foreach board in boards %>
-            <% item %>
-                <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+    <form method="get" accept-charset="utf-8" action="/<%= sitePathPrefix %>search"
+          enctype="multipart/form-data" class="inlineForm">
+        <input id="searchFormInputQuery" type="text" class="input" maxlength="<%= maxSearchQueryLength %>" name="query"
+               size="43" onkeypress="lord.searchKeyPress(event);" placeholder="<%= searchInputPlaceholder %>" />
+        <select id="searchFormSelectBoard" name="board" class="select">
+            <option value="*" selected="true">[*] <%= allBoardsText %></option>
+            <%foreach board in boards %>
+                <% item %>
+                    <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+                <% end %>
             <% end %>
+        </select>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <button class="button" onclick="javascript:lord.doSearch();"><%= searchButtonText %></button>
+        <% else %>
+            <input type="submit" class="button" value="<%= searchButtonText %>" />
         <% end %>
-    </select>
-    <button class="button" onclick="javascript:lord.doSearch();"><%= searchButtonText %></button>
+    </form>
 </div>
 <% end template %>
 
@@ -105,84 +153,180 @@
 <input type="hidden" id="removeFromFavoritesText" value="<%= removeFromFavoritesText %>" />
 <input type="hidden" id="favoriteThreadsText" value="<%= favoriteThreadsText %>" />
 <input type="hidden" id="settingsDialogTitle" value="<%= settingsDialogTitle %>" />
-<div id="settingsDialogTemplate" class="settingsDialog" style="display: none;" >
-    <table>
-        <tbody>
-            <tr>
-                <td>
-                    <%= styleLabelText %>
-                </td>
-                <td>
-                    <select name="styleChangeSelect" class="select">
-                        <% foreach st in styles %>
-                            <% item %>
-                                <% if ( st.name == content.style.name ) %>
-                                    <option value="<%= st.name %>" selected="true">
-                                <% else %>
-                                    <option value="<%= st.name %>">
+<input type="hidden" id="error413Text" value="<%= error413Text %>" />
+<div id="settingsDialogTemplate" class="settingsDialog" style="display: none;">
+    <fieldset>
+        <legend><%= generalSettingsLegendText %></legend>
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <%= modeLabelText %>
+                    </td>
+                    <td>
+                        <select name="modeChangeSelect" class="select">
+                            <% foreach m in modes %>
+                                <% item %>
+                                    <% if ( m.name == content.mode.name ) %>
+                                        <option value="<%= m.name %>" selected="true">
+                                    <% else %>
+                                        <option value="<%= m.name %>">
+                                    <% end %>
+                                        <%= m.title %>
+                                    </option>
                                 <% end %>
-                                    <%= st.title %>
-                                </option>
                             <% end %>
-                        <% end %>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <%= timeLabelText %>
-                </td>
-                <td>
-                    <select name="timeChangeSelect" class="select">
-                        <% if ( content.currentTime == "local" ) %>
-                            <option value="server"><%= timeServerText %></option>
-                            <option value="local" selected="true"><%= timeLocalText %></option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= styleLabelText %>
+                    </td>
+                    <td>
+                        <select name="styleChangeSelect" class="select">
+                            <% foreach st in styles %>
+                                <% item %>
+                                    <% if ( st.name == content.style.name ) %>
+                                        <option value="<%= st.name %>" selected="true">
+                                    <% else %>
+                                        <option value="<%= st.name %>">
+                                    <% end %>
+                                        <%= st.title %>
+                                    </option>
+                                <% end %>
+                            <% end %>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= timeLabelText %>
+                    </td>
+                    <td>
+                        <select name="timeChangeSelect" class="select">
+                            <% if ( content.currentTime == "local" ) %>
+                                <option value="server"><%= timeServerText %></option>
+                                <option value="local" selected="true"><%= timeLocalText %></option>
+                            <% else %>
+                                <option value="server" selected="true"><%= timeServerText %></option>
+                                <option value="local"><%= timeLocalText %></option>
+                            <% end %>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= captchaLabelText %><sup><font color="red">*</font></sup>
+                    </td>
+                    <td>
+                        <select name="captchaEngineSelect" class="select">
+                            <% foreach ce in captchaEngines %>
+                                <% item %>
+                                    <% if ( ce.id == content.currentCaptchaEngine.id ) %>
+                                        <option value="<%= ce.id %>" selected="true">
+                                    <% else %>
+                                        <option value="<%= ce.id %>">
+                                    <% end %>
+                                        <%= ce.title %>
+                                    </option>
+                                <% end %>
+                            <% end %>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= draftsByDefaultLabelText %>
+                    </td>
+                    <td>
+                        <% if ( content.draftsByDefault ) %>
+                            <input type="checkbox" name="draftsByDefault" value="true" checked="true" />
                         <% else %>
-                            <option value="server" selected="true"><%= timeServerText %></option>
-                            <option value="local"><%= timeLocalText %></option>
+                            <input type="checkbox" name="draftsByDefault" value="true" />
                         <% end %>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <%= captchaLabelText %><sup><font color="red">*</font></sup>
-                </td>
-                <td>
-                    <select name="captchaEngineSelect" class="select">
-                        <% foreach ce in captchaEngines %>
-                            <% item %>
-                                <% if ( ce.id == content.currentCaptchaEngine.id ) %>
-                                    <option value="<%= ce.id %>" selected="true">
-                                <% else %>
-                                    <option value="<%= ce.id %>">
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= hiddenBoardsLabelText %>
+                    </td>
+                    <td>
+                        <div class="scrollAreaH60" name="hiddenBoards">
+                            <% foreach board in boards %>
+                                <% item %>
+                                    <% if ( content.hiddenBoards.count(board.name) ) %>
+                                        <input type="checkbox" name="board_<%= board.name %>" value="true"
+                                               checked="true">[<%= board.name %>] <%= board.title %></input>
+                                    <% else %>
+                                        <input type="checkbox" name="board_<%= board.name %>"
+                                               value="true">[<%= board.name %>] <%= board.title %></input>
+                                    <% end %>
+                                    <br />
                                 <% end %>
-                                    <%= ce.title %>
-                                </option>
                             <% end %>
-                        <% end %>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td>
-                    <%= quickReplyActionLabelText %>
-                </td>
-                <td>
-                    <select name="quickReplyActionSelect" class="select">
-                        <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
-                        <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
-                        <option value="append_post"><%= quickReplyActionAppendPostText %></option>
-                    </select>
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <sup><font color="red">*</font></sup> <%= captchaLabelWarningText %>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <sup><font color="red">*</font></sup> <%= captchaLabelWarningText %>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </fieldset>
+    <fieldset>
+        <legend><%= scriptSettingsLegendText %></legend>
+        <table>
+            <tbody>
+                <tr>
+                    <td>
+                        <%= quickReplyActionLabelText %>
+                    </td>
+                    <td>
+                        <select name="quickReplyActionSelect" class="select">
+                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= showNewPostsLabelText %>
+                    </td>
+                    <td>
+                        <input type="checkbox" name="showNewPosts" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= showYoutubeVideoTitleLabelText %>
+                    </td>
+                    <td>
+                        <input type="checkbox" name="showYoutubeVideosTitles" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= checkFileExistenceLabelText %>
+                    </td>
+                    <td>
+                        <input type="checkbox" name="checkFileExistence" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= showAttachedFilePreviewLabelText %>
+                    </td>
+                    <td>
+                        <input type="checkbox" name="showAttachedFilePreview" />
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </fieldset>
 </div>
 <% end template %>
 
@@ -192,9 +336,12 @@
 <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
 <% if ( javascript ) %>
-    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/picoModal-2.1.0.min.js"></script>
-    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
-    <script type="text/javascript" src="/<%= sitePathPrefix %>js/base.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/api.js"></script>
+    <% if ( content.mode.name != "ascetic" ) %>
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/picoModal-2.1.0.min.js"></script>
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/sha1.js"></script>
+        <script type="text/javascript" src="/<%= sitePathPrefix %>js/base.js"></script>
+    <% end %>
 <% end %>
 <% end template %>
 

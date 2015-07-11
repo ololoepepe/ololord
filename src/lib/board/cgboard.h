@@ -21,7 +21,6 @@ public:
 public:
     void handleBoard(cppcms::application &app, unsigned int page = 0);
     QString name() const;
-    bool postingEnabled() const;
     QString title(const QLocale &l) const;
 };
 

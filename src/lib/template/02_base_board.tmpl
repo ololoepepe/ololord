@@ -112,10 +112,14 @@
 
 <% template createAction(std::string position) %>
 <div id="createActionContainer<%= position %>" class="createAction">
-    <div>
-        [<a id="showHidePostFormButton<%= position %>"
-            href="javascript:lord.showHidePostForm('<%= position %>');"><%= showPostFormText %></a>]
-    </div>
+    <% if ( content.mode.name != "ascetic" ) %>
+        <div>
+            [<a id="showHidePostFormButton<%= position %>"
+                href="javascript:lord.showHidePostForm('<%= position %>');"><%= showPostFormText %></a>]
+        </div>
+    <% else %>
+        <% include postForm() %>
+    <% end %>
 </div>
 <% end template %>
 
@@ -135,9 +139,20 @@
         (<%= file.size %>)
     </div>
     <div class="postFileSearch">
-        <a name="deleteFileButton"
-           href="javascript:lord.deleteFile('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');">
-            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteFileText %>" /></a>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <a name="deleteFileButton"
+               href="javascript:lord.deleteFile('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');">
+                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteFileText %>" /></a>
+        <% elif ( content.loggedIn ) %>
+            <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/delete_file"
+                  enctype="multipart/form-data" class="inlineForm">
+                <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                <input type="hidden" name="postNumber" value="<%= post.number %>" />
+                <input type="hidden" name="fileName" value="<%= file.sourceName %>" />
+                <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png"
+                       title="<%= deleteFileText %>" />
+           </form>
+        <% end %>
         <% if ( content.isImageType(file.type) ) %>
             <a href="//www.google.com/searchbyimage?image_url=<%= siteProtocol %>://<%= siteDomain %>/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
                title="<%= findSourceWithGoogleText %>" target="_blank">
@@ -147,12 +162,18 @@
                 <img src="/<%= sitePathPrefix %>img/iqdb.png"></a>
         <% end %>
         <% if ( content.isAudioType(file.type) ) %>
-            <a href="javascript:lord.editAudioTags('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');"
-               title="<%= editAudioTagsText %>">
-                <img src="/<%= sitePathPrefix %>img/audio_edit_tags.png"></a>
-            <a href="javascript:lord.addToPlaylist('<%= currentBoard.name %>', '<%= file.sourceName %>');"
-               title="<%= addToPlaylistText %>">
-                <img src="/<%= sitePathPrefix %>img/playlist_add.png"></a>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <a href="javascript:lord.editAudioTags('<%= currentBoard.name %>', <%= post.number %>, '<%= file.sourceName %>');"
+                   title="<%= editAudioTagsText %>">
+                    <img src="/<%= sitePathPrefix %>img/audio_edit_tags.png"></a>
+                <a href="javascript:lord.addToPlaylist('<%= currentBoard.name %>', '<%= file.sourceName %>');"
+                   title="<%= addToPlaylistText %>">
+                    <img src="/<%= sitePathPrefix %>img/playlist_add.png"></a>
+            <% elif ( content.loggedIn ) %>
+                <a href="/<%= sitePathPrefix %>edit_audio_tags?board=<%= currentBoard.name %>&post=<%= post.number %>&fileName=<%= file.sourceName %>"
+                   target="_blank" title="<%= editAudioTagsText %>">
+                    <img src="/<%= sitePathPrefix %>img/audio_edit_tags.png"></a>
+            <% end %>
         <% end %>
     </div>
     <div class="postFileFile">
@@ -204,6 +225,14 @@
             <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
                 <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>">
             <% end %>
+            <% if ( thread && thread->postLimitReached() ) %>
+                <img src="/<%= sitePathPrefix %>img/postlimit.png" title="<%= postLimitReachedText %>">
+            <% elif ( thread && thread->bumpLimitReached() ) %>
+                <img src="/<%= sitePathPrefix %>img/bumplimit.png" title="<%= bumpLimitReachedText %>">
+            <% end %>
+        <% end %>
+        <% if ( post.draft ) %>
+            <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= draftText %>" />
         <% end %>
         <span class="postSubject">
             <% if ( post.subjectIsRaw ) %>
@@ -226,7 +255,7 @@
         <% if ( content.showWhois && !post.flagName.empty() ) %>
             <% if ( !post.cityName.empty() ) %>
                 <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>"
-                     title="<%= post.countryName %>: <%= post.cityName %>">
+                     title="<%= post.cityName %>, <%= post.countryName %>">
             <% else %>
                 <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>" title="<%= post.countryName %>">
             <% end %>
@@ -242,10 +271,11 @@
                 <% end %>
             <% else %>
                 <% if ( content.moder ) %>
-                    #<a href="javascript:lord.insertPostNumber(<%= post.number %>);"
+                    #<a href="#<%= post.number %>" onclick="lord.insertPostNumber(<%= post.number %>); return false;"
                         title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="javascript:lord.insertPostNumber(<%= post.number %>);"><%= post.number %></a>
+                    #<a href="#<%= post.number %>"
+                        onclick="lord.insertPostNumber(<%= post.number %>); return false;"><%= post.number %></a>
                 <% end %>
             <% end %>
         <% else %>
@@ -264,79 +294,158 @@
                 <% end %>
             <% end %>
         <% end %>
-        [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>">&gt;&gt;</a>]
+        <% if ( content.mode.name != "ascetic" && content.postingEnabled && ((thread && !thread->postLimitReached() && thread->postingEnabled) || (!thread && !dynamic_cast<Content::Thread *>(&content)->postLimitReached())) ) %>
+            [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>">&gt;&gt;</a>]
+        <% end %>
         <span class="postActions">
             <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
             <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
-                <a name="addFileButton"
-                   href="javascript:lord.addFile('<%= currentBoard.name %>', '<%= post.number %>');">
-                    <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <a name="addFileButton"
+                       href="javascript:lord.addFile('<%= currentBoard.name %>', '<%= post.number %>');">
+                        <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                <% else %>
+                    <a name="addFileButton" target="_blank"
+                       href="/<%= sitePathPrefix %>add_file?board=<%= currentBoard.name %>&post=<%= post.number %>">
+                        <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                <% end %>
             <% end %>
             <% if ( content.moder || post.draft ) %>
-                <a name="editButton"
-                   href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
-                    <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <a name="editButton"
+                       href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
+                        <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <% else %>
+                    <a name="editButton" target="_blank"
+                       href="/<%= sitePathPrefix %>edit_post?board=<%= currentBoard.name %>&post=<%= post.number %>">
+                        <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                <% end %>
             <% end %>
             <% if ( content.moder && post.number == post.threadNumber ) %>
                 <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
-                    <a name="fixButton"
-                       href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                        <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <a name="fixButton"
+                           href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                            <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                    <% elif ( content.loggedIn ) %>
+                        <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                              action="/<%= sitePathPrefix %>action/set_thread_fixed">
+                            <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                            <input type="hidden" name="threadNumber" value="<%= post.number %>" />
+                            <input type="hidden" name="fixed" value="false" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/unfix.png"
+                                   title="<%= unfixThreadText %>" />
+                        </form>
+                    <% end %>
                 <% else %>
-                    <a name="fixButton"
-                       href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                        <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <a name="fixButton"
+                           href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                            <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                    <% elif ( content.loggedIn ) %>
+                        <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                              action="/<%= sitePathPrefix %>action/set_thread_fixed">
+                            <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                            <input type="hidden" name="threadNumber" value="<%= post.number %>" />
+                            <input type="hidden" name="fixed" value="true" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/fixed.png"
+                                   title="<%= fixThreadText %>" />
+                        </form>
+                    <% end %>
                 <% end %>
                 <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
-                    <a name="closeButton"
-                       href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                        <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <a name="closeButton"
+                           href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                            <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                    <% elif ( content.loggedIn ) %>
+                        <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                              action="/<%= sitePathPrefix %>action/set_thread_opened">
+                            <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                            <input type="hidden" name="threadNumber" value="<%= post.number %>" />
+                            <input type="hidden" name="opened" value="true" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/open.png"
+                                   title="<%= openThreadText %>" />
+                        </form>
+                    <% end %>
                 <% else %>
-                    <a name="closeButton"
-                       href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                        <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <a name="closeButton"
+                           href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
+                            <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                    <% elif ( content.loggedIn ) %>
+                        <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
+                              action="/<%= sitePathPrefix %>action/set_thread_opened">
+                            <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                            <input type="hidden" name="threadNumber" value="<%= post.number %>" />
+                            <input type="hidden" name="opened" value="false" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/closed.png"
+                                   title="<%= closeThreadText %>" />
+                        </form>
+                    <% end %>
                 <% end %>
             <% end %>
             <% if ( content.moder ) %>
-                <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
-                    <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <a name="banButton"
+                       href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
+                        <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                <% else %>
+                    <a name="banButton" target="_blank"
+                       href="/<%= sitePathPrefix %>ban_user?board=<%= currentBoard.name %>&post=<%= post.number %>">
+                        <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                <% end %>
             <% end %>
-            <% if ( !thread && post.number == post.threadNumber ) %>
-                <a name="downloadButton" href="javascript:lord.downloadThread();">
-                    <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <% if ( !thread && post.number == post.threadNumber ) %>
+                    <a name="downloadButton" href="javascript:lord.downloadThread();">
+                        <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+                <% end %>
+                <% if ( post.number == post.threadNumber ) %>
+                    <a name="addToFavoritesButton"
+                       href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
+                        <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+                <% end %>
+                <a name="complainButton" href="javascript:lord.complain();">
+                    <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
             <% end %>
-            <% if ( post.number == post.threadNumber ) %>
-                <a name="addToFavoritesButton"
-                   href="javascript:lord.addThreadToFavorites('<%= currentBoard.name %>', <%= post.number %>);">
-                    <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <a name="deleteButton"
+                   href="javascript:lord.deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                    <% if ( post.number == post.threadNumber ) %>
+                        <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
+                    <% else %>
+                        <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+                    <% end %>
+            <% elif ( content.loggedIn ) %>
+                <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/delete_post"
+                      enctype="multipart/form-data" class="inlineForm">
+                    <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
+                    <input type="hidden" name="postNumber" value="<%= post.number %>" />
+                    <% if ( post.number == post.threadNumber ) %>
+                        <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png"
+                               title="<%= deleteThreadText %>" />
+                    <% else %>
+                        <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png"
+                               title="<%= deletePostText %>" />
+                    <% end %>
+                </form>
             <% end %>
-            <a name="complainButton" href="javascript:lord.complain();">
-                <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
-            <a name="deleteButton"
-               href="javascript:lord.deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
-            <% if ( post.number == post.threadNumber ) %>
-                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
-            <% else %>
-                <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <a name="hideButton" id="hidePost<%= post.number %>"
+                   href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>');">
+                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <% end %>
-            <a name="hideButton" id="hidePost<%= post.number %>"
-               href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>');">
-                <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
         </span>
         <% if ( thread && post.number == post.threadNumber ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
-            <% if ( thread->postLimitReached() ) %>
-                <span name="postLimit" class="postLimitReached"><%= postLimitReachedText %></span>
-            <% elif ( thread->bumpLimitReached() ) %>
-                <span name="bumpLimit" class="bumpLimitReached"><%= bumpLimitReachedText %></span>
-            <% end %>
         <% end %>
     </div>
     <table class="threadPost">
         <tbody>
             <% include customPostBody0(post, thread) %>
             <tr>
-                <%foreach file in post.files %>
+                <% foreach file in post.files %>
                     <% item %>
                         <% include postFile(file, post) %>
                     <% end %>
@@ -394,7 +503,7 @@
                 <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\">"; %>
                     <span name="referencedBy" class="referencedBy">
                         <%= referencedByText %>
-                        <%foreach ref in post.referencedBy %>
+                        <% foreach ref in post.referencedBy %>
                             <% item %>
                                 <% if ( ref.boardName != content.currentBoard.name ) %>
                                     <a href="/<%= sitePathPrefix %><%= ref.boardName %>/thread/<%= ref.threadNumber %>.html#<%= ref.postNumber %>"
@@ -414,6 +523,185 @@
         </tbody>
     </table>
 </div>
+<% end template %>
+
+<% template postForm() %>
+<% if ( content.mode.name != "ascetic" ) %>
+    <form id="postForm" method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/<%= action %>"
+          enctype="multipart/form-data" onsubmit="return lord.submitted(event, this);">
+<% else %>
+    <form id="postForm" method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/<%= action %>"
+          enctype="multipart/form-data">
+<% end %>
+    <input type="hidden" value="<%= currentBoard.name %>" name="board" />
+    <% if ( content.currentThread > 0 ) %>
+        <input type="hidden" value="<%= currentThread %>" name="thread" />
+    <% end %>
+    <input type="hidden" value="<%= currentCaptchaEngine.id %>" name="captchaEngine" />
+    <input type="hidden" value="" name="fileHashes" />
+    <table class="postFormTable">
+        <tbody>
+            <% include customPostFormField0() %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelEmail %></b>
+                </td>
+                <td class="postformField">
+                    <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
+                    <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
+                </td>
+            </tr>
+            <% include customPostFormField1() %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelName %></b>
+                </td>
+                <td class="postformField">
+                    <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
+                </td>
+            </tr>
+            <% include customPostFormField2() %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelSubject %></b>
+                </td>
+                <td class="postformField">
+                    <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
+                </td>
+            </tr>
+            <% include customPostFormField3() %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelText %></b>
+                </td>
+                <td class="postformField">
+                    <div class="symbolCounterContainer">
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            <span class="symbolCounter"><span name="used">0</span>/<%= maxTextLength %></span>
+                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                        <% else %>
+                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                        <% end %>
+                    </div>
+                </td>
+            </tr>
+            <% include customPostFormField4() %>
+            <% if ( content.moder >= 10 ) %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelRaw %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="checkbox" name="raw" value="true" />
+                    </td>
+                </tr>
+            <% end %>
+            <% include customPostFormField41() %>
+            <% if ( content.loggedIn ) %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelTripcode %></b>
+                    </td>
+                    <td class="postformField">
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
+                        <% else %>
+                            <input type="checkbox" name="tripcode" value="true" />
+                        <% end %>
+                    </td>
+                </tr>
+            <% end %>
+            <% include customPostFormField42() %>
+            <% if ( content.draftsEnabled && content.loggedIn ) %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelDraft %></b>
+                    </td>
+                    <td class="postformField">
+                        <% if ( content.draftsByDefault ) %>
+                            <input type="checkbox" name="draft" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="draft" value="true" />
+                        <% end %>
+                    </td>
+                </tr>
+            <% end %>
+            <% include customPostFormField5() %>
+            <% if ( content.maxFileCount ) %>
+                <tr>
+                    <td class="postformLabel">
+                        <b><%= postFormInputFile %></b>
+                    </td>
+                    <td class="postformField">
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            <div class="postformFile" onclick="lord.browseFile(event, this);"
+                                 ondragover="return lord.fileDragOver(event, this);"
+                                 ondragleave="return lord.fileDragLeave(event, this);"
+                                 ondrop="return lord.fileDrop(event, this);" title="<%= selectFileText %>">
+                                <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
+                                <input type="file" name="file" onchange="lord.fileSelected(this);"
+                                       class="postformFileInput" accept="<%= supportedFileTypes %>" />
+                                <span class="postformFileText"></span>
+                                <a href="javascript:void(0);" style="display: none;" onclick="lord.removeFile(this);"
+                                   class="postformFileRemoveButton">
+                                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
+                                         class="postformFileRemoveImage"></a>
+                            </div>
+                        <% else %>
+                            <% c++ for (int i = 0; i < int(content.maxFileCount); ++i) { %>
+                                <input type="file" name="file" accept="<%= supportedFileTypes %>" />
+                                <% c++ if (i < int(content.maxFileCount - 1)) {%>
+                                    <br />
+                                <% c++ } %>
+                            <% c++ } %>
+                        <% end %>
+                    </td>
+                </tr>
+            <% end %>
+            <% include customPostFormField6() %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelPassword %></b>
+                </td>
+                <td class="postformField">
+                    <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
+                </td>
+            </tr>
+            <% include customPostFormField7() %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelCaptcha %></b>
+                </td>
+                <td id="captchaContainer" class="postformField">
+                    <% if ( content.captchaEnabled ) %>
+                        <% if ( content.captchaQuota > 0 ) %>
+                            <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
+                                <%= captchaQuota %></span>
+                        <% else %>
+                            <%= captchaWidgetHtml | raw %>
+                        <% end %>
+                    <% else %>
+                        <span class="noCaptchaText"><%= noCaptchaText %></span>
+                    <% end %>
+                </td>
+            </tr>
+            <% include customPostFormField8() %>
+            <tr>
+                <td colspan="2" class="postformRules">
+                    <ul>
+                        <% foreach rule in postformRules %>
+                            <% item %>
+                                <li><%= rule | raw %></li>
+                            <% end %>
+                        <% end %>
+                    </ul>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>
 <% end template %>
 
 <% template boardTexts() %>
@@ -461,8 +749,9 @@
 <input type="hidden" id="addFileText" value="<%= addFileText %>" />
 <input type="hidden" id="editAudioTagsText" value="<%= editAudioTagsText %>" />
 <input type="hidden" id="addToPlaylistText" value="<%= addToPlaylistText %>" />
+<input type="hidden" id="fileExistsOnServerText" value="<%= fileExistsOnServerText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
-    <%foreach board in availableBoards %>
+    <% foreach board in availableBoards %>
         <% item %>
             <% if ( board.name == content.currentBoard.name ) %>
                 <option value="<%= board.name %>" selected="true">[<%= board.name %>] <%= board.title %></option>
@@ -473,7 +762,7 @@
     <% end %>
 </select>
 <select id="banLevelsSelect" class="select" style="display: none;">
-    <%foreach level in banLevels %>
+    <% foreach level in banLevels %>
         <% item %>
             <% if ( 1 == level.level ) %>
                 <option value="<%= level.level %>" selected="true"><%= level.description %></option>
@@ -732,161 +1021,15 @@
     </div>
 <% end %>
 <div id="hiddenPostForm" style="display: none;">
-    <form id="postForm" method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/<%= action %>"
-          enctype="multipart/form-data" onsubmit="return lord.submitted(event, this);">
-        <input type="hidden" value="<%= currentBoard.name %>" name="board" />
-        <% if ( content.currentThread > 0 ) %>
-            <input type="hidden" value="<%= currentThread %>" name="thread" />
-        <% end %>
-        <input type="hidden" value="<%= currentCaptchaEngine.id %>" name="captchaEngine" />
-        <input type="hidden" value="" name="fileHashes" />
-        <table class="postFormTable">
-            <tbody>
-                <% include customPostFormField0() %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelEmail %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
-                        <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
-                    </td>
-                </tr>
-                <% include customPostFormField1() %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelName %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
-                    </td>
-                </tr>
-                <% include customPostFormField2() %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelSubject %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
-                    </td>
-                </tr>
-                <% include customPostFormField3() %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelText %></b>
-                    </td>
-                    <td class="postformField">
-                        <div class="symbolCounterContainer">
-                            <span class="symbolCounter"><span name="used">0</span>/<%= maxTextLength %></span>
-                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
-                        </div>
-                    </td>
-                </tr>
-                <% include customPostFormField4() %>
-                <% if ( content.moder >= 10 ) %>
-                    <tr>
-                        <td class="postformLabel">
-                            <b><%= postFormLabelRaw %></b>
-                        </td>
-                        <td class="postformField">
-                            <input type="checkbox" name="raw" value="true" />
-                        </td>
-                    </tr>
-                <% end %>
-                <% include customPostFormField41() %>
-                <% if ( content.loggedIn ) %>
-                    <tr>
-                        <td class="postformLabel">
-                            <b><%= postFormLabelTripcode %></b>
-                        </td>
-                        <td class="postformField">
-                            <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
-                        </td>
-                    </tr>
-                <% end %>
-                <% include customPostFormField42() %>
-                <% if ( content.draftsEnabled && content.loggedIn ) %>
-                    <tr>
-                        <td class="postformLabel">
-                            <b><%= postFormLabelDraft %></b>
-                        </td>
-                        <td class="postformField">
-                            <input type="checkbox" name="draft" value="true" />
-                        </td>
-                    </tr>
-                <% end %>
-                <% include customPostFormField5() %>
-                <% if ( content.maxFileCount ) %>
-                    <tr>
-                        <td class="postformLabel">
-                            <b><%= postFormInputFile %></b>
-                        </td>
-                        <td class="postformField">
-                            <div class="postformFile" onclick="lord.browseFile(event, this);"
-                                 ondragover="return lord.fileDragOver(event, this);"
-                                 ondragleave="return lord.fileDragLeave(event, this);"
-                                 ondrop="return lord.fileDrop(event, this);" title="<%= selectFileText %>">
-                                <img class="postformFilePreview" src="/<%= sitePathPrefix %>img/addfile.png">
-                                <input type="file" name="file" onchange="lord.fileSelected(this);"
-                                       class="postformFileInput" accept="<%= supportedFileTypes %>" />
-                                <span class="postformFileText"></span>
-                                <a href="javascript:void(0);" style="display: none;" onclick="lord.removeFile(this);"
-                                   class="postformFileRemoveButton">
-                                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
-                                         class="postformFileRemoveImage"></a>
-                            </div>
-                        </td>
-                    </tr>
-                <% end %>
-                <% include customPostFormField6() %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelPassword %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
-                    </td>
-                </tr>
-                <% include customPostFormField7() %>
-                <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelCaptcha %></b>
-                    </td>
-                    <td id="captchaContainer" class="postformField">
-                        <% if ( content.captchaEnabled ) %>
-                            <% if ( content.captchaQuota > 0 ) %>
-                                <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
-                                    <%= captchaQuota %></span>
-                            <% else %>
-                                <%= captchaWidgetHtml | raw %>
-                            <% end %>
-                        <% else %>
-                            <span class="noCaptchaText"><%= noCaptchaText %></span>
-                        <% end %>
-                    </td>
-                </tr>
-                <% include customPostFormField8() %>
-                <tr>
-                    <td colspan="2" class="postformRules">
-                        <ul>
-                            <%foreach rule in postformRules %>
-                                <% item %>
-                                    <li><%= rule | raw %></li>
-                                <% end %>
-                            <% end %>
-                        </ul>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </form>
+    <% include postForm() %>
 </div>
 <% end template %>
 
 <% template boardHead() %>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/base_board.js"></script>
-<script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/lib-typedarrays-min.js"></script>
+<% if ( content.mode.name != "ascetic" ) %>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/base_board.js"></script>
+    <script type="text/javascript" src="/<%= sitePathPrefix %>js/3rdparty/lib-typedarrays-min.js"></script>
+<% end %>
 <% if ( content.captchaEnabled ) %>
     <% if ( !content.captchaScriptSource.empty() ) %>
         <script type="text/javascript" src="<%= captchaScriptSource %>"></script>

@@ -1,0 +1,128 @@
+<% c++ #include "controller/editpost.h" %>
+<% skin my_skin %>
+<% view edit_post uses Content::EditPost extends base %>
+
+<% template customPostFormFieldEdit0() %>
+<% end template %>
+
+<% template customPostFormFieldEdit1() %>
+<% end template %>
+
+<% template customPostFormFieldEdit2() %>
+<% end template %>
+
+<% template customPostFormFieldEdit3() %>
+<% end template %>
+
+<% template customPostFormFieldEdit4() %>
+<% end template %>
+
+<% template customPostFormFieldEdit5() %>
+<% end template %>
+
+<% template customPostFormFieldEdit6() %>
+<% end template %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+    </head>
+    <body>
+        <% include baseTexts() %>
+        <% include customHeader() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <h1><%= pageTitle %></h1>
+        </div>
+        <form class="centerForm" method="post" accept-charset="utf-8" enctype="multipart/form-data"
+              action="/<%= sitePathPrefix %>action/edit_post">
+            <input type="hidden" name="board" value="<%= currentBoardName %>" />
+            <input type="hidden" name="postNumber" value="<%= postNumber %>" />
+            <table class="postFormTable">
+                <tbody>
+                    <% include customPostFormFieldEdit0() %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelEmail %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="43"
+                                   value="<%= email %>" />
+                        </td>
+                    </tr>
+                    <% include customPostFormFieldEdit1() %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelName %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43"
+                                   value="<%= name %>" />
+                        </td>
+                    </tr>
+                    <% include customPostFormFieldEdit2() %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelSubject %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43"
+                                   value="<%= subject %>" />
+                        </td>
+                    </tr>
+                    <% include customPostFormFieldEdit3() %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelText %></b>
+                        </td>
+                        <td class="postformField">
+                            <div class="symbolCounterContainer">
+                                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                          class="postFormTextarea"><%= text %></textarea>
+                            </div>
+                        </td>
+                    </tr>
+                    <% include customPostFormFieldEdit4() %>
+                    <% if ( content.moder >= 10 ) %>
+                        <tr>
+                            <td class="postformLabel">
+                                <b><%= postFormLabelRaw %></b>
+                            </td>
+                            <td class="postformField">
+                                <% if ( content.raw ) %>
+                                    <input type="checkbox" name="raw" value="true" checked="true" />
+                                <% else %>
+                                    <input type="checkbox" name="raw" value="true" />
+                                <% end %>
+                            </td>
+                        </tr>
+                    <% end %>
+                    <% if ( content.draftsEnabled && content.loggedIn && content.draft ) %>
+                        <tr>
+                            <td class="postformLabel">
+                                <b><%= postFormLabelDraft %></b>
+                            </td>
+                            <td class="postformField">
+                                <input type="checkbox" name="draft" value="true" checked="true" />
+                            </td>
+                        </tr>
+                    <% end %>
+                    <% include customPostFormFieldEdit5() %>
+                </tbody>
+            </table>
+            <br />
+            <input type="submit" name="submit" value="<%= confirmButtonText %>" />
+        </form>
+        <% include customHeader() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

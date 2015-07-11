@@ -7,6 +7,7 @@
 #include <cppcms/view.h>
 
 #include <list>
+#include <set>
 #include <string>
 
 namespace Content
@@ -30,6 +31,11 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
             return name == other.name;
         }
     };
+    struct Mode
+    {
+        std::string name;
+        std::string title;
+    };
     struct Style
     {
         std::string name;
@@ -42,6 +48,7 @@ public:
     std::list<CaptchaEngine> captchaEngines;
     std::string captchaLabelText;
     std::string captchaLabelWarningText;
+    std::string checkFileExistenceLabelText;
     std::string closeButtonText;
     std::string confirmButtonText;
     CaptchaEngine currentCaptchaEngine;
@@ -49,28 +56,44 @@ public:
     std::string currentTime;
     std::string customFooterContent;
     std::string customHeaderContent;
+    bool draftsByDefault;
+    std::string draftsByDefaultLabelText;
+    std::string error413Text;
     std::string favoriteThreadsText;
+    std::string framedVersionText;
+    std::string generalSettingsLegendText;
+    std::set<std::string> hiddenBoards;
+    std::string hiddenBoardsLabelText;
     std::string localeLabelText;
     std::list<Locale> locales;
     bool loggedIn;
     std::string loginButtonText;
+    std::string loginIconName;
     std::string loginLabelText;
-    std::string loginMessageOk;
-    std::string loginMessageWarning;
+    std::string loginMessageText;
     std::string loginPlaceholderText;
+    std::string loginSystemDescriptionText;
     unsigned int maxSearchQueryLength;
+    Mode mode;
+    std::string modeLabelText;
+    std::list<Mode> modes;
     std::string pageTitle;
+    std::string path;
     std::string quickReplyActionAppendPostText;
     std::string quickReplyActionDoNothingText;
     std::string quickReplyActionGotoThreadText;
     std::string quickReplyActionLabelText;
     std::string removeFromFavoritesText;
+    std::string scriptSettingsLegendText;
     std::string searchButtonText;
     std::string searchInputPlaceholder;
     std::string settingsButtonText;
     std::string settingsDialogTitle;
+    std::string showAttachedFilePreviewLabelText;
     std::string showFavoriteText;
+    std::string showNewPostsLabelText;
     std::string showPasswordText;
+    std::string showYoutubeVideoTitleLabelText;
     std::string siteDomain;
     std::string sitePathPrefix;
     std::string siteProtocol;

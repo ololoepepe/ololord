@@ -7,6 +7,7 @@ class QTimerEvent;
 
 #include <BCoreApplication>
 
+#include <QElapsedTimer>
 #include <QString>
 
 #if !defined(oApp)
@@ -24,11 +25,14 @@ private:
     int captchaQuotaTimerId;
     int outdatedTimerId;
     int searchTimerId;
+    QElapsedTimer uptimeTimer;
 public:
     explicit OlolordApplication(int &argc, char **argv, const QString &applicationName = QString(),
                                 const QString &organizationName = QString());
     explicit OlolordApplication(int &argc, char **argv, const InitialSettings &s);
     ~OlolordApplication();
+public:
+    qint64 uptime() const;
 protected:
     void timerEvent(QTimerEvent *e);
 private:

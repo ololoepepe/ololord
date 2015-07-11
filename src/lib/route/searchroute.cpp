@@ -37,7 +37,7 @@ void SearchRoute::handle()
     QString logTarget = boardName + "/" + query;
     Tools::log(application, "search", "begin", logTarget);
     QString err;
-    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "search", "fail:" + err, logTarget);
     Content::Search c;
     TranslatorQt tq(application.request());
@@ -127,7 +127,7 @@ std::string SearchRoute::key() const
 
 int SearchRoute::priority() const
 {
-    return 5;
+    return 0;
 }
 
 std::string SearchRoute::regex() const

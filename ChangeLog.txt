@@ -1,3 +1,34 @@
+=== ololord 0.1.0-rc9 (11 July 2015) ===
+    * Implement "uptime" command
+    * Fix post number links
+    * Remove minification feature
+    * Add error 413 description
+    * Improve vote system
+    * Change strikeout markup from double hyphen to triple hyphen
+    * Replace two consequent hyphen by en-dash (shorter) and four consequent hyphens by em-dash (longer)
+    * Show if file exists on server when it is uploaded
+    * Enable access to joky boards
+    * Fix WakabaMark markup
+    * Add /po/ board
+    * Use AJAX or simple replies depending on situation
+    * Fix translations
+    * Implement "ascetic" mode
+    * Add bump limit and post limit icons
+    * Add framesets for settings groups
+    * Add draft icon
+    * Add settings option to make posts drafts by default
+    * Add playlist, markup and homepage icons to navbar
+    * Add framed version
+    * Add ability to hide selected boards
+    * Add ability to set whether to show new posts and whether to show YouTube videos titles
+    * Add ability to disable checking existence of a file on server
+    * Add ability to disable loading previews of attached image files
+    * Allow multiple simultaneous transactions
+    * Replace login info text with icon
+    * Add PDF support
+    * Add login system description
+    * Update README
+
 === ololord 0.1.0-rc8 (19 June 2015) ===
     * Fix building with Qt5
     * Use QMimeDatabase for MIME type detection with Qt5

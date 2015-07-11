@@ -6,11 +6,18 @@
 #include <plugin/RouteFactoryPluginInterface>
 #include <route/AbstractRoute>
 #include <route/ActionRoute>
+#include <route/AddFileRoute>
+#include <route/BanUserRoute>
 #include <route/BoardRoute>
+#include <route/EditAudioTagsRoute>
+#include <route/EditPostRoute>
+#include <route/FrameListRoute>
+#include <route/FrameRoute>
 #include <route/HomeRoute>
 #include <route/MarkupRoute>
 #include <route/PlaylistRoute>
 #include <route/SearchRoute>
+#include <route/SettingsRoute>
 #include <route/StaticFilesRoute>
 #include <route/ThreadRoute>
 #include <SettingsLocker>
@@ -48,11 +55,23 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     QMap<std::string, AbstractRoute *> routesMap;
     AbstractRoute *r = new ActionRoute(*this);
     routesMap.insert(r->regex(), r);
+    r = new AddFileRoute(*this);
+    routesMap.insert(r->regex(), r);
     r = new BoardRoute(*this, BoardRoute::BoardMode);
     routesMap.insert(r->regex(), r);
     r = new BoardRoute(*this, BoardRoute::BoardPageMode);
     routesMap.insert(r->regex(), r);
     r = new BoardRoute(*this, BoardRoute::BoardRulesRoute);
+    routesMap.insert(r->regex(), r);
+    r = new BanUserRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new EditAudioTagsRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new EditPostRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new FrameListRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new FrameRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new HomeRoute(*this);
     routesMap.insert(r->regex(), r);
@@ -61,6 +80,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new PlaylistRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new SearchRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new SettingsRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new StaticFilesRoute(*this, StaticFilesRoute::StaticFilesMode);
     routesMap.insert(r->regex(), r);
@@ -143,7 +164,7 @@ void OlolordWebApp::main(std::string url)
     try {
         if (dispatcher().dispatch(url))
             return;
-        Controller::renderNotFound(*this);
+        Controller::renderNotFoundNonAjax(*this);
         Tools::log(*this, Tools::fromStd(url), "fail:not_found:handled_by_main");
     } catch (const std::exception &e) {
         Tools::log("OlolordWebApp::main", e);

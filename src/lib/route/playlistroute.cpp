@@ -24,7 +24,7 @@ void PlaylistRoute::handle()
 {
     Tools::log(application, "playlist", "begin");
     QString err;
-    if (!Controller::testRequest(application, Controller::GetRequest, &err))
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "playlist", "fail:" + err);
     Content::Playlist c;
     TranslatorQt tq(application.request());
@@ -51,7 +51,7 @@ std::string PlaylistRoute::key() const
 
 int PlaylistRoute::priority() const
 {
-    return 2;
+    return 0;
 }
 
 std::string PlaylistRoute::regex() const

@@ -13,6 +13,7 @@ class Query;
 namespace Tools
 {
 
+class AudioTags;
 class File;
 class Post;
 
@@ -283,11 +284,12 @@ OLOLORD_EXPORT bool deleteFile(const QString &boardName, const QString &fileName
                                const QByteArray &password, QString *error = 0);
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QString *error = 0,
                                const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
+OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
 OLOLORD_EXPORT bool editAudioTags(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
                                   const QByteArray &password, const QVariantMap &tags, QString *error = 0);
 OLOLORD_EXPORT bool editPost(EditPostParameters &p);
+OLOLORD_EXPORT unsigned int fileCount(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT bool fileExists(const QByteArray &hash, bool *ok = 0);
 OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);
 OLOLORD_EXPORT QList<Post> findPosts(const Search::Query &query, const QString &boardName = QString(), bool *ok = 0,
@@ -315,6 +317,7 @@ OLOLORD_EXPORT bool moderOnBoard(const QByteArray &hashpass, const QString &boar
                                  const QString &board2 = QString());
 OLOLORD_EXPORT bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNumber = 0);
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
+OLOLORD_EXPORT quint64 postThreadNumber(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QStringList registeredUserBoards(const cppcms::http::request &req);
 OLOLORD_EXPORT QStringList registeredUserBoards(const QByteArray &hashpass);
 OLOLORD_EXPORT int registeredUserLevel(const cppcms::http::request &req);
@@ -332,8 +335,8 @@ OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumb
                                     const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened,
                                     const cppcms::http::request &req, QString *error = 0);
-OLOLORD_EXPORT bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request &req,
-                                  QString *error = 0);
+OLOLORD_EXPORT bool setVoteOpened(quint64 postNumber, bool opened, const QByteArray &password,
+                                  const cppcms::http::request &req, QString *error = 0);
 OLOLORD_EXPORT bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error = 0);
 OLOLORD_EXPORT BanInfo userBanInfo(const QString &ip, const QString &boardName = QString(), bool *ok = 0,
                                    QString *error = 0, const QLocale &l = BCoreApplication::locale());

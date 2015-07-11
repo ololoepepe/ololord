@@ -166,7 +166,7 @@ void AbstractCaptchaEngine::reloadEngines()
     enginesInitialized = true;
 }
 
-QString AbstractCaptchaEngine::headerHtml() const
+QString AbstractCaptchaEngine::headerHtml(bool /*asceticMode*/) const
 {
     return "";
 }
@@ -187,7 +187,7 @@ QString AbstractCaptchaEngine::publicKey() const
     return SettingsLocker()->value("Captcha/" + s +"/public_key").toString();
 }
 
-QString AbstractCaptchaEngine::scriptSource() const
+QString AbstractCaptchaEngine::scriptSource(bool /*asceticMode*/) const
 {
     return "";
 }

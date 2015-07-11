@@ -1,0 +1,71 @@
+<% c++ #include "controller/editaudiotags.h" %>
+<% skin my_skin %>
+<% view edit_audio_tags uses Content::EditAudioTags extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+    </head>
+    <body>
+        <% include baseTexts() %>
+        <% include customHeader() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <h1><%= pageTitle %></h1>
+        </div>
+        <form class="centerForm" method="post" accept-charset="utf-8" enctype="multipart/form-data"
+              action="/<%= sitePathPrefix %>action/edit_audio_tags">
+            <input type="hidden" name="board" value="<%= currentBoardName %>" />
+            <input type="hidden" name="postNumber" value="<%= postNumber %>" />
+            <input type="hidden" name="fileName" value="<%= fileName %>" />
+            <table>
+                <tbody>
+                    <tr>
+                        <td>
+                            <b><%= audioTagAlbumText %></b>
+                        </td>
+                        <td>
+                            <input type="text" name="album" size="43" value="<%= audioTagAlbum %>" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b><%= audioTagArtistText %></b>
+                        </td>
+                        <td>
+                            <input type="text" name="artist" size="43" value="<%= audioTagArtist %>" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b><%= audioTagTitleText %></b>
+                        </td>
+                        <td>
+                            <input type="text" name="title" size="43" value="<%= audioTagTitle %>" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <b><%= audioTagYearText %></b>
+                        </td>
+                        <td>
+                            <input type="text" name="year" size="43" value="<%= audioTagYear %>" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="submit" name="submit" value="<%= confirmButtonText %>" />
+        </form>
+        <% include customHeader() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

@@ -7,31 +7,33 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <% include baseHead(1) %>
-        <script type="text/javascript">
-            /*ololord global object*/
+        <% if ( content.mode.name != "ascetic" ) %>
+            <script type="text/javascript">
+                /*ololord global object*/
 
-            var lord = lord || {};
+                var lord = lord || {};
 
-            /*Functions*/
+                /*Functions*/
 
-            lord.setSearchQuery = function() {
-                var query = document.getElementById("hiddenSearchQuery").value;
-                document.getElementById("searchFormInputQuery").value = query;
-                var board = document.getElementById("hiddenSearchQueryBoard").value;
-                var sel = document.getElementById("searchFormSelectBoard");
-                for (var opt, i = 0; opt = sel.options[i]; ++i) {
-                    if (opt.value == board) {
-                        sel.selectedIndex = i;
-                        break;
+                lord.setSearchQuery = function() {
+                    var query = document.getElementById("hiddenSearchQuery").value;
+                    document.getElementById("searchFormInputQuery").value = query;
+                    var board = document.getElementById("hiddenSearchQueryBoard").value;
+                    var sel = document.getElementById("searchFormSelectBoard");
+                    for (var opt, i = 0; opt = sel.options[i]; ++i) {
+                        if (opt.value == board) {
+                            sel.selectedIndex = i;
+                            break;
+                        }
                     }
-                }
-            };
+                };
 
-            window.addEventListener("load", function load() {
-                window.removeEventListener("load", load, false);
-                lord.setSearchQuery();
-            }, false);
-        </script>
+                window.addEventListener("load", function load() {
+                    window.removeEventListener("load", load, false);
+                    lord.setSearchQuery();
+                }, false);
+            </script>
+        <% end %>
     </head>
     <body>
         <% include baseTexts() %>

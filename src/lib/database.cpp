@@ -1088,7 +1088,7 @@ bool deletePost(const QString &boardName, quint64 postNumber, QString *error, co
     return b;
 }
 
-bool deletePost(const QString &boardName, quint64 postNumber,  const cppcms::http::request &req,
+bool deletePost(const QString &boardName, quint64 postNumber, const cppcms::http::request &req,
                 const QByteArray &password, QString *error)
 {
     TranslatorQt tq(req);
@@ -1265,6 +1265,28 @@ bool editPost(EditPostParameters &p)
         return bRet(p.error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(p.error, Tools::fromStd(e.what()), false);
+    }
+}
+
+unsigned int fileCount(const QString &boardName, quint64 postNumber)
+{
+    if (boardName.isEmpty() || !postNumber)
+        return 0;
+    try {
+        Transaction t;
+        if (!t)
+            return 0;
+        Result<PostId> postId = queryOne<PostId, Post>(odb::query<Post>::board == boardName
+                                                       && odb::query<Post>::number == postNumber);
+        if (postId.error || !postId)
+            return 0;
+        Result<FileInfoCount> count = queryOne<FileInfoCount, FileInfo>(odb::query<FileInfo>::post == postId->id);
+        if (count.error || !count)
+            return 0;
+        return count->count;
+    } catch (const odb::exception &e) {
+        Tools::log("Database::fileCount", e);
+        return 0;
     }
 }
 
@@ -1616,6 +1638,23 @@ QString posterIp(const QString &boardName, quint64 postNumber)
     }
 }
 
+quint64 postThreadNumber(const QString &boardName, quint64 postNumber)
+{
+    try {
+        Transaction t;
+        if (!t)
+            return 0;
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error || !post)
+            return 0;
+        return post->thread().load()->number();
+    }  catch (const odb::exception &e) {
+        Tools::log("Database::postThreadNumber", e);
+        return 0;
+    }
+}
+
 QStringList registeredUserBoards(const cppcms::http::request &req)
 {
     QByteArray hp = Tools::hashpass(req);
@@ -1836,11 +1875,15 @@ bool setThreadOpened(const QString &boardName, quint64 threadNumber, bool opened
     }
 }
 
-bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request &req, QString *error)
+bool setVoteOpened(quint64 postNumber, bool opened, const QByteArray &password, const cppcms::http::request &req,
+                   QString *error)
 {
     TranslatorQt tq(req);
     if (!postNumber)
         return bRet(error, tq.translate("setVoteOpened", "Invalid post number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (password.isEmpty() && hashpass.isEmpty())
+        return bRet(error, tq.translate("setVoteOpened", "Invalid password", "error"), false);
     try {
         Transaction t;
         if (!t)
@@ -1851,6 +1894,15 @@ bool setVoteOpened(quint64 postNumber, bool opened, const cppcms::http::request 
             return bRet(error, tq.translate("setVoteOpened", "Internal database error", "error"), false);
         if (!post)
             return bRet(error, tq.translate("setVoteOpened", "No such post", "error"), false);
+        if (password.isEmpty()) {
+            if (hashpass != post->hashpass()) {
+                int lvl = registeredUserLevel(req);
+                if (!moderOnBoard(req, "rpg") || registeredUserLevel(post->hashpass()) >= lvl)
+                    return bRet(error, tq.translate("setVoteOpened", "Not enough rights", "error"), false);
+            }
+        } else if (password != post->password()) {
+            return bRet(error, tq.translate("setVoteOpened", "Incorrect password", "error"), false);
+        }
         QVariantMap m = post->userData().toMap();
         if (m.value("disabled") == !opened)
             return bRet(error, QString(), true);

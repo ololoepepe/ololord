@@ -272,5 +272,24 @@
         <file>static/img/post_actions.png</file>
         <file>static/img/audio_wav_logo.png</file>
         <file>static/img/audio_edit_tags.png</file>
+        <file>static/img/storage.png</file>
+        <file>static/img/okayface.png</file>
+        <file>static/img/bumplimit.png</file>
+        <file>static/img/postlimit.png</file>
+        <file>static/img/markup.png</file>
+        <file>static/img/playlist.png</file>
+        <file>static/img/frame.png</file>
+        <file>static/img/homepage.png</file>
+        <file>static/img/noframe.png</file>
+        <file>static/img/gif_file.png</file>
+        <file>static/img/jpeg_file.png</file>
+        <file>static/img/png_file.png</file>
+        <file>static/img/admin.png</file>
+        <file>static/img/moder.png</file>
+        <file>static/img/user.png</file>
+        <file>static/img/user_registered.png</file>
+        <file>static/img/question.png</file>
+        <file>static/img/application_pdf_logo.png</file>
+        <file>static/img/pdf_file.png</file>
     </qresource>
 </RCC>

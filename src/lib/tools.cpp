@@ -35,6 +35,7 @@
 #include <QTemporaryFile>
 #include <QTextCodec>
 #include <QTime>
+#include <QUrl>
 #include <QVariant>
 #include <QVariantList>
 #include <QVariantMap>
@@ -282,7 +283,8 @@ QString cookieValue(const cppcms::http::request &req, const QString &name)
 {
     if (name.isEmpty())
         return "";
-    return fromStd(const_cast<cppcms::http::request *>(&req)->cookie_by_name(toStd(name)).value());
+    QByteArray ba = const_cast<cppcms::http::request *>(&req)->cookie_by_name(toStd(name)).value().data();
+    return QUrl::fromPercentEncoding(ba);
 }
 
 QString countryCode(const QString &ip)
@@ -768,26 +770,19 @@ cppcms::json::value readJsonValue(const QString &fileName, bool *ok)
         return bRet(ok, false, cppcms::json::value());
 }
 
+void redirect(cppcms::application &app, const QString &path)
+{
+    if (path.isEmpty()) {
+        app.response().set_redirect_header(app.request().http_referer());
+    } else {
+        QString p = "/" + SettingsLocker()->value("Site/path_prefix").toString() + path;
+        app.response().set_redirect_header(toStd(p));
+    }
+}
+
 void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
 {
-    int m = SettingsLocker()->value("System/minification_mode", 1).toInt();
-    if (m <= 0)
-        return app.render(toStd(templateName), content);
-    std::stringstream stream;
-    app.render(toStd(templateName), stream, content);
-    QStringList sl = fromStd(stream.str()).split(QRegExp("(\r?\n)+"));
-    foreach (int i, bRangeR(sl.size() - 1, 0)) {
-        if (sl[i].isEmpty() || QRegExp("\\s+").exactMatch(sl[i])) {
-            sl.removeAt(i);
-        } else if (m > 1) {
-            sl[i].replace(QRegExp("^\\s+"), "");
-            sl[i].replace(QRegExp("\\s+$"), "");
-        }
-    }
-    QString s = sl.join("\n");
-    if (m > 1)
-        s.replace(QRegExp(" {2,}"), " ");
-    app.response().out() << toStd(s);
+    return app.render(toStd(templateName), content);
 }
 
 void resetLoggingSkipIps()

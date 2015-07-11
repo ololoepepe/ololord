@@ -401,6 +401,66 @@ By default, the date of first site launch is used.</source>
 Формат: %1
 По умолчанию используется дата первого запуска сайта.</translation>
     </message>
+    <message>
+        <source>/po/litics</source>
+        <comment>title</comment>
+        <translation>Политика</translation>
+    </message>
+    <message>
+        <source>Armchair warrior</source>
+        <comment>defaultUserName</comment>
+        <translation>Диванный эксперт</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Post number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер поста</translation>
+    </message>
+    <message>
+        <source>Edit post</source>
+        <comment>pageTitle</comment>
+        <translation>Редактировать пост</translation>
+    </message>
+    <message>
+        <source>Draft:</source>
+        <comment>postFormLabelDraft</comment>
+        <translation>Черновик:</translation>
+    </message>
+    <message>
+        <source>E-mail:</source>
+        <comment>postFormLabelEmail</comment>
+        <translation>Эл. почта:</translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <comment>postFormLabelName</comment>
+        <translation>Имя:</translation>
+    </message>
+    <message>
+        <source>Raw HTML:</source>
+        <comment>postFormLabelRaw</comment>
+        <translation>&quot;Сырой&quot; HTML:</translation>
+    </message>
+    <message>
+        <source>Subject:</source>
+        <comment>postFormLabelSubject</comment>
+        <translation>Тема:</translation>
+    </message>
+    <message>
+        <source>Post:</source>
+        <comment>postFormLabelText</comment>
+        <translation>Пост:</translation>
+    </message>
+    <message>
+        <source>Comment. Max length %1</source>
+        <comment>postFormTextPlaceholder</comment>
+        <translation>Комментарий. Макс. длина %1</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -454,6 +514,16 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Капча решена неправильно</translation>
     </message>
+    <message>
+        <source>No engine for this captcha type</source>
+        <comment>error</comment>
+        <translation>Отсутствует движок для этого типа капчи</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
 </context>
 <context>
     <name>ActionAjaxHandler</name>
@@ -471,16 +541,6 @@ Apperas in the HTML pages.</source>
         <source>Invalid captcha type</source>
         <comment>error</comment>
         <translation>Недействительный тип капчи</translation>
-    </message>
-    <message>
-        <source>No engine for this captcha type</source>
-        <comment>error</comment>
-        <translation>Отсутствует движок для этого типа капчи</translation>
-    </message>
-    <message>
-        <source>Internal error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка</translation>
     </message>
 </context>
 <context>
@@ -505,6 +565,192 @@ Apperas in the HTML pages.</source>
         <comment>description</comment>
         <translation>Нет такой доски</translation>
     </message>
+    <message>
+        <source>Failed to ban user</source>
+        <comment>error</comment>
+        <translation>Не удалось забанить пользователя</translation>
+    </message>
+    <message>
+        <source>Failed to delete file</source>
+        <comment>error</comment>
+        <translation>Не удалось удалить файл</translation>
+    </message>
+    <message>
+        <source>Failed to delete post</source>
+        <comment>error</comment>
+        <translation>Не удалось удалить пост</translation>
+    </message>
+    <message>
+        <source>Failed to set thread fixed/unfixed</source>
+        <comment>error</comment>
+        <translation>Не удалось закрепить/открепить тред</translation>
+    </message>
+    <message>
+        <source>Failed to set thread opened/closed</source>
+        <comment>error</comment>
+        <translation>Не удалось открыть/закрыть тред</translation>
+    </message>
+    <message>
+        <source>Failed to set vote opened/closed</source>
+        <comment>error</comment>
+        <translation>Не удалось открыть/закрыть голосование</translation>
+    </message>
+    <message>
+        <source>Failed to unvote</source>
+        <comment>error</comment>
+        <translation>Не удалось забрать голос</translation>
+    </message>
+    <message>
+        <source>Failed to vote</source>
+        <comment>error</comment>
+        <translation>Не удалось проголосовать</translation>
+    </message>
+    <message>
+        <source>Failed to edit audio tags</source>
+        <comment>error</comment>
+        <translation>Не удалось отредактировать теги аудиофайла</translation>
+    </message>
+    <message>
+        <source>Failed to edit post</source>
+        <comment>error</comment>
+        <translation>Не удалось отредактировать пост</translation>
+    </message>
+</context>
+<context>
+    <name>AddFileRoute</name>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Post number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер поста</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Add file</source>
+        <comment>pageTitle</comment>
+        <translation>Добавить файл</translation>
+    </message>
+</context>
+<context>
+    <name>BanUserRoute</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Post number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер поста</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Ban user</source>
+        <comment>pageTitle</comment>
+        <translation>Забанить пользователя</translation>
+    </message>
+    <message>
+        <source>All boards</source>
+        <comment>boardName</comment>
+        <translation>Все доски</translation>
+    </message>
+    <message>
+        <source>Expires:</source>
+        <comment>banExpiresLabelText</comment>
+        <translation>Истекает:</translation>
+    </message>
+    <message>
+        <source>Level:</source>
+        <comment>banLevelLabelText</comment>
+        <translation>Уровень:</translation>
+    </message>
+    <message>
+        <source>Not banned</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Не забанен</translation>
+    </message>
+    <message>
+        <source>Posting prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещен постинг</translation>
+    </message>
+    <message>
+        <source>Posting and reading prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещены постинг и чтение</translation>
+    </message>
+    <message>
+        <source>Reason:</source>
+        <comment>banReasonLabelText</comment>
+        <translation>Причина:</translation>
+    </message>
+    <message>
+        <source>Board:</source>
+        <comment>boardLabelText</comment>
+        <translation>Доска:</translation>
+    </message>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
 </context>
 <context>
     <name>CodechaCaptchaEngine</name>
@@ -522,6 +768,143 @@ Apperas in the HTML pages.</source>
         <source>Codecha - programmers&apos; CAPTCHA</source>
         <comment>title</comment>
         <translation>Codecha - программистская CAPTCHA</translation>
+    </message>
+</context>
+<context>
+    <name>EditAudioTagsRoute</name>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid post number</source>
+        <comment>error</comment>
+        <translation>Неверный номер поста</translation>
+    </message>
+    <message>
+        <source>Post number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер поста</translation>
+    </message>
+    <message>
+        <source>Invalid file name</source>
+        <comment>error</comment>
+        <translation>Неправильное имя файла</translation>
+    </message>
+    <message>
+        <source>File name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя файла</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Edit audio file tags</source>
+        <comment>pageTitle</comment>
+        <translation>Редактировать теги аудиофайла</translation>
+    </message>
+    <message>
+        <source>Album:</source>
+        <comment>audioTagAlbumText</comment>
+        <translation>Альбом:</translation>
+    </message>
+    <message>
+        <source>Artist:</source>
+        <comment>audioTagArtistText</comment>
+        <translation>Исполнитель:</translation>
+    </message>
+    <message>
+        <source>Title:</source>
+        <comment>audioTagTitleText</comment>
+        <translation>Название:</translation>
+    </message>
+    <message>
+        <source>Year:</source>
+        <comment>audioTagYearText</comment>
+        <translation>Год:</translation>
+    </message>
+</context>
+<context>
+    <name>EditPostRoute</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+</context>
+<context>
+    <name>FrameListRoute</name>
+    <message>
+        <source>Version without frame</source>
+        <comment>normalVersionText</comment>
+        <translation>Версия без фрейма</translation>
+    </message>
+    <message>
+        <source>ololord - (almost) free communication</source>
+        <comment>pageTitle</comment>
+        <translation>ololord - (почти) свободное общение</translation>
+    </message>
+</context>
+<context>
+    <name>FrameRoute</name>
+    <message>
+        <source>ololord - (almost) free communication</source>
+        <comment>pageTitle</comment>
+        <translation>ololord - (почти) свободное общение</translation>
     </message>
 </context>
 <context>
@@ -679,6 +1062,36 @@ text</source>
         <comment>tooltipText</comment>
         <translation>текст со всплывающей подсказкой</translation>
     </message>
+    <message>
+        <source>em dash</source>
+        <comment>emDash</comment>
+        <translation>длинное тире</translation>
+    </message>
+    <message>
+        <source>en dash</source>
+        <comment>enDash</comment>
+        <translation>среднее тире</translation>
+    </message>
+    <message>
+        <source>Link markup</source>
+        <comment>linkMarkup</comment>
+        <translation>Разметка ссылок</translation>
+    </message>
+    <message>
+        <source>Auto replacement</source>
+        <comment>replacementMarkup</comment>
+        <translation>Автозамена</translation>
+    </message>
+    <message>
+        <source>double hyphen</source>
+        <comment>doubleHyphen</comment>
+        <translation>двойной дефис</translation>
+    </message>
+    <message>
+        <source>quadriple hyphen</source>
+        <comment>quadripleHyphen</comment>
+        <translation>четырехкратный дефис</translation>
+    </message>
 </context>
 <context>
     <name>PlaylistRoute</name>
@@ -752,6 +1165,14 @@ text</source>
         <source>Query error</source>
         <comment>error</comment>
         <translation>Ошибка запроса</translation>
+    </message>
+</context>
+<context>
+    <name>SettingsRoute</name>
+    <message>
+        <source>Settings</source>
+        <comment>pageTitle</comment>
+        <translation>Настройки</translation>
     </message>
 </context>
 <context>
@@ -900,6 +1321,11 @@ text</source>
         <source>No games</source>
         <comment>imageTitle</comment>
         <translation>Игор нет</translation>
+    </message>
+    <message>
+        <source>But there ARE games!</source>
+        <comment>imageTitle</comment>
+        <translation>Но игры есть!</translation>
     </message>
 </context>
 <context>
@@ -1753,6 +2179,17 @@ Your choice:</source>
     </message>
 </context>
 <context>
+    <name>handleUptime</name>
+    <message>
+        <source>No OlolordApplication instance</source>
+        <translation>Отсутствует экземпляр OlolordApplication</translation>
+    </message>
+    <message>
+        <source>Uptime:</source>
+        <translation>Аптайм:</translation>
+    </message>
+</context>
+<context>
     <name>incrementPostCounter</name>
     <message>
         <source>Invalid database connection</source>
@@ -1808,36 +2245,6 @@ Your choice:</source>
         <translation>Залогиниться</translation>
     </message>
     <message>
-        <source>Logged in, but not registered</source>
-        <comment>loginMessageWarning</comment>
-        <translation>Залогинен, но не зарегистрирован</translation>
-    </message>
-    <message>
-        <source>Registered and logged in</source>
-        <comment>loginMessageOk</comment>
-        <translation>Зарегистрирован и залогинен</translation>
-    </message>
-    <message>
-        <source>admin</source>
-        <comment>loginMessageOk</comment>
-        <translation>админ</translation>
-    </message>
-    <message>
-        <source>moder</source>
-        <comment>loginMessageOk</comment>
-        <translation>модер</translation>
-    </message>
-    <message>
-        <source>user</source>
-        <comment>loginMessageOk</comment>
-        <translation>юзер</translation>
-    </message>
-    <message>
-        <source>Password/hashpass</source>
-        <comment>PlaceholderText</comment>
-        <translation>Пароль/хешпасс</translation>
-    </message>
-    <message>
         <source>Cancel</source>
         <comment>cancelButtonText</comment>
         <translation>Отмена</translation>
@@ -1851,11 +2258,6 @@ Your choice:</source>
         <source>Show password</source>
         <comment>showPasswordText</comment>
         <translation>Показать пароль</translation>
-    </message>
-    <message>
-        <source>Photon</source>
-        <comment>style name</comment>
-        <translation>Photon</translation>
     </message>
     <message>
         <source>Style:</source>
@@ -1948,9 +2350,122 @@ Your choice:</source>
         <translation>Избранные треды</translation>
     </message>
     <message>
+        <source>Request entity too large</source>
+        <comment>error413Text</comment>
+        <translation>Размер запроса слишком велик</translation>
+    </message>
+    <message>
+        <source>Photon</source>
+        <comment>style title</comment>
+        <translation>Photon</translation>
+    </message>
+    <message>
         <source>Futaba</source>
-        <comment>style name</comment>
+        <comment>style title</comment>
         <translation>Futaba</translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <comment>mode title</comment>
+        <translation>Нормальный</translation>
+    </message>
+    <message>
+        <source>Ascetic</source>
+        <comment>mode title</comment>
+        <translation>Аскетичный</translation>
+    </message>
+    <message>
+        <source>Mode:</source>
+        <comment>modeLabelText</comment>
+        <translation>Режим:</translation>
+    </message>
+    <message>
+        <source>General settings</source>
+        <comment>generalSettingsLegendText</comment>
+        <translation>Общие настройки</translation>
+    </message>
+    <message>
+        <source>Script settings</source>
+        <comment>scriptSettingsLegendText</comment>
+        <translation>Настройки скрипта</translation>
+    </message>
+    <message>
+        <source>Mark posts as drafts by default:</source>
+        <comment>draftsByDefaultLabelText</comment>
+        <translation>По умолчанию отмечать посты как черновики:</translation>
+    </message>
+    <message>
+        <source>Framed version</source>
+        <comment>framedVersionText</comment>
+        <translation>Версия с фреймом</translation>
+    </message>
+    <message>
+        <source>Hide boards:</source>
+        <comment>hiddenBoardsLabelText</comment>
+        <translation>Скрыть доски:</translation>
+    </message>
+    <message>
+        <source>Show new posts:</source>
+        <comment>showNewPostsLabelText</comment>
+        <translation>Показывать новые посты:</translation>
+    </message>
+    <message>
+        <source>Show titles of YouTube videos:</source>
+        <comment>showYoutubeVideoTitleLabelText</comment>
+        <translation>Показывать названия видео с YouTube:</translation>
+    </message>
+    <message>
+        <source>Check if attached file exists on server:</source>
+        <comment>checkFileExistenceLabelText</comment>
+        <translation>Проверять, есть ли прикрепленный файл на сервере:</translation>
+    </message>
+    <message>
+        <source>Show previews when attaching files:</source>
+        <comment>showAttachedFilePreviewLabelText</comment>
+        <translation>Показывать превью прикрепляемых файлов:</translation>
+    </message>
+    <message>
+        <source>Logged in, but not registered</source>
+        <comment>loginMessageText</comment>
+        <translation>Залогинен, но не зарегистрирован</translation>
+    </message>
+    <message>
+        <source>Registered and logged in</source>
+        <comment>loginMessageText</comment>
+        <translation>Зарегистрирован и залогинен</translation>
+    </message>
+    <message>
+        <source>admin</source>
+        <comment>loginMessageText</comment>
+        <translation>админ</translation>
+    </message>
+    <message>
+        <source>moder</source>
+        <comment>loginMessageText</comment>
+        <translation>модер</translation>
+    </message>
+    <message>
+        <source>user</source>
+        <comment>loginMessageText</comment>
+        <translation>юзер</translation>
+    </message>
+    <message>
+        <source>Password/hashpass</source>
+        <comment>loginPlaceholderText</comment>
+        <translation>Пароль/хешпасс</translation>
+    </message>
+    <message>
+        <source>&quot;Login&quot;, you say? On an imageboard? I am out!
+
+Please, wait a sec. The login systyem does NOT store any data on the server. It only stores a cookie on your PC to allow post editing, deleting, etc. without entering password every time, and nothing else.
+
+Well, actually, the admin may register someone manually (if he is a fag), but there is no way to register through the web.</source>
+        <comment>loginSystemDescriptionText</comment>
+        <translation>&quot;Залогиниться&quot;, говоришь? На имиджборде? Я сваливаю!
+
+Погоди секундочку. Система логина НЕ СОХРАНЯЕТ никаких данных на сервере. Она только хранит cookie на вашем ПК, что позволяет редактировать, удалять посты и т.д. без ввода пароля каждый раз, и ничего более.
+
+Ну, на самом деле админ может кого-то зарегистрировать вручную (если он мудак), но способ зарегистрироваться через веб-интерфейс отсутствует.</translation>
     </message>
 </context>
 <context>
@@ -2360,6 +2875,16 @@ Your choice:</source>
         <comment>audioTagYearText</comment>
         <translation>Год:</translation>
     </message>
+    <message>
+        <source>This file exists on server. It will NOT be uploaded, but WILL be copied.</source>
+        <comment>fileExistsOnServerText</comment>
+        <translation>Этот файл существует на сервере. Он НЕ будет загружен, но БУДЕТ скопирован.</translation>
+    </message>
+    <message>
+        <source>Draft</source>
+        <comment>draftText</comment>
+        <translation>Черновик</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -2502,6 +3027,10 @@ dynamic_files, static_files.
     <message>
         <source>Finish writing to the current log file and start writing to a new one.</source>
         <translation>Закончить запись в текущий лог-файл и начать запись в новый.</translation>
+    </message>
+    <message>
+        <source>Shows for how long the application has been running.</source>
+        <translation>Показать, сколько времени прошло с момента запуска приложения.</translation>
     </message>
 </context>
 <context>
@@ -2743,18 +3272,6 @@ It will appear in HTML.</source>
 Появляется в HTML-страницах.</translation>
     </message>
     <message>
-        <source>HTML/CSS/JS minification mode. Possible values:
-  0 or less - don&apos;t minify anything
-  1 - remove empty lines only
-  2 and more - remove empty lines and extra spaces
-  The default is 1.</source>
-        <translation>Режим минификации HTML/CSS/JS. Возможные значения:
-  0 или меньше - не минифицировать
-  1 - только убирать пустые строки
-  2 и больше - убирать пустые строки и лишние пробелы
-  Значение по умолчанию - 1.</translation>
-    </message>
-    <message>
         <source>file utility command (possibly full path).
 The default is file (UNIX) or file.exe (Windows).</source>
         <translation>Команда вызова утилиты file (возможно, полный путь).
@@ -2787,6 +3304,12 @@ The default is -1000 (no offset).</source>
         <translation>Смещение временной зоны в минутах.
 Значение должно быть в пределах от -720 до 840.
 По умолчанию -1000 (без смещения).</translation>
+    </message>
+    <message>
+        <source>convert utility command from ImageMagick (possibly full path).
+The default is convert (UNIX) or convert.exe (Windows).</source>
+        <translation>Команда вызова утилиты convert из пакета ImageMagick (возможно, полный путь).
+По умолчанию convert (UNIX) или convert.exe (Windows).</translation>
     </message>
 </context>
 <context>
@@ -2841,6 +3364,18 @@ The default is -1000 (no offset).</source>
         <source>Hands off my pony!!!!!11</source>
         <comment>buttonText</comment>
         <translation>Руки прочь от моих пони!!!!!11</translation>
+    </message>
+    <message>
+        <source>Enough jokes, please!</source>
+        <comment>noJokeButtonText</comment>
+        <translation>Хватит этих ваших шуточек!</translation>
+    </message>
+</context>
+<context>
+    <name>msecsToString</name>
+    <message>
+        <source>day(s)</source>
+        <translation>дней</translation>
     </message>
 </context>
 <context>
@@ -3068,6 +3603,19 @@ The default is -1000 (no offset).</source>
         <source>Error 404</source>
         <comment>pageTitle</comment>
         <translation>Ошибка 404</translation>
+    </message>
+</context>
+<context>
+    <name>renderNotFoundAjax</name>
+    <message>
+        <source>Error 404</source>
+        <comment>errorMessage</comment>
+        <translation>Ошибка 404</translation>
+    </message>
+    <message>
+        <source>Page or file not found</source>
+        <comment>errorDescription</comment>
+        <translation>Страница или файл не найдены</translation>
     </message>
 </context>
 <context>
@@ -3328,6 +3876,21 @@ The default is -1000 (no offset).</source>
         <source>No such post</source>
         <comment>error</comment>
         <translation>Нет такого поста</translation>
+    </message>
+    <message>
+        <source>Invalid password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Incorrect password</source>
+        <comment>error</comment>
+        <translation>Неправильный пароль</translation>
     </message>
 </context>
 <context>
