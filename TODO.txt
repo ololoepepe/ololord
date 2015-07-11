@@ -1,4 +1,5 @@
 [done] Fix /rpg/ JS
+[done] Fix settings dialog size
 [done] Add ability to leaf through files
 [done] Add ability to set image zoom sensitivity
 [done] Implement auto update timer
