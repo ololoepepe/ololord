@@ -76,6 +76,8 @@ lord.showSettings = function() {
     showLeafButtons.checked = lord.getLocalObject("showLeafButtons", true);
     var leafThroughImagesOnly = lord.nameOne("leafThroughImagesOnly", div);
     leafThroughImagesOnly.checked = lord.getLocalObject("leafThroughImagesOnly", false);
+    var imageZoomSensitivity = lord.nameOne("imageZoomSensitivity", div);
+    imageZoomSensitivity.value = lord.getLocalObject("imageZoomSensitivity", 25);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
         var sel = lord.nameOne("modeChangeSelect", div);
         var md = sel.options[sel.selectedIndex].value;
@@ -124,6 +126,7 @@ lord.showSettings = function() {
         lord.setLocalObject("showAttachedFilePreview", !!showAttachedFilePreview.checked);
         lord.setLocalObject("showLeafButtons", !!showLeafButtons.checked);
         lord.setLocalObject("leafThroughImagesOnly", !!leafThroughImagesOnly.checked);
+        lord.setLocalObject("imageZoomSensitivity", +imageZoomSensitivity.value);
         lord.reloadPage();
     });
 };

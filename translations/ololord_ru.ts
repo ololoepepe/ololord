@@ -2468,14 +2468,19 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
 Ну, на самом деле админ может кого-то зарегистрировать вручную (если он мудак), но способ зарегистрироваться через веб-интерфейс отсутствует.</translation>
     </message>
     <message>
-        <source>Leaf through images only</source>
+        <source>Leaf through images only:</source>
         <comment>leafThroughImagesOnlyLabelText</comment>
-        <translation>Пролистывать только картинки</translation>
+        <translation>Пролистывать только картинки:</translation>
     </message>
     <message>
-        <source>Show file leaf buttons</source>
+        <source>Show file leaf buttons:</source>
         <comment>showLeafButtonsLabelText</comment>
-        <translation>Показывать кнопки пролистывания файлов</translation>
+        <translation>Показывать кнопки пролистывания файлов:</translation>
+    </message>
+    <message>
+        <source>Image zoom sensitivity, %:</source>
+        <comment>imageZoomSensitivityLabelText</comment>
+        <translation>Чувствительность зума картинок, %:</translation>
     </message>
 </context>
 <context>

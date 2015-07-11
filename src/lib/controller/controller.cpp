@@ -142,7 +142,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     foreach (const QString &bn, Tools::cookieValue(req, "hiddenBoards").split('|', QString::SkipEmptyParts))
         c.hiddenBoards.insert(Tools::toStd(bn));
     c.hiddenBoardsLabelText = ts.translate("initBase", "Hide boards:", "hiddenBoardsLabelText");
-    c.leafThroughImagesOnlyLabelText = ts.translate("initBase", "Leaf through images only",
+    c.imageZoomSensitivityLabelText = ts.translate("initBase", "Image zoom sensitivity, %:",
+                                                   "imageZoomSensitivityLabelText");
+    c.leafThroughImagesOnlyLabelText = ts.translate("initBase", "Leaf through images only:",
                                                     "leafThroughImagesOnlyLabelText");
     c.localeLabelText = "Language:";
     c.locales = locales;
@@ -214,7 +216,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showAttachedFilePreviewLabelText = ts.translate("initBase", "Show previews when attaching files:",
                                                       "showAttachedFilePreviewLabelText");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
-    c.showLeafButtonsLabelText = ts.translate("initBase", "Show file leaf buttons", "showLeafButtonsLabelText");
+    c.showLeafButtonsLabelText = ts.translate("initBase", "Show file leaf buttons:", "showLeafButtonsLabelText");
     c.showNewPostsLabelText = ts.translate("initBase", "Show new posts:", "showNewPostsLabelText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showYoutubeVideoTitleLabelText = ts.translate("initBase", "Show titles of YouTube videos:",

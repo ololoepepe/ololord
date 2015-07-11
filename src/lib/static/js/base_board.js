@@ -1643,7 +1643,11 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     var wheelHandler = function(e) {
         var e = window.event || e; //Old IE support
         e.preventDefault();
-        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+        var delta = lord.getLocalObject("imageZoomSensitivity", 25);
+        if ((e.wheelDelta || -e.detail) < 0)
+            delta *= -1;
+        if ((lord.img.scale + delta) <= 0)
+            return;
         lord.img.scale += delta;
         lord.resetScale(lord.img);
     };
