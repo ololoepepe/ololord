@@ -78,6 +78,14 @@ lord.showSettings = function() {
     leafThroughImagesOnly.checked = lord.getLocalObject("leafThroughImagesOnly", false);
     var imageZoomSensitivity = lord.nameOne("imageZoomSensitivity", div);
     imageZoomSensitivity.value = lord.getLocalObject("imageZoomSensitivity", 25);
+    var autoUpdateThreadsByDefault = lord.nameOne("autoUpdateThreadsByDefault", div);
+    autoUpdateThreadsByDefault.checked = !!lord.getLocalObject("autoUpdateThreadsByDefault", false);
+    var autoUpdateInterval = lord.nameOne("autoUpdateInterval", div);
+    autoUpdateInterval.value = lord.getLocalObject("autoUpdateInterval", 15);
+    var showAutoUpdateTimer = lord.nameOne("showAutoUpdateTimer", div);
+    showAutoUpdateTimer.checked = !!lord.getLocalObject("showAutoUpdateTimer", true);
+    var showAutoUpdateDesktopNotifications = lord.nameOne("showAutoUpdateDesktopNotifications", div);
+    showAutoUpdateDesktopNotifications.checked = !!lord.getLocalObject("showAutoUpdateDesktopNotifications", false);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
         var sel = lord.nameOne("modeChangeSelect", div);
         var md = sel.options[sel.selectedIndex].value;
@@ -127,6 +135,10 @@ lord.showSettings = function() {
         lord.setLocalObject("showLeafButtons", !!showLeafButtons.checked);
         lord.setLocalObject("leafThroughImagesOnly", !!leafThroughImagesOnly.checked);
         lord.setLocalObject("imageZoomSensitivity", +imageZoomSensitivity.value);
+        lord.setLocalObject("autoUpdateThreadsByDefault", !!autoUpdateThreadsByDefault.checked);
+        lord.setLocalObject("autoUpdateInterval", +autoUpdateInterval.value);
+        lord.setLocalObject("showAutoUpdateTimer", !!showAutoUpdateTimer.checked);
+        lord.setLocalObject("showAutoUpdateDesktopNotifications", !!showAutoUpdateDesktopNotifications.checked);
         lord.reloadPage();
     });
 };
@@ -213,6 +225,19 @@ lord.checkFavoriteThreads = function() {
                 return;
             o.lastPostNumber = res.pop()["number"];
             nfav[x] = o;
+            if (("Notification" in window) && lord.getLocalObject("showAutoUpdateDesktopNotifications", false)) {
+                var f = function() {
+                    var notification = new Notification(lord.text("favoriteThreadsText") + " " + res.length);
+                };
+                if (Notification.permission === "granted") {
+                    f();
+                } else if (Notification.permission !== 'denied') {
+                    Notification.requestPermission(function(permission) {
+                        if (permission === "granted")
+                            f();
+                    });
+                }
+            }
         });
     });
     setTimeout(function() {

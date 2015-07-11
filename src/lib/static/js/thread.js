@@ -6,6 +6,8 @@ var lord = lord || {};
 
 lord.lastSelectedElement = null;
 lord.autoUpdateTimer = null;
+lord.autoUpdateCountdown = null;
+lord.autoUpdateSecondsLeft = 0;
 lord.blinkTimer = null;
 lord.pageVisible = "visible";
 lord.isDownloading = false;
@@ -138,6 +140,19 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
             lord.blinkTimer = setInterval(lord.blinkFaviconNewMessage, 500);
             document.title = "* " + document.title;
         }
+        if (("Notification" in window) && lord.getLocalObject("showAutoUpdateDesktopNotifications", false)) {
+            var f = function() {
+                var notification = new Notification(lord.text("newPostsText") + " " + res.length);
+            };
+            if (Notification.permission === "granted") {
+                f();
+            } else if (Notification.permission !== 'denied') {
+                Notification.requestPermission(function(permission) {
+                    if (permission === "granted")
+                        f();
+                });
+            }
+        }
         if (!!extraCallback)
             extraCallback();
     });
@@ -147,24 +162,46 @@ lord.setAutoUpdateEnabled = function(cbox) {
     var enabled = !!cbox.checked;
     lord.id("autoUpdate_top").checked = enabled;
     lord.id("autoUpdate_bottom").checked = enabled;
+    var f = function() {
+        lord.name("autoUpdateText").forEach(function(span) {
+            while (span.firstChild)
+                span.removeChild(span.firstChild);
+            var txt = lord.text("autoUpdateText");
+            if (!!lord.autoUpdateTimer)
+                txt += ": " + lord.autoUpdateSecondsLeft;
+            span.appendChild(lord.node("text", txt));
+        });
+    };
     if (enabled) {
+        lord.autoUpdateSecondsLeft = lord.getLocalObject("autoUpdateInterval", 15);
         lord.autoUpdateTimer = setInterval(function() {
             var boardName = lord.text("currentBoardName");
             var threadNumber = lord.text("currentThreadNumber");
             lord.updateThread(boardName, threadNumber, true);
-        }, 15000);
+        }, lord.autoUpdateSecondsLeft * 1000);
+        if (lord.getLocalObject("showAutoUpdateTimer", true)) {
+            lord.autoUpdateCountdown = setInterval(function() {
+                lord.autoUpdateSecondsLeft -= 1;
+                if (lord.autoUpdateSecondsLeft <= 0)
+                    lord.autoUpdateSecondsLeft = lord.getLocalObject("autoUpdateInterval", 15);
+                f();
+            }, 1000);
+        }
+        f();
     } else {
         if (!!lord.autoUpdateTimer) {
             clearInterval(lord.autoUpdateTimer);
             lord.autoUpdateTimer = null;
+            if (lord.autoUpdateCountdown) {
+                clearInterval(lord.autoUpdateCountdown);
+                lord.autoUpdateCountdown = null;
+                f();
+            }
         }
     }
     var list = lord.getLocalObject("autoUpdate", {});
     var threadNumber = lord.text("currentThreadNumber");
-    if (enabled)
-        list[threadNumber] = {};
-    else if (list.hasOwnProperty(threadNumber))
-        delete list[threadNumber];
+    list[threadNumber] = enabled;
     lord.setLocalObject("autoUpdate", list);
 };
 
@@ -239,7 +276,8 @@ lord.downloadThread = function() {
 lord.initializeOnLoadThread = function() {
     lord.addVisibilityChangeListener(lord.visibilityChangeListener);
     lord.addAnchorChangeListener(lord.anchorChangeListener);
-    if (lord.getLocalObject("autoUpdate", {})[lord.text("currentThreadNumber")]) {
+    var enabled = lord.getLocalObject("autoUpdate", {})[lord.text("currentThreadNumber")];
+    if (true === enabled || (false !== enabled && lord.getLocalObject("autoUpdateThreadsByDefault", false))) {
         var cbox = lord.id("autoUpdate_top");
         cbox.checked = true;
         lord.setAutoUpdateEnabled(cbox);

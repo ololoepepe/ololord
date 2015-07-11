@@ -98,6 +98,10 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     localeMutex.unlock();
     TranslatorStd ts(req);
     c.allBoardsText = ts.translate("initBase", "All boards", "allBoardsText");
+    c.autoUpdateIntervalLabelText = ts.translate("initBase", "Auto update interval (sec):",
+                                                 "autoUpdateIntervalLabelText");
+    c.autoUpdateThreadsByDefaultLabelText = ts.translate("initBase", "Auto update threads by default:",
+                                                         "autoUpdateThreadsByDefaultLabelText");
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
     c.captchaLabelText = ts.translate("initBase", "Captcha:", "captchaLabelText");
     c.captchaLabelWarningText = ts.translate("initBase", "This option may be ignored on some boards",
@@ -215,6 +219,10 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.settingsDialogTitle = ts.translate("initBase", "Settings", "settingsDialogTitle");
     c.showAttachedFilePreviewLabelText = ts.translate("initBase", "Show previews when attaching files:",
                                                       "showAttachedFilePreviewLabelText");
+    c.showAutoUpdateDesktopNotificationsLabelText = ts.translate("initBase", "Show desktop notifications:",
+                                                                 "showAutoUpdateDesktopNotificationsLabelText");
+    c.showAutoUpdateTimerLabelText = ts.translate("initBase", "Show auto update timer:",
+                                                  "showAutoUpdateTimerLabelText");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
     c.showLeafButtonsLabelText = ts.translate("initBase", "Show file leaf buttons:", "showLeafButtonsLabelText");
     c.showNewPostsLabelText = ts.translate("initBase", "Show new posts:", "showNewPostsLabelText");

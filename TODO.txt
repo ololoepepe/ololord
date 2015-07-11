@@ -1,8 +1,8 @@
 [done] Fix /rpg/ JS
 [done] Add ability to leaf through files
 [done] Add ability to set image zoom sensitivity
-* Implement auto update timer
-* Implement desktop notifications
+[done] Implement auto update timer
+[done] Implement desktop notifications
 * Add ability to hide names/tripcodes
 * Add ability to set default audio/video files volume
 * Strike out links to hidden posts

@@ -43,6 +43,8 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
     };
 public:
     std::string allBoardsText;
+    std::string autoUpdateIntervalLabelText;
+    std::string autoUpdateThreadsByDefaultLabelText;
     AbstractBoard::BoardInfoList boards;
     std::string cancelButtonText;
     std::list<CaptchaEngine> captchaEngines;
@@ -92,6 +94,8 @@ public:
     std::string settingsButtonText;
     std::string settingsDialogTitle;
     std::string showAttachedFilePreviewLabelText;
+    std::string showAutoUpdateDesktopNotificationsLabelText;
+    std::string showAutoUpdateTimerLabelText;
     std::string showFavoriteText;
     std::string showLeafButtonsLabelText;
     std::string showNewPostsLabelText;

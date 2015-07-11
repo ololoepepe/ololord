@@ -2482,6 +2482,26 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>imageZoomSensitivityLabelText</comment>
         <translation>Чувствительность зума картинок, %:</translation>
     </message>
+    <message>
+        <source>Auto update interval (sec):</source>
+        <comment>autoUpdateIntervalLabelText</comment>
+        <translation>Интервал автообновленияы (сек):</translation>
+    </message>
+    <message>
+        <source>Auto update threads by default:</source>
+        <comment>autoUpdateThreadsByDefaultLabelText</comment>
+        <translation>По умолчанию автоматически обновлять треды:</translation>
+    </message>
+    <message>
+        <source>Show auto update timer:</source>
+        <comment>showAutoUpdateTimerLabelText</comment>
+        <translation>Показывать таймер автообновления:</translation>
+    </message>
+    <message>
+        <source>Show desktop notifications:</source>
+        <comment>showAutoUpdateDesktopNotificationsLabelText</comment>
+        <translation>Показывать уведомления на рабочем столе:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
