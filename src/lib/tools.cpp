@@ -900,7 +900,7 @@ int timeZoneMinutesOffset(const cppcms::http::request &req, int defaultOffset)
         }
     }
     bool ok = false;
-    int offset = cookieValue(req, "time_zone_offset").toInt(&ok);
+    int offset = cookieValue(req, "timeZoneOffset").toInt(&ok);
     if (ok && offset >= -720 && offset <= 840)
         return offset;
     return SettingsLocker()->value("Board/guess_city_name", true).toBool()

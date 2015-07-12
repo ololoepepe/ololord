@@ -703,13 +703,26 @@
             <% include customPostFormField8() %>
             <tr>
                 <td colspan="2" class="postformRules">
-                    <ul>
+                    <% if ( content.hidePostformRules ) %>
+                        <ul style="display: none;">
+                    <% else %>
+                        <ul>
+                    <% end %>
                         <% foreach rule in postformRules %>
                             <% item %>
                                 <li><%= rule | raw %></li>
                             <% end %>
                         <% end %>
                     </ul>
+                    <% if ( content.mode.name != "ascetic" ) %>
+                        <% if ( content.hidePostformRules ) %>
+                            <a href="javascript:lord.setPostformRulesVisible(true);"
+                               class="hidePostformRulesButton"><%= showPostformRulesText %></a>
+                        <% else %>
+                            <a href="javascript:lord.setPostformRulesVisible(false);"
+                               class="hidePostformRulesButton"><%= hidePostformRulesText %></a>
+                        <% end %>
+                    <% end %>
                 </td>
             </tr>
         </tbody>
@@ -763,6 +776,8 @@
 <input type="hidden" id="editAudioTagsText" value="<%= editAudioTagsText %>" />
 <input type="hidden" id="addToPlaylistText" value="<%= addToPlaylistText %>" />
 <input type="hidden" id="fileExistsOnServerText" value="<%= fileExistsOnServerText %>" />
+<input type="hidden" id="showPostformRulesText" value="<%= showPostformRulesText %>" />
+<input type="hidden" id="hidePostformRulesText" value="<%= hidePostformRulesText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>

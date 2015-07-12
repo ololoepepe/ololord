@@ -249,6 +249,18 @@
                 </tr>
                 <tr>
                     <td>
+                        <%= hidePostformRulesLabelText %>
+                    </td>
+                    <td>
+                        <% if ( content.hidePostformRules ) %>
+                            <input type="checkbox" name="hidePostformRules" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="hidePostformRules" value="true" />
+                        <% end %>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <%= hiddenBoardsLabelText %>
                     </td>
                     <td>

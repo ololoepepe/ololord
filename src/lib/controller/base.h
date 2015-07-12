@@ -67,6 +67,8 @@ public:
     std::string generalSettingsLegendText;
     std::set<std::string> hiddenBoards;
     std::string hiddenBoardsLabelText;
+    bool hidePostformRules;
+    std::string hidePostformRulesLabelText;
     std::string imageZoomSensitivityLabelText;
     std::string leafThroughImagesOnlyLabelText;
     std::string localeLabelText;

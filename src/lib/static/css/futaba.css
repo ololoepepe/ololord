@@ -123,6 +123,12 @@ hr {
     border: 1px solid #800000;
 }
 
+.hidePostformRulesButton {
+    text-decoration: none;
+    margin-left: 30px;
+    cursor: pointer;
+}
+
 /*
     Ban
 */

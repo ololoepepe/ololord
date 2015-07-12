@@ -64,6 +64,7 @@ lord.showSettings = function() {
     var sel = lord.nameOne("quickReplyActionSelect", div);
     var act = lord.getLocalObject("quickReplyAction", "goto_thread");
     lord.queryOne("[value='" + act + "']", sel).selected = true;
+    lord.nameOne("hidePostformRules", div).checked = (lord.getCookie("hidePostformRules") == "true");
     var showNewPosts = lord.nameOne("showNewPosts", div);
     showNewPosts.checked = lord.getLocalObject("showNewPosts", true);
     var showYoutubeVideosTitles = lord.nameOne("showYoutubeVideosTitles", div);
@@ -104,7 +105,7 @@ lord.showSettings = function() {
         });
         if ("local" == tm) {
             var date = new Date();
-            lord.setCookie("time_zone_offset", -date.getTimezoneOffset(), {
+            lord.setCookie("timeZoneOffset", -date.getTimezoneOffset(), {
                 "expires": lord.Billion, "path": "/"
             });
         }
@@ -114,7 +115,11 @@ lord.showSettings = function() {
             "expires": lord.Billion, "path": "/"
         });
         var dd = !!lord.nameOne("draftsByDefault", div).checked;
-        lord.setCookie("drafts_by_default", dd, {
+        lord.setCookie("draftsByDefault", dd, {
+            "expires": lord.Billion, "path": "/"
+        });
+        var hr = !!lord.nameOne("hidePostformRules", div).checked;
+        lord.setCookie("hidePostformRules", hr, {
             "expires": lord.Billion, "path": "/"
         });
         var hiddenBoards = [];

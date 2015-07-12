@@ -136,7 +136,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentTime = mreq->cookie_by_name("time").value();
     c.customFooterContent = Tools::toStd(Tools::customContent("footer", ts.locale()));
     c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
-    c.draftsByDefault = !Tools::cookieValue(req, "drafts_by_default").compare("true", Qt::CaseInsensitive);
+    c.draftsByDefault = !Tools::cookieValue(req, "draftsByDefault").compare("true", Qt::CaseInsensitive);
     c.draftsByDefaultLabelText = ts.translate("initBase", "Mark posts as drafts by default:",
                                               "draftsByDefaultLabelText");
     c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
@@ -147,6 +147,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     foreach (const QString &bn, Tools::cookieValue(req, "hiddenBoards").split('|', QString::SkipEmptyParts))
         c.hiddenBoards.insert(Tools::toStd(bn));
     c.hiddenBoardsLabelText = ts.translate("initBase", "Hide boards:", "hiddenBoardsLabelText");
+    c.hidePostformRules = !Tools::cookieValue(req, "hidePostformRules").compare("true", Qt::CaseInsensitive);
+    c.hidePostformRulesLabelText  = ts.translate("initBase", "Hide postform rules:", "hidePostformRulesLabelText");
     c.imageZoomSensitivityLabelText = ts.translate("initBase", "Image zoom sensitivity, %:",
                                                    "imageZoomSensitivityLabelText");
     c.leafThroughImagesOnlyLabelText = ts.translate("initBase", "Leaf through images only:",
@@ -357,6 +359,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
+    c.hidePostformRulesText = ts.translate("initBaseBoard", "Hide rules", "hidePostformRulesText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
     c.kilobytesText = ts.translate("initBaseBoard", "KB", "kilobytesText");
     c.maxEmailLength = Tools::maxInfo(Tools::MaxEmailFieldLength, board->name());
@@ -449,6 +452,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
     c.selectFileText = ts.translate("initBaseBoard", "Select file", "selectFileText");
+    c.showPostformRulesText = ts.translate("initBaseBoard", "Show rules", "showPostformRulesText");
     c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
     c.showHidePostText = ts.translate("initBaseBoard", "Hide/show", "showHidePostText");

@@ -1581,6 +1581,22 @@ lord.browseFile = function(e, div) {
     inp.click();
 };
 
+lord.setPostformRulesVisible = function(visible) {
+    var hide = !visible;
+    lord.setCookie("hidePostformRules", hide, {
+        "expires": lord.Billion, "path": "/"
+    });
+    lord.query(".postformRules > ul").forEach(function(ul) {
+        ul.style.display = hide ? "none" : "";
+    });
+    var a = lord.queryOne(".postformRules > a");
+    var aa = lord.node("a");
+    aa.className = "hidePostformRulesButton";
+    aa.onclick = lord.setPostformRulesVisible.bind(lord, hide);
+    aa.appendChild(lord.node("text", lord.text(hide ? "showPostformRulesText" : "hidePostformRulesText")));
+    a.parentNode.replaceChild(aa, a);
+};
+
 lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     lord.hideImage();
     if (!href || !type)

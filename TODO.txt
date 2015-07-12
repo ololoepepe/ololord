@@ -5,13 +5,13 @@
 [done] Add ability to set image zoom sensitivity
 [done] Implement auto update timer
 [done] Implement desktop notifications
+[done] Add ability to hide postform rules
 * Add ability to hide names/tripcodes
 * Add ability to set default audio/video files volume
 * Strike out links to hidden posts
 * Add ability to remove EXIF information from images
 * Add ability to automatically mark a thread as favofite when posting a reply
 * Add markup buttons bar
-* Add ability to hide postform rules
 * Implement user CSS
 * Implement hotkeys
 * Implement auto post hiding system

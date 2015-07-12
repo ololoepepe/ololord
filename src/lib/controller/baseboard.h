@@ -137,6 +137,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string findSourceWithIqdbText;
     std::string fixedText;
     std::string fixThreadText;
+    std::string hidePostformRulesText;
     std::string hidePostFormText;
     std::string kilobytesText;
     unsigned int maxEmailLength;
@@ -180,6 +181,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string removeFileText;
     std::string selectFileText;
     std::string showHidePostText;
+    std::string showPostformRulesText;
     std::string showPostFormText;
     bool showWhois;
     std::string supportedFileTypes;

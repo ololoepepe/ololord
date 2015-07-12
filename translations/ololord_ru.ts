@@ -2522,6 +2522,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>postsTabText</comment>
         <translation>Посты</translation>
     </message>
+    <message>
+        <source>Hide postform rules:</source>
+        <comment>hidePostformRulesLabelText</comment>
+        <translation>Скрывать правила под формой ответа:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -2949,6 +2954,16 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <source>Previous file</source>
         <comment>previousFileText</comment>
         <translation>Предыдущий файл</translation>
+    </message>
+    <message>
+        <source>Hide rules</source>
+        <comment>hidePostformRulesText</comment>
+        <translation>Скрыть правила</translation>
+    </message>
+    <message>
+        <source>Show rules</source>
+        <comment>showPostformRulesText</comment>
+        <translation>Показать правила</translation>
     </message>
 </context>
 <context>
