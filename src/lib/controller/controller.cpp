@@ -139,6 +139,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.draftsByDefault = !Tools::cookieValue(req, "draftsByDefault").compare("true", Qt::CaseInsensitive);
     c.draftsByDefaultLabelText = ts.translate("initBase", "Mark posts as drafts by default:",
                                               "draftsByDefaultLabelText");
+    c.editUserCssText = ts.translate("initBase", "Edit", "editUserCssText");
     c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
     c.filesTabText = ts.translate("initBase", "Files", "filesTabText");
@@ -261,6 +262,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
     c.toPlaylistPageText = ts.translate("initBase", "Playlist", "toPlaylistPageText");
     c.toMarkupPageText = ts.translate("initBase", "Markup", "toMarkupPageText");
+    c.userCssLabelText = ts.translate("initBase", "User CSS:", "userCssLabelText");
 }
 
 bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,

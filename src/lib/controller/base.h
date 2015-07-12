@@ -60,6 +60,7 @@ public:
     std::string customHeaderContent;
     bool draftsByDefault;
     std::string draftsByDefaultLabelText;
+    std::string editUserCssText;
     std::string error413Text;
     std::string favoriteThreadsText;
     std::string filesTabText;
@@ -119,6 +120,7 @@ public:
     std::string toHomePageText;
     std::string toPlaylistPageText;
     std::string toMarkupPageText;
+    std::string userCssLabelText;
 };
 
 }

@@ -636,6 +636,7 @@ ul.tabWidget > li {
 ul.tabWidget > li > a {
     color: #800000;
     text-decoration: none;
+    cursor: pointer;
 }
 
 ul.tabWidget > li.activated {

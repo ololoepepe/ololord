@@ -2527,6 +2527,16 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hidePostformRulesLabelText</comment>
         <translation>Скрывать правила под формой ответа:</translation>
     </message>
+    <message>
+        <source>Edit</source>
+        <comment>editUserCssText</comment>
+        <translation>Редактировать</translation>
+    </message>
+    <message>
+        <source>User CSS:</source>
+        <comment>userCssLabelText</comment>
+        <translation>Пользовательские CSS:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

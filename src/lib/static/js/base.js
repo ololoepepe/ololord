@@ -87,6 +87,8 @@ lord.showSettings = function() {
     showAutoUpdateTimer.checked = !!lord.getLocalObject("showAutoUpdateTimer", true);
     var showAutoUpdateDesktopNotifications = lord.nameOne("showAutoUpdateDesktopNotifications", div);
     showAutoUpdateDesktopNotifications.checked = !!lord.getLocalObject("showAutoUpdateDesktopNotifications", false);
+    var userCssEnabled = lord.nameOne("userCssEnabled", div);
+    userCssEnabled.checked = !!lord.getLocalObject("userCssEnabled", false);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
         var sel = lord.nameOne("modeChangeSelect", div);
         var md = sel.options[sel.selectedIndex].value;
@@ -144,6 +146,7 @@ lord.showSettings = function() {
         lord.setLocalObject("autoUpdateInterval", +autoUpdateInterval.value);
         lord.setLocalObject("showAutoUpdateTimer", !!showAutoUpdateTimer.checked);
         lord.setLocalObject("showAutoUpdateDesktopNotifications", !!showAutoUpdateDesktopNotifications.checked);
+        lord.setLocalObject("userCssEnabled", !!userCssEnabled.checked);
         lord.reloadPage();
     });
 };
@@ -310,11 +313,32 @@ lord.showNewPosts = function() {
     });
 };
 
+lord.editUserCss = function() {
+    var ta = lord.node("textarea");
+    ta.rows = 10;
+    ta.cols = 43;
+    ta.value = lord.getLocalObject("userCss", "");
+    lord.showDialog(null, null, ta, function() {
+        lord.setLocalObject("userCss", ta.value);
+    });
+};
+
 lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
     if (lord.getLocalObject("showNewPosts", true))
         lord.showNewPosts();
+    if (lord.getLocalObject("userCssEnabled", false)) {
+        var css = lord.getLocalObject("userCss", "");
+        var head = lord.queryOne("head");
+        var style = lord.node("style");
+        style.type = "text/css";
+        if (style.styleSheet)
+            style.styleSheet.cssText = css;
+        else
+            style.appendChild(lord.node("text", css));
+        head.appendChild(style);
+    }
 };
 
 window.addEventListener("load", function load() {
