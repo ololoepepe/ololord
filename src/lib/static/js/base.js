@@ -91,6 +91,8 @@ lord.showSettings = function() {
     hideTripcodes.checked = !!lord.getLocalObject("hideTripcodes", false);
     var hideUserNames = lord.nameOne("hideUserNames", div);
     hideUserNames.checked = !!lord.getLocalObject("hideUserNames", false);
+    var strikeOutHiddenPostLinks = lord.nameOne("strikeOutHiddenPostLinks", div);
+    strikeOutHiddenPostLinks.checked = !!lord.getLocalObject("strikeOutHiddenPostLinks", true);
     var userCssEnabled = lord.nameOne("userCssEnabled", div);
     userCssEnabled.checked = !!lord.getLocalObject("userCssEnabled", false);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
@@ -152,6 +154,7 @@ lord.showSettings = function() {
         lord.setLocalObject("showAutoUpdateDesktopNotifications", !!showAutoUpdateDesktopNotifications.checked);
         lord.setLocalObject("hideTripcodes", !!hideTripcodes.checked);
         lord.setLocalObject("hideUserNames", !!hideUserNames.checked);
+        lord.setLocalObject("strikeOutHiddenPostLinks", !!strikeOutHiddenPostLinks.checked);
         lord.setLocalObject("userCssEnabled", !!userCssEnabled.checked);
         lord.reloadPage();
     });

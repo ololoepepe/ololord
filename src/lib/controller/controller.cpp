@@ -244,6 +244,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
     if (c.siteProtocol.empty())
         c.siteProtocol = "http";
+    c.strikeOutHiddenPostLinksLabelText = ts.translate("initBase", "Strike out links to hidden posts:",
+                                                       "strikeOutHiddenPostLinksLabelText");
     c.style.name = Tools::toStd(Tools::cookieValue(req, "style"));
     if (c.style.name.empty())
         c.style.name = "photon";

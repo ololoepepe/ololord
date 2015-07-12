@@ -129,6 +129,10 @@ hr {
     cursor: pointer;
 }
 
+.hiddenPostLink {
+    text-decoration: line-through;
+}
+
 /*
     Ban
 */

@@ -320,13 +320,16 @@ lord.createPostNode = function(res, permanent, boardName) {
     else
         registered.parentNode.removeChild(registered);
     var name = lord.nameOne("someName", post);
+    if (!!lord.getLocalObject("hideUserNames", false))
+        name.style.display = "none";
     if (!!res["email"])
         name.innerHTML = "<a class='mailtoName' href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
     else
         name.innerHTML = res["name"];
     var tripcode = lord.nameOne("tripcode", post);
     if (!!res["showTripcode"] && "" !== res["tripcode"]) {
-        tripcode.style.display = "";
+        if (!lord.getLocalObject("hideTripcodes", false))
+            tripcode.style.display = "";
         tripcode.appendChild(lord.node("text", res["tripcode"]));
     } else {
         tripcode.parentNode.removeChild(tripcode);
@@ -800,6 +803,7 @@ lord.tryHidePost = function(post, list) {
     lord.addClass(thread, "hiddenThread");
     lord.addClass(lord.id("threadOmitted" + postNumber), "hiddenPosts");
     lord.addClass(lord.id("threadPosts" + postNumber), "hiddenPosts");
+    lord.strikeOutHiddenPostLinks();
 };
 
 lord.postNodeInserted = function(post) {
@@ -808,6 +812,8 @@ lord.postNodeInserted = function(post) {
     if (lord.getLocalObject("showYoutubeVideosTitles", true))
         lord.addYoutubeButton(post);
     lord.tryHidePost(post);
+    if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
+        lord.strikeOutHiddenPostLinks(post);
     var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
     lastPostNumbers[lord.text("currentBoardName")] = +post.id.replace("post", "");
     lord.setLocalObject("lastPostNumbers", lastPostNumbers);
@@ -1197,6 +1203,7 @@ lord.setPostHidden = function(boardName, postNumber) {
     else if (list[boardName + "/" + postNumber])
         delete list[boardName + "/" + postNumber];          
     lord.setLocalObject("hiddenPosts", list);
+    lord.strikeOutHiddenPostLinks();
 };
 
 lord.deleteFile = function(boardName, postNumber, fileName) {
@@ -1606,7 +1613,7 @@ lord.setPostformRulesVisible = function(visible) {
     });
     var a = lord.queryOne(".postformRules > a");
     var aa = lord.node("a");
-    aa.className = "hidePostformRulesButton";
+    lord.addClass(aa, "hidePostformRulesButton");
     aa.onclick = lord.setPostformRulesVisible.bind(lord, hide);
     aa.appendChild(lord.node("text", lord.text(hide ? "showPostformRulesText" : "hidePostformRulesText")));
     a.parentNode.replaceChild(aa, a);
@@ -1957,6 +1964,24 @@ lord.globalOnmouseout = function(e) {
     lord.noViewPost();
 };
 
+lord.strikeOutHiddenPostLinks = function(parent) {
+    if (!parent)
+        parent = document;
+    var list = lord.getLocalObject("hiddenPosts", {});
+    var cbn = lord.text("currentBoardName");
+    lord.query("a", parent).forEach(function(a) {
+        var m = a.textContent.match(/^>>(\/(.+)\/)?(\d+)$/);
+        if (!m || !m.length || m.length < 3)
+            return;
+        var bn = m[2] ? m[2] : cbn;
+        var pn = m[m.length - 1];
+        if (list[bn + "/" + pn])
+            lord.addClass(a, "hiddenPostLink");
+        else
+            lord.removeClass(a, "hiddenPostLink");
+    });
+};
+
 lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
@@ -1983,6 +2008,8 @@ lord.initializeOnLoadBaseBoard = function() {
             span.style.display = "none";
         });
     }
+    if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
+        lord.strikeOutHiddenPostLinks();
     if (!lord.text("currentThreadNumber")) {
         var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
         lastPostNumbers[lord.text("currentBoardName")] = +lord.text("lastPostNumber");

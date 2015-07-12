@@ -2552,6 +2552,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hideUserNamesLabelText</comment>
         <translation>Скрывать имена пользователей:</translation>
     </message>
+    <message>
+        <source>Strike out links to hidden posts:</source>
+        <comment>strikeOutHiddenPostLinksLabelText</comment>
+        <translation>Зачеркивать ссылки на скрытые посты:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

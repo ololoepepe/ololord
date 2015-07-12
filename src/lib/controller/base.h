@@ -114,6 +114,7 @@ public:
     std::string siteDomain;
     std::string sitePathPrefix;
     std::string siteProtocol;
+    std::string strikeOutHiddenPostLinksLabelText;
     Style style;
     std::string styleLabelText;
     std::list<Style> styles;
