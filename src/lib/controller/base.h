@@ -70,6 +70,8 @@ public:
     std::string hiddenBoardsLabelText;
     bool hidePostformRules;
     std::string hidePostformRulesLabelText;
+    std::string hideTripcodesLabelText;
+    std::string hidingTabText;
     std::string imageZoomSensitivityLabelText;
     std::string leafThroughImagesOnlyLabelText;
     std::string localeLabelText;

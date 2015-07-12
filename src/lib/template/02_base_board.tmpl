@@ -258,7 +258,7 @@
             <img src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>">
         <% end %>
         <% if ( !post.email.empty() ) %>
-            <a href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
+            <a class="mailtoName" href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
         <% else %>
             <%= post.name | raw %>
         <% end %>

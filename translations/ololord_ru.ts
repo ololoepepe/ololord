@@ -2537,6 +2537,16 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>userCssLabelText</comment>
         <translation>Пользовательские CSS:</translation>
     </message>
+    <message>
+        <source>Hide tripcodes:</source>
+        <comment>hideTripcodesLabelText</comment>
+        <translation>Скрывать трипкоды:</translation>
+    </message>
+    <message>
+        <source>Hiding</source>
+        <comment>hidingTabText</comment>
+        <translation>Скрытие</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

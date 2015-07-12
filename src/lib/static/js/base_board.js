@@ -270,7 +270,6 @@ lord.createPostFile = function(f, boardName, postNumber) {
     inpSizeY.name = "sizeY";
     inpSizeY.value = f["sizeY"];
     divImage.appendChild(inpSizeY);
-    
     var aImage = lord.node("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
     aImage.onclick = lord.showImage.bind(lord, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"],
@@ -322,7 +321,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         registered.parentNode.removeChild(registered);
     var name = lord.nameOne("userName", post);
     if (!!res["email"])
-        name.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
+        name.innerHTML = "<a class='mailtoName' href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
     else
         name.innerHTML = res["name"];
     var tripcode = lord.nameOne("tripcode", post);
@@ -1974,6 +1973,11 @@ lord.initializeOnLoadBaseBoard = function() {
             lord.addYoutubeButton(post);
         lord.tryHidePost(post, list);
     });
+    if (!!lord.getLocalObject("hideTripcodes", false)) {
+        lord.query(".tripcode").forEach(function(span) {
+            span.style.display = "none";
+        });
+    }
     if (!lord.text("currentThreadNumber")) {
         var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
         lastPostNumbers[lord.text("currentBoardName")] = +lord.text("lastPostNumber");

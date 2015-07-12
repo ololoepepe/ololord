@@ -294,7 +294,8 @@
             <li name="1" class="activated"><a onclick="lord.activateTab(this, 1); return false;"><%= postsTabText %></a></li>
             <li name="2" ><a onclick="lord.activateTab(this, 2); return false;"><%= filesTabText %></a></li>
             <li name="3" ><a onclick="lord.activateTab(this, 3); return false;"><%= postformTabText %></a></li>
-            <li name="4" ><a onclick="lord.activateTab(this, 4); return false;"><%= otherTabText %></a></li>
+            <li name="4" ><a onclick="lord.activateTab(this, 4); return false;"><%= hidingTabText %></a></li>
+            <li name="5" ><a onclick="lord.activateTab(this, 5); return false;"><%= otherTabText %></a></li>
         </ul>
         <div>
             <table name="1">
@@ -402,6 +403,18 @@
                 </tbody>
             </table>
             <table name="4" style="display: none;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= hideTripcodesLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="hideTripcodes" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table name="5" style="display: none;">
                 <tbody>
                     <tr>
                         <td>
