@@ -174,19 +174,29 @@ lord.setAutoUpdateEnabled = function(cbox) {
     };
     if (enabled) {
         lord.autoUpdateSecondsLeft = lord.getLocalObject("autoUpdateInterval", 15);
+        var g = function() {
+            lord.autoUpdateSecondsLeft = lord.getLocalObject("autoUpdateInterval", 15);
+            if (lord.autoUpdateCountdown) {
+                clearInterval(lord.autoUpdateCountdown);
+                lord.autoUpdateCountdown = null;
+                f();
+            }
+            if (lord.getLocalObject("showAutoUpdateTimer", true)) {
+                lord.autoUpdateCountdown = setInterval(function() {
+                    lord.autoUpdateSecondsLeft -= 1;
+                    if (lord.autoUpdateSecondsLeft <= 0)
+                        lord.autoUpdateSecondsLeft = lord.getLocalObject("autoUpdateInterval", 15);
+                    f();
+                }, 1000);
+            }
+        };
         lord.autoUpdateTimer = setInterval(function() {
             var boardName = lord.text("currentBoardName");
             var threadNumber = lord.text("currentThreadNumber");
             lord.updateThread(boardName, threadNumber, true);
+            g();
         }, lord.autoUpdateSecondsLeft * 1000);
-        if (lord.getLocalObject("showAutoUpdateTimer", true)) {
-            lord.autoUpdateCountdown = setInterval(function() {
-                lord.autoUpdateSecondsLeft -= 1;
-                if (lord.autoUpdateSecondsLeft <= 0)
-                    lord.autoUpdateSecondsLeft = lord.getLocalObject("autoUpdateInterval", 15);
-                f();
-            }, 1000);
-        }
+        g();
         f();
     } else {
         if (!!lord.autoUpdateTimer) {
