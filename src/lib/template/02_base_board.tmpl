@@ -257,11 +257,13 @@
         <% if ( post.showRegistered && post.showTripcode ) %>
             <img src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>">
         <% end %>
-        <% if ( !post.email.empty() ) %>
-            <a class="mailtoName" href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
-        <% else %>
-            <%= post.name | raw %>
-        <% end %>
+        <span class="someName">
+            <% if ( !post.email.empty() ) %>
+                <a class="mailtoName" href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
+            <% else %>
+                <%= post.name | raw %>
+            <% end %>
+        </span>
         <% if ( !post.tripcode.empty() && post.showTripcode ) %>
             <span class="tripcode"><%= post.tripcode %></span>
         <% end %>
@@ -813,7 +815,7 @@
         <b name="postSubject"></b>
         <img name="registered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
              style="display: none;">
-        <span name="userName"></span>
+        <span class="someName"><span name="userName"></span></span>
         <span name="tripcode" class="tripcode" style="display: none;"></span>
         <img name="whois" src="/<%= sitePathPrefix %>img/flag/%flagName%" style="display: none;">
         <span name="dateTime"></span>

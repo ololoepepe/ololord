@@ -151,6 +151,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.hidePostformRules = !Tools::cookieValue(req, "hidePostformRules").compare("true", Qt::CaseInsensitive);
     c.hidePostformRulesLabelText = ts.translate("initBase", "Hide postform rules:", "hidePostformRulesLabelText");
     c.hideTripcodesLabelText = ts.translate("initBase", "Hide tripcodes:", "hideTripcodesLabelText");
+    c.hideUserNamesLabelText = ts.translate("initBase", "Hide user names:", "hideUserNamesLabelText");
     c.hidingTabText = ts.translate("initBase", "Hiding", "hidingTabText");
     c.imageZoomSensitivityLabelText = ts.translate("initBase", "Image zoom sensitivity, %:",
                                                    "imageZoomSensitivityLabelText");

@@ -2547,6 +2547,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hidingTabText</comment>
         <translation>Скрытие</translation>
     </message>
+    <message>
+        <source>Hide user names:</source>
+        <comment>hideUserNamesLabelText</comment>
+        <translation>Скрывать имена пользователей:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

@@ -71,6 +71,7 @@ public:
     bool hidePostformRules;
     std::string hidePostformRulesLabelText;
     std::string hideTripcodesLabelText;
+    std::string hideUserNamesLabelText;
     std::string hidingTabText;
     std::string imageZoomSensitivityLabelText;
     std::string leafThroughImagesOnlyLabelText;

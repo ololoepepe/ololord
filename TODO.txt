@@ -7,7 +7,7 @@
 [done] Implement desktop notifications
 [done] Add ability to hide postform rules
 [done] Implement user CSS
-[done] Add ability to hide tripcodes
+[done] Add ability to hide tripcodes/user names
 * Add ability to set default audio/video files volume
 * Strike out links to hidden posts
 * Add ability to remove EXIF information from images

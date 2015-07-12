@@ -89,6 +89,8 @@ lord.showSettings = function() {
     showAutoUpdateDesktopNotifications.checked = !!lord.getLocalObject("showAutoUpdateDesktopNotifications", false);
     var hideTripcodes = lord.nameOne("hideTripcodes", div);
     hideTripcodes.checked = !!lord.getLocalObject("hideTripcodes", false);
+    var hideUserNames = lord.nameOne("hideUserNames", div);
+    hideUserNames.checked = !!lord.getLocalObject("hideUserNames", false);
     var userCssEnabled = lord.nameOne("userCssEnabled", div);
     userCssEnabled.checked = !!lord.getLocalObject("userCssEnabled", false);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
@@ -149,6 +151,7 @@ lord.showSettings = function() {
         lord.setLocalObject("showAutoUpdateTimer", !!showAutoUpdateTimer.checked);
         lord.setLocalObject("showAutoUpdateDesktopNotifications", !!showAutoUpdateDesktopNotifications.checked);
         lord.setLocalObject("hideTripcodes", !!hideTripcodes.checked);
+        lord.setLocalObject("hideUserNames", !!hideUserNames.checked);
         lord.setLocalObject("userCssEnabled", !!userCssEnabled.checked);
         lord.reloadPage();
     });

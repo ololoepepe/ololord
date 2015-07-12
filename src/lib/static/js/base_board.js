@@ -319,7 +319,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         registered.style.display = "";
     else
         registered.parentNode.removeChild(registered);
-    var name = lord.nameOne("userName", post);
+    var name = lord.nameOne("someName", post);
     if (!!res["email"])
         name.innerHTML = "<a class='mailtoName' href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
     else
@@ -1975,6 +1975,11 @@ lord.initializeOnLoadBaseBoard = function() {
     });
     if (!!lord.getLocalObject("hideTripcodes", false)) {
         lord.query(".tripcode").forEach(function(span) {
+            span.style.display = "none";
+        });
+    }
+    if (!!lord.getLocalObject("hideUserNames", false)) {
+        lord.query(".someName").forEach(function(span) {
             span.style.display = "none";
         });
     }
