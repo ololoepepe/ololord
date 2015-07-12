@@ -335,13 +335,12 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
     div2.appendChild(ok);
     root.appendChild(div2);
     dialog = picoModal({
-        "content": root/*,
+        "content": root,
         "modalStyles": function (styles) {
-            styles.top = "40px";
-            styles.bottom = "40px";
+            styles.maxHeight = "80%";
             styles.overflow = "auto";
             return styles;
-        }*/
+        }
     }).afterShow(function(modal) {
         if (!!afterShow)
             afterShow();
