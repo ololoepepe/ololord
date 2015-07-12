@@ -155,6 +155,13 @@ lord.forIn = function(obj, f) {
     }
 };
 
+lord.removeChildren = function(obj) {
+    if (!obj || typeof obj.removeChild != "function")
+        return;
+    while (obj.firstChild)
+        obj.removeChild(obj.firstChild);
+};
+
 lord.last = function(arr) {
     if (!arr || !arr.length)
         return null;
@@ -294,6 +301,19 @@ lord.showPopup = function(text, options) {
     }, timeout);
 };
 
+lord.showNotification = function(title, body, icon) {
+    if (!("Notification" in window))
+        return;
+    Notification.requestPermission(function(permission) {
+        if (permission !== "granted")
+            return;
+        var notification = new Notification(title, {
+            "body": body,
+            "icon": icon
+        });
+    });
+};
+
 lord.showDialog = function(title, label, body, callback, afterShow) {
     var root = lord.node("div");
     if (!!title || !!label) {
@@ -431,4 +451,8 @@ lord.activateTab = function(a, tabIndex, display) {
         else
             lord.removeClass(node, "activated");
     });
+};
+
+lord.notificationsEnabled = function() {
+    return lord.getLocalObject("showAutoUpdateDesktopNotifications", false);
 };

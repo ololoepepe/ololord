@@ -231,23 +231,21 @@ lord.checkFavoriteThreads = function() {
         lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, o.lastPostNumber], lord.RpcGetNewPostsId, function(res) {
             if (!res || res.length < 1)
                 return;
-            o.lastPostNumber = res.pop()["number"];
+            o.lastPostNumber = res[res.length - 1]["number"];
             nfav[x] = o;
-            if (("Notification" in window) && lord.getLocalObject("showAutoUpdateDesktopNotifications", false)) {
-                var f = function() {
-                    var notification = new Notification(lord.text("favoriteThreadsText") + " " + res.length);
-                };
-                if (Notification.permission === "granted") {
-                    f();
-                } else if (Notification.permission !== 'denied') {
-                    Notification.requestPermission(function(permission) {
-                        if (permission === "granted")
-                            f();
-                    });
-                }
-            }
         });
     });
+    if (lord.notificationsEnabled() && lord.hasOwnProperties(nfav)) {
+        var title = lord.text("favoriteThreadsText");
+        var sitePathPrefix = lord.text("sitePathPrefix");
+        var icon = "/" + sitePathPrefix + "favicon.ico";
+        var text = "";
+        lord.forIn(nfav, function(v, k) {
+            text += k + ", ";
+        });
+        text = text.substr(0, text.length - 2);
+        lord.showNotification(title, text.substr(0, 300), icon);
+    }
     setTimeout(function() {
         fav = lord.getLocalObject("favoriteThreads", {});
         lord.forIn(nfav, function(o, x) {

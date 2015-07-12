@@ -255,6 +255,22 @@ lord.createPostFile = function(f, boardName, postNumber) {
     file.appendChild(divFileSearch);
     var divImage = lord.node("div");
     lord.addClass(divImage, "postFileFile");
+    var inpType = lord.node("input");
+    inpType.type = "hidden";
+    inpType.name = "type";
+    inpType.value = f["type"];
+    divImage.appendChild(inpType);
+    var inpSizeX = lord.node("input");
+    inpSizeX.type = "hidden";
+    inpSizeX.name = "sizeX";
+    inpSizeX.value = f["sizeX"];
+    divImage.appendChild(inpSizeX);
+    var inpSizeY = lord.node("input");
+    inpSizeY.type = "hidden";
+    inpSizeY.name = "sizeY";
+    inpSizeY.value = f["sizeY"];
+    divImage.appendChild(inpSizeY);
+    
     var aImage = lord.node("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
     aImage.onclick = lord.showImage.bind(lord, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"],
