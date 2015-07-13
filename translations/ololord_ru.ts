@@ -2622,6 +2622,31 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hotkeyNextPostLabelText</comment>
         <translation>Следующий пост (в треде/на доске)</translation>
     </message>
+    <message>
+        <source>Expand thread</source>
+        <comment>hotkeyExpandThreadLabelText</comment>
+        <translation>Развернуть тред</translation>
+    </message>
+    <message>
+        <source>Go to thread</source>
+        <comment>hotkeyGoToThreadLabelText</comment>
+        <translation>Перейти к треду</translation>
+    </message>
+    <message>
+        <source>Hide post/thread</source>
+        <comment>hotkeyHidePostLabelText</comment>
+        <translation>Скрыть пост/тред</translation>
+    </message>
+    <message>
+        <source>Quick reply</source>
+        <comment>hotkeyQuickReplyLabelText</comment>
+        <translation>Быстрый ответ</translation>
+    </message>
+    <message>
+        <source>Expand post file</source>
+        <comment>hotkeyExpandImageLabelText</comment>
+        <translation>Развернуть файл в посте</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -3124,6 +3149,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <source>Quote selected text</source>
         <comment>markupQuotation</comment>
         <translation>Цитировать выделенный текст</translation>
+    </message>
+    <message>
+        <source>Loading posts...</source>
+        <comment>loadingPostsText</comment>
+        <translation>Загрузка постов...</translation>
     </message>
 </context>
 <context>

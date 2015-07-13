@@ -540,6 +540,46 @@
                 – <%= hotkeyNextPostLabelText %>
             </td>
         </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="hidePost" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyHidePostLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="goToThread" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyGoToThreadLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="expandThread" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyExpandThreadLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="expandImage" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyExpandImageLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="quickReply" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyQuickReplyLabelText %>
+            </td>
+        </tr>
     </tbody>
 </table>
 <% end template %>

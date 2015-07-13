@@ -450,7 +450,8 @@
             <% end %>
         </span>
         <% if ( thread && post.number == post.threadNumber ) %>
-            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><%= toThread %></a>]
+            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"
+                name="toThreadLink"><%= toThread %></a>]
         <% end %>
     </div>
     <table class="threadPost">
@@ -817,6 +818,7 @@
 <input type="hidden" id="hidePostformRulesText" value="<%= hidePostformRulesText %>" />
 <input type="hidden" id="showPostformMarkupText" value="<%= showPostformMarkupText %>" />
 <input type="hidden" id="hidePostformMarkupText" value="<%= hidePostformMarkupText %>" />
+<input type="hidden" id="loadingPostsText" value="<%= loadingPostsText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>
@@ -840,6 +842,7 @@
     <% end %>
 </select>
 <div id="postTemplate" class="post" style="display: none;">
+    <a name="postAnchor"></a>
     <input name="rawText" type="hidden" value="" />
     <input name="rawHtml" type="hidden" value="false" />
     <input name="email" type="hidden" value="" />

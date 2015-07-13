@@ -150,6 +150,7 @@ public:
     std::string hidePostformRulesText;
     std::string hidePostFormText;
     std::string kilobytesText;
+    std::string loadingPostsText;
     std::string markupBold;
     std::string markupCode;
     std::string markupItalics;

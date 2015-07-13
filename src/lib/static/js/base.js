@@ -22,6 +22,11 @@ lord._defineHotkey("previousThreadPost", "Ctrl+Up");
 lord._defineHotkey("nextThreadPost", "Ctrl+Down");
 lord._defineHotkey("previousPost", "Ctrl+Shift+Up");
 lord._defineHotkey("nextPost", "Ctrl+Shift+Down");
+lord._defineHotkey("hidePost", "H");
+lord._defineHotkey("goToThread", "V");
+lord._defineHotkey("expandThread", "E");
+lord._defineHotkey("expandImage", "I");
+lord._defineHotkey("quickReply", "R");
 
 /*Functions*/
 
@@ -396,6 +401,8 @@ lord.assignHotkey = function(e, inp) {
         return;
     var name = inp.name;
     var key = e.key;
+    if (key.length == 1)
+        key = key.toUpperCase();
     if (e.metaKey)
         key = "Meta+" + key;
     if (e.altKey)

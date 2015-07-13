@@ -159,16 +159,21 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.hideTripcodesLabelText = ts.translate("initBase", "Hide tripcodes:", "hideTripcodesLabelText");
     c.hideUserNamesLabelText = ts.translate("initBase", "Hide user names:", "hideUserNamesLabelText");
     c.hidingTabText = ts.translate("initBase", "Hiding", "hidingTabText");
+    c.hotkeyExpandImageLabelText = ts.translate("initBase", "Expand post file", "hotkeyExpandImageLabelText");
+    c.hotkeyExpandThreadLabelText = ts.translate("initBase", "Expand thread", "hotkeyExpandThreadLabelText");
+    c.hotkeyGoToThreadLabelText = ts.translate("initBase", "Go to thread", "hotkeyGoToThreadLabelText");
+    c.hotkeyHidePostLabelText = ts.translate("initBase", "Hide post/thread", "hotkeyHidePostLabelText");
+    c.hotkeyNextPageImageLabelText = ts.translate("initBase", "Next page/file", "hotkeyNextPageImageLabelText");
+    c.hotkeyNextPostLabelText = ts.translate("initBase", "Next post (inthread/on board)", "hotkeyNextPostLabelText");
+    c.hotkeyNextThreadPostLabelText = ts.translate("initBase", "Next thread (on board)/post (in thread)",
+                                                   "hotkeyNextThreadPostLabelText");
     c.hotkeyPreviousPageImageLabelText = ts.translate("initBase", "Previous page/file",
                                                       "hotkeyPreviousPageImageLabelText");
     c.hotkeyPreviousPostLabelText = ts.translate("initBase", "Previous post (in thread/on board)",
                                                  "hotkeyPreviousPostLabelText");
     c.hotkeyPreviousThreadPostLabelText = ts.translate("initBase", "Previous thread (on board)/post (in thread)",
                                                        "hotkeyPreviousThreadPostLabelText");
-    c.hotkeyNextPageImageLabelText = ts.translate("initBase", "Next page/file", "hotkeyNextPageImageLabelText");
-    c.hotkeyNextPostLabelText = ts.translate("initBase", "Next post (inthread/on board)", "hotkeyNextPostLabelText");
-    c.hotkeyNextThreadPostLabelText = ts.translate("initBase", "Next thread (on board)/post (in thread)",
-                                                   "hotkeyNextThreadPostLabelText");
+    c.hotkeyQuickReplyLabelText = ts.translate("initBase", "Quick reply", "hotkeyQuickReplyLabelText");
     c.hotkeysLabelText = ts.translate("initBase", "Hotkeys:", "hotkeysLabelText");
     c.imageZoomSensitivityLabelText = ts.translate("initBase", "Image zoom sensitivity, %:",
                                                    "imageZoomSensitivityLabelText");
@@ -399,6 +404,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.hidePostformRulesText = ts.translate("initBaseBoard", "Hide rules", "hidePostformRulesText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
     c.kilobytesText = ts.translate("initBaseBoard", "KB", "kilobytesText");
+    c.loadingPostsText = ts.translate("initBaseBoard", "Loading posts...", "loadingPostsText");
     c.markupBold = ts.translate("initBaseBoard", "Bold text", "markupBold");
     c.markupCode = ts.translate("initBaseBoard", "Code block", "markupCode");
     c.markupItalics = ts.translate("initBaseBoard", "Italics", "markupItalics");

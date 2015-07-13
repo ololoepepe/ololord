@@ -441,6 +441,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         lord.addClass(post, "temporary");
         return post;
     }
+    lord.nameOne("postAnchor", post).id = res["number"];
     var quickReply = lord.nameOne("quickReply", post);
     quickReply.href = quickReply.href.replace("%postNumber%", res["number"]);
     lord.removeReferences(res["number"]);
@@ -2150,6 +2151,38 @@ lord.hotkey_nextPageImage = function() {
     }
 };
 
+lord.currentPost = function() {
+    var list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", ""))
+            return list[i];
+    }
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]))
+            return list[i];
+    }
+    return null;
+};
+
+lord.currentThread = function() {
+    if (lord.text("currentThreadNumber"))
+        return null;
+    var list = lord.query(".opPost");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]))
+            return lord.id(list[i].id.replace("post", "thread"));
+    }
+    list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", ""))
+            return lord.id(list[i].parentNode.id.replace("threadPosts", "thread"));
+    }
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]))
+            return lord.id(list[i].parentNode.id.replace("threadPosts", "thread"));
+    }
+};
+
 lord.previousNextThreadPostCommon = function(next, post) {
     var list = null;
     var f = function(list, i) {
@@ -2210,11 +2243,97 @@ lord.hotkey_nextPost = function() {
     return lord.previousNextThreadPostCommon(true, true);
 };
 
+lord.hotkey_hidePost = function() {
+    var p = lord.currentPost();
+    if (!p)
+        return;
+    lord.setPostHidden(lord.text("currentBoardName"), p.id.replace("post", ""));
+    return false;
+};
+
+lord.hotkey_goToThread = function() {
+    var t = lord.currentThread();
+    if (!t)
+        return;
+    var opPost = lord.queryOne(".opPost", t);
+    window.open(lord.queryOne(".postHeader > [name='toThreadLink']", opPost).href, '_blank').focus();
+};
+
+lord.hotkey_expandThread = function() {
+    var t = lord.currentThread();
+    if (!t)
+        return;
+    var tn = +t.id.replace("thread", "");
+    var posts = lord.id("threadPosts" + tn);
+    (function(tn, posts) {
+        var div = lord.node("div");
+        div.appendChild(lord.node("text", lord.text("loadingPostsText")));
+        posts.parentNode.insertBefore(div, posts);
+        lord.ajaxRequest("get_new_posts", [lord.text("currentBoardName"), tn, tn], lord.RpcGetNewPostsId, function(res) {
+            if (!res || res.length < 1)
+                return;
+            lord.removeChildren(posts);
+            var omitted = lord.id("threadOmitted" + tn);
+            if (omitted)
+                omitted.parentNode.removeChild(omitted);
+            div.parentNode.removeChild(div);
+            var ps = lord.arr(res);
+            var f = function() { //NOTE: Using timeout to let UI update
+                if (ps.length <= 0)
+                    return;
+                var newPost = lord.createPostNode(ps.shift(), true);
+                if (!newPost)
+                    return;
+                lord.removeClass(newPost, "newPost");
+                posts.appendChild(newPost);
+                lord.postNodeInserted(newPost);
+                setTimeout(f, 1);
+            };
+            f();
+        });
+    })(tn, posts);
+    return false;
+};
+
+lord.hotkey_expandImage = function() {
+    var p = lord.currentPost();
+    if (!p)
+        return;
+    if (lord.img && lord.img.style.display != "none") {
+        lord.hideImage();
+    } else {
+        var f = lord.query(".postFileFile", p);
+        if (!f)
+            return;
+        f = f[0];
+        var href = lord.queryOne("a", f).href;
+        var type = lord.nameOne("type", f).value;
+        if ("application/pdf" == type) {
+            window.open(href, '_blank').focus();
+        } else {
+            var sizeX = lord.nameOne("sizeX", f).value;
+            var sizeY = lord.nameOne("sizeY", f).value;
+            lord.showImage(href, type, sizeX, sizeY);
+        }
+    }
+    return false;
+};
+
+lord.hotkey_quickReply = function() {
+    var p = lord.currentPost();
+    if (!p)
+        return;
+    lord.quickReply(p.id.replace("post", ""));
+    return false;
+};
+
 lord.interceptHotkey = function(e) {
     if (e.target.tagName && lord.in(["TEXTAREA", "INPUT", "BUTTON"], e.target.tagName))
         return;
     var hotkeys = lord.getLocalObject("hotkeys", {});
     var key = e.key;
+    if (key.length == 1)
+        key = key.toUpperCase();
     if (e.metaKey)
         key = "Meta+" + key;
     if (e.altKey)
