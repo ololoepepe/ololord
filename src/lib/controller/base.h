@@ -58,6 +58,7 @@ public:
     std::string currentTime;
     std::string customFooterContent;
     std::string customHeaderContent;
+    std::string defaultAudioVideoVolumeLabelText;
     bool draftsByDefault;
     std::string draftsByDefaultLabelText;
     std::string editUserCssText;

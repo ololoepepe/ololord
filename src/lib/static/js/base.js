@@ -80,6 +80,8 @@ lord.showSettings = function() {
     var imageZoomSensitivity = lord.nameOne("imageZoomSensitivity", div);
     imageZoomSensitivity.value = lord.getLocalObject("imageZoomSensitivity", 25);
     var autoUpdateThreadsByDefault = lord.nameOne("autoUpdateThreadsByDefault", div);
+    var defaultAudioVideoVolume = lord.nameOne("defaultAudioVideoVolume", div);
+    defaultAudioVideoVolume.value = lord.getLocalObject("defaultAudioVideoVolume", 100);
     autoUpdateThreadsByDefault.checked = !!lord.getLocalObject("autoUpdateThreadsByDefault", false);
     var autoUpdateInterval = lord.nameOne("autoUpdateInterval", div);
     autoUpdateInterval.value = lord.getLocalObject("autoUpdateInterval", 15);
@@ -148,6 +150,7 @@ lord.showSettings = function() {
         lord.setLocalObject("showLeafButtons", !!showLeafButtons.checked);
         lord.setLocalObject("leafThroughImagesOnly", !!leafThroughImagesOnly.checked);
         lord.setLocalObject("imageZoomSensitivity", +imageZoomSensitivity.value);
+        lord.setLocalObject("defaultAudioVideoVolume", +defaultAudioVideoVolume.value);
         lord.setLocalObject("autoUpdateThreadsByDefault", !!autoUpdateThreadsByDefault.checked);
         lord.setLocalObject("autoUpdateInterval", +autoUpdateInterval.value);
         lord.setLocalObject("showAutoUpdateTimer", !!showAutoUpdateTimer.checked);

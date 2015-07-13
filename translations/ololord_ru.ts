@@ -2557,6 +2557,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>showNewPostsLabelText</comment>
         <translation>Показывать количество новых постов рядом с именами борд:</translation>
     </message>
+    <message>
+        <source>Default audio and video files volume:</source>
+        <comment>defaultAudioVideoVolumeLabelText</comment>
+        <translation>Громкость аудио- и видеофайлов по умолчанию:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

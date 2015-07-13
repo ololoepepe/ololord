@@ -136,6 +136,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentTime = mreq->cookie_by_name("time").value();
     c.customFooterContent = Tools::toStd(Tools::customContent("footer", ts.locale()));
     c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
+    c.defaultAudioVideoVolumeLabelText = ts.translate("initBase", "Default audio and video files volume:",
+                                                      "defaultAudioVideoVolumeLabelText");
     c.draftsByDefault = !Tools::cookieValue(req, "draftsByDefault").compare("true", Qt::CaseInsensitive);
     c.draftsByDefaultLabelText = ts.translate("initBase", "Mark posts as drafts by default:",
                                               "draftsByDefaultLabelText");

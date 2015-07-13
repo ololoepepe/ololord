@@ -1646,6 +1646,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.img = lord.node("audio");
         lord.img.width = sizeHintX + "px";
         lord.img.controls = "controls";
+        lord.img.volume = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
         var src = lord.node("source");
         src.src = href;
         src.type = type;
@@ -1660,6 +1661,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     } else if (lord.isVideoType(type)) {
         lord.img = lord.node("video");
         lord.img.controls = "controls";
+        lord.img.volume = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
         var src = lord.node("source");
         src.src = href;
         src.type = type;
