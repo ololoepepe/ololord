@@ -97,6 +97,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     }
     localeMutex.unlock();
     TranslatorStd ts(req);
+    c.addToFavoritesOnReplyLabelText = ts.translate("initBase", "Add thread to favorites on reply:",
+                                                    "addToFavoritesOnReplyLabelText");
     c.allBoardsText = ts.translate("initBase", "All boards", "allBoardsText");
     c.autoUpdateIntervalLabelText = ts.translate("initBase", "Auto update interval (sec):",
                                                  "autoUpdateIntervalLabelText");

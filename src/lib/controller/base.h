@@ -42,6 +42,7 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
         std::string title;
     };
 public:
+    std::string addToFavoritesOnReplyLabelText;
     std::string allBoardsText;
     std::string autoUpdateIntervalLabelText;
     std::string autoUpdateThreadsByDefaultLabelText;

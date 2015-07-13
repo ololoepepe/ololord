@@ -2562,6 +2562,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>defaultAudioVideoVolumeLabelText</comment>
         <translation>Громкость аудио- и видеофайлов по умолчанию:</translation>
     </message>
+    <message>
+        <source>Add thread to favorites on reply:</source>
+        <comment>addToFavoritesOnReplyLabelText</comment>
+        <translation>Добавлять тред в избранное при ответе:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

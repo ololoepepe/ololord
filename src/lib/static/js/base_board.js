@@ -1766,22 +1766,33 @@ lord.nextFile = function() {
     lord.showImage(f.href, f.type, f.sizeX, f.sizeY);
 };
 
-lord.addThreadToFavorites = function(boardName, threadNumber) {
+lord.addThreadToFavorites = function(boardName, threadNumber, callback, callbackError) {
     threadNumber = +threadNumber;
-    if (!boardName || isNaN(threadNumber))
+    if (!boardName || isNaN(threadNumber)) {
+        if (typeof callbackError == "function")
+            callbackError();
         return;
+    }
     var fav = lord.getLocalObject("favoriteThreads", {});
-    if (fav.hasOwnProperty(boardName + "/" + threadNumber))
+    if (fav.hasOwnProperty(boardName + "/" + threadNumber)) {
+        if (typeof callbackError == "function")
+            callbackError();
         return;
+    }
     lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], lord.RpcGetNewPostsId, function(res) {
-        if (!res || res.length < 1)
+        if (!res || res.length < 1) {
+            if (typeof callbackError == "function")
+                callbackError();
             return;
+        }
         var pn = res.pop()["number"];
         fav[boardName + "/" + threadNumber] = {
             "lastPostNumber": pn,
             "previousLastPostNumber": pn
         };
         lord.setLocalObject("favoriteThreads", fav);
+        if (typeof callback == "function")
+            callback();
     });
 };
 
@@ -1892,57 +1903,63 @@ lord.posted = function(response) {
         btn.disabled = false;
         btn.value = lord.text("postFormButtonSubmit");
     };
-    if (postNumber) {
-        if (lord.postForm.quickReply && !currentThreadNumber) {
-            var action = lord.getLocalObject("quickReplyAction", "goto_thread");
-            if ("do_nothing" === action) {
-                //Do nothing
-            } else if ("append_post" == action) {
-                var parent = postForm.parentNode;
-                if (!lord.hasClass(parent, "threadPosts")) {
-                    parent = parent.nextSibling;
-                    if (!parent.tagName)
+    var f = function() {
+        if (postNumber) {
+            if (lord.postForm.quickReply && !currentThreadNumber) {
+                var action = lord.getLocalObject("quickReplyAction", "goto_thread");
+                if ("do_nothing" === action) {
+                    //Do nothing
+                } else if ("append_post" == action) {
+                    var parent = postForm.parentNode;
+                    if (!lord.hasClass(parent, "threadPosts")) {
                         parent = parent.nextSibling;
-                }
-                //NOTE: Yep, twice
-                if (!lord.hasClass(parent, "threadPosts")) {
-                    parent = parent.nextSibling;
-                    if (!parent.tagName)
-                        parent = parent.nextSibling;
-                }
-                lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
-                    var newPost = lord.createPostNode(res, true);
-                    if (newPost) {
-                        parent.appendChild(newPost, parent.lastChild);
-                        lord.postNodeInserted(newPost);
+                        if (!parent.tagName)
+                            parent = parent.nextSibling;
                     }
-                });
-            } else {
-                //The default
-                var href = window.location.href.split("#").shift();
-                href += "/thread/" + lord.nameOne("thread", postForm).value + ".html#" + postNumber;
-                window.location.href = href;
-                return;
+                    //NOTE: Yep, twice
+                    if (!lord.hasClass(parent, "threadPosts")) {
+                        parent = parent.nextSibling;
+                        if (!parent.tagName)
+                            parent = parent.nextSibling;
+                    }
+                    lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
+                        var newPost = lord.createPostNode(res, true);
+                        if (newPost) {
+                            parent.appendChild(newPost, parent.lastChild);
+                            lord.postNodeInserted(newPost);
+                        }
+                    });
+                } else {
+                    //The default
+                    var href = window.location.href.split("#").shift();
+                    href += "/thread/" + lord.nameOne("thread", postForm).value + ".html#" + postNumber;
+                    window.location.href = href;
+                    return;
+                }
             }
+            resetButton();
+            lord.resetPostForm();
+            if (currentThreadNumber)
+                lord.updateThread(boardName, currentThreadNumber, true, lord.selectPost.bind(lord, postNumber));
+            lord.removeQuickReply();
+            lord.resetCaptcha();
+        } else if (threadNumber) {
+            var href = window.location.href.split("#").shift();
+            window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/" + threadNumber
+                + ".html";
+        } else {
+            resetButton();
+            var errmsg = o.errorMessage;
+            var errdesc = o.errorDescription;
+            var txt = (errmsg && errdesc) ? (errmsg + ": " + errdesc) : response.substring(0, 150);
+            lord.showPopup(txt, {type: "critical"});
+            lord.resetCaptcha();
         }
-        resetButton();
-        lord.resetPostForm();
-        if (currentThreadNumber)
-            lord.updateThread(boardName, currentThreadNumber, true, lord.selectPost.bind(lord, postNumber));
-        lord.removeQuickReply();
-        lord.resetCaptcha();
-    } else if (threadNumber) {
-        var href = window.location.href.split("#").shift();
-        window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/" + threadNumber
-            + ".html";
-    } else {
-        resetButton();
-        var errmsg = o.errorMessage;
-        var errdesc = o.errorDescription;
-        var txt = (errmsg && errdesc) ? (errmsg + ": " + errdesc) : response.substring(0, 150);
-        lord.showPopup(txt, {type: "critical"});
-        lord.resetCaptcha();
-    }
+    };
+    if (lord.getLocalObject("addToFavoritesOnReply", false) && (postNumber || threadNumber))
+        lord.addThreadToFavorites(boardName, threadNumber || lord.nameOne("thread", postForm).value, f, f);
+    else
+        f();
 };
 
 lord.globalOnmouseover = function(e) {

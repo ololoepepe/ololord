@@ -10,8 +10,8 @@
 [done] Add ability to hide tripcodes/user names
 [done] Strike out links to hidden posts
 [done] Add ability to set default audio/video files volume
+[done] Add ability to automatically mark a thread as favofite when posting a reply
 * Add ability to remove EXIF information from images
-* Add ability to automatically mark a thread as favofite when posting a reply
 * Add markup buttons bar
 * Implement hotkeys
 * Implement auto post hiding system
