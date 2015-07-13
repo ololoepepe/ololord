@@ -152,6 +152,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     foreach (const QString &bn, Tools::cookieValue(req, "hiddenBoards").split('|', QString::SkipEmptyParts))
         c.hiddenBoards.insert(Tools::toStd(bn));
     c.hiddenBoardsLabelText = ts.translate("initBase", "Hide boards:", "hiddenBoardsLabelText");
+    c.hidePostformMarkupLabelText = ts.translate("initBase", "Hide postform markup:", "hidePostformMarkupLabelText");
     c.hidePostformRules = !Tools::cookieValue(req, "hidePostformRules").compare("true", Qt::CaseInsensitive);
     c.hidePostformRulesLabelText = ts.translate("initBase", "Hide postform rules:", "hidePostformRulesLabelText");
     c.hideTripcodesLabelText = ts.translate("initBase", "Hide tripcodes:", "hideTripcodesLabelText");
@@ -304,6 +305,17 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.audioTagArtistText = ts.translate("initBaseBoard", "Artist:", "audioTagArtistText");
     c.audioTagTitleText = ts.translate("initBaseBoard", "Title:", "audioTagTitleText");
     c.audioTagYearText = ts.translate("initBaseBoard", "Year:", "audioTagYearText");
+    foreach (const QString &id, Tools::supportedCodeLanguages()) {
+        Content::BaseBoard::Lang lang;
+        lang.id = Tools::toStd(id);
+        QString name = Tools::langName(id);
+        if (!name.isEmpty() && "-" != id)
+            name += " (" + id + ")";
+        else
+            name = id;
+        lang.name = Tools::toStd(name);
+        c.availableLangs.push_back(lang);
+    }
     c.banExpiresLabelText = ts.translate("initBaseBoard", "Expiration time:", "banExpiresLabelText");
     c.banLevelLabelText = ts.translate("initBaseBoard", "Level:", "banLevelLabelText");
     Content::BanLevel bl;
@@ -371,9 +383,21 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
+    c.hidePostformMarkupText = ts.translate("initBaseBoard", "Hide markup", "hidePostformMarkupText");
     c.hidePostformRulesText = ts.translate("initBaseBoard", "Hide rules", "hidePostformRulesText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
     c.kilobytesText = ts.translate("initBaseBoard", "KB", "kilobytesText");
+    c.markupBold = ts.translate("initBaseBoard", "Bold text", "markupBold");
+    c.markupCode = ts.translate("initBaseBoard", "Code block", "markupCode");
+    c.markupItalics = ts.translate("initBaseBoard", "Italics", "markupItalics");
+    c.markupLang = ts.translate("initBaseBoard", "Code block syntax", "markupLang");
+    c.markupQuotation = ts.translate("initBaseBoard", "Quote selected text", "markupQuotation");
+    c.markupSpoiler = ts.translate("initBaseBoard", "Spoiler", "markupSpoiler");
+    c.markupStrikedOut = ts.translate("initBaseBoard", "Skriked out text", "markupStrikedOut");
+    c.markupSubscript = ts.translate("initBaseBoard", "Subscript", "markupSubscript");
+    c.markupSuperscript = ts.translate("initBaseBoard", "Superscript", "markupSuperscript");
+    c.markupUnderlined = ts.translate("initBaseBoard", "Underlined text", "markupUnderlined");
+    c.markupUrl = ts.translate("initBaseBoard", "URL (external link)", "markupUrl");
     c.maxEmailLength = Tools::maxInfo(Tools::MaxEmailFieldLength, board->name());
     c.maxFileCount = Tools::maxInfo(Tools::MaxFileCount, board->name());
     c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, board->name());
@@ -464,6 +488,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
     c.selectFileText = ts.translate("initBaseBoard", "Select file", "selectFileText");
+    c.showPostformMarkupText = ts.translate("initBaseBoard", "Show markup", "showPostformMarkupText");
     c.showPostformRulesText = ts.translate("initBaseBoard", "Show rules", "showPostformRulesText");
     c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");

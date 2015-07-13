@@ -75,6 +75,8 @@ lord.showSettings = function() {
     showAttachedFilePreview.checked = lord.getLocalObject("showAttachedFilePreview", true);
     var addToFavoritesOnReply = lord.nameOne("addToFavoritesOnReply", div);
     addToFavoritesOnReply.checked = lord.getLocalObject("addToFavoritesOnReply", false);
+    var hidePostformMarkup = lord.nameOne("hidePostformMarkup", div);
+    hidePostformMarkup.checked = lord.getLocalObject("hidePostformMarkup", false);
     var showLeafButtons = lord.nameOne("showLeafButtons", div);
     showLeafButtons.checked = lord.getLocalObject("showLeafButtons", true);
     var leafThroughImagesOnly = lord.nameOne("leafThroughImagesOnly", div);
@@ -150,6 +152,7 @@ lord.showSettings = function() {
         lord.setLocalObject("checkFileExistence", !!checkFileExistence.checked);
         lord.setLocalObject("showAttachedFilePreview", !!showAttachedFilePreview.checked);
         lord.setLocalObject("addToFavoritesOnReply", !!addToFavoritesOnReply.checked);
+        lord.setLocalObject("hidePostformMarkup", !!hidePostformMarkup.checked);
         lord.setLocalObject("showLeafButtons", !!showLeafButtons.checked);
         lord.setLocalObject("leafThroughImagesOnly", !!leafThroughImagesOnly.checked);
         lord.setLocalObject("imageZoomSensitivity", +imageZoomSensitivity.value);

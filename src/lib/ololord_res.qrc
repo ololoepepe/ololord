@@ -7,5 +7,6 @@
         <file>res/city_name_timezone_map.txt</file>
         <file>res/yandex_captcha_script.js</file>
         <file>res/root-zones.txt</file>
+        <file>res/lang_name_map.txt</file>
     </qresource>
 </RCC>

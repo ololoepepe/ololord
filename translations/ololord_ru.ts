@@ -2577,6 +2577,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>addToFavoritesOnReplyLabelText</comment>
         <translation>Добавлять тред в избранное при ответе:</translation>
     </message>
+    <message>
+        <source>Hide postform markup:</source>
+        <comment>hidePostformMarkupLabelText</comment>
+        <translation>Скрывать разметку под формой ответа:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -3014,6 +3019,71 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <source>Show rules</source>
         <comment>showPostformRulesText</comment>
         <translation>Показать правила</translation>
+    </message>
+    <message>
+        <source>Hide markup</source>
+        <comment>hidePostformMarkupText</comment>
+        <translation>Скрыть разметку</translation>
+    </message>
+    <message>
+        <source>Show markup</source>
+        <comment>showPostformMarkupText</comment>
+        <translation>Показать разметку</translation>
+    </message>
+    <message>
+        <source>Bold text</source>
+        <comment>markupBold</comment>
+        <translation>Жирный текст</translation>
+    </message>
+    <message>
+        <source>Italics</source>
+        <comment>markupItalics</comment>
+        <translation>Курсив</translation>
+    </message>
+    <message>
+        <source>Spoiler</source>
+        <comment>markupSpoiler</comment>
+        <translation>Спойлер</translation>
+    </message>
+    <message>
+        <source>Skriked out text</source>
+        <comment>markupStrikedOut</comment>
+        <translation>Зачеркнутый текст</translation>
+    </message>
+    <message>
+        <source>Subscript</source>
+        <comment>markupSubscript</comment>
+        <translation>Индекс</translation>
+    </message>
+    <message>
+        <source>Superscript</source>
+        <comment>markupSuperscript</comment>
+        <translation>Верхний индекс</translation>
+    </message>
+    <message>
+        <source>Underlined text</source>
+        <comment>markupUnderlined</comment>
+        <translation>Подчеркнутый текст</translation>
+    </message>
+    <message>
+        <source>URL (external link)</source>
+        <comment>markupUrl</comment>
+        <translation>URL (внешняя ссылка)</translation>
+    </message>
+    <message>
+        <source>Code block</source>
+        <comment>markupCode</comment>
+        <translation>Блок кода</translation>
+    </message>
+    <message>
+        <source>Code block syntax</source>
+        <comment>markupLang</comment>
+        <translation>Синтаксис блока кода</translation>
+    </message>
+    <message>
+        <source>Quote selected text</source>
+        <comment>markupQuotation</comment>
+        <translation>Цитировать выделенный текст</translation>
     </message>
 </context>
 <context>

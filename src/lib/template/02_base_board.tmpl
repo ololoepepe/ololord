@@ -702,6 +702,44 @@
                 </td>
             </tr>
             <% include customPostFormField8() %>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <tr>
+                    <td colspan="2" class="postformMarkup">
+                        <span>
+                            <button class="button" onclick="lord.markup('b'); return false;"
+                                    title="<%= markupBold %>"><b>B</b></button>
+                            <button class="button" onclick="lord.markup('i'); return false;"
+                                    title="<%= markupItalics %>"><i>i</i></button>
+                            <button class="button" onclick="lord.markup('s'); return false;"
+                                    title="<%= markupStrikedOut %>"><s>S</s></button>
+                            <button class="button" onclick="lord.markup('u'); return false;"
+                                    title="<%= markupUnderlined %>"><u>U</u></button>
+                            <button class="button" onclick="lord.markup('spoiler'); return false;"
+                                    title="<%= markupSpoiler %>"><span class="spoiler">------</span></button>
+                            <button class="button" onclick="lord.markup('>'); return false;"
+                                    title="<%= markupQuotation %>"><span class="quoatation">&gt;</span></button>
+                            <select name="langSelect" class="select" title="<%= markupLang %>"
+                                    onchange="lord.changeLastCodeLang();">
+                                <option value="-" selected="true">-----</option>
+                                <% foreach lang in availableLangs %>
+                                    <% item %>
+                                        <option value="<%= lang.id %>"><%= lang.name %></option>
+                                    <% end %>
+                                <% end %>
+                            </select>
+                            <button class="button" onclick="lord.markup('code'); return false;"
+                                    title="<%= markupCode %>">[code]</button>
+                            <button class="button" onclick="lord.markup('sub'); return false;"
+                                    title="<%= markupSubscript %>">H<sub>2</sub>O</button>
+                            <button class="button" onclick="lord.markup('sup'); return false;"
+                                    title="<%= markupSuperscript %>">X<sup>3</sup></button>
+                            <button class="button" onclick="lord.markup('url'); return false;"
+                                    title="<%= markupUrl %>">http://</button>
+                        </span>
+                        <a class="hidePostformRulesButton" />
+                    </td>
+                </tr>
+            <% end %>
             <tr>
                 <td colspan="2" class="postformRules">
                     <% if ( content.hidePostformRules ) %>
@@ -779,6 +817,8 @@
 <input type="hidden" id="fileExistsOnServerText" value="<%= fileExistsOnServerText %>" />
 <input type="hidden" id="showPostformRulesText" value="<%= showPostformRulesText %>" />
 <input type="hidden" id="hidePostformRulesText" value="<%= hidePostformRulesText %>" />
+<input type="hidden" id="showPostformMarkupText" value="<%= showPostformMarkupText %>" />
+<input type="hidden" id="hidePostformMarkupText" value="<%= hidePostformMarkupText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>

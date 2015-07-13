@@ -1,0 +1,103 @@
+ada Ada
+css CSS
+fortran Fortran
+javalog Java Log
+nohilite
+scheme Scheme
+tml_macros2
+applescript 
+c_string C String
+function Function
+javascript JavaScript
+number Number
+script_comment
+tml_macrosdelayed1 
+asm Assembler
+default
+glsl GLSL
+key_string
+sh bash
+tml_macrosdelayed2
+awk awk
+haskell Haskell
+langdef
+opa Opa
+slang Slang
+tml_macrosdelayed3
+bat Batch
+desktop .desktop
+haskell_literate Haskell literate
+outlang
+sml SML
+tml_macros
+bib BibTeX
+diff diff
+haxe Haxe
+latex LaTeX
+oz Oz
+spec
+tml_macrotokens
+bison Bison
+d D
+pascal Pascal
+sql SQL
+todo TODO
+caml Caml
+ldap LDAP
+pc PC
+style
+upc UPC
+c_comment
+erlang Erlang
+html HTM
+lilypond LilyPond
+perl Perl
+symbols
+url URL
+changelog ChangeLog
+errors
+lisp Lisp
+php PHP
+tcl TCL
+vala Vala
+c C
+log .log
+po PO
+texinfo Texinfo
+vbscript VBScript
+clike_vardeclaration
+logtalk Logtalk
+postscript PostsScript
+clipper Clipper
+extreme_comment2
+html_simple
+lsm LSM
+prolog Prolog
+tml_formatting_all
+cobol COBOL
+extreme_comment3
+lua Lua
+properties .properties
+tml_formatting
+conf .conf
+extreme_comment4
+m4 m4
+proto Proto
+tml_glue
+cpp C++
+extreme_comment
+islisp ISLisp
+makefile Makefile
+python Python
+tml TML
+csharp C#
+fixed-fortran Fixed Fortran
+manifest Manifest
+ruby Ruby
+tml_macrolinks
+xml XML
+flex Flex
+java Java
+scala Scala
+tml_macros1
+xorg Xorg

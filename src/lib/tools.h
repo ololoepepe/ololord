@@ -158,6 +158,7 @@ OLOLORD_EXPORT bool isImageType(const QString &mimeType);
 OLOLORD_EXPORT unsigned int ipNum(const QString &ip, bool *ok = 0);
 OLOLORD_EXPORT bool isSpecialThumbName(const QString &tn);
 OLOLORD_EXPORT bool isVideoType(const QString &mimeType);
+OLOLORD_EXPORT QString langName(const QString &id);
 OLOLORD_EXPORT QDateTime localDateTime(const QDateTime &dt, int offsetMinutes = -1000);
 OLOLORD_EXPORT QLocale locale(const cppcms::http::request &req,
                               const QLocale &defaultLocale = BCoreApplication::locale());

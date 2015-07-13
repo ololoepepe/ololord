@@ -1638,6 +1638,95 @@ lord.setPostformRulesVisible = function(visible) {
     a.parentNode.replaceChild(aa, a);
 };
 
+lord.markup = function(tag) {
+    var wrap = function(opTag, clTag) {
+        if (!opTag || !clTag)
+            return;
+        try {
+            var field = lord.nameOne("text", lord.id("postForm"));
+            var pos = 0;
+            if (field.selectionStart || field.selectionStart == "0") {
+                var startPos = field.selectionStart;
+                var endPos = field.selectionEnd;
+                var selected = field.value.substring(startPos, endPos);
+                var value = opTag + selected + clTag;
+                field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+                pos = ((startPos < endPos) ? startPos : endPos) + opTag.length;
+                if (selected.length > 0)
+                    pos += selected.length + clTag.length;
+            } else {
+                field.value += opTag + clTag;
+                pos = field.value.length - clTag.length;
+            }
+            field.setSelectionRange(pos, pos);
+            field.focus();
+        } catch (ex) {
+            //Do nothing
+        }
+    };
+    switch (tag) {
+    case "b":
+    case "i":
+    case "s":
+    case "u":
+    case "spoiler":
+    case "sup":
+    case "sub":
+    case "url": {
+        wrap("[" + tag + "]", "[/" + tag + "]");
+        break;
+    }
+    case ">": {
+        try {
+            var field = lord.nameOne("text", lord.id("postForm"));
+            var value = ">";
+            var pos = 0;
+            if (document.getSelection())
+                value += document.getSelection().toString();
+            if (field.selectionStart || field.selectionStart == "0") {
+                var startPos = field.selectionStart;
+                var endPos = field.selectionEnd;
+                field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+                pos = ((startPos < endPos) ? startPos : endPos) + value.length;
+            } else {
+                field.value += value;
+            }
+            field.setSelectionRange(pos, pos);
+            field.focus();
+        } catch (ex) {
+            //Do nothing
+        }
+        break;
+    }
+    case "code": {
+        var sel = lord.queryOne(".postformMarkup > span > [name='langSelect']");
+        var lang = sel.options[sel.selectedIndex].value;
+        wrap("[" + (("-" != lang) ? (tag + " lang=\"" + lang + "\"") : tag) + "]", "[/" + tag + "]");
+        break;
+    }
+    default: {
+        break;
+    }
+    }
+};
+
+lord.changeLastCodeLang = function() {
+    var sel = lord.queryOne(".postformMarkup > span > [name='langSelect']");
+    var lang = sel.options[sel.selectedIndex].value;
+    lord.setLocalObject("lastCodeLang", lang);
+};
+
+lord.setPostformMarkupVisible = function(visible) {
+    var hide = !visible;
+    lord.setLocalObject("hidePostformMarkup", hide);
+    lord.queryOne(".postformMarkup > span").style.display = hide ? "none" : "";
+    var a = lord.queryOne(".postformMarkup > a");
+    lord.removeChildren(a);
+    a.appendChild(lord.node("text", lord.text(hide ? "showPostformMarkupText" : "hidePostformMarkupText")));
+    a.onclick = lord.setPostformMarkupVisible.bind(lord, hide);
+    return false;
+};
+
 lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     lord.hideImage();
     if (!href || !type)
@@ -2067,6 +2156,13 @@ lord.initializeOnLoadBaseBoard = function() {
             span.style.display = "none";
         });
     }
+    var lastLang = lord.getLocalObject("lastCodeLang", "-");
+    var sel = lord.queryOne(".postformMarkup > span > [name='langSelect']");
+    lord.arr(sel.options).forEach(function(opt) {
+        if (opt.value == lastLang)
+            opt.selected = true;
+    });
+    lord.setPostformMarkupVisible(!lord.getLocalObject("hidePostformMarkup", false));
     if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
         lord.strikeOutHiddenPostLinks();
     if (!lord.text("currentThreadNumber")) {

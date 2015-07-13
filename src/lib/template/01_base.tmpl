@@ -27,7 +27,7 @@
               enctype="multipart/form-data" class="inlineForm">
             <%= localeLabelText %>
             <% if ( content.mode.name != "ascetic" ) %>
-                <select id="localeChangeSelect" class="select" onchange="javascript:lord.changeLocale();">
+                <select id="localeChangeSelect" class="select" onchange="lord.changeLocale();">
             <% else %>
                 <select id="localeChangeSelect" name="localeChangeSelect" class="select">
             <% end %>
@@ -406,6 +406,14 @@
                         </td>
                         <td>
                             <input type="checkbox" name="addToFavoritesOnReply" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= hidePostformMarkupLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="hidePostformMarkup" />
                         </td>
                     </tr>
                 </tbody>

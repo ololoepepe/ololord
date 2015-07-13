@@ -70,6 +70,7 @@ public:
     std::string generalSettingsLegendText;
     std::set<std::string> hiddenBoards;
     std::string hiddenBoardsLabelText;
+    std::string hidePostformMarkupLabelText;
     bool hidePostformRules;
     std::string hidePostformRulesLabelText;
     std::string hideTripcodesLabelText;

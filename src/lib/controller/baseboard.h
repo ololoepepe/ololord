@@ -90,6 +90,12 @@ public:
 
 struct OLOLORD_EXPORT BaseBoard : public Base
 {
+    struct Lang
+    {
+        std::string id;
+        std::string name;
+    };
+public:
     std::string action;
     std::string addFileText;
     std::string addThreadToFavoritesText;
@@ -100,6 +106,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string audioTagTitleText;
     std::string audioTagYearText;
     std::list<AbstractBoard::BoardInfo> availableBoards;
+    std::list<Lang> availableLangs;
     std::string banExpiresLabelText;
     std::string banLevelLabelText;
     std::list<BanLevel> banLevels;
@@ -139,9 +146,21 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string findSourceWithIqdbText;
     std::string fixedText;
     std::string fixThreadText;
+    std::string hidePostformMarkupText;
     std::string hidePostformRulesText;
     std::string hidePostFormText;
     std::string kilobytesText;
+    std::string markupBold;
+    std::string markupCode;
+    std::string markupItalics;
+    std::string markupLang;
+    std::string markupQuotation;
+    std::string markupSpoiler;
+    std::string markupStrikedOut;
+    std::string markupSubscript;
+    std::string markupSuperscript;
+    std::string markupUnderlined;
+    std::string markupUrl;
     unsigned int maxEmailLength;
     unsigned int maxFileCount;
     unsigned int maxNameLength;
@@ -183,6 +202,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string removeFileText;
     std::string selectFileText;
     std::string showHidePostText;
+    std::string showPostformMarkupText;
     std::string showPostformRulesText;
     std::string showPostFormText;
     bool showWhois;

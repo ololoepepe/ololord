@@ -580,6 +580,26 @@ bool isVideoType(const QString &mimeType)
     return types.contains(mimeType);
 }
 
+QString langName(const QString &id)
+{
+    typedef QMap<QString, QString> StringMap;
+    init_once(StringMap, map, StringMap()) {
+        QString fn = BDirTools::findResource("res/lang_name_map.txt");
+        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::KeepEmptyParts);
+        QSet<QString> supported = supportedCodeLanguages().toSet();
+        foreach (const QString &s, sl) {
+            QStringList sll = s.split(' ');
+            if (sll.size() < 1)
+                continue;
+            if (sll.first().isEmpty() || !supported.contains(sll.first()))
+                continue;
+            QString name = QStringList(sll.mid(1)).join(" ");
+            map.insert(sll.first(), name);
+        }
+    }
+    return map.value(id);
+}
+
 QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
 {
     static const int MaxMsecs = 24 * BeQt::Hour;

@@ -224,6 +224,11 @@ span.newPostCount {
     white-space: nowrap;
 }
 
+.postformMarkup {
+    text-align: left;
+	font-size: 0.7em;
+}
+
 .postformRules {
     text-align: left;
 	font-size: 0.7em;

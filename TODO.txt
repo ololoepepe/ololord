@@ -13,8 +13,8 @@
 [done] Add ability to automatically mark a thread as favofite when posting a reply
 [done] Improve adding threads to favorites
 [done] Fix markup description
+[done] Add markup buttons bar
 * Add ability to remove EXIF information from images
-* Add markup buttons bar
 * Implement hotkeys
 * Implement auto post hiding system
 
