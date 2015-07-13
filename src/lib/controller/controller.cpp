@@ -235,7 +235,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                   "showAutoUpdateTimerLabelText");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
     c.showLeafButtonsLabelText = ts.translate("initBase", "Show file leaf buttons:", "showLeafButtonsLabelText");
-    c.showNewPostsLabelText = ts.translate("initBase", "Show new posts:", "showNewPostsLabelText");
+    c.showNewPostsLabelText = ts.translate("initBase", "Show new post count near board names:",
+                                           "showNewPostsLabelText");
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showYoutubeVideoTitleLabelText = ts.translate("initBase", "Show titles of YouTube videos:",
                                                     "showYoutubeVideoTitleLabelText");

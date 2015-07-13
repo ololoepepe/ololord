@@ -2405,11 +2405,6 @@ Your choice:</source>
         <translation>Скрыть доски:</translation>
     </message>
     <message>
-        <source>Show new posts:</source>
-        <comment>showNewPostsLabelText</comment>
-        <translation>Показывать новые посты:</translation>
-    </message>
-    <message>
         <source>Show titles of YouTube videos:</source>
         <comment>showYoutubeVideoTitleLabelText</comment>
         <translation>Показывать названия видео с YouTube:</translation>
@@ -2556,6 +2551,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <source>Posts and threads</source>
         <comment>postsTabText</comment>
         <translation>Посты и треды</translation>
+    </message>
+    <message>
+        <source>Show new post count near board names:</source>
+        <comment>showNewPostsLabelText</comment>
+        <translation>Показывать количество новых постов рядом с именами борд:</translation>
     </message>
 </context>
 <context>
