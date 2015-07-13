@@ -14,8 +14,8 @@
 [done] Improve adding threads to favorites
 [done] Fix markup description
 [done] Add markup buttons bar
-* Add ability to remove EXIF information from images
 * Implement hotkeys
+* Add ability to remove EXIF information from images
 * Implement auto post hiding system
 
 * Reload codecha instead of reloading a page

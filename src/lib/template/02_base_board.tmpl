@@ -214,6 +214,7 @@
 <% else %>
     <div id="post<%= post.number %>" class="post">
 <% end %>
+    <a id="<%= post.number %>"></a>
     <% if ( post.rawHtml ) %>
         <input name="rawHtml" type="hidden" value="true" />
     <% else %>
@@ -228,9 +229,6 @@
         <input name="draft" type="hidden" value="false" />
     <% end %>
     <div class="postHeader">
-        <% if ( !thread ) %>
-            <a id="<%= post.number %>"></a>
-        <% end %>
         <% if ( post.number == post.threadNumber ) %>
             <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
                 <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>">

@@ -143,6 +143,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.draftsByDefault = !Tools::cookieValue(req, "draftsByDefault").compare("true", Qt::CaseInsensitive);
     c.draftsByDefaultLabelText = ts.translate("initBase", "Mark posts as drafts by default:",
                                               "draftsByDefaultLabelText");
+    c.editHotkeysText = ts.translate("initBase", "Edit", "editHotkeysText");
     c.editUserCssText = ts.translate("initBase", "Edit", "editUserCssText");
     c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
@@ -158,6 +159,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.hideTripcodesLabelText = ts.translate("initBase", "Hide tripcodes:", "hideTripcodesLabelText");
     c.hideUserNamesLabelText = ts.translate("initBase", "Hide user names:", "hideUserNamesLabelText");
     c.hidingTabText = ts.translate("initBase", "Hiding", "hidingTabText");
+    c.hotkeyPreviousPageImageLabelText = ts.translate("initBase", "Previous page/file",
+                                                      "hotkeyPreviousPageImageLabelText");
+    c.hotkeyPreviousThreadPostLabelText = ts.translate("initBase", "Previous thread (on board)/post (in thread)",
+                                                       "hotkeyPreviousThreadPostLabelText");
+    c.hotkeyNextPageImageLabelText = ts.translate("initBase", "Next page/file", "hotkeyNextPageImageLabelText");
+    c.hotkeyNextThreadPostLabelText = ts.translate("initBase", "Next thread (on board)/post (in thread)",
+                                                   "hotkeyNextThreadPostLabelText");
+    c.hotkeysLabelText = ts.translate("initBase", "Hotkeys:", "hotkeysLabelText");
     c.imageZoomSensitivityLabelText = ts.translate("initBase", "Image zoom sensitivity, %:",
                                                    "imageZoomSensitivityLabelText");
     c.leafThroughImagesOnlyLabelText = ts.translate("initBase", "Leaf through images only:",

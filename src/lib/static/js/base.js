@@ -2,6 +2,25 @@
 
 var lord = lord || {};
 
+/*Constants*/
+
+lord.defaultHotkeys = {
+    "dir": {},
+    "rev": {}
+};
+
+lord._defineHotkey = function(name, key) {
+    if (typeof name != "string" || typeof key != "string")
+        return;
+    lord.defaultHotkeys.dir[name] = key;
+    lord.defaultHotkeys.rev[key] = name;
+};
+
+lord._defineHotkey("previousPageImage", "Ctrl+Left");
+lord._defineHotkey("nextPageImage", "Ctrl+Right");
+lord._defineHotkey("previousThreadPost", "Ctrl+Up");
+lord._defineHotkey("nextThreadPost", "Ctrl+Down");
+
 /*Functions*/
 
 lord.changeLocale = function() {
@@ -59,8 +78,8 @@ lord.searchKeyPress = function(e) {
 
 lord.showSettings = function() {
     var div = lord.id("settingsDialogTemplate").cloneNode(true);
+    div.id = "";
     div.style.display = "";
-    lord.addClass(div, "settingsDialog");
     var sel = lord.nameOne("quickReplyActionSelect", div);
     var act = lord.getLocalObject("quickReplyAction", "goto_thread");
     lord.queryOne("[value='" + act + "']", sel).selected = true;
@@ -99,6 +118,8 @@ lord.showSettings = function() {
     hideUserNames.checked = !!lord.getLocalObject("hideUserNames", false);
     var strikeOutHiddenPostLinks = lord.nameOne("strikeOutHiddenPostLinks", div);
     strikeOutHiddenPostLinks.checked = !!lord.getLocalObject("strikeOutHiddenPostLinks", true);
+    var hotkeysEnabled = lord.nameOne("hotkeysEnabled", div);
+    hotkeysEnabled.checked = !!lord.getLocalObject("hotkeysEnabled", true);
     var userCssEnabled = lord.nameOne("userCssEnabled", div);
     userCssEnabled.checked = !!lord.getLocalObject("userCssEnabled", false);
     lord.showDialog(lord.text("settingsDialogTitle"), null, div, function() {
@@ -164,6 +185,7 @@ lord.showSettings = function() {
         lord.setLocalObject("hideTripcodes", !!hideTripcodes.checked);
         lord.setLocalObject("hideUserNames", !!hideUserNames.checked);
         lord.setLocalObject("strikeOutHiddenPostLinks", !!strikeOutHiddenPostLinks.checked);
+        lord.setLocalObject("hotkeysEnabled", !!hotkeysEnabled.checked);
         lord.setLocalObject("userCssEnabled", !!userCssEnabled.checked);
         lord.reloadPage();
     });
@@ -343,6 +365,56 @@ lord.showNewPosts = function() {
             });
         });
     });
+};
+
+lord.editHotkeys = function() {
+    var table = lord.id("hotkeysDialogTemplate").cloneNode(true);
+    table.id = "";
+    table.style.display = "";
+    var hotkeys = lord.getLocalObject("hotkeys", {});
+    if (!hotkeys.dir)
+        hotkeys.dir = {};
+    if (!hotkeys.rev)
+        hotkeys.rev = {};
+    lord.forIn(lord.defaultHotkeys.dir, function(key, name) {
+        lord.nameOne(name, table).value = hotkeys.dir[name] || key;
+    });
+    lord.showDialog(null, null, table, function() {
+        lord.forIn(lord.defaultHotkeys.dir, function(key, name) {
+            key = lord.nameOne(name, table).value || key;
+            hotkeys.dir[name] = key;
+            hotkeys.rev[key] = name;
+        });
+        lord.setLocalObject("hotkeys", hotkeys);
+    });
+};
+
+lord.assignHotkey = function(e, inp) {
+    if (!e || e.type != "keypress" || !inp)
+        return;
+    var name = inp.name;
+    var key = e.key;
+    if (e.metaKey)
+        key = "Meta+" + key;
+    if (e.altKey)
+        key = "Alt+" + key;
+    if (e.shiftKey)
+        key = "Shift+" + key;
+    if (e.ctrlKey)
+        key = "Ctrl+" + key;
+    var hotkeys = lord.getLocalObject("hotkeys", {});
+    if (!hotkeys.dir)
+        hotkeys.dir = {};
+    if (!hotkeys.rev)
+        hotkeys.rev = {};
+    var curr = hotkeys.dir[name];
+    if (curr)
+        delete hotkeys.rev[curr];
+    hotkeys.dir[name] = key;
+    hotkeys.rev[key] = name;
+    inp.value = key;
+    e.preventDefault();
+    return false;
 };
 
 lord.editUserCss = function() {

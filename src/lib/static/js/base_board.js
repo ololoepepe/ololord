@@ -2116,10 +2116,159 @@ lord.strikeOutHiddenPostLinks = function(parent) {
     });
 };
 
+lord.hotkey_previousPageImage = function() {
+    if (!!lord.img) {
+        lord.previousFile();
+        return false;
+    }
+    if (lord.text("currentThreadNumber"))
+        return;
+    var curr = lord.queryOne(".pagesItem.currentPage");
+    var list = lord.query(".pagesItem:not(.metaPage)");
+    for (var i = 1; i < list.length; ++i) {
+        if (curr == list[i]) {
+            window.location.href = lord.queryOne("a", list[i - 1]).href;
+            return false;
+        }
+    }
+};
+
+lord.hotkey_nextPageImage = function() {
+    if (!!lord.img) {
+        lord.nextFile();
+        return false;
+    }
+    if (lord.text("currentThreadNumber"))
+        return;
+    var curr = lord.queryOne(".pagesItem.currentPage");
+    var list = lord.query(".pagesItem:not(.metaPage)");
+    for (var i = 0; i < list.length - 1; ++i) {
+        if (curr == list[i]) {
+            window.location.href = lord.queryOne("a", list[i + 1]).href;
+            return false;
+        }
+    }
+};
+
+lord.hotkey_previousThreadPost = function() {
+    var list = null;
+    if (!lord.text("currentThreadNumber")) {
+        list = lord.query(".opPost");
+        for (var i = 0; i < list.length; ++i) {
+            if (lord.isInViewport(list[i])) {
+                if (i > 0)
+                    --i;
+                window.location.hash = list[i].id.replace("post", "");
+                return false;
+            }
+        }
+    }
+    list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", "")) {
+            if (lord.text("currentThreadNumber")) {
+                if (i > 0)
+                    --i;
+                window.location.hash = list[i].id.replace("post", "");
+            } else {
+                window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
+            }
+            return false;
+        }
+    }
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i])) {
+            if (lord.text("currentThreadNumber")) {
+                if (i > 0)
+                    --i;
+                window.location.hash = list[i].id.replace("post", "");
+            } else {
+                window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
+            }
+            return false;
+        }
+    }
+};
+
+lord.hotkey_nextThreadPost = function() {
+    var list = null;
+    if (!lord.text("currentThreadNumber")) {
+        list = lord.query(".opPost");
+        for (var i = 0; i < list.length; ++i) {
+            if (lord.isInViewport(list[i])) {
+                if (i < list.length - 1)
+                    ++i;
+                window.location.hash = list[i].id.replace("post", "");
+                return false;
+            }
+        }
+    }
+    list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", "")) {
+            if (lord.text("currentThreadNumber")) {
+                if (i < list.length - 1)
+                    ++i;
+                window.location.hash = list[i].id.replace("post", "");
+            } else {
+                window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
+            }
+            return false;
+        }
+    }
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i])) {
+            if (lord.text("currentThreadNumber")) {
+                if (i < list.length - 1)
+                    ++i;
+                window.location.hash = list[i].id.replace("post", "");
+            } else {
+                window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
+            }
+            return false;
+        }
+    }
+};
+
+lord.interceptHotkey = function(e) {
+    if (e.target.tagName && lord.in(["TEXTAREA", "INPUT", "BUTTON"], e.target.tagName))
+        return;
+    var hotkeys = lord.getLocalObject("hotkeys", {});
+    var key = e.key;
+    if (e.metaKey)
+        key = "Meta+" + key;
+    if (e.altKey)
+        key = "Alt+" + key;
+    if (e.shiftKey)
+        key = "Shift+" + key;
+    if (e.ctrlKey)
+        key = "Ctrl+" + key;
+    var name = hotkeys.rev ? (hotkeys.rev[key] || lord.defaultHotkeys.rev[key]) : lord.defaultHotkeys.rev[key];
+    if (!name || !lord["hotkey_" + name])
+        return;
+    if (lord["hotkey_" + name]() !== false)
+        return;
+    e.preventDefault();
+    return false;
+};
+
 lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
+    if (lord.getLocalObject("hotkeysEnabled", true)) {
+        document.body.addEventListener("keypress", lord.interceptHotkey, false);
+        var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
+        var key = function(name) {
+            if (!hotkeys)
+                return lord.defaultHotkeys.dir[name];
+            return hotkeys[name] || lord.defaultHotkeys.dir[name];
+        };
+        var btn = lord.queryOne(".leafButton.leafButtonPrevious");
+        btn.title = btn.title + " (" + key("previousPageImage") + ")";
+        btn = lord.queryOne(".leafButton.leafButtonNext");
+        btn.title = btn.title + " (" + key("nextPageImage") + ")";
+    }
     if (lord.getLocalObject("showTripcode", false)) {
         var postForm = lord.id("postForm");
         var sw = lord.nameOne("tripcode", postForm);

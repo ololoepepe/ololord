@@ -2582,6 +2582,36 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hidePostformMarkupLabelText</comment>
         <translation>Скрывать разметку под формой ответа:</translation>
     </message>
+    <message>
+        <source>Edit</source>
+        <comment>editHotkeysText</comment>
+        <translation>Редактировать</translation>
+    </message>
+    <message>
+        <source>Previous page/file</source>
+        <comment>hotkeyPreviousPageImageLabelText</comment>
+        <translation>Предыдущая страница/файл</translation>
+    </message>
+    <message>
+        <source>Previous thread (on board)/post (in thread)</source>
+        <comment>hotkeyPreviousThreadPostLabelText</comment>
+        <translation>Предыдущий тред (на доске)/пост (в треде)</translation>
+    </message>
+    <message>
+        <source>Next page/file</source>
+        <comment>hotkeyNextPageImageLabelText</comment>
+        <translation>Следующая страница/файл</translation>
+    </message>
+    <message>
+        <source>Next thread (on board)/post (in thread)</source>
+        <comment>hotkeyNextThreadPostLabelText</comment>
+        <translation>Следующий тред (на доске)/пост (в треде)</translation>
+    </message>
+    <message>
+        <source>Hotkeys:</source>
+        <comment>hotkeysLabelText</comment>
+        <translation>Горячие клавиши:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

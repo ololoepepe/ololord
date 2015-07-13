@@ -466,6 +466,15 @@
                     </tr>
                     <tr>
                         <td>
+                            <%= hotkeysLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="hotkeysEnabled" />
+                            <button class="button" onclick="lord.editHotkeys();"><%= editHotkeysText %></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             <%= userCssLabelText %>
                         </td>
                         <td>
@@ -478,6 +487,45 @@
         </div>
     </fieldset>
 </div>
+<table id="hotkeysDialogTemplate" style="display: none;">
+    <tbody>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="previousPageImage"
+                       onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyPreviousPageImageLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="nextPageImage" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyNextPageImageLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="previousThreadPost"
+                       onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyPreviousThreadPostLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="nextThreadPost"
+                       onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyNextThreadPostLabelText %>
+            </td>
+        </tr>
+    </tbody>
+</table>
 <% end template %>
 
 <% template baseHead(bool javascript) %>

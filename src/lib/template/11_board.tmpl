@@ -29,7 +29,7 @@
 <% template pages() %>
 <div class="pages">
     <% if ( content.currentPage > 0 ) %>
-        <span class="pagesItem">
+        <span class="pagesItem metaPage">
         <% if ( 1 == content.currentPage ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= toPreviousPageText %></a>]
         <% else %>
@@ -41,22 +41,24 @@
     <% end %>
     <% foreach page in pages %>
         <% item %>
-            <span class="pagesItem">
             <% if ( page != content.currentPage ) %>
-                <% if ( page > 0 ) %>
-                    [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= page %>.html"><%= page %></a>]
-                <% else %>
-                    [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= page %></a>]
-                <% end %>
+                <span class="pagesItem">
+                    <% if ( page > 0 ) %>
+                        [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= page %>.html"><%= page %></a>]
+                    <% else %>
+                        [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= page %></a>]
+                    <% end %>
+                </span>
             <% else %>
-                [<b><%= page %></b>]
+                <span class="pagesItem currentPage">
+                    [<b><%= page %></b>]
+                </span>
             <% end %>
-            </span>
         <% end %>
     <% empty %>
     <% end %>
     <% if ( content.currentPage < content.pages.size() - 1 ) %>
-        <span class="pagesItem">
+        <span class="pagesItem metaPage">
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= nextPage() %>.html"><%= toNextPageText %></a>]
         </span>
     <% end %>

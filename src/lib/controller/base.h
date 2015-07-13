@@ -62,6 +62,7 @@ public:
     std::string defaultAudioVideoVolumeLabelText;
     bool draftsByDefault;
     std::string draftsByDefaultLabelText;
+    std::string editHotkeysText;
     std::string editUserCssText;
     std::string error413Text;
     std::string favoriteThreadsText;
@@ -76,6 +77,11 @@ public:
     std::string hideTripcodesLabelText;
     std::string hideUserNamesLabelText;
     std::string hidingTabText;
+    std::string hotkeyPreviousPageImageLabelText;
+    std::string hotkeyPreviousThreadPostLabelText;
+    std::string hotkeyNextPageImageLabelText;
+    std::string hotkeyNextThreadPostLabelText;
+    std::string hotkeysLabelText;
     std::string imageZoomSensitivityLabelText;
     std::string leafThroughImagesOnlyLabelText;
     std::string localeLabelText;
