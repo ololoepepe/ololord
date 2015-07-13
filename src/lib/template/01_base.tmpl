@@ -50,7 +50,8 @@
     </span>
     <span>
         <% if ( content.mode.name != "ascetic" ) %>
-            <button class="button" onclick="javascript:lord.showSettings();"><%= settingsButtonText %></button>
+            <button class="button" onclick="javascript:lord.showSettings();"
+                    name="settingsButton"><%= settingsButtonText %></button>
         <% else %>
             <a href="/<%= sitePathPrefix %>settings"
                target="_blank"><button class="button"><%= settingsButtonText %></button></a>
@@ -58,7 +59,8 @@
     </span>
     <span>
         <% if ( content.mode.name != "ascetic" ) %>
-            <button class="button" onclick="javascript:lord.showFavorites();"><%= showFavoriteText %></button>
+            <button class="button" onclick="javascript:lord.showFavorites();"
+                    name="favoritesButton"><%= showFavoriteText %></button>
         <% end %>
     </span>
     <span>
@@ -578,6 +580,38 @@
             </td>
             <td>
                 – <%= hotkeyQuickReplyLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="submitReply" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeySubmitReplyLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="showFavorites" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyShowFavoritesLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="showSettings" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyShowSettingsLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="updateThread" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyUpdateThreadLabelText %>
             </td>
         </tr>
         <tr>

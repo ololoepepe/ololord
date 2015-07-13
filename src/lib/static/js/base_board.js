@@ -1928,8 +1928,11 @@ lord.complain = function() {
 };
 
 lord.submitted = function(event, form) {
-    event.preventDefault();
-    var btn = form.querySelector("[name='submit']");
+    if (event)
+        event.preventDefault();
+    if (!form);
+        form = lord.id("postForm");
+    var btn = lord.nameOne("submit", form);
     btn.disabled = true;
     btn.value = lord.text("postFormButtonSubmitSending") + " 0%";
     var resetButton = function() {
@@ -2327,6 +2330,19 @@ lord.hotkey_quickReply = function() {
     return false;
 };
 
+lord.hotkey_submitReply = function() {
+    lord.submitted();
+    return false;
+};
+
+lord.hotkey_updateThread = function() {
+    var tn = +lord.text("currentThreadNumber");
+    if (isNaN(tn))
+        return;
+    lord.updateThread(lord.text("currentBoardName"), tn);
+    return false;
+};
+
 lord.hotkey_markupCommon = function(tag) {
     if (!tag)
         return;
@@ -2364,37 +2380,11 @@ lord.hotkey_markupCode = function() {
     return lord.hotkey_markupCommon("code");
 };
 
-lord.interceptHotkey = function(e) {
-    if (e.target.tagName && !e.metaKey && !e.altKey && !e.ctrlKey
-        && lord.in(["TEXTAREA", "INPUT", "BUTTON"], e.target.tagName))
-        return;
-    var hotkeys = lord.getLocalObject("hotkeys", {});
-    var key = e.key;
-    if (key.length == 1)
-        key = key.toUpperCase();
-    if (e.metaKey)
-        key = "Meta+" + key;
-    if (e.altKey)
-        key = "Alt+" + key;
-    if (e.shiftKey)
-        key = "Shift+" + key;
-    if (e.ctrlKey)
-        key = "Ctrl+" + key;
-    var name = hotkeys.rev ? (hotkeys.rev[key] || lord.defaultHotkeys.rev[key]) : lord.defaultHotkeys.rev[key];
-    if (!name || !lord["hotkey_" + name])
-        return;
-    if (lord["hotkey_" + name]() !== false)
-        return;
-    e.preventDefault();
-    return false;
-};
-
 lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
     if (lord.getLocalObject("hotkeysEnabled", true)) {
-        document.body.addEventListener("keypress", lord.interceptHotkey, false);
         var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
         var key = function(name) {
             if (!hotkeys)
@@ -2409,7 +2399,7 @@ lord.initializeOnLoadBaseBoard = function() {
             a.title = a.title + " (" + key("quickReply") + ")";
         });
         lord.query("[name='toThreadLink']").forEach(function(a) {
-            a.title = key("goToThread");
+            a.title = "(" + key("goToThread") + ")";
         });
         lord.query("[name='hideButton'] > img").forEach(function(img) {
             img.title = img.title + " (" + key("hidePost") + ")";
@@ -2420,6 +2410,10 @@ lord.initializeOnLoadBaseBoard = function() {
             var btn = lord.nameOne(s, table);
             btn.title = btn.title + " (" + key(s) + ")";
         });
+        lord.query("[name='updateThreadButton']").forEach(function(a) {
+            a.title = "(" + key("updateThread") + ")";
+        });
+        lord.nameOne("submit", lord.id("postForm")).title = "(" + key("submitReply") + ")";
     }
     if (lord.getLocalObject("showTripcode", false)) {
         var postForm = lord.id("postForm");

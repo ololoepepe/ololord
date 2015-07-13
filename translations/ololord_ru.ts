@@ -2682,6 +2682,26 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hotkeyMarkupUnderlinedLabelText</comment>
         <translation>Подчеркнутый текст</translation>
     </message>
+    <message>
+        <source>Update thread (in thread only)</source>
+        <comment>hotkeyUpdateThreadLabelText</comment>
+        <translation>Обновить тред (только в треде)</translation>
+    </message>
+    <message>
+        <source>Show favorite threads</source>
+        <comment>hotkeyShowFavoritesLabelText</comment>
+        <translation>Показать избранные треды</translation>
+    </message>
+    <message>
+        <source>Show settings</source>
+        <comment>hotkeyShowSettingsLabelText</comment>
+        <translation>Показать настройки</translation>
+    </message>
+    <message>
+        <source>Submit reply</source>
+        <comment>hotkeySubmitReplyLabelText</comment>
+        <translation>Отправить пост</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

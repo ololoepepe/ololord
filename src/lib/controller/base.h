@@ -95,7 +95,11 @@ public:
     std::string hotkeyPreviousPostLabelText;
     std::string hotkeyPreviousThreadPostLabelText;
     std::string hotkeyQuickReplyLabelText;
+    std::string hotkeyShowFavoritesLabelText;
+    std::string hotkeyShowSettingsLabelText;
     std::string hotkeysLabelText;
+    std::string hotkeySubmitReplyLabelText;
+    std::string hotkeyUpdateThreadLabelText;
     std::string imageZoomSensitivityLabelText;
     std::string leafThroughImagesOnlyLabelText;
     std::string localeLabelText;

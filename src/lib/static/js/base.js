@@ -27,6 +27,10 @@ lord._defineHotkey("goToThread", "V");
 lord._defineHotkey("expandThread", "E");
 lord._defineHotkey("expandImage", "I");
 lord._defineHotkey("quickReply", "R");
+lord._defineHotkey("submitReply", "Alt+Enter");
+lord._defineHotkey("showFavorites", "Alt+F");
+lord._defineHotkey("showSettings", "Alt+T");
+lord._defineHotkey("updateThread", "U");
 lord._defineHotkey("markupBold", "Alt+B");
 lord._defineHotkey("markupItalics", "Alt+I");
 lord._defineHotkey("markupStrikedOut", "Alt+S");
@@ -443,9 +447,55 @@ lord.editUserCss = function() {
     });
 };
 
+lord.hotkey_showFavorites = function() {
+    lord.showFavorites();
+    return false;
+};
+
+lord.hotkey_showSettings = function() {
+    lord.showSettings();
+    return false;
+};
+
+lord.interceptHotkey = function(e) {
+    if (e.target.tagName && !e.metaKey && !e.altKey && !e.ctrlKey
+        && lord.in(["TEXTAREA", "INPUT", "BUTTON"], e.target.tagName))
+        return;
+    var hotkeys = lord.getLocalObject("hotkeys", {});
+    var key = e.key;
+    if (key.length == 1)
+        key = key.toUpperCase();
+    if (e.metaKey)
+        key = "Meta+" + key;
+    if (e.altKey)
+        key = "Alt+" + key;
+    if (e.shiftKey)
+        key = "Shift+" + key;
+    if (e.ctrlKey)
+        key = "Ctrl+" + key;
+    var name = hotkeys.rev ? (hotkeys.rev[key] || lord.defaultHotkeys.rev[key]) : lord.defaultHotkeys.rev[key];
+    if (!name || !lord["hotkey_" + name])
+        return;
+    if (lord["hotkey_" + name]() !== false)
+        return;
+    e.preventDefault();
+    return false;
+};
+
 lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
+    if (lord.getLocalObject("hotkeysEnabled", true)) {
+        document.body.addEventListener("keypress", lord.interceptHotkey, false);
+        var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
+        var key = function(name) {
+            if (!hotkeys)
+                return lord.defaultHotkeys.dir[name];
+            return hotkeys[name] || lord.defaultHotkeys.dir[name];
+        };
+        lord.queryOne("[name='settingsButton']").title = "(" + key("showSettings") + ")";
+        lord.queryOne("[name='favoritesButton']").title = "(" + key("showFavorites") + ")";
+    }
     if (lord.getLocalObject("showNewPosts", true))
         lord.showNewPosts();
     if (lord.getLocalObject("userCssEnabled", false)) {

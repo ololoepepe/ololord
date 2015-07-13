@@ -182,7 +182,12 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.hotkeyPreviousThreadPostLabelText = ts.translate("initBase", "Previous thread (on board)/post (in thread)",
                                                        "hotkeyPreviousThreadPostLabelText");
     c.hotkeyQuickReplyLabelText = ts.translate("initBase", "Quick reply", "hotkeyQuickReplyLabelText");
+    c.hotkeyShowFavoritesLabelText = ts.translate("initBase", "Show favorite threads", "hotkeyShowFavoritesLabelText");
+    c.hotkeyShowSettingsLabelText = ts.translate("initBase", "Show settings", "hotkeyShowSettingsLabelText");
     c.hotkeysLabelText = ts.translate("initBase", "Hotkeys:", "hotkeysLabelText");
+    c.hotkeySubmitReplyLabelText = ts.translate("initBase", "Submit reply", "hotkeySubmitReplyLabelText");
+    c.hotkeyUpdateThreadLabelText = ts.translate("initBase", "Update thread (in thread only)",
+                                                 "hotkeyUpdateThreadLabelText");
     c.imageZoomSensitivityLabelText = ts.translate("initBase", "Image zoom sensitivity, %:",
                                                    "imageZoomSensitivityLabelText");
     c.leafThroughImagesOnlyLabelText = ts.translate("initBase", "Leaf through images only:",

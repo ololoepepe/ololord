@@ -14,7 +14,7 @@
 [done] Improve adding threads to favorites
 [done] Fix markup description
 [done] Add markup buttons bar
-* Implement hotkeys
+[done] Implement hotkeys
 * Add ability to remove EXIF information from images
 * Implement auto post hiding system
 

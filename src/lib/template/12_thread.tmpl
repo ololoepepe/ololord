@@ -5,7 +5,8 @@
 <% template threadActions(std::string position) %>
 <div class="threadActions">
     [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= backText %></a>]
-    [<a href="javascript:lord.updateThread('<%= currentBoard.name %>', <%= number %>);"><%= updateThreadText %></a>]
+    [<a href="javascript:lord.updateThread('<%= currentBoard.name %>', <%= number %>);"
+        name="updateThreadButton"><%= updateThreadText %></a>]
     <% if ( "top" == position ) %>
         [<a href="#bottom"><%= toBottomText %></a>]
     <% else %>
