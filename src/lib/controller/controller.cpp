@@ -210,8 +210,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.otherTabText = ts.translate("initBase", "Other", "otherTabText");
     c.pageTitle = Tools::toStd(pageTitle);
     c.path = const_cast<cppcms::http::request *>(&req)->path_info();
-    c.postformTabText = ts.translate("initBase", "Postform", "postformTabText");
-    c.postsTabText = ts.translate("initBase", "Posts", "postsTabText");
+    c.postformTabText = ts.translate("initBase", "Postform and posting", "postformTabText");
+    c.postsTabText = ts.translate("initBase", "Posts and threads", "postsTabText");
     c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
                                                     "quickReplyActionAppendPostText");
     c.quickReplyActionDoNothingText = ts.translate("initBase", "Leaves page unmodified",

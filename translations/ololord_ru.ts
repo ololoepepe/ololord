@@ -2513,16 +2513,6 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <translation>Прочее</translation>
     </message>
     <message>
-        <source>Postform</source>
-        <comment>postformTabText</comment>
-        <translation>Форма постинга</translation>
-    </message>
-    <message>
-        <source>Posts</source>
-        <comment>postsTabText</comment>
-        <translation>Посты</translation>
-    </message>
-    <message>
         <source>Hide postform rules:</source>
         <comment>hidePostformRulesLabelText</comment>
         <translation>Скрывать правила под формой ответа:</translation>
@@ -2556,6 +2546,16 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <source>Strike out links to hidden posts:</source>
         <comment>strikeOutHiddenPostLinksLabelText</comment>
         <translation>Зачеркивать ссылки на скрытые посты:</translation>
+    </message>
+    <message>
+        <source>Postform and posting</source>
+        <comment>postformTabText</comment>
+        <translation>Форма и постинг</translation>
+    </message>
+    <message>
+        <source>Posts and threads</source>
+        <comment>postsTabText</comment>
+        <translation>Посты и треды</translation>
     </message>
 </context>
 <context>

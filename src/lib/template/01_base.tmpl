@@ -302,26 +302,6 @@
                 <tbody>
                     <tr>
                         <td>
-                            <%= quickReplyActionLabelText %>
-                        </td>
-                        <td>
-                            <select name="quickReplyActionSelect" class="select">
-                                <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
-                                <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
-                                <option value="append_post"><%= quickReplyActionAppendPostText %></option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <%= showNewPostsLabelText %>
-                        </td>
-                        <td>
-                            <input type="checkbox" name="showNewPosts" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
                             <%= autoUpdateThreadsByDefaultLabelText %>
                         </td>
                         <td>
@@ -386,6 +366,18 @@
                 <tbody>
                     <tr>
                         <td>
+                            <%= quickReplyActionLabelText %>
+                        </td>
+                        <td>
+                            <select name="quickReplyActionSelect" class="select">
+                                <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                                <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                                <option value="append_post"><%= quickReplyActionAppendPostText %></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
                             <%= checkFileExistenceLabelText %>
                         </td>
                         <td>
@@ -432,6 +424,14 @@
             </table>
             <table name="5" style="display: none;">
                 <tbody>
+                    <tr>
+                        <td>
+                            <%= showNewPostsLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showNewPosts" />
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             <%= showYoutubeVideoTitleLabelText %>
