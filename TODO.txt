@@ -12,6 +12,7 @@
 [done] Add ability to set default audio/video files volume
 [done] Add ability to automatically mark a thread as favofite when posting a reply
 [done] Improve adding threads to favorites
+[done] Fix markup description
 * Add ability to remove EXIF information from images
 * Add markup buttons bar
 * Implement hotkeys

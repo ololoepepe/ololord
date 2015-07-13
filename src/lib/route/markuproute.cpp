@@ -56,6 +56,8 @@ void MarkupRoute::handle()
     c.singleMonospace = ts.translate("MarkupRoute", "monospace font", "singleMonospace");
     c.spoiler = ts.translate("MarkupRoute", "spoiler", "spoiler");
     c.strikedoutText = ts.translate("MarkupRoute", "striked out text", "strikedoutText");
+    c.subscript = ts.translate("MarkupRoute", "subscript", "subscriptText");
+    c.superscript = ts.translate("MarkupRoute", "superscript", "superscriptText");
     c.tooltip = ts.translate("MarkupRoute", "tooltip", "tooltip");
     c.tooltipText = ts.translate("MarkupRoute", "text with tooltip", "tooltipText");
     foreach (int i, bRangeD(0, c.strikedoutText.size() - 1)) {

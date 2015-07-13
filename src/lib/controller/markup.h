@@ -37,6 +37,8 @@ struct OLOLORD_EXPORT Markup : public Base
     std::string spoiler;
     std::string strikedoutText;
     std::string strikedoutTextWakaba;
+    std::string subscript;
+    std::string superscript;
     std::string tooltip;
     std::string tooltipText;
     std::string underlinedText;

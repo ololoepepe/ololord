@@ -1092,6 +1092,16 @@ text</source>
         <comment>quadripleHyphen</comment>
         <translation>четырехкратный дефис</translation>
     </message>
+    <message>
+        <source>subscript</source>
+        <comment>subscriptText</comment>
+        <translation>индекс</translation>
+    </message>
+    <message>
+        <source>superscript</source>
+        <comment>superscriptText</comment>
+        <translation>верхний индекс</translation>
+    </message>
 </context>
 <context>
     <name>PlaylistRoute</name>
