@@ -2164,13 +2164,16 @@ lord.currentPost = function() {
         if (lord.isInViewport(list[i]))
             return list[i];
     }
+    list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    if (list && list.length > 0)
+        return list[0];
     return null;
 };
 
 lord.currentThread = function() {
     if (lord.text("currentThreadNumber"))
         return null;
-    var list = lord.query(".opPost");
+    var list = lord.query(".opPost:not(#postTemplate)");
     for (var i = 0; i < list.length; ++i) {
         if (lord.isInViewport(list[i]))
             return lord.id(list[i].id.replace("post", "thread"));
@@ -2184,6 +2187,10 @@ lord.currentThread = function() {
         if (lord.isInViewport(list[i]))
             return lord.id(list[i].parentNode.id.replace("threadPosts", "thread"));
     }
+    list = lord.query(".opPost:not(#postTemplate)");
+    if (list && list.length > 0)
+        return lord.id(list[0].id.replace("post", "thread"));
+    return null;
 };
 
 lord.previousNextThreadPostCommon = function(next, post) {
@@ -2196,7 +2203,7 @@ lord.previousNextThreadPostCommon = function(next, post) {
         return i;
     };
     if (!post && !lord.text("currentThreadNumber")) {
-        list = lord.query(".opPost");
+        list = lord.query(".opPost:not(#postTemplate)");
         for (var i = 0; i < list.length; ++i) {
             if (lord.isInViewport(list[i])) {
                 i = f(list, i);
@@ -2227,6 +2234,12 @@ lord.previousNextThreadPostCommon = function(next, post) {
             }
             return false;
         }
+    }
+    list = lord.query(!post ? ".opPost:not(#postTemplate)" : ".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    if (list && list.length > 0) {
+        var ind = next ? 0 : (list.length - 1);
+        window.location.hash = list[ind].id.replace("post", "");
+        return false;
     }
 };
 
