@@ -2327,8 +2327,46 @@ lord.hotkey_quickReply = function() {
     return false;
 };
 
+lord.hotkey_markupCommon = function(tag) {
+    if (!tag)
+        return;
+    if (lord.id("hiddenPostForm") == lord.id("postForm").parentNode)
+        return;
+    lord.markup(tag);
+    return false;
+};
+
+lord.hotkey_markupBold = function() {
+    return lord.hotkey_markupCommon("b");
+};
+
+lord.hotkey_markupItalics = function() {
+    return lord.hotkey_markupCommon("i");
+};
+
+lord.hotkey_markupStrikedOut = function() {
+    return lord.hotkey_markupCommon("s");
+};
+
+lord.hotkey_markupUnderlined = function() {
+    return lord.hotkey_markupCommon("u");
+};
+
+lord.hotkey_markupSpoiler = function() {
+    return lord.hotkey_markupCommon("spoiler");
+};
+
+lord.hotkey_markupQuotation = function() {
+    return lord.hotkey_markupCommon(">");
+};
+
+lord.hotkey_markupCode = function() {
+    return lord.hotkey_markupCommon("code");
+};
+
 lord.interceptHotkey = function(e) {
-    if (e.target.tagName && lord.in(["TEXTAREA", "INPUT", "BUTTON"], e.target.tagName))
+    if (e.target.tagName && !e.metaKey && !e.altKey && !e.ctrlKey
+        && lord.in(["TEXTAREA", "INPUT", "BUTTON"], e.target.tagName))
         return;
     var hotkeys = lord.getLocalObject("hotkeys", {});
     var key = e.key;
@@ -2367,6 +2405,21 @@ lord.initializeOnLoadBaseBoard = function() {
         btn.title = btn.title + " (" + key("previousPageImage") + ")";
         btn = lord.queryOne(".leafButton.leafButtonNext");
         btn.title = btn.title + " (" + key("nextPageImage") + ")";
+        lord.query("[name='quickReply']").forEach(function(a) {
+            a.title = a.title + " (" + key("quickReply") + ")";
+        });
+        lord.query("[name='toThreadLink']").forEach(function(a) {
+            a.title = key("goToThread");
+        });
+        lord.query("[name='hideButton'] > img").forEach(function(img) {
+            img.title = img.title + " (" + key("hidePost") + ")";
+        });
+        var table = lord.queryOne(".postformMarkup");
+        ["Bold", "Italics", "StrikedOut", "Underlined", "Spoiler", "Quotation", "Code"].forEach(function(s) {
+            s = "markup" + s;
+            var btn = lord.nameOne(s, table);
+            btn.title = btn.title + " (" + key(s) + ")";
+        });
     }
     if (lord.getLocalObject("showTripcode", false)) {
         var postForm = lord.id("postForm");

@@ -2647,6 +2647,41 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hotkeyExpandImageLabelText</comment>
         <translation>Развернуть файл в посте</translation>
     </message>
+    <message>
+        <source>Bold text</source>
+        <comment>hotkeyMarkupBoldLabelText</comment>
+        <translation>Жирный текст</translation>
+    </message>
+    <message>
+        <source>Code block</source>
+        <comment>hotkeyMarkupCodeLabelText</comment>
+        <translation>Блок кода</translation>
+    </message>
+    <message>
+        <source>Italics</source>
+        <comment>hotkeyMarkupItalicsLabelText</comment>
+        <translation>Курсив</translation>
+    </message>
+    <message>
+        <source>Quote selected text</source>
+        <comment>hotkeyMarkupQutationLabelText</comment>
+        <translation>Цитировать выделенный текст</translation>
+    </message>
+    <message>
+        <source>Spoiler</source>
+        <comment>hotkeyMarkupSpoilerLabelText</comment>
+        <translation>Спойлер</translation>
+    </message>
+    <message>
+        <source>Striked out text</source>
+        <comment>hotkeyMarkupStrikedOutLabelText</comment>
+        <translation>Зачеркнутый текст</translation>
+    </message>
+    <message>
+        <source>Underlined text</source>
+        <comment>hotkeyMarkupUnderlinedLabelText</comment>
+        <translation>Подчеркнутый текст</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -3111,11 +3146,6 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <translation>Спойлер</translation>
     </message>
     <message>
-        <source>Skriked out text</source>
-        <comment>markupStrikedOut</comment>
-        <translation>Зачеркнутый текст</translation>
-    </message>
-    <message>
         <source>Subscript</source>
         <comment>markupSubscript</comment>
         <translation>Индекс</translation>
@@ -3154,6 +3184,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <source>Loading posts...</source>
         <comment>loadingPostsText</comment>
         <translation>Загрузка постов...</translation>
+    </message>
+    <message>
+        <source>Striked out text</source>
+        <comment>markupStrikedOut</comment>
+        <translation>Зачеркнутый текст</translation>
     </message>
 </context>
 <context>

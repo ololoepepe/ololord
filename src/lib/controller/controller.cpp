@@ -163,6 +163,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.hotkeyExpandThreadLabelText = ts.translate("initBase", "Expand thread", "hotkeyExpandThreadLabelText");
     c.hotkeyGoToThreadLabelText = ts.translate("initBase", "Go to thread", "hotkeyGoToThreadLabelText");
     c.hotkeyHidePostLabelText = ts.translate("initBase", "Hide post/thread", "hotkeyHidePostLabelText");
+    c.hotkeyMarkupBoldLabelText = ts.translate("initBase", "Bold text", "hotkeyMarkupBoldLabelText");
+    c.hotkeyMarkupCodeLabelText = ts.translate("initBase", "Code block", "hotkeyMarkupCodeLabelText");
+    c.hotkeyMarkupItalicsLabelText = ts.translate("initBase", "Italics", "hotkeyMarkupItalicsLabelText");
+    c.hotkeyMarkupQutationLabelText = ts.translate("initBase", "Quote selected text", "hotkeyMarkupQutationLabelText");
+    c.hotkeyMarkupSpoilerLabelText = ts.translate("initBase", "Spoiler", "hotkeyMarkupSpoilerLabelText");
+    c.hotkeyMarkupStrikedOutLabelText = ts.translate("initBase", "Striked out text",
+                                                     "hotkeyMarkupStrikedOutLabelText");
+    c.hotkeyMarkupUnderlinedLabelText = ts.translate("initBase", "Underlined text", "hotkeyMarkupUnderlinedLabelText");
     c.hotkeyNextPageImageLabelText = ts.translate("initBase", "Next page/file", "hotkeyNextPageImageLabelText");
     c.hotkeyNextPostLabelText = ts.translate("initBase", "Next post (inthread/on board)", "hotkeyNextPostLabelText");
     c.hotkeyNextThreadPostLabelText = ts.translate("initBase", "Next thread (on board)/post (in thread)",
@@ -411,7 +419,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.markupLang = ts.translate("initBaseBoard", "Code block syntax", "markupLang");
     c.markupQuotation = ts.translate("initBaseBoard", "Quote selected text", "markupQuotation");
     c.markupSpoiler = ts.translate("initBaseBoard", "Spoiler", "markupSpoiler");
-    c.markupStrikedOut = ts.translate("initBaseBoard", "Skriked out text", "markupStrikedOut");
+    c.markupStrikedOut = ts.translate("initBaseBoard", "Striked out text", "markupStrikedOut");
     c.markupSubscript = ts.translate("initBaseBoard", "Subscript", "markupSubscript");
     c.markupSuperscript = ts.translate("initBaseBoard", "Superscript", "markupSuperscript");
     c.markupUnderlined = ts.translate("initBaseBoard", "Underlined text", "markupUnderlined");

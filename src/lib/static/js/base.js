@@ -27,6 +27,13 @@ lord._defineHotkey("goToThread", "V");
 lord._defineHotkey("expandThread", "E");
 lord._defineHotkey("expandImage", "I");
 lord._defineHotkey("quickReply", "R");
+lord._defineHotkey("markupBold", "Alt+B");
+lord._defineHotkey("markupItalics", "Alt+I");
+lord._defineHotkey("markupStrikedOut", "Alt+S");
+lord._defineHotkey("markupUnderlined", "Alt+U");
+lord._defineHotkey("markupSpoiler", "Alt+P");
+lord._defineHotkey("markupQuotation", "Alt+Q");
+lord._defineHotkey("markupCode", "Alt+C");
 
 /*Functions*/
 

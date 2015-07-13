@@ -81,6 +81,13 @@ public:
     std::string hotkeyExpandThreadLabelText;
     std::string hotkeyGoToThreadLabelText;
     std::string hotkeyHidePostLabelText;
+    std::string hotkeyMarkupBoldLabelText;
+    std::string hotkeyMarkupCodeLabelText;
+    std::string hotkeyMarkupItalicsLabelText;
+    std::string hotkeyMarkupQutationLabelText;
+    std::string hotkeyMarkupSpoilerLabelText;
+    std::string hotkeyMarkupStrikedOutLabelText;
+    std::string hotkeyMarkupUnderlinedLabelText;
     std::string hotkeyNextPageImageLabelText;
     std::string hotkeyNextPostLabelText;
     std::string hotkeyNextThreadPostLabelText;
