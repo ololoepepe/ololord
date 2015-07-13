@@ -161,9 +161,12 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.hidingTabText = ts.translate("initBase", "Hiding", "hidingTabText");
     c.hotkeyPreviousPageImageLabelText = ts.translate("initBase", "Previous page/file",
                                                       "hotkeyPreviousPageImageLabelText");
+    c.hotkeyPreviousPostLabelText = ts.translate("initBase", "Previous post (in thread/on board)",
+                                                 "hotkeyPreviousPostLabelText");
     c.hotkeyPreviousThreadPostLabelText = ts.translate("initBase", "Previous thread (on board)/post (in thread)",
                                                        "hotkeyPreviousThreadPostLabelText");
     c.hotkeyNextPageImageLabelText = ts.translate("initBase", "Next page/file", "hotkeyNextPageImageLabelText");
+    c.hotkeyNextPostLabelText = ts.translate("initBase", "Next post (inthread/on board)", "hotkeyNextPostLabelText");
     c.hotkeyNextThreadPostLabelText = ts.translate("initBase", "Next thread (on board)/post (in thread)",
                                                    "hotkeyNextThreadPostLabelText");
     c.hotkeysLabelText = ts.translate("initBase", "Hotkeys:", "hotkeysLabelText");

@@ -20,6 +20,8 @@ lord._defineHotkey("previousPageImage", "Ctrl+Left");
 lord._defineHotkey("nextPageImage", "Ctrl+Right");
 lord._defineHotkey("previousThreadPost", "Ctrl+Up");
 lord._defineHotkey("nextThreadPost", "Ctrl+Down");
+lord._defineHotkey("previousPost", "Ctrl+Shift+Up");
+lord._defineHotkey("nextPost", "Ctrl+Shift+Down");
 
 /*Functions*/
 

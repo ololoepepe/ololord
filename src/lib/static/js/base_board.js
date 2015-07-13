@@ -2150,14 +2150,20 @@ lord.hotkey_nextPageImage = function() {
     }
 };
 
-lord.hotkey_previousThreadPost = function() {
+lord.previousNextThreadPostCommon = function(next, post) {
     var list = null;
-    if (!lord.text("currentThreadNumber")) {
+    var f = function(list, i) {
+        if (next && i < list.length - 1)
+            return i + 1;
+        else if (!next && i > 0)
+            return i - 1;
+        return i;
+    };
+    if (!post && !lord.text("currentThreadNumber")) {
         list = lord.query(".opPost");
         for (var i = 0; i < list.length; ++i) {
             if (lord.isInViewport(list[i])) {
-                if (i > 0)
-                    --i;
+                i = f(list, i);
                 window.location.hash = list[i].id.replace("post", "");
                 return false;
             }
@@ -2166,9 +2172,8 @@ lord.hotkey_previousThreadPost = function() {
     list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
     for (var i = 0; i < list.length; ++i) {
         if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", "")) {
-            if (lord.text("currentThreadNumber")) {
-                if (i > 0)
-                    --i;
+            if (post || lord.text("currentThreadNumber")) {
+                i = f(list, i);
                 window.location.hash = list[i].id.replace("post", "");
             } else {
                 window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
@@ -2178,9 +2183,8 @@ lord.hotkey_previousThreadPost = function() {
     }
     for (var i = 0; i < list.length; ++i) {
         if (lord.isInViewport(list[i])) {
-            if (lord.text("currentThreadNumber")) {
-                if (i > 0)
-                    --i;
+            if (post || lord.text("currentThreadNumber")) {
+                i = f(list, i);
                 window.location.hash = list[i].id.replace("post", "");
             } else {
                 window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
@@ -2190,44 +2194,20 @@ lord.hotkey_previousThreadPost = function() {
     }
 };
 
+lord.hotkey_previousThreadPost = function() {
+    return lord.previousNextThreadPostCommon(false, false);
+};
+
 lord.hotkey_nextThreadPost = function() {
-    var list = null;
-    if (!lord.text("currentThreadNumber")) {
-        list = lord.query(".opPost");
-        for (var i = 0; i < list.length; ++i) {
-            if (lord.isInViewport(list[i])) {
-                if (i < list.length - 1)
-                    ++i;
-                window.location.hash = list[i].id.replace("post", "");
-                return false;
-            }
-        }
-    }
-    list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
-    for (var i = 0; i < list.length; ++i) {
-        if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", "")) {
-            if (lord.text("currentThreadNumber")) {
-                if (i < list.length - 1)
-                    ++i;
-                window.location.hash = list[i].id.replace("post", "");
-            } else {
-                window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
-            }
-            return false;
-        }
-    }
-    for (var i = 0; i < list.length; ++i) {
-        if (lord.isInViewport(list[i])) {
-            if (lord.text("currentThreadNumber")) {
-                if (i < list.length - 1)
-                    ++i;
-                window.location.hash = list[i].id.replace("post", "");
-            } else {
-                window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
-            }
-            return false;
-        }
-    }
+    return lord.previousNextThreadPostCommon(true, false);
+};
+
+lord.hotkey_previousPost = function() {
+    return lord.previousNextThreadPostCommon(false, true);
+};
+
+lord.hotkey_nextPost = function() {
+    return lord.previousNextThreadPostCommon(true, true);
 };
 
 lord.interceptHotkey = function(e) {

@@ -78,8 +78,10 @@ public:
     std::string hideUserNamesLabelText;
     std::string hidingTabText;
     std::string hotkeyPreviousPageImageLabelText;
+    std::string hotkeyPreviousPostLabelText;
     std::string hotkeyPreviousThreadPostLabelText;
     std::string hotkeyNextPageImageLabelText;
+    std::string hotkeyNextPostLabelText;
     std::string hotkeyNextThreadPostLabelText;
     std::string hotkeysLabelText;
     std::string imageZoomSensitivityLabelText;

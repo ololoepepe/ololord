@@ -2612,6 +2612,16 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hotkeysLabelText</comment>
         <translation>Горячие клавиши:</translation>
     </message>
+    <message>
+        <source>Previous post (in thread/on board)</source>
+        <comment>hotkeyPreviousPostLabelText</comment>
+        <translation>Предыдущий пост (в треде/на доске)</translation>
+    </message>
+    <message>
+        <source>Next post (inthread/on board)</source>
+        <comment>hotkeyNextPostLabelText</comment>
+        <translation>Следующий пост (в треде/на доске)</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

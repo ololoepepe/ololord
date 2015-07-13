@@ -524,6 +524,22 @@
                 – <%= hotkeyNextThreadPostLabelText %>
             </td>
         </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="previousPost" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyPreviousPostLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="nextPost" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyNextPostLabelText %>
+            </td>
+        </tr>
     </tbody>
 </table>
 <% end template %>
