@@ -293,5 +293,6 @@
         <file>static/img/pdf_file.png</file>
         <file>static/img/left.png</file>
         <file>static/img/right.png</file>
+        <file>static/img/favorite_active.png</file>
     </qresource>
 </RCC>

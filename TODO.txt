@@ -11,6 +11,7 @@
 [done] Strike out links to hidden posts
 [done] Add ability to set default audio/video files volume
 [done] Add ability to automatically mark a thread as favofite when posting a reply
+[done] Improve adding threads to favorites
 * Add ability to remove EXIF information from images
 * Add markup buttons bar
 * Implement hotkeys

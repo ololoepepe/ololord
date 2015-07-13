@@ -216,9 +216,7 @@ lord.showFavorites = function() {
         var rmBtn = lord.node("a");
         rmBtn.onclick = function() {
             postDiv.parentNode.removeChild(postDiv);
-            var fav = lord.getLocalObject("favoriteThreads", {});
-            delete fav[x];
-            lord.setLocalObject("favoriteThreads", fav);
+            lord.removeThreadFromFavorites(x.split("/")[0], x.split("/")[1]);
         };
         rmBtn.title = lord.text("removeFromFavoritesText");
         var img = lord.node("img");
@@ -235,6 +233,24 @@ lord.showFavorites = function() {
     });
     document.body.appendChild(div);
     lord.toCenter(div);
+};
+
+lord.removeThreadFromFavorites = function(boardName, threadNumber) {
+    threadNumber = +threadNumber;
+    if (!boardName || isNaN(threadNumber))
+        return false;
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    delete fav[boardName + "/" + threadNumber];
+    lord.setLocalObject("favoriteThreads", fav);
+    var opPost = lord.id("post" + threadNumber);
+    if (!opPost)
+        return false;
+    var btn = lord.nameOne("addToFavoritesButton", opPost);
+    var img = lord.queryOne("img", btn);
+    img.src = img.src.replace("favorite_active.png", "favorite.png");
+    img.title = lord.text("addThreadToFavoritesText");
+    btn.onclick = lord.addThreadToFavorites.bind(lord, boardName, threadNumber);
+    return false;
 };
 
 lord.checkFavoriteThreads = function() {

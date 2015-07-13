@@ -313,6 +313,16 @@ lord.createPostNode = function(res, permanent, boardName) {
         closed.style.display = "";
     else
         closed.parentNode.removeChild(closed);
+    var bumpLimit = lord.nameOne("bumpLimit", post);
+    if (!!res["bumpLimitReached"])
+        bumpLimit.style.display = "";
+    else
+        bumpLimit.parentNode.removeChild(bumpLimit);
+    var postLimit = lord.nameOne("postLimit", post);
+    if (!!res["postLimitReached"])
+        postLimit.style.display = "";
+    else
+        postLimit.parentNode.removeChild(postLimit);
     lord.nameOne("postSubject", post).appendChild(lord.node("text", res["subject"]));
     var registered = lord.nameOne("registered", post);
     if (!!res["showRegistered"] && !!res["showTripcode"])
@@ -501,10 +511,19 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     if (res["number"] != res["threadNumber"] || !inp || +inp.value !== res["threadNumber"])
         downloadButton.parentNode.removeChild(downloadButton);
-    if (res["number"] == res["threadNumber"])
-        favButton.href = favButton.href.replace("%postNumber%", res["number"]);
-    else
+    if (res["number"] == res["threadNumber"]) {
+        var fav = lord.getLocalObject("favoriteThreads", {});
+        if (fav.hasOwnProperty(boardName + "/" + res["number"])) {
+            var img = lord.queryOne("img", favButton);
+            img.title = lord.text("removeFromFavoritesText");
+            img.src = img.src.replace("favorite.png", "favorite_active.png");
+            favButton.onclick = lord.removeThreadFromFavorites.bind(lord, boardName, res["number"]);
+        } else {
+            favButton.onclick = lord.addThreadToFavorites.bind(lord, boardName, res["number"]);
+        }
+    } else {
         favButton.parentNode.removeChild(favButton);
+    }
     if (!moder) {
         fixButton.parentNode.removeChild(fixButton);
         unfixButton.parentNode.removeChild(unfixButton);
@@ -1771,29 +1790,36 @@ lord.addThreadToFavorites = function(boardName, threadNumber, callback, callback
     if (!boardName || isNaN(threadNumber)) {
         if (typeof callbackError == "function")
             callbackError();
-        return;
+        return false;
     }
     var fav = lord.getLocalObject("favoriteThreads", {});
     if (fav.hasOwnProperty(boardName + "/" + threadNumber)) {
         if (typeof callbackError == "function")
             callbackError();
-        return;
+        return false;
     }
     lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], lord.RpcGetNewPostsId, function(res) {
         if (!res || res.length < 1) {
             if (typeof callbackError == "function")
                 callbackError();
-            return;
+            return false;
         }
         var pn = res.pop()["number"];
         fav[boardName + "/" + threadNumber] = {
             "lastPostNumber": pn,
             "previousLastPostNumber": pn
         };
+        var opPost = lord.id("post" + threadNumber);
+        var btn = lord.nameOne("addToFavoritesButton", opPost);
+        var img = lord.queryOne("img", btn);
+        img.title = lord.text("removeFromFavoritesText");
+        img.src = img.src.replace("favorite.png", "favorite_active.png");
+        btn.onclick = lord.removeThreadFromFavorites.bind(lord, boardName, threadNumber);
         lord.setLocalObject("favoriteThreads", fav);
         if (typeof callback == "function")
             callback();
     });
+    return false;
 };
 
 lord.complain = function() {
@@ -2010,12 +2036,26 @@ lord.initializeOnLoadBaseBoard = function() {
         var sw = lord.nameOne("tripcode", postForm);
         sw.checked = true;
     }
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    var currentBoardName = lord.text("currentBoardName");
     var list = lord.getLocalObject("hiddenPosts", {});
     var posts = lord.query(".post, .opPost");
     posts.forEach(function(post) {
         if (lord.getLocalObject("showYoutubeVideosTitles", true))
             lord.addYoutubeButton(post);
         lord.tryHidePost(post, list);
+    });
+    lord.query(".opPost").forEach(function(opPost) {
+        var threadNumber = +opPost.id.replace("post", "");
+        var btn = lord.nameOne("addToFavoritesButton", opPost);
+        if (fav.hasOwnProperty(currentBoardName + "/" + threadNumber)) {
+            var img = lord.queryOne("img", btn);
+            img.title = lord.text("removeFromFavoritesText");
+            img.src = img.src.replace("favorite.png", "favorite_active.png");
+            btn.onclick = lord.removeThreadFromFavorites.bind(lord, currentBoardName, threadNumber);
+        } else {
+            btn.onclick = lord.addThreadToFavorites.bind(lord, currentBoardName, threadNumber);
+        }
     });
     if (!!lord.getLocalObject("hideTripcodes", false)) {
         lord.query(".tripcode").forEach(function(span) {

@@ -54,6 +54,8 @@ struct OLOLORD_EXPORT Post
     };
 public:
     bool bannedFor;
+    bool bumpLimitReached;
+    bool postLimitReached;
     std::string cityName;
     bool closed;
     std::string countryName;

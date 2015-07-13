@@ -6,7 +6,7 @@
 <% foreach thread in threads %>
     <% item %>
         <hr />
-        <div id="thread<%= thread.opPost.number %>">
+        <div id="thread<%= thread.opPost.number %>" class="thread">
             <% include post(thread.opPost, thread.self()) %>
         </div>
         <% if ( thread.omittedPosts() > 0 ) %>

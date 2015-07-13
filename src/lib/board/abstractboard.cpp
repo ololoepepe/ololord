@@ -1430,6 +1430,8 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             bool op = (post.number() == threadNumber);
             p->fixed = op && thread->fixed();
             p->closed = op && !thread->postingEnabled();
+            p->bumpLimitReached = op && thread->posts().size() >= int(bumpLimit());
+            p->postLimitReached = op && thread->posts().size() >= int(postLimit());
             typedef QLazySharedPointer<PostReference> PostReferenceSP;
             foreach (PostReferenceSP reference, post.referencedBy()) {
                 QSharedPointer<Post> rp = reference.load()->sourcePost().load();
@@ -1537,6 +1539,8 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["bannedFor"] = post.bannedFor;
     o["cityName"] = post.cityName;
     o["closed"] = post.closed;
+    o["bumpLimitReached"] = post.bumpLimitReached;
+    o["postLimitReached"] = post.postLimitReached;
     o["countryName"] = post.countryName;
     o["dateTime"] = post.dateTime;
     o["modificationDateTime"] = post.modificationDateTime;
