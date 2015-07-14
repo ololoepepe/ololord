@@ -35,7 +35,7 @@
             </script>
         <% end %>
     </head>
-    <body>
+    <body class="<%= deviceType %>">
         <% include baseTexts() %>
         <input type="hidden" id="hiddenSearchQuery" value="<%= query %>" />
         <input type="hidden" id="hiddenSearchQueryBoard" value="<%= queryBoard %>" />

@@ -1358,6 +1358,8 @@ lord.viewPostStage2 = function(link, boardName, postNumber, post) {
 };
 
 lord.viewPost = function(link, boardName, postNumber) {
+    if (lord.text("deviceType") == "mobile")
+        return;
     postNumber = +postNumber;
     if (!link || !boardName || isNaN(postNumber) || postNumber <= 0)
         return;
@@ -2468,7 +2470,7 @@ lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
-    if (lord.getLocalObject("hotkeysEnabled", true)) {
+    if (lord.getLocalObject("hotkeysEnabled", true) && lord.text("deviceType") != "mobile") {
         var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
         var key = function(name) {
             if (!hotkeys)

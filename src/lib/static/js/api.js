@@ -365,6 +365,7 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
         "content": root,
         "modalStyles": function (styles) {
             styles.maxHeight = "80%";
+            styles.maxWidth = "80%";
             styles.overflow = "auto";
             return styles;
         }

@@ -11,7 +11,7 @@
             <script type="text/javascript" src="/<%= sitePathPrefix %>js/playlist.js"></script>
         <% end %>
     </head>
-    <body>
+    <body class="<%= deviceType %>">
         <% include baseTexts() %>
         <input type="hidden" id="downloadPlaylistFileText" value="<%= downloadPlaylistFileText %>" />
         <input type="hidden" id="removeFromPlaylistText" value="<%= removeFromPlaylistText %>" />

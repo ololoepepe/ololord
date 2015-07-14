@@ -311,7 +311,7 @@
             [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>"
                 name="quickReply">&gt;&gt;</a>]
         <% end %>
-        <span class="postActions">
+        <span class="<%= deviceType %> postActions">
             <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
             <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
                 <% if ( content.mode.name != "ascetic" ) %>
@@ -821,6 +821,7 @@
 <input type="hidden" id="showPostformMarkupText" value="<%= showPostformMarkupText %>" />
 <input type="hidden" id="hidePostformMarkupText" value="<%= hidePostformMarkupText %>" />
 <input type="hidden" id="loadingPostsText" value="<%= loadingPostsText %>" />
+<input type="hidden" id="deviceType" value="<%= deviceType %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>
@@ -869,7 +870,7 @@
         <span name="permanent" style="display: none;">
             [<a name="quickReply" href="javascript:lord.quickReply(%postNumber%);"
                 title="<%= quickReplyText %>">&gt;&gt;</a>]
-            <span class="postActions">
+            <span class="<%= deviceType %> postActions">
                 <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
                 <a name="addFileButton" href="javascript:lord.addFile('<%= currentBoard.name %>', '%postNumber%');">
                     <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>

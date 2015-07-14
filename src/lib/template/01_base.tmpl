@@ -22,7 +22,7 @@
 
 <% template settings() %>
 <div class="settingsBar">
-    <span>
+    <span class="nowrap">
         <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/change_locale"
               enctype="multipart/form-data" class="inlineForm">
             <%= localeLabelText %>
@@ -48,7 +48,7 @@
             <% end %>
         </form>
     </span>
-    <span>
+    <span class="nowrap">
         <% if ( content.mode.name != "ascetic" ) %>
             <button class="button" onclick="javascript:lord.showSettings();"
                     name="settingsButton"><%= settingsButtonText %></button>
@@ -57,13 +57,13 @@
                target="_blank"><button class="button"><%= settingsButtonText %></button></a>
         <% end %>
     </span>
-    <span>
+    <span class="nowrap">
         <% if ( content.mode.name != "ascetic" ) %>
             <button class="button" onclick="javascript:lord.showFavorites();"
                     name="favoritesButton"><%= showFavoriteText %></button>
         <% end %>
     </span>
-    <span>
+    <span class="nowrap">
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
             <% if ( content.mode.name != "ascetic" ) %>
@@ -685,6 +685,9 @@
 <% template baseHead(bool javascript) %>
 <title><%= pageTitle %></title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<% if ( "mobile" == content.deviceType ) %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<% end %>
 <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
 <% if ( javascript ) %>

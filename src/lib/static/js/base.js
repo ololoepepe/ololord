@@ -498,7 +498,7 @@ lord.interceptHotkey = function(e) {
 lord.initializeOnLoadSettings = function() {
     if (lord.getCookie("show_tripcode") === "true")
         lord.id("showTripcodeCheckbox").checked = true;
-    if (lord.getLocalObject("hotkeysEnabled", true)) {
+    if (lord.getLocalObject("hotkeysEnabled", true) && lord.text("deviceType") != "mobile") {
         document.body.addEventListener("keypress", lord.interceptHotkey, false);
         var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
         var key = function(name) {

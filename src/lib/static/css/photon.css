@@ -2,18 +2,16 @@
     Base
 */
 
-@media only screen and (max-width: 768px) {
-    body {
-        -moz-text-size-adjust: 100%;
-        -webkit-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-        font-size: 16px;
-    }
-}
-
 body {
     background-color: #EEEEEE;
+}
+
+body.mobile {
+    -moz-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    font-size: 16px;
 }
 
 a {
@@ -96,6 +94,8 @@ hr {
     position: fixed;
     width: 600px;
     height: 600px;
+    max-width: 90%;
+    max-height: 90%;
     z-index: 9980;
     padding: 2px 2px 2px 2px;
 }
@@ -172,6 +172,10 @@ hr {
 /*
     Board
 */
+
+#postForm {
+    overflow-x: auto;
+}
 
 blockquote {
     margin-top: 5px;
@@ -441,6 +445,11 @@ span.newPostCount {
     margin-bottom: 4px;
     padding-top: 10px;
     padding-left: 10px;
+    overflow-x: auto;
+}
+
+.opPost {
+    overflow-x: auto;
 }
 
 .newPost {
@@ -488,7 +497,7 @@ span.newPostCount {
     filter: alpha(opacity=100);
 }
 
-.postActions > a, .postActions > form {
+.desktop.postActions > a, .desktop.postActions > form {
     display: none;
 }
 
@@ -497,11 +506,15 @@ span.newPostCount {
     filter: alpha(opacity=65);
 }
 
-.postActions:hover > a, .postActions:hover > form {
+.desktop.postActions:hover > a, .desktop.postActions:hover > form {
     display: inline;
 }
 
-.postActions:hover > img {
+.desktop.postActions:hover > img {
+    display: none;
+}
+
+.mobile.postActions > img {
     display: none;
 }
 
@@ -682,6 +695,7 @@ ul.tabWidget > li.activated {
     margin-right: auto;
     text-align: right;
     white-space: nowrap;
+    overflow-x: auto;
 }
 
 /*
@@ -695,6 +709,7 @@ ul.tabWidget > li.activated {
     padding-bottom: 5px;
     text-align: left;
     white-spcace: nowrap;
+    overflow-x: auto;
 }
 
 /*
@@ -747,6 +762,7 @@ a.progressBlocking {
     margin-right: auto;
     text-align: left;
     white-space: nowrap;
+    overflow-x: auto;
 }
 
 .noNewPostsPopup {
@@ -785,6 +801,7 @@ a.progressBlocking {
     margin-right: auto;
     text-align: center;
     white-space: nowrap;
+    overflow-x: auto;
 }
 
 /* Vote */

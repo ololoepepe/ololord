@@ -585,7 +585,7 @@ IsMobile isMobile(const cppcms::http::request &req)
     im.other.device = ua.contains(OtherBlackberry) || ua.contains(OtherBlackberry10) || ua.contains(OtherOpera)
             || ua.contains(OtherFirefox);
     im.sevenInch = ua.contains(SevenInch);
-    im.any = im.apple.device || im.amazon.device || im.windows.device || im.other.device || im.sevenInch;
+    im.any = im.apple.device || im.android.device || im.windows.device || im.other.device || im.sevenInch;
     im.phone = im.apple.phone || im.android.phone || im.windows.phone;
     im.tablet = im.apple.tablet || im.android.tablet || im.windows.tablet;
     return im;
