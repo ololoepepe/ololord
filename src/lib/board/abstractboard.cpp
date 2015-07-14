@@ -1368,6 +1368,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->bannedFor = post.bannedFor();
         p->email = Tools::toStd(post.email());
         p->number = post.number();
+        p->sequenceNumber = 0;
         p->rawSubject = Tools::toStd(post.subject());
         p->subject = p->rawSubject;
         p->subjectIsRaw = false;

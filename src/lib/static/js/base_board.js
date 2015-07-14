@@ -2353,7 +2353,7 @@ lord.hotkey_expandThread = function() {
         div.appendChild(lord.node("text", lord.text("loadingPostsText")));
         posts.parentNode.insertBefore(div, posts);
         var lastPost = lord.query(".post", posts).pop();
-        var seqNum = +lord.queryOne(".postSequenceNumber", lastPost).textContent;
+        var seqNum = 1;
         lord.ajaxRequest("get_new_posts", [lord.text("currentBoardName"), tn, tn], lord.RpcGetNewPostsId, function(res) {
             if (!res || res.length < 1)
                 return;
