@@ -543,6 +543,54 @@ bool isImageType(const QString &mimeType)
     return types.contains(mimeType);
 }
 
+IsMobile isMobile(const cppcms::http::request &req)
+{
+    static const QRegExp AmazonPhone("(?=.*\\bAndroid\\b)(?=.*\\bSD4930UR\\b)");
+    static const QRegExp AmazonTablet("(?=.*\\bAndroid\\b)(?=.*\\b(?:KFOT|KFTT|KFJWI|KFJWA|KFSOWI|KFTHWI|KFTHWA|"
+                                      "KFAPWI|KFAPWA|KFARWI|KFASWI|KFSAWI|KFSAWA)\\b)");
+    static const QRegExp AndroidPhone("(?=.*\\bAndroid\\b)(?=.*\\bMobile\\b)");
+    static const QRegExp AndroidTablet("Android");
+    static const QRegExp AppleIPod("iPod");
+    static const QRegExp ApplePhone("iPhone");
+    static const QRegExp AppleTablet("iPad");
+    static const QRegExp OtherBlackberry("BlackBerry");
+    static const QRegExp OtherBlackberry10("BB10");
+    static const QRegExp OtherFirefox("(?=.*\\bFirefox\\b)(?=.*\\bMobile\\b)");
+    static const QRegExp OtherOpera("Opera Mini");
+    static const QRegExp SevenInch("(?:Nexus 7|BNTV250|Kindle Fire|Silk|GT-P1000)");
+    static const QRegExp WindowsPhone("IEMobile");
+    static const QRegExp WindowsTablet("(?=.*\\bWindows\\b)(?=.*\\bARM\\b)");
+    QString ua = Tools::fromStd(const_cast<cppcms::http::request *>(&req)->http_user_agent());
+    IsMobile im;
+    im.apple.phone = ua.contains(ApplePhone);
+    im.apple.ipod = ua.contains(AppleIPod);
+    im.apple.tablet = !ua.contains(ApplePhone) && ua.contains(AppleTablet);
+    im.apple.device = ua.contains(ApplePhone) || ua.contains(AppleIPod) || ua.contains(AppleTablet);
+    im.amazon.phone = ua.contains(AmazonPhone);
+    im.amazon.tablet = !ua.contains(AmazonPhone) && ua.contains(AmazonTablet);
+    im.amazon.device = ua.contains(AmazonPhone) || ua.contains(AmazonTablet);
+
+    im.android.phone = ua.contains(AmazonPhone) || ua.contains(AndroidPhone);
+    im.android.tablet = !ua.contains(AmazonPhone) && !ua.contains(AndroidPhone)
+            && (ua.contains(AmazonTablet) || ua.contains(AndroidTablet));
+    im.android.device = ua.contains(AmazonPhone) || ua.contains(AmazonTablet) || ua.contains(AndroidPhone)
+            || ua.contains(AndroidTablet);
+    im.windows.phone = ua.contains(WindowsPhone);
+    im.windows.tablet = ua.contains(WindowsTablet);
+    im.windows.device = ua.contains(WindowsPhone) || ua.contains(WindowsTablet);
+    im.other.blackberry = ua.contains(OtherBlackberry);
+    im.other.blackberry10 = ua.contains(OtherBlackberry10);
+    im.other.opera = ua.contains(OtherOpera);
+    im.other.firefox = ua.contains(OtherFirefox);
+    im.other.device = ua.contains(OtherBlackberry) || ua.contains(OtherBlackberry10) || ua.contains(OtherOpera)
+            || ua.contains(OtherFirefox);
+    im.sevenInch = ua.contains(SevenInch);
+    im.any = im.apple.device || im.amazon.device || im.windows.device || im.other.device || im.sevenInch;
+    im.phone = im.apple.phone || im.android.phone || im.windows.phone;
+    im.tablet = im.apple.tablet || im.android.tablet || im.windows.tablet;
+    return im;
+}
+
 unsigned int ipNum(const QString &ip, bool *ok)
 {
     QStringList sl = ip.split('.');

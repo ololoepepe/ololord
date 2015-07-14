@@ -60,6 +60,7 @@ public:
     std::string customFooterContent;
     std::string customHeaderContent;
     std::string defaultAudioVideoVolumeLabelText;
+    std::string deviceType;
     bool draftsByDefault;
     std::string draftsByDefaultLabelText;
     std::string editHotkeysText;

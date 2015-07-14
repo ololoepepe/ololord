@@ -46,6 +46,14 @@ class locale;
 namespace Tools
 {
 
+struct AudioTags
+{
+    QString album;
+    QString artist;
+    QString title;
+    QString year;
+};
+
 struct File
 {
     QByteArray data;
@@ -60,17 +68,6 @@ struct Friend
     QString title;
     QString url;
 };
-
-struct AudioTags
-{
-    QString album;
-    QString artist;
-    QString title;
-    QString year;
-};
-
-typedef QList<File> FileList;
-typedef QList<Friend> FriendList;
 
 struct OLOLORD_EXPORT IpRange
 {
@@ -98,6 +95,44 @@ public:
     bool isValid() const;
 };
 
+struct IsMobile
+{
+    struct {
+        bool device;
+        bool phone;
+        bool tablet;
+    } amazon;
+    struct {
+        bool device;
+        bool phone;
+        bool tablet;
+    } android;
+    struct {
+        bool device;
+        bool ipod;
+        bool phone;
+        bool tablet;
+    } apple;
+    struct {
+        bool blackberry;
+        bool blackberry10;
+        bool device;
+        bool firefox;
+        bool opera;
+    } other;
+    struct {
+        bool device;
+        bool phone;
+        bool tablet;
+    } windows;
+    bool any;
+    bool phone;
+    bool sevenInch;
+    bool tablet;
+};
+
+typedef QList<File> FileList;
+
 struct Post
 {
     bool draft;
@@ -124,6 +159,7 @@ enum MaxInfo
     MaxLastPosts
 };
 
+typedef QList<Friend> FriendList;
 typedef QMap<QString, QString> GetParameters;
 typedef QMap<QString, QString> PostParameters;
 
@@ -155,6 +191,7 @@ OLOLORD_EXPORT int ipBanLevel(const QString &ip);
 OLOLORD_EXPORT int ipBanLevel(const cppcms::http::request &req);
 OLOLORD_EXPORT bool isAudioType(const QString &mimeType);
 OLOLORD_EXPORT bool isImageType(const QString &mimeType);
+OLOLORD_EXPORT IsMobile isMobile(const cppcms::http::request &req);
 OLOLORD_EXPORT unsigned int ipNum(const QString &ip, bool *ok = 0);
 OLOLORD_EXPORT bool isSpecialThumbName(const QString &tn);
 OLOLORD_EXPORT bool isVideoType(const QString &mimeType);

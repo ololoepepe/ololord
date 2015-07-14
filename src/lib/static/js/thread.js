@@ -172,7 +172,9 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
     var posts = lord.query(".opPost:not(.temporary), .post:not(.temporary)");
     if (!posts)
         return;
-    var lastPostN = posts[posts.length - 1].id.replace("post", "");
+    var lastPost = posts[posts.length - 1];
+    var lastPostN = lastPost.id.replace("post", "");
+    var seqNum = +lord.queryOne(".postSequenceNumber", lastPost).textContent;
     lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], lord.RpcGetNewPostsId, function(res) {
         if (!res)
             return;
@@ -192,6 +194,8 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
                 continue;
             if (lord.id(post.id))
                 continue;
+            if (!isNaN(seqNum))
+                lord.queryOne(".postSequenceNumber", post).appendChild(lord.node("text", ++seqNum));
             document.body.insertBefore(post, before);
             lord.postNodeInserted(post);
         }

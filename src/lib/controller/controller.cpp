@@ -140,6 +140,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
     c.defaultAudioVideoVolumeLabelText = ts.translate("initBase", "Default audio and video files volume:",
                                                       "defaultAudioVideoVolumeLabelText");
+    c.deviceType = Tools::isMobile(req).any ? "mobile" : "desktop";
     c.draftsByDefault = !Tools::cookieValue(req, "draftsByDefault").compare("true", Qt::CaseInsensitive);
     c.draftsByDefaultLabelText = ts.translate("initBase", "Mark posts as drafts by default:",
                                               "draftsByDefaultLabelText");

@@ -435,6 +435,10 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     if (lord.createPostNodeCustom)
         lord.createPostNodeCustom(post, res, permanent, boardName);
+    if (res["sequenceNumber"]) {
+        var seqNum = lord.queryOne(".postSequenceNumber", post);
+        seqNum.appendChild(lord.node("text", res["sequenceNumber"]));
+    }
     var perm = lord.nameOne("permanent", post);
     if (!permanent) {
         perm.parentNode.removeChild(perm);
@@ -575,6 +579,7 @@ lord.updatePost = function(boardName, postNumber, post) {
     postNumber = +postNumber;
     if (!boardName || !post || isNaN(postNumber) || postNumber <= 0)
         return;
+    var seqNum = +lord.queryOne(".postSequenceNumber", post).textContent;
     lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
         var newPost = lord.createPostNode(res, true);
         if (!newPost)
@@ -589,6 +594,8 @@ lord.updatePost = function(boardName, postNumber, post) {
                 postHeader.appendChild(bumpLimit.cloneNode(true));
         }
         post.parentNode.replaceChild(newPost, post);
+        if (!isNaN(seqNum))
+            lord.queryOne(".postSequenceNumber", newPost).appendChild(lord.node("text", seqNum));
         lord.postNodeInserted(newPost);
     });
 };
@@ -2098,6 +2105,10 @@ lord.posted = function(response) {
                     lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
                         var newPost = lord.createPostNode(res, true);
                         if (newPost) {
+                            var lastPost = lord.query(".post, .opPost", parent).pop();
+                            var seqNum = +lord.queryOne(".postSequenceNumber", lastPost).textContent;
+                            if (!isNaN(seqNum))
+                                lord.queryOne(".postSequenceNumber", newPost).appendChild(lord.node("text", ++seqNum));
                             parent.appendChild(newPost, parent.lastChild);
                             lord.postNodeInserted(newPost);
                         }
@@ -2335,10 +2346,14 @@ lord.hotkey_expandThread = function() {
         return;
     var tn = +t.id.replace("thread", "");
     var posts = lord.id("threadPosts" + tn);
+    if (!posts || posts.length < 1)
+        return;
     (function(tn, posts) {
         var div = lord.node("div");
         div.appendChild(lord.node("text", lord.text("loadingPostsText")));
         posts.parentNode.insertBefore(div, posts);
+        var lastPost = lord.query(".post", posts).pop();
+        var seqNum = +lord.queryOne(".postSequenceNumber", lastPost).textContent;
         lord.ajaxRequest("get_new_posts", [lord.text("currentBoardName"), tn, tn], lord.RpcGetNewPostsId, function(res) {
             if (!res || res.length < 1)
                 return;
@@ -2355,6 +2370,8 @@ lord.hotkey_expandThread = function() {
                 if (!newPost)
                     return;
                 lord.removeClass(newPost, "newPost");
+                if (!isNaN(seqNum))
+                    lord.queryOne(".postSequenceNumber", newPost).appendChild(lord.node("text", ++seqNum));
                 posts.appendChild(newPost);
                 lord.postNodeInserted(newPost);
                 setTimeout(f, 1);

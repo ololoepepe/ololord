@@ -78,6 +78,7 @@ public:
     std::string rawSubject;
     std::list<Ref> referencedBy;
     std::list<Ref> refersTo;
+    unsigned int sequenceNumber;
     bool showRegistered;
     std::string subject;
     bool subjectIsRaw;

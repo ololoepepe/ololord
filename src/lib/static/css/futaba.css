@@ -137,6 +137,11 @@ hr {
     white-space: nowrap;
 }
 
+.postSequenceNumber {
+    color: red;
+    font-size: 75%;
+}
+
 /*
     Ban
 */

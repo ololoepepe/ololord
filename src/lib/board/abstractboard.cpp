@@ -772,19 +772,24 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             bool ok = false;
             QString err;
             thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+            thread.opPost.sequenceNumber = 1;
             if (!ok) {
                 Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                 Tools::log(app, "board", "fail:" + err, logTarget);
                 return;
             }
             unsigned int maxPosts = Tools::maxInfo(Tools::MaxLastPosts, name());
-            foreach (int i, bRangeR(posts.size() - 1, 1)) {
-                Post post = *posts.at(i).load();
+            unsigned int i = posts.size();
+            foreach (int j, bRangeR(posts.size() - 1, 1)) {
+                Post post = *posts.at(j).load();
                 if (post.draft() && hashpass != post.hashpass()
                         && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
                     continue;
                 }
-                thread.lastPosts.push_front(toController(post, app.request(), &ok, &err));
+                Content::Post p = toController(post, app.request(), &ok, &err);
+                p.sequenceNumber = i;
+                --i;
+                thread.lastPosts.push_front(p);
                 if (!ok) {
                     Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                     Tools::log(app, "board", "fail:" + err, logTarget);
@@ -987,15 +992,20 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         bool ok = false;
         QString err;
         c.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+        c.opPost.sequenceNumber = 1;
         if (!ok)
             return Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        unsigned int i = 2;
         foreach (int j, bRangeD(1, posts.size() - 1)) {
             Post post = *posts.at(j).load();
             if (post.draft() && hashpass != post.hashpass()
                     && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
                 continue;
             }
-            c.posts.push_back(toController(post, app.request(), &ok, &err));
+            Content::Post p = toController(post, app.request(), &ok, &err);
+            p.sequenceNumber = i;
+            ++i;
+            c.posts.push_back(p);
             if (!ok) {
                 Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                 Tools::log(app, "thread", "fail:" + err, logTarget);

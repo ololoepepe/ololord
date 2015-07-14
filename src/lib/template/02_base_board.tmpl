@@ -450,6 +450,7 @@
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <% end %>
         </span>
+        <span class="postSequenceNumber"><%= post.sequenceNumber %></span>
         <% if ( thread && post.number == post.threadNumber ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"
                 name="toThreadLink"><%= toThread %></a>]
@@ -901,6 +902,7 @@
                    href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%);">
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             </span>
+            <span class="postSequenceNumber" />
             <span name="toThread" style="display: none;">
                 [<a name="toThreadLink"
                     href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/%postNumber%.html"><%= toThread %></a>]
