@@ -292,7 +292,7 @@
     </fieldset>
     <fieldset>
         <legend><%= scriptSettingsLegendText %></legend>
-        <ul class="tabWidget">
+        <ul class="tabWidget nowrap">
             <li name="1" class="activated"><a onclick="lord.activateTab(this, 1); return false;"><%= postsTabText %></a></li>
             <li name="2" ><a onclick="lord.activateTab(this, 2); return false;"><%= filesTabText %></a></li>
             <li name="3" ><a onclick="lord.activateTab(this, 3); return false;"><%= postformTabText %></a></li>
@@ -478,7 +478,7 @@
                         <td>
                             <%= hotkeysLabelText %>
                         </td>
-                        <td>
+                        <td class="nowrap">
                             <input type="checkbox" name="hotkeysEnabled" />
                             <button class="button" onclick="lord.editHotkeys();"><%= editHotkeysText %></button>
                         </td>
@@ -487,7 +487,7 @@
                         <td>
                             <%= userCssLabelText %>
                         </td>
-                        <td>
+                        <td class="nowrap">
                             <input type="checkbox" name="userCssEnabled" />
                             <button class="button" onclick="lord.editUserCss();"><%= editUserCssText %></button>
                         </td>
