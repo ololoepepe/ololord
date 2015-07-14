@@ -1947,9 +1947,11 @@ lord.addThreadToFavorites = function(boardName, threadNumber, callback, callback
             return false;
         }
         var pn = res.pop()["number"];
+        var opPost = res.shift();
         fav[boardName + "/" + threadNumber] = {
             "lastPostNumber": pn,
-            "previousLastPostNumber": pn
+            "previousLastPostNumber": pn,
+            "subject": (opPost["subject"] ? opPost["subject"] : opPost["text"]).substring(0, 150)
         };
         var opPost = lord.id("post" + threadNumber);
         var btn = lord.nameOne("addToFavoritesButton", opPost);

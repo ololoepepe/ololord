@@ -246,10 +246,14 @@ lord.showFavorites = function() {
         var threadNumber = x.split("/").pop();
         a.href = "/" + sitePathPrefix + boardName + "/thread/" + threadNumber + ".html";
         var txt = "";
-        if (typeof res != "string")
+        var fav = lord.getLocalObject("favoriteThreads", {});
+        if (typeof res != "string") {
             txt = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
-        else
-            txt = "[" + res + "]";
+            fav[x].subject = txt;
+            lord.setLocalObject("favoriteThreads", fav);
+        } else {
+            txt = fav[x].subject ? fav[x].subject : ("[" + res + "]");
+        }
         a.appendChild(lord.node("text", "[" + x + "] " + txt.substring(0, 50)));
         a.title = txt;
         a.target = "_blank";

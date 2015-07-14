@@ -16,6 +16,7 @@
 [done] Add markup buttons bar
 [done] Implement hotkeys
 [done] Fix displaying deleted favorite threads
+[done] Remember deleted favorite thread subject
 [done] Add ability to remove EXIF information from images
 * Implement auto post hiding system
 
