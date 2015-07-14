@@ -396,7 +396,7 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                 if (!!err) {
                     lord.showPopup(err, {type: "critical"});
                     if (typeof errorCallback == "function")
-                        errorCallback();
+                        errorCallback(err);
                     return;
                 }
                 if (typeof callback == "function")
@@ -413,7 +413,7 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                     }
                     lord.showPopup(text, {type: "critical"});
                     if (typeof errorCallback == "function")
-                        errorCallback();
+                        errorCallback(text);
                 }
             }
         }

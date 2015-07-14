@@ -2702,6 +2702,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hotkeySubmitReplyLabelText</comment>
         <translation>Отправить пост</translation>
     </message>
+    <message>
+        <source>Strip EXIF from JPEG files:</source>
+        <comment>stripExifFromJpegLabelText</comment>
+        <translation>Удалять EXIF из файлов JPEG:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

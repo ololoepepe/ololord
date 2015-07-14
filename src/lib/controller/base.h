@@ -142,6 +142,7 @@ public:
     std::string sitePathPrefix;
     std::string siteProtocol;
     std::string strikeOutHiddenPostLinksLabelText;
+    std::string stripExifFromJpegLabelText;
     Style style;
     std::string styleLabelText;
     std::list<Style> styles;

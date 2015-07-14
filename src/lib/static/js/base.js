@@ -112,6 +112,8 @@ lord.showSettings = function() {
     showAttachedFilePreview.checked = lord.getLocalObject("showAttachedFilePreview", true);
     var addToFavoritesOnReply = lord.nameOne("addToFavoritesOnReply", div);
     addToFavoritesOnReply.checked = lord.getLocalObject("addToFavoritesOnReply", false);
+    var stripExifFromJpeg = lord.nameOne("stripExifFromJpeg", div);
+    stripExifFromJpeg.checked = lord.getLocalObject("stripExifFromJpeg", true);
     var hidePostformMarkup = lord.nameOne("hidePostformMarkup", div);
     hidePostformMarkup.checked = lord.getLocalObject("hidePostformMarkup", false);
     var showLeafButtons = lord.nameOne("showLeafButtons", div);
@@ -191,6 +193,7 @@ lord.showSettings = function() {
         lord.setLocalObject("checkFileExistence", !!checkFileExistence.checked);
         lord.setLocalObject("showAttachedFilePreview", !!showAttachedFilePreview.checked);
         lord.setLocalObject("addToFavoritesOnReply", !!addToFavoritesOnReply.checked);
+        lord.setLocalObject("stripExifFromJpeg", !!stripExifFromJpeg.checked);
         lord.setLocalObject("hidePostformMarkup", !!hidePostformMarkup.checked);
         lord.setLocalObject("showLeafButtons", !!showLeafButtons.checked);
         lord.setLocalObject("leafThroughImagesOnly", !!leafThroughImagesOnly.checked);
@@ -242,7 +245,11 @@ lord.showFavorites = function() {
         var boardName = x.split("/").shift();
         var threadNumber = x.split("/").pop();
         a.href = "/" + sitePathPrefix + boardName + "/thread/" + threadNumber + ".html";
-        var txt = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+        var txt = "";
+        if (typeof res != "string")
+            txt = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+        else
+            txt = "[" + res + "]";
         a.appendChild(lord.node("text", "[" + x + "] " + txt.substring(0, 50)));
         a.title = txt;
         a.target = "_blank";
@@ -272,6 +279,8 @@ lord.showFavorites = function() {
         var threadNumber = x.split("/").pop();
         lord.ajaxRequest("get_post", [boardName, +threadNumber], lord.RpcGetPostId, function(res) {
             f(res, x);
+        }, function(err) {
+            f(err, x);
         });
     });
     document.body.appendChild(div);

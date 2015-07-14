@@ -282,6 +282,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         c.siteProtocol = "http";
     c.strikeOutHiddenPostLinksLabelText = ts.translate("initBase", "Strike out links to hidden posts:",
                                                        "strikeOutHiddenPostLinksLabelText");
+    c.stripExifFromJpegLabelText = ts.translate("initBase", "Strip EXIF from JPEG files:",
+                                                "stripExifFromJpegLabelText");
     c.style.name = Tools::toStd(Tools::cookieValue(req, "style"));
     if (c.style.name.empty())
         c.style.name = "photon";

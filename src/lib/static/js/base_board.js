@@ -1484,12 +1484,16 @@ lord.fileAddedCommon = function(div, file) {
     };
     if (lord.getLocalObject("checkFileExistence", true))
         binaryReader.readAsArrayBuffer(file);
-    if (!!file.name.match(/\.(jpe?g|png|gif)$/i) && lord.getLocalObject("showAttachedFilePreview", true)) {
+    var preview = function() {
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function(e) {
             div.querySelector("img").src = e.target.result;
         };
+    };
+    if (!!file.name.match(/\.(jpe?g|png|gif)$/i) && lord.getLocalObject("showAttachedFilePreview", true)) {
+        if (!file.name.match(/\.(jpe?g)$/i) || !lord.getLocalObject("stripExifFromJpeg", true))
+            preview();
     } else if (!!file.name.match(/\.(jpe?g)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/jpeg_file.png";
     } else if (!!file.name.match(/\.(png)$/i)) {
@@ -1511,6 +1515,51 @@ lord.fileAddedCommon = function(div, file) {
     } else {
         div.querySelector("img").src = "/" + prefix + "img/file.png";
     }
+    if (!!file.name.match(/\.(jpe?g)$/i) && lord.getLocalObject("stripExifFromJpeg", true)) {
+        var fr = new FileReader();
+        fr.onload = function() {
+            var dv = new DataView(fr.result);
+            var offset = 0;
+            var recess = 0;
+            var pieces = [];
+            var i = 0;
+            if (dv.getUint16(offset) == 0xffd8) {
+                offset += 2;
+                var app1 = dv.getUint16(offset);
+                offset += 2;
+                while (offset < dv.byteLength) {
+                    if (app1 == 0xffe1) {
+                        pieces[i] = {
+                            "recess": recess,
+                            "offset": offset - 2
+                        };
+                        recess = offset + dv.getUint16(offset);
+                        i++;
+                    } else if (app1 == 0xffda) {
+                        break;
+                    }
+                    offset += dv.getUint16(offset);
+                    var app1 = dv.getUint16(offset);
+                    offset += 2;
+                }
+                if (pieces.length > 0) {
+                    var newPieces = [];
+                    pieces.forEach(function(v) {
+                        newPieces.push(fr.result.slice(v.recess, v.offset));
+                    });
+                    newPieces.push(fr.result.slice(recess));
+                    div.droppedFile = new File(newPieces, file.name, {"type": "image/jpeg"});
+                }
+                if (lord.getLocalObject("showAttachedFilePreview", true))
+                    preview();
+            }
+        };
+        fr.readAsArrayBuffer(file);
+    }
+    var f = inp.onchange;
+    delete inp.onchange;
+    inp.value = "";
+    inp.onchange = f;
     div.querySelector("a").style.display = "inline";
     var inpMax = lord.id("maxFileCount");
     if (!inpMax)
@@ -1560,8 +1609,11 @@ lord.fileSelected = function(current) {
         delete div.droppedFile;
     if (current.value == "")
         return lord.removeFile(current);
-    lord.clearFileInput(div);
     var file = current.files[0];
+    var inp = lord.queryOne("input", div);
+    inp.parentNode.replaceChild(inp.cloneNode(true), inp);
+    lord.clearFileInput(div);
+    div.droppedFile = file;
     lord.fileAddedCommon(div, file);
 };
 
