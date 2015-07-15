@@ -497,6 +497,11 @@ span.newPostCount {
     transform: scale(0.7, 0.7);
 }
 
+.postFileFile > a > img.mumWatching:not(:hover) {
+    opacity: 0.05;
+    filter: alpha(opacity=5);
+}
+
 .postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img, .postFileSearch > form,
 .postHeader > span > form {
     opacity: 0.65;

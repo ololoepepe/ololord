@@ -3142,6 +3142,13 @@ lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
+    if (lord.getLocalObject("mumWatching", false)) {
+        var img = lord.queryOne("[name='switchMumWatchingButton'] > img");
+        img.src = "/" + lord.text("sitePathPrefix") + "img/mum_watching.png";
+        lord.query(".postFileFile > a > img").forEach(function(img) {
+            lord.addClass(img, "mumWatching");
+        });
+    }
     if (lord.getLocalObject("hotkeysEnabled", true) && lord.text("deviceType") != "mobile") {
         var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
         var key = function(name) {

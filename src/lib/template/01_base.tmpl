@@ -50,7 +50,7 @@
     </span>
     <span class="nowrap">
         <% if ( content.mode.name != "ascetic" ) %>
-            <button class="button" onclick="javascript:lord.showSettings();"
+            <button class="button" onclick="lord.showSettings();"
                     name="settingsButton"><%= settingsButtonText %></button>
         <% else %>
             <a href="/<%= sitePathPrefix %>settings"
@@ -59,15 +59,21 @@
     </span>
     <span class="nowrap">
         <% if ( content.mode.name != "ascetic" ) %>
-            <button class="button" onclick="javascript:lord.showFavorites();"
+            <button class="button" onclick="lord.showFavorites();"
                     name="favoritesButton"><%= showFavoriteText %></button>
+        <% end %>
+    </span>
+    <span class="nowrap">
+        <% if ( content.mode.name != "ascetic" ) %>
+            <a onclick="lord.switchMumWatching();" name="switchMumWatchingButton"
+               title="<%= mumWatchingText %>"><img src="/<%= sitePathPrefix %>img/mum_not_watching.png"></a>
         <% end %>
     </span>
     <span class="nowrap">
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
             <% if ( content.mode.name != "ascetic" ) %>
-                <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
+                <button class="button" onclick="lord.doLogout();"><%= loginButtonText %></button>
             <% else %>
                 <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/logout"
                       enctype="multipart/form-data" class="inlineForm">
@@ -78,9 +84,9 @@
             <% if ( content.mode.name != "ascetic" ) %>
                 <input id="loginInput" type="password" class="input" name="hashpass"
                        placeholder="<%= loginPlaceholderText %>" />
-                <input id="showLoginCheckbox" type="checkbox" onclick="javascript:lord.switchShowLogin();"
+                <input id="showLoginCheckbox" type="checkbox" onclick="lord.switchShowLogin();"
                        name="showLogin" title="<%= showPasswordText %>" class="checkbox" />
-                <button class="button" onclick="javascript:lord.doLogin();"><%= loginButtonText %></button>
+                <button class="button" onclick="lord.doLogin();"><%= loginButtonText %></button>
             <% else %>
                 <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/login"
                       enctype="multipart/form-data" class="inlineForm">
@@ -136,7 +142,7 @@
             <% end %>
         </select>
         <% if ( content.mode.name != "ascetic" ) %>
-            <button class="button" onclick="javascript:lord.doSearch();"><%= searchButtonText %></button>
+            <button class="button" onclick="lord.doSearch();"><%= searchButtonText %></button>
         <% else %>
             <input type="submit" class="button" value="<%= searchButtonText %>" />
         <% end %>

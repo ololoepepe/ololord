@@ -2732,6 +2732,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>showHiddenPostListText</comment>
         <translation>Показать список скрытых постов/тредов</translation>
     </message>
+    <message>
+        <source>Mum is watching me!</source>
+        <comment>mumWatchingText</comment>
+        <translation>Мамка в комнате!</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

@@ -295,6 +295,19 @@ lord.showFavorites = function() {
     lord.toCenter(div);
 };
 
+lord.switchMumWatching = function() {
+    var watching = lord.getLocalObject("mumWatching", false);
+    var img = lord.queryOne("[name='switchMumWatchingButton'] > img");
+    img.src = "/" + lord.text("sitePathPrefix") + "img/mum" + (watching ? "_not" : "") + "_watching.png";
+    lord.query(".postFileFile > a > img").forEach(function(img) {
+        if (watching)
+            lord.removeClass(img, "mumWatching");
+        else
+            lord.addClass(img, "mumWatching");
+    });
+    lord.setLocalObject("mumWatching", !watching);
+};
+
 lord.removeThreadFromFavorites = function(boardName, threadNumber) {
     threadNumber = +threadNumber;
     if (!boardName || isNaN(threadNumber))

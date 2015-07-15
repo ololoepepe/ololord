@@ -21,6 +21,7 @@
 [done] Add post sequence numbers
 [done] Improve mobile device compatibility
 [done] Implement auto post hiding system
+[done] Implement preview masking
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

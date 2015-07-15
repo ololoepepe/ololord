@@ -245,6 +245,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                t.disambiguation().toUtf8().constData());
         c.modes.push_back(m);
     }
+    c.mumWatchingText = ts.translate("initBase", "Mum is watching me!", "mumWatchingText");
     c.otherTabText = ts.translate("initBase", "Other", "otherTabText");
     c.pageTitle = Tools::toStd(pageTitle);
     c.path = const_cast<cppcms::http::request *>(&req)->path_info();

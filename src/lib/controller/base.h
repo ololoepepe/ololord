@@ -118,6 +118,7 @@ public:
     Mode mode;
     std::string modeLabelText;
     std::list<Mode> modes;
+    std::string mumWatchingText;
     std::string otherTabText;
     std::string pageTitle;
     std::string path;

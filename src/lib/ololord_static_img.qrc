@@ -294,5 +294,7 @@
         <file>static/img/left.png</file>
         <file>static/img/right.png</file>
         <file>static/img/favorite_active.png</file>
+        <file>static/img/mum_watching.png</file>
+        <file>static/img/mum_not_watching.png</file>
     </qresource>
 </RCC>
