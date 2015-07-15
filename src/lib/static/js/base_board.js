@@ -497,6 +497,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
     file.appendChild(divFileName);
     var divFileSize = lord.node("div");
     lord.addClass(divFileSize, "postFileSize");
+    lord.addClass(divFileSize, lord.text("deviceType"));
     divFileSize.appendChild(lord.node("text", "(" + f["size"] + ")"));
     divFileSize.title = f["sizeTooltip"];
     file.appendChild(divFileSize);
@@ -573,6 +574,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
     aImage.onclick = lord.showImage.bind(lord, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"],
         f["sizeX"], f["sizeY"]);
     var image = lord.node("img");
+    lord.addClass(image, lord.text("deviceType"));
     var thumbSizeX = +f["thumbSizeX"];
     var thumbSizeY = +f["thumbSizeY"];
     if (!isNaN(thumbSizeX) && thumbSizeX > 0)

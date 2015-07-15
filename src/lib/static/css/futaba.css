@@ -485,6 +485,18 @@ span.newPostCount {
     color: #800000;
 }
 
+.postFileSize.mobile {
+    font-size: 0.6em;
+}
+
+.postFileFile > a > img.mobile {
+    -moz-transform: scale(0.7, 0.7);
+    -ms-transform: scale(0.7, 0.7);
+    -webkit-transform: scale(0.7, 0.7);
+    -o-transform: scale(0.7, 0.7);
+    transform: scale(0.7, 0.7);
+}
+
 .postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img, .postFileSearch > form,
 .postHeader > span > form {
     opacity: 0.65;

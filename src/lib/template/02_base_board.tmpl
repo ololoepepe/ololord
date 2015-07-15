@@ -145,7 +145,7 @@
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            target="_blank"><%= file.sourceName %></a>
     </div>
-    <div class="postFileSize" title="<%= file.sizeTooltip %>">
+    <div class="postFileSize <%= deviceType %>" title="<%= file.sizeTooltip %>">
         (<%= file.size %>)
     </div>
     <div class="postFileSearch">
@@ -193,14 +193,15 @@
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
             <% if ( content.isSpecialThumbName(file.thumbName) ) %>
-                <img src="/<%= sitePathPrefix %>img/<%= file.specialThumbName() %>_logo.png"
+                <img src="/<%= sitePathPrefix %>img/<%= file.specialThumbName() %>_logo.png" class="<%= deviceType %>"
                      width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
             <% else %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
-                         width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
+                         width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>"  class="<%= deviceType %>">
                 <% else %>
-                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
+                         class="<%= deviceType %>">
                 <% end %>
             <% end %>
         </a>
