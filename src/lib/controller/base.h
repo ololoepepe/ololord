@@ -64,6 +64,7 @@ public:
     bool draftsByDefault;
     std::string draftsByDefaultLabelText;
     std::string editHotkeysText;
+    std::string editSpellsText;
     std::string editUserCssText;
     std::string error413Text;
     std::string favoriteThreadsText;
@@ -72,6 +73,7 @@ public:
     std::string generalSettingsLegendText;
     std::set<std::string> hiddenBoards;
     std::string hiddenBoardsLabelText;
+    std::string hiddenPostListText;
     std::string hidePostformMarkupLabelText;
     bool hidePostformRules;
     std::string hidePostformRulesLabelText;
@@ -126,6 +128,7 @@ public:
     std::string quickReplyActionGotoThreadText;
     std::string quickReplyActionLabelText;
     std::string removeFromFavoritesText;
+    std::string removeFromHiddenPostListText;
     std::string scriptSettingsLegendText;
     std::string searchButtonText;
     std::string searchInputPlaceholder;
@@ -135,6 +138,7 @@ public:
     std::string showAutoUpdateDesktopNotificationsLabelText;
     std::string showAutoUpdateTimerLabelText;
     std::string showFavoriteText;
+    std::string showHiddenPostListText;
     std::string showLeafButtonsLabelText;
     std::string showNewPostsLabelText;
     std::string showPasswordText;
@@ -142,6 +146,7 @@ public:
     std::string siteDomain;
     std::string sitePathPrefix;
     std::string siteProtocol;
+    std::string spellsLabelText;
     std::string strikeOutHiddenPostLinksLabelText;
     std::string stripExifFromJpegLabelText;
     Style style;

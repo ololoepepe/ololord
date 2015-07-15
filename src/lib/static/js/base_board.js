@@ -2,6 +2,62 @@
 
 var lord = lord || {};
 
+/*Constants*/
+
+lord.TokenTypes = [{
+    "name": "all"
+}, {
+    "name": "words",
+    "args": true
+}, {
+    "name": "op"
+}, {
+    "name": "wipe",
+    "args": true
+}, {
+    "name": "subj",
+    "args": "opt"
+}, {
+    "name": "name",
+    "args": "opt"
+}, {
+    "name": "trip",
+    "args": "opt"
+}, {
+    "name": "sage",
+    "args": false
+}, {
+    "name": "tlen",
+    "args": "opt"
+}, {
+    "name": "num",
+    "args": true
+}, {
+    "name": "img",
+    "args": "opt"
+}, {
+    "name": "imgn",
+    "args": true
+}, {
+    "name": "ihash",
+    "args": true
+}, {
+    "name": "exp",
+    "args": true
+}, {
+    "name": "exph",
+    "args": true
+}, {
+    "name": "video",
+    "args": "opt"
+}, {
+    "name": "vauthor",
+    "args": true
+}, {
+    "name": "rep",
+    "args": true
+}];
+
 /*Variables*/
 
 lord.postPreviews = {};
@@ -20,6 +76,7 @@ lord.postForm = {
 lord.complainVideo = null;
 lord.files = null;
 lord.filesMap = null;
+lord.spells = null;
 
 /*Functions*/
 
@@ -37,6 +94,247 @@ lord.isVideoType = function(type) {
 
 lord.isSpecialThumbName = function(thumbName) {
     return lord.isAudioType(thumbName) || lord.isImageType(thumbName) || lord.isVideoType(thumbName);
+};
+
+lord.parseSpells = function(text) {
+    if (typeof text != "string")
+        return { "error:": { "text": lord.text("internalErrorText") } };
+    var skipSpaces = function(text) {
+        var first = text.search(/\S/);
+        if (first < 0)
+            return "";
+        pos += first;
+        return text.slice(first);
+    };
+    var nextToken = function(text) {
+        if (text.search(/[&\|\!\(\)]/) == 0) { //Special tokens
+            pos += 1;
+            return {
+                "text": text.slice(1),
+                "token": {
+                    "name": text.substr(0, 1),
+                    "terminal": true,
+                    "type": "other"
+                }
+            };
+        }
+        for (var i = 0; i < lord.TokenTypes.length; ++i) {
+            var TokenType = lord.TokenTypes[i];
+            var pattern = "^\\#" + TokenType.name + "(\\[(\\w+)(\\,(\\d+))?\\])?";
+            if ("opt" == TokenType.args)
+                pattern += "\\(((\\\\\\)|[^\\)])*?)\\)";
+            else if (TokenType.args)
+                pattern += "\\(((\\\\\\)|[^\\)])+?)\\)";
+            var rx = new RegExp(pattern);
+            if (0 != text.search(rx))
+                continue;
+            var m = text.match(rx);
+            var len = m[0].length;
+            var token = {
+                "name": TokenType.name,
+                "terminal": true,
+                "type": "spell"
+            };
+            if (m[2])
+                token.board = m[2];
+            if (m[4])
+                token.thread = m[4];
+            if (m[5])
+                token.args = m[5];
+            pos += len;
+            return {
+                "text": text.slice(len),
+                "token": token
+            };
+        }
+        return { "text": "" };
+    };
+    var pos = 0;
+    var tokens = [];
+    var stack = [];
+    var states = [0];
+    var r = {
+        0: function() {
+            var ntoken = { "name": "Program" };
+            return ntoken;
+        },
+        1: function() {
+            var ntoken = stack.pop();
+            var spell = stack.pop();
+            if (!ntoken.spells)
+                ntoken.spells = [];
+            ntoken.spells.unshift(spell);
+            states.pop();
+            states.pop();
+            return ntoken;
+        },
+        2: function() {
+            var ntoken = { "name": "Spell" };
+            var value = stack.pop();
+            ntoken.value = {
+                "type": "rep",
+                "value": value
+            };
+            states.pop();
+            return ntoken;
+        },
+        3: function() {
+            var ntoken = { "name": "Spell" };
+            var expr3 = stack.pop();
+            ntoken.value = expr3.value; //Optimisation
+            states.pop();
+            return ntoken;
+        },
+        4: function() {
+            var ntoken = { "name": "Expr3" };
+            var expr2 = stack.pop();
+            ntoken.value = expr2.value; //Optimisation
+            states.pop();
+            return ntoken;
+        },
+        5: function() {
+            var ntoken = { "name": "Expr3" };
+            var expr3 = stack.pop();
+            stack.pop();
+            var expr2 = stack.pop();
+            ntoken.value = {
+                "type": "|",
+                "value": [expr2]
+            };
+            if ("|" == expr3.value.type) { //Optimisation
+                expr3.value.value.forEach(function(v) {
+                    ntoken.value.value.push(v);
+                });
+            } else {
+                ntoken.value.value.push(expr3);
+            }
+            states.pop();
+            states.pop();
+            states.pop();
+            return ntoken;
+        },
+        6: function() {
+            var ntoken = { "name": "Expr2" };
+            var expr1 = stack.pop();
+            ntoken.value = expr1.value; //Optimisation
+            states.pop();
+            return ntoken;
+        },
+        7: function() {
+            var ntoken = { "name": "Expr2" };
+            var expr3 = stack.pop();
+            stack.pop();
+            var expr1 = stack.pop();
+            ntoken.value = {
+                "type": "&",
+                "value": [expr1]
+            };
+            if ("&" == expr3.value.type) { //Optimisation
+                expr3.value.value.forEach(function(v) {
+                    ntoken.value.value.push(v);
+                });
+            } else {
+                ntoken.value.value.push(expr3);
+            }
+            states.pop();
+            states.pop();
+            states.pop();
+            return ntoken;
+        },
+        8: function() {
+            var ntoken = { "name": "Expr1" };
+            stack.pop();
+            var expr3 = stack.pop();
+            stack.pop();
+            ntoken.value = expr3.value; //Optimisation
+            states.pop();
+            states.pop();
+            states.pop();
+            return ntoken;
+        },
+        9: function() {
+            var ntoken = { "name": "Expr1" };
+            var SPELL = stack.pop();
+            ntoken.value = {
+                "type": "SPELL",
+                "value": SPELL
+            };
+            states.pop();
+            return ntoken;
+        },
+        10: function() {
+            var ntoken = { "name": "Expr1" };
+            var spell = stack.pop();
+            stack.pop();
+            ntoken.value = {
+                "type": "!",
+                "value": spell
+            };
+            states.pop();
+            states.pop();
+            return ntoken;
+        }
+    };
+    var table = {
+        "rep": { 0: 2, 1: 2, 2: r[2], 3: r[3], 4: r[4], 5: r[6], 7: r[9], 9: r[1], 11: r[5], 13: r[7], 15: r[10], 16: r[8] },
+        "|": { 1: r[0], 2: r[2], 3: r[3], 4: 10, 5: r[6], 7: r[9], 9: r[1], 11: r[5], 13: r[7], 15: r[10], 16: r[8] },
+        "&": { 1: r[0], 2: r[2], 3: r[3], 4: r[4], 5: 12, 7: r[9], 9: r[1], 11: r[5], 13: r[7], 15: r[10], 16: r[8] },
+        "(": { 0: 6, 1: 6, 2: r[2], 3: r[3], 4: r[4], 5: r[6], 6: 6, 7: r[9], 9: r[1], 10: 6, 11: r[5], 12: 6, 13: r[7], 15: r[10], 16: r[8] },
+        ")": { 1: r[0], 2: r[2], 3: r[3], 4: r[4], 5: r[6], 7: r[9], 9: r[1], 11: r[5], 13: r[7], 14: 16, 15: r[10], 16: r[8] },
+        "SPELL": { 0: 7, 1: 7, 2: r[2], 3: r[3], 4: r[4], 5: r[6], 6: 7, 7: r[9], 8: 15, 9: r[1], 10: 7, 11: r[5], 12: 7, 13: r[7], 15: r[10], 16: r[8] },
+        "!": { 0: 8, 1: 8, 2: r[2], 3: r[3], 4: r[4], 5: r[6], 6: 8, 7: r[9], 9: r[1], 10: 8, 11: r[5], 12: 8, 13: r[7], 15: r[10], 16: r[8] },
+        "EOF": { 1: r[0], 2: r[2], 3: r[3], 4: r[4], 5: r[6], 7: r[9], 9: r[1], 11: r[5], 13: r[7], 15: r[10], 16: r[8] },
+        "Program": { 1: 9 },
+        "Spell": { 0: 1, 1: 1 },
+        "Expr3": { 0: 3, 1: 3, 6: 14, 10: 11, 12: 13 },
+        "Expr2": { 0: 4, 1: 4, 6: 4, 10: 4, 12: 4 },
+        "Expr1": { 0: 5, 1: 5, 6: 5, 10: 5, 12: 5 }
+    };
+    while (text.length > 0) {
+        var token = nextToken(skipSpaces(text));
+        text = token.text;
+        if (token.token)
+            tokens.push(token.token);
+    }
+    tokens.push({
+        "name": "EOF",
+        "terminal": true,
+        "type": "EOF"
+    });
+    if (tokens.length < 1 || "EOF" == tokens[0].name)
+        return { "root": { "name": "program" } };
+    var i = 0;
+    while (true) {
+        if (tokens.length == i)
+            return { "error": { "text": lord.text("unexpectedEndOfTokenListErrorText") } };
+        var token = tokens[i];
+        var name = ("spell" == token.type) ? "SPELL" : token.name;
+        var x = table[name];
+        if (!x)
+            return { "error": { "text": lord.text("noTokenInTableErrorText"), "data": name } };
+        var f = x[lord.last(states)];
+        if (!f)
+            return { "error": { "text": lord.text("noTokenInTableErrorText"), "data": name } };
+        if (typeof f == "function") {
+            var ntoken = f();
+            if (!ntoken)
+                return { "error": { "text": "internalErrorText" } };
+            if ("Program" == ntoken.name && stack.length < 1)
+                return { "root": ntoken };
+            x = table[ntoken.name];
+            if (!x)
+                return { "error": { "text": lord.text("noTokenInTableErrorText"), "data": name } };
+            f = x[lord.last(states)];
+            if (!f)
+                return { "error": { "text": lord.text("noTokenInTableErrorText"), "data": name } };
+            stack.push(ntoken);
+            states.push(f);
+        } else {
+            stack.push(token);
+            states.push(f);
+            ++i;
+        }
+    }
 };
 
 lord.resetScale = function(image) {
@@ -323,7 +621,10 @@ lord.createPostNode = function(res, permanent, boardName) {
         postLimit.style.display = "";
     else
         postLimit.parentNode.removeChild(postLimit);
-    lord.nameOne("postSubject", post).appendChild(lord.node("text", res["subject"]));
+    var postSubject = lord.nameOne("postSubject", post);
+    postSubject.appendChild(lord.node("text", res["subject"]));
+    if (res["subject"].length < 1)
+        lord.addClass(postSubject, "defaultPostSubject");
     var registered = lord.nameOne("registered", post);
     if (!!res["showRegistered"] && !!res["showTripcode"])
         registered.style.display = "";
@@ -575,6 +876,33 @@ lord.createPostNode = function(res, permanent, boardName) {
     return post;
 };
 
+lord.getYoutubeVideoInfo = function(link) {
+    if (!link)
+        return null;
+    if (link.href.replace("v=", "") == link.href)
+        return null;
+    var key = lord.text("youtubeApiKey");
+    if (!key)
+        return null;
+    var videoId = link.href.split("v=").pop();
+    videoId = videoId.match(/[a-zA-Z0-9_\-]{11}/)[0];
+    var xhr = new XMLHttpRequest();
+    var url = "https://www.googleapis.com/youtube/v3/videos?id=" + videoId + "&key=" + key + "&part=snippet";
+    xhr.open("get", url, false);
+    xhr.send(null);
+    if (xhr.readyState != 4)
+        return null;
+    if (xhr.status != 200)
+        return null;
+    var response = null;
+    try {
+        response = JSON.parse(xhr.responseText);
+    } catch (ex) {
+        return null;
+    }
+    return response.items[0].snippet;
+}
+
 lord.updatePost = function(boardName, postNumber, post) {
     postNumber = +postNumber;
     if (!boardName || !post || isNaN(postNumber) || postNumber <= 0)
@@ -731,9 +1059,6 @@ lord.nextOrPreviousFile = function(previous) {
 lord.addYoutubeButton = function(post) {
     if (!post)
         return;
-    var key = lord.text("youtubeApiKey");
-    if (!key)
-        return;
     var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
         + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
     lord.query(q, post).forEach(function(link) {
@@ -748,26 +1073,14 @@ lord.addYoutubeButton = function(post) {
         lord.addClass(a, "expandCollapse");
         a.lordExpanded = false;
         (function (a, link) {
-            var videoId = link.href.split("v=").pop();
-            videoId = videoId.match(/[a-zA-Z0-9_\-]{11}/)[0];
-            var xhr = new XMLHttpRequest();
-            xhr.open("get", "https://www.googleapis.com/youtube/v3/videos?id=" + videoId + "&key=" + key
-                + "&part=snippet");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status != 200)
-                        return;
-                    var response;
-                    try {
-                        response = JSON.parse(xhr.responseText);
-                    } catch (ex) {
-                        return;
-                    }
-                    var title = response.items[0].snippet.title;
-                    link.replaceChild(lord.node("text", title), link.firstChild);
-                }
-            };
-            xhr.send(null);
+            var info = lord.getYoutubeVideoInfo(link);
+            if (info) {
+                link.replaceChild(lord.node("text", info.title), link.firstChild);
+                if (!link.dataset)
+                    link.dataset = {};
+                link.dataset.videoTitle = info.title;
+                link.dataset.channelTitle = info.channelTitle;
+            }
             a.onclick = function() {
                 if (a.lordExpanded) {
                     a.parentNode.removeChild(a.nextSibling);
@@ -811,6 +1124,250 @@ lord.addYoutubeButton = function(post) {
     });
 };
 
+lord.spell_words = function(post, args) {
+    if (!post || !args)
+        return false;
+    return (lord.queryOne("blockquote", post).textContent.toLowerCase().indexOf(args.toLowerCase()) >= 0);
+};
+
+lord.spell_all = function() {
+    return true;
+};
+
+lord.spell_op = function(post) {
+    return post && lord.hasClass(post, "opPost");
+};
+
+lord.spell_wipe = function(post, args) {
+    //TODO
+    return false;
+};
+
+lord.spell_subj = function(post, args) {
+    if (!post)
+        return false;
+    if (args) {
+        var rx = lord.regexp(args);
+        if (!rx)
+            return false;
+        return (lord.queryOne(".postSubject", post).textContent.search(rx) >= 0);
+    } else {
+        return !lord.queryOne(".defaultPostSubject", post);
+    }
+};
+
+lord.spell_name = function(post, args) {
+    if (!post)
+        return false;
+    if (args)
+        return (lord.queryOne(".someName", post).textContent.toLowerCase().indexOf(args.toLowerCase()) >= 0);
+    else
+        return !lord.queryOne(".defaultUserName", post);
+};
+
+lord.spell_trip = function(post, args) {
+    if (!post)
+        return false;
+    var trip = lord.queryOne(".tripcode", post);
+    if (!args)
+        return !!trip;
+    else
+        return !!trip && (trip.toLowerCase().indexOf(args.toLowerCase()) >= 0);
+};
+
+lord.spell_sage = function(post) {
+    if (!post)
+        return false;
+    var mailto = lord.queryOne(".mailtoName", post);
+    return (mailto && mailto.href.toLowerCase() == "mailto:sage");
+};
+
+lord.spell_tlen = function(post, args) {
+    if (!post)
+        return false;
+    var text = lord.queryOne("blockquote", post).innerHTML;
+    if (!args)
+        return (text.length > 0);
+    var ranges = args.split(",");
+    for (var i = 0; i < ranges.length; ++i) {
+        if (ranges[i] == "")
+            return false;
+        var list = ranges[i].split("-");
+        if (list.length > 2)
+            return false;
+        if (list.length == 1 && text.length == +list[0])
+            return true;
+        return (text.length >= +list[0] && text.length <= +list[1]);
+    }
+};
+
+lord.spell_num = function(post, args) {
+    if (!post || !args)
+        return false;
+    var num = +post.id.replace("post", "");
+    var ranges = args.split(",");
+    for (var i = 0; i < ranges.length; ++i) {
+        if (ranges[i] == "")
+            return false;
+        var list = ranges[i].split("-");
+        if (list.length > 2)
+            return false;
+        if (list.length == 1 && num == +list[0])
+            return true;
+        return (num >= +list[0] && num <= +list[1]);
+    }
+};
+
+lord.spell_img = function(post, args) {
+    //TODO
+    return false;
+};
+
+lord.spell_imgn = function(post, args) {
+    //TODO
+    return false;
+};
+
+lord.spell_ihash = function(post, args) {
+    //TODO
+    return false;
+};
+
+lord.spell_exp = function(post, args) {
+    if (!post || !args)
+        return false;
+    var rx = lord.regexp(args);
+    if (!rx)
+        return false;
+    return (lord.queryOne("blockquote", post).textContent.search(rx) >= 0);
+};
+
+lord.spell_exph = function(post, args) {
+    if (!post || !args)
+        return false;
+    var rx = lord.regexp(args);
+    if (!rx)
+        return false;
+    return (lord.queryOne("blockquote", post).innerHTML.search(rx) >= 0);
+};
+
+lord.spell_video = function(post, args) {
+    if (!post)
+        return false;
+    var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
+        + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
+    if (args) {
+        if (!lord.getLocalObject("showYoutubeVideosTitles", true))
+            return false;
+        var rx = lord.regexp(args);
+        if (!rx)
+            return false;
+        var list = lord.query(q, post);
+        for (var i = 0; i < list.length; ++i) {
+            var link = list[i];
+            if (link.dataset && link.dataset.videoTitle && link.dataset.videoTitle.search(rx) >= 0)
+                return true;
+        }
+        return false;
+    } else {
+        return lord.queryOne(q, post);
+    }
+};
+
+lord.spell_vauthor = function(post, args) {
+    if (!post || !args || !lord.getLocalObject("showYoutubeVideosTitles", true))
+        return false;
+    var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
+        + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
+    var list = lord.query(q, post);
+    for (var i = 0; i < list.length; ++i) {
+        var link = list[i];
+        if (link.dataset && link.dataset.channelTitle && link.dataset.channelTitle == args)
+            return true;
+    }
+    return false;
+};
+
+lord.spell_rep = function(post, args) {
+    if (!post || !args)
+        return false;
+    var m = args.match("/((\\\\/|[^/])+?)/(i(gm?|mg?)?|g(im?|mi?)?|m(ig?|gi?)?)?\\,(.*)");
+    if (!m)
+        return false;
+    var s = lord.last(m) || "";
+    post.innerHTML = post.innerHTML.replace(new RegExp(m[1], m[3]), s);
+    return false;
+};
+
+lord.applySpell = function(post, spell) {
+    if (!post || !spell)
+        return;
+    var currentBoard = lord.text("currentBoardName");
+    var currentThread = lord.text("currentThreadNumber");
+    if (!currentThread) {
+        if (lord.hasClass(post, "opPost"))
+            currentThread = post.id.replace("post", "");
+        else
+            currentThread = post.parentNode.id.replace("threadPosts", "");
+    }
+    switch (spell.type) {
+    case "SPELL":
+        return lord.applySpell(post, spell.value);
+    case "spell":
+        if (spell.board && currentBoard != spell.board)
+            return false;
+        if (spell.thread && currentThread != spell.thread)
+            return false;
+        return lord["spell_" + spell.name](post, spell.args);
+    case "|":
+        for (var i = 0; i < spell.value.length; ++i) {
+            if (lord.applySpell(post, spell.value[i].value))
+                return true;
+        }
+        return false;
+    case "&":
+        for (var i = 0; i < spell.value.length; ++i) {
+            if (!lord.applySpell(post, spell.value[i].value))
+                return false;
+        }
+        return true;
+    case "!":
+        return !lord.applySpell(post, spell.value);
+    default:
+        break;
+    }
+    return false;
+};
+
+lord.applySpells = function(post, list) {
+    if (!lord.spells || lord.spells.length < 1 || !post)
+        return;
+    if (!list)
+        list = lord.getLocalObject("hiddenPosts", {});
+    var boardName = lord.text("currentBoardName");
+    var postNumber = post.id.replace("post", "");
+    var x = boardName + "/" + postNumber;
+    lord.spells.forEach(function(spell) {
+        if (list[x] && ("SPELL" != spell.value.type || "rep" != spell.value.value.name))
+            return;
+        var hide = lord.applySpell(post, spell.value);
+        if (hide) {
+            list[x] = {};
+            (function(bn, pn) {
+                lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                    if (!res)
+                        return;
+                    var list = lord.getLocalObject("hiddenPosts", {});
+                    if (!list[bn + "/" + pn])
+                        return;
+                    list[bn + "/" + pn].subject = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+                });
+            })(boardName, postNumber);
+        }
+    });
+    lord.setLocalObject("hiddenPosts", list);
+};
+
 lord.tryHidePost = function(post, list) {
     if (!post)
         return;
@@ -820,7 +1377,6 @@ lord.tryHidePost = function(post, list) {
     var boardName = lord.text("currentBoardName");
     if (!list)
         list = lord.getLocalObject("hiddenPosts", {});
-    //TODO: Custom hide rules
     if (!list[boardName + "/" + postNumber])
         return;
     lord.addClass(post, "hiddenPost");
@@ -838,6 +1394,8 @@ lord.postNodeInserted = function(post) {
         return;
     if (lord.getLocalObject("showYoutubeVideosTitles", true))
         lord.addYoutubeButton(post);
+    if (lord.getLocalObject("spellsEnabled", true))
+        lord.applySpells(post);
     lord.tryHidePost(post);
     if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
         lord.strikeOutHiddenPostLinks(post);
@@ -1225,8 +1783,20 @@ lord.setPostHidden = function(boardName, postNumber) {
         f(omitted, "hiddenPosts");
         f(posts, "hiddenPosts");
     }
-    if (!hidden)
+    if (!hidden) {
         list[boardName + "/" + postNumber] = {};
+        (function(bn, pn) {
+            lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                if (!res)
+                    return;
+                var list = lord.getLocalObject("hiddenPosts", {});
+                if (!list[bn + "/" + pn])
+                    return;
+                list[bn + "/" + pn].subject = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+                list[bn + "/" + pn].threadNumber = res["threadNumber"];
+            });
+        })(boardName, postNumber);        
+    }
     else if (list[boardName + "/" + postNumber])
         delete list[boardName + "/" + postNumber];          
     lord.setLocalObject("hiddenPosts", list);
@@ -2508,13 +3078,32 @@ lord.initializeOnLoadBaseBoard = function() {
     }
     var fav = lord.getLocalObject("favoriteThreads", {});
     var currentBoardName = lord.text("currentBoardName");
+    if (lord.getLocalObject("spellsEnabled", true)) {
+        var result = lord.parseSpells(lord.getLocalObject("spells", ""));
+        if (result.root)  {
+            lord.spells = result.root.spells;
+        } else if (result.error) {
+            var txt = result.error.text;
+            if (result.error.data)
+                txt += ": " + result.error.data;
+            lord.showPopup(txt, {"type": "critical"});
+        }
+    }
     var list = lord.getLocalObject("hiddenPosts", {});
-    var posts = lord.query(".post, .opPost");
-    posts.forEach(function(post) {
+    var posts = lord.query(".post:not(#postTemplate), .opPost");
+    var ps = posts;
+    var f = function() { //NOTE: Using timeout to let UI update
+        if (ps.length <= 0)
+            return;
+        var post = ps.shift();
         if (lord.getLocalObject("showYoutubeVideosTitles", true))
             lord.addYoutubeButton(post);
+        if (lord.getLocalObject("spellsEnabled", true))
+            lord.applySpells(post, list);
         lord.tryHidePost(post, list);
-    });
+        setTimeout(f, 1);
+    };
+    f();
     lord.query(".opPost").forEach(function(opPost) {
         var threadNumber = +opPost.id.replace("post", "");
         var btn = lord.nameOne("addToFavoritesButton", opPost);

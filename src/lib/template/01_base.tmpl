@@ -156,6 +156,8 @@
 <input type="hidden" id="favoriteThreadsText" value="<%= favoriteThreadsText %>" />
 <input type="hidden" id="settingsDialogTitle" value="<%= settingsDialogTitle %>" />
 <input type="hidden" id="error413Text" value="<%= error413Text %>" />
+<input type="hidden" id="hiddenPostListText" value="<%= hiddenPostListText %>" />
+<input type="hidden" id="removeFromHiddenPostListText" value="<%= removeFromHiddenPostListText %>" />
 <div id="settingsDialogTemplate" class="settingsDialog" style="display: none;">
     <fieldset>
         <legend><%= generalSettingsLegendText %></legend>
@@ -452,6 +454,21 @@
                         </td>
                         <td>
                             <input type="checkbox" name="strikeOutHiddenPostLinks" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= spellsLabelText %>
+                        </td>
+                        <td class="nowrap">
+                            <input type="checkbox" name="spellsEnabled" />
+                            <button class="button" onclick="lord.editSpells();"><%= editSpellsText %></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="nowrap">
+                            <button class="button"
+                                    onclick="lord.showHiddenPostList();"><%= showHiddenPostListText %></button>
                         </td>
                     </tr>
                 </tbody>

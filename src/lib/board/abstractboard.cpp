@@ -1514,10 +1514,12 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                                                           DateTimeFormat));
     }
     pp.name = Tools::toStd(Controller::toHtml(post.name()));
-    if (pp.name.empty())
-        pp.name = "<span class=\"userName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
-    else
+    if (pp.name.empty()) {
+        pp.name = "<span class=\"userName defaultUserName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l)))
+                + "</span>";
+    } else {
         pp.name = "<span class=\"userName\">" + pp.name + "</span>";
+    }
     pp.nameRaw = Tools::toStd(post.name());
     if (pp.nameRaw.empty())
         pp.nameRaw = Tools::toStd(defaultUserName(l));
@@ -1535,8 +1537,10 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 name = "<span class=\"userName\">" + Controller::toHtml(post.name()) + "</span>";
         }
         pp.name = Tools::toStd(name);
-        if (pp.name.empty())
-            pp.name = "<span class=\"userName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
+        if (pp.name.empty()) {
+            pp.name = "<span class=\"userName defaultUserName\">"
+                    + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
+        }
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
         pp.tripcode = Tools::toStd("!" + QString::fromLatin1(tripcode.toBase64()).left(10));

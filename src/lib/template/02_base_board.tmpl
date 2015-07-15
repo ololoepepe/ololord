@@ -245,7 +245,11 @@
         <% if ( post.draft ) %>
             <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= draftText %>" />
         <% end %>
-        <span class="postSubject">
+        <% if ( !post.subject.empty() ) %>
+            <span class="postSubject">
+        <% else %>
+            <span class="postSubject defaultPostSubject">
+        <% end %>
             <% if ( post.subjectIsRaw ) %>
                 <%= post.subject | raw %>
             <% else %>
@@ -822,6 +826,9 @@
 <input type="hidden" id="hidePostformMarkupText" value="<%= hidePostformMarkupText %>" />
 <input type="hidden" id="loadingPostsText" value="<%= loadingPostsText %>" />
 <input type="hidden" id="deviceType" value="<%= deviceType %>" />
+<input type="hidden" id="internalErrorText" value="<%= internalErrorText %>" />
+<input type="hidden" id="unexpectedEndOfTokenListErrorText" value="<%= unexpectedEndOfTokenListErrorText %>" />
+<input type="hidden" id="noTokenInTableErrorText" value="<%= noTokenInTableErrorText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>

@@ -138,6 +138,8 @@ lord.showSettings = function() {
     hideUserNames.checked = !!lord.getLocalObject("hideUserNames", false);
     var strikeOutHiddenPostLinks = lord.nameOne("strikeOutHiddenPostLinks", div);
     strikeOutHiddenPostLinks.checked = !!lord.getLocalObject("strikeOutHiddenPostLinks", true);
+    var spellsEnabled = lord.nameOne("spellsEnabled", div);
+    spellsEnabled.checked = !!lord.getLocalObject("spellsEnabled", true);
     var hotkeysEnabled = lord.nameOne("hotkeysEnabled", div);
     hotkeysEnabled.checked = !!lord.getLocalObject("hotkeysEnabled", true);
     var userCssEnabled = lord.nameOne("userCssEnabled", div);
@@ -206,6 +208,7 @@ lord.showSettings = function() {
         lord.setLocalObject("hideTripcodes", !!hideTripcodes.checked);
         lord.setLocalObject("hideUserNames", !!hideUserNames.checked);
         lord.setLocalObject("strikeOutHiddenPostLinks", !!strikeOutHiddenPostLinks.checked);
+        lord.setLocalObject("spellsEnabled", !!spellsEnabled.checked);
         lord.setLocalObject("hotkeysEnabled", !!hotkeysEnabled.checked);
         lord.setLocalObject("userCssEnabled", !!userCssEnabled.checked);
         lord.reloadPage();
@@ -448,6 +451,95 @@ lord.assignHotkey = function(e, inp) {
     inp.value = key;
     e.preventDefault();
     return false;
+};
+
+lord.editSpells = function() {
+    var ta = lord.node("textarea");
+    ta.rows = 10;
+    ta.cols = 43;
+    ta.value = lord.getLocalObject("spells", "");
+    lord.showDialog(null, null, ta, function() {
+        lord.setLocalObject("spells", ta.value);
+        if (lord.parseSpells && lord.getLocalObject("spellsEnabled", true)) {
+            var result = lord.parseSpells(lord.getLocalObject("spells", ""));
+            if (result.root)  {
+                lord.spells = result.root.spells;
+                var list = lord.getLocalObject("hiddenPosts", {});
+                var ps = lord.query(".post:not(#postTemplate), .opPost");
+                var f = function() { //NOTE: Using timeout to let UI update
+                    if (ps.length <= 0)
+                        return;
+                    var post = ps.shift();
+                    lord.applySpells(post, list);
+                    lord.tryHidePost(post, list);
+                    setTimeout(f, 1);
+                };
+                f();
+            } else if (result.error) {
+                var txt = result.error.text;
+                if (result.error.data)
+                    txt += ": " + result.error.data;
+                lord.showPopup(txt, {"type": "critical"});
+            }
+        }
+    });
+};
+
+lord.showHiddenPostList = function() {
+    var title = lord.text("hiddenPostListText");
+    var div = lord.node("div");
+    lord.addClass(div, "hiddenPostList");
+    var list = lord.getLocalObject("hiddenPosts", {});
+    var sitePathPrefix = lord.text("sitePathPrefix");
+    var f = function(res, x) {
+        var postDiv = lord.node("div");
+        lord.addClass(postDiv, "nowrap");
+        postDiv.id = "hidden/" + x;
+        var boardName = x.split("/").shift();
+        var postNumber = x.split("/").pop();
+        var txt = "[" + x + "]";
+        if (typeof res != "string") {
+            txt = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+            list[x].subject = txt;
+            list[x].threadNumber = res["threadNumber"];
+        } else {
+            txt = list[x].subject ? fav[x].subject : ("[" + res + "]");
+        }
+        if (list[x].threadNumber) {
+            var a = lord.node("a");
+            a.href = "/" + sitePathPrefix + boardName + "/thread/" + list[x].threadNumber + ".html#" + postNumber;
+            a.title = txt;
+            a.target = "_blank";
+            a.appendChild(lord.node("text", "[" + x + "] " + txt.substring(0, 50) + " "));
+            postDiv.appendChild(a);
+        } else {
+            postDiv.title = txt;
+            postDiv.appendChild(lord.node("text", "[" + x + "] " + txt.substring(0, 50) + " "));
+        }
+        var rmBtn = lord.node("a");
+        rmBtn.onclick = function() {
+            postDiv.parentNode.removeChild(postDiv);
+            delete list[x];
+        };
+        rmBtn.title = lord.text("removeFromHiddenPostListText");
+        var img = lord.node("img");
+        img.src = "/" + sitePathPrefix + "img/delete.png";
+        rmBtn.appendChild(img);
+        postDiv.appendChild(rmBtn);
+        div.appendChild(postDiv);
+    };
+    lord.forIn(list, function(_, x) {
+        var boardName = x.split("/").shift();
+        var postNumber = x.split("/").pop();
+        lord.ajaxRequest("get_post", [boardName, +postNumber], lord.RpcGetPostId, function(res) {
+            f(res, x);
+        }, function(err) {
+            f(err, x);
+        });
+    });
+    lord.showDialog(title, null, div, function() {
+        lord.setLocalObject("hiddenPosts", list);
+    });
 };
 
 lord.editUserCss = function() {

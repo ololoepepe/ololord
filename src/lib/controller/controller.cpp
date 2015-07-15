@@ -145,6 +145,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.draftsByDefaultLabelText = ts.translate("initBase", "Mark posts as drafts by default:",
                                               "draftsByDefaultLabelText");
     c.editHotkeysText = ts.translate("initBase", "Edit", "editHotkeysText");
+    c.editSpellsText = ts.translate("initBase", "Edit", "editSpellsText");
     c.editUserCssText = ts.translate("initBase", "Edit", "editUserCssText");
     c.error413Text = ts.translate("initBase", "Request entity too large", "error413Text");
     c.favoriteThreadsText = ts.translate("initBase", "Favorite threads", "favoriteThreadsText");
@@ -154,6 +155,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     foreach (const QString &bn, Tools::cookieValue(req, "hiddenBoards").split('|', QString::SkipEmptyParts))
         c.hiddenBoards.insert(Tools::toStd(bn));
     c.hiddenBoardsLabelText = ts.translate("initBase", "Hide boards:", "hiddenBoardsLabelText");
+    c.hiddenPostListText = ts.translate("initBase", "Hidden posts/threads", "hiddenPostListText");
     c.hidePostformMarkupLabelText = ts.translate("initBase", "Hide postform markup:", "hidePostformMarkupLabelText");
     c.hidePostformRules = !Tools::cookieValue(req, "hidePostformRules").compare("true", Qt::CaseInsensitive);
     c.hidePostformRulesLabelText = ts.translate("initBase", "Hide postform rules:", "hidePostformRulesLabelText");
@@ -256,6 +258,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                     "quickReplyActionGotoThreadText");
     c.quickReplyActionLabelText = ts.translate("initBase", "Quick reply outside thread:", "quickReplyActionLabelText");
     c.removeFromFavoritesText = ts.translate("initBase", "Remove from favorites", "removeFromFavoritesText");
+    c.removeFromHiddenPostListText = ts.translate("initBase", "Remove from hidden post/thread list",
+                                                  "removeFromHiddenPostListText");
     c.scriptSettingsLegendText = ts.translate("initBase", "Script settings", "scriptSettingsLegendText");
     SettingsLocker s;
     c.searchButtonText = ts.translate("initBase", "Search", "searchButtonText");
@@ -270,6 +274,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showAutoUpdateTimerLabelText = ts.translate("initBase", "Show auto update timer:",
                                                   "showAutoUpdateTimerLabelText");
     c.showFavoriteText = ts.translate("initBase", "Favorites", "showFavoriteText");
+    c.showHiddenPostListText = ts.translate("initBase", "Show hidden post/thread list", "showHiddenPostListText");
     c.showLeafButtonsLabelText = ts.translate("initBase", "Show file leaf buttons:", "showLeafButtonsLabelText");
     c.showNewPostsLabelText = ts.translate("initBase", "Show new post count near board names:",
                                            "showNewPostsLabelText");
@@ -281,6 +286,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
     if (c.siteProtocol.empty())
         c.siteProtocol = "http";
+    c.spellsLabelText = ts.translate("initBase", "Spells (command-based post hiding):", "spellsLabelText");
     c.strikeOutHiddenPostLinksLabelText = ts.translate("initBase", "Strike out links to hidden posts:",
                                                        "strikeOutHiddenPostLinksLabelText");
     c.stripExifFromJpegLabelText = ts.translate("initBase", "Strip EXIF from JPEG files:",
@@ -419,6 +425,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.hidePostformMarkupText = ts.translate("initBaseBoard", "Hide markup", "hidePostformMarkupText");
     c.hidePostformRulesText = ts.translate("initBaseBoard", "Hide rules", "hidePostformRulesText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
+    c.internalErrorText = ts.translate("initBaseBoard", "Internal error", "internalErrorText");
     c.kilobytesText = ts.translate("initBaseBoard", "KB", "kilobytesText");
     c.loadingPostsText = ts.translate("initBaseBoard", "Loading posts...", "loadingPostsText");
     c.markupBold = ts.translate("initBaseBoard", "Bold text", "markupBold");
@@ -449,6 +456,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.nextFileText = ts.translate("initBaseBoard", "Next file", "nextFileText");
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");
+    c.noTokenInTableErrorText = ts.translate("initBaseBoard", "Invalid spell order", "noTokenInTableErrorText");
     c.openThreadText = ts.translate("initBaseBoard", "Open thread", "openThreadText");
     c.postActionsText = ts.translate("initBaseBoard", "Post actions", "postActionsText");
     c.postFormButtonSubmit = ts.translate("initBaseBoard", "Send", "postFormButtonSubmit");
@@ -532,6 +540,8 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.toBottomText = ts.translate("initBaseBoard", "Scroll to the bottom", "toBottomText");
     c.toThread = ts.translate("initBaseBoard", "Answer", "toThread");
     c.toTopText = ts.translate("initBaseBoard", "Scroll to the top", "toTopText");
+    c.unexpectedEndOfTokenListErrorText = ts.translate("initBaseBoard", "Unexpected end of spell list",
+                                                       "unexpectedEndOfTokenListErrorText");
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
     c.youtubeApiKey = Tools::toStd(s->value("Site/youtube_api_key").toString());
     return true;

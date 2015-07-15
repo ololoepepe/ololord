@@ -150,6 +150,7 @@ public:
     std::string hidePostformMarkupText;
     std::string hidePostformRulesText;
     std::string hidePostFormText;
+    std::string internalErrorText;
     std::string kilobytesText;
     std::string loadingPostsText;
     std::string markupBold;
@@ -175,6 +176,7 @@ public:
     std::string nextFileText;
     std::string noCaptchaText;
     std::string notLoggedInText;
+    std::string noTokenInTableErrorText;
     std::string openThreadText;
     std::string postActionsText;
     std::string postFormButtonSubmit;
@@ -212,6 +214,7 @@ public:
     std::string toBottomText;
     std::string toThread;
     std::string toTopText;
+    std::string unexpectedEndOfTokenListErrorText;
     std::string unfixThreadText;
     std::string youtubeApiKey;
 public:

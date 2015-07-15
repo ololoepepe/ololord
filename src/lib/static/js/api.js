@@ -48,6 +48,8 @@ lord._defineEnum("RpcVoteId");
 
 lord.popups = [];
 lord.unloading = false;
+lord.leftChain = [];
+lord.rightChain = [];
 
 /*Functions*/
 
@@ -168,6 +170,68 @@ lord.last = function(arr) {
     return arr[arr.length - 1];
 };
 
+lord.equal = function(x, y) {
+    var p;
+    if (isNaN(x) && isNaN(y) && typeof x === "number" && typeof y === "number")
+        return true;
+    if (x === y)
+        return true;
+    if ((typeof x === "function" && typeof y === "function") ||
+        (x instanceof Date && y instanceof Date) ||
+        (x instanceof RegExp && y instanceof RegExp) ||
+        (x instanceof String && y instanceof String) ||
+        (x instanceof Number && y instanceof Number)) {
+        return x.toString() === y.toString();
+    }
+    if (!(x instanceof Object && y instanceof Object))
+        return false;
+    if (x.isPrototypeOf(y) || y.isPrototypeOf(x))
+        return false;
+    if (x.constructor !== y.constructor)
+        return false;
+    if (x.prototype !== y.prototype)
+        return false;
+    if (lord.leftChain.indexOf(x) > -1 || lord.rightChain.indexOf(y) > -1)
+         return false;
+    for (p in y) {
+        if (y.hasOwnProperty(p) !== x.hasOwnProperty(p))
+            return false;
+        else if (typeof y[p] !== typeof x[p])
+            return false;
+    }
+    for (p in x) {
+        if (y.hasOwnProperty(p) !== x.hasOwnProperty(p))
+            return false;
+        else if (typeof y[p] !== typeof x[p])
+            return false;
+        switch (typeof (x[p])) {
+        case "object":
+        case "function":
+            lord.leftChain.push(x);
+            lord.rightChain.push(y);
+            if (!equal(x[p], y[p]))
+                return false;
+            lord.leftChain.pop();
+            lord.rightChain.pop();
+            break;
+        default:
+            if (x[p] !== y[p])
+                return false;
+            break;
+        }
+    }
+    return true;
+};
+
+lord.regexp = function(s) {
+    if (!s || typeof s != "string")
+        return null;
+    var m = s.match("/((\\\\/|[^/])+?)/(i(gm?|mg?)?|g(im?|mi?)?|m(ig?|gi?)?)?");
+    if (!m)
+        return null;
+    return new RegExp(m[1], m[3]);
+};
+
 lord.id = function(id) {
     if (typeof id != "string")
         return null;
@@ -210,9 +274,16 @@ lord.nameOne = function(name, parent) {
 };
 
 lord.contains = function(s, subs) {
-    if (typeof s != "string" || typeof subs != "string")
+    if (typeof s == "string" && typeof subs == "string")
+        return s.replace(subs, "") != s;
+    var arr = lord.arr(s);
+    if (!arr || !arr.length || arr.length < 1)
         return false;
-    return s.replace(subs, "") != s;
+    arr.forEach(function(v) {
+        if (lord.equal(v, subs))
+            return true;
+    });
+    return false;
 };
 
 lord.isInViewport = function(el) {
@@ -367,6 +438,7 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
             styles.maxHeight = "80%";
             styles.maxWidth = "80%";
             styles.overflow = "auto";
+            styles.border = "1px solid #777777";
             return styles;
         }
     }).afterShow(function(modal) {

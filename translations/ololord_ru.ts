@@ -2707,6 +2707,31 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>stripExifFromJpegLabelText</comment>
         <translation>Удалять EXIF из файлов JPEG:</translation>
     </message>
+    <message>
+        <source>Edit</source>
+        <comment>editSpellsText</comment>
+        <translation>Редактировать</translation>
+    </message>
+    <message>
+        <source>Spells (command-based post hiding):</source>
+        <comment>spellsLabelText</comment>
+        <translation>Спеллы (скрытие постов на основе команд):</translation>
+    </message>
+    <message>
+        <source>Hidden posts/threads</source>
+        <comment>hiddenPostListText</comment>
+        <translation>Скрытые посты/треды</translation>
+    </message>
+    <message>
+        <source>Remove from hidden post/thread list</source>
+        <comment>removeFromHiddenPostListText</comment>
+        <translation>Убрать из списка скрытых постов/тредов</translation>
+    </message>
+    <message>
+        <source>Show hidden post/thread list</source>
+        <comment>showHiddenPostListText</comment>
+        <translation>Показать список скрытых постов/тредов</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -3214,6 +3239,21 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <source>Striked out text</source>
         <comment>markupStrikedOut</comment>
         <translation>Зачеркнутый текст</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>internalErrorText</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Invalid spell order</source>
+        <comment>noTokenInTableErrorText</comment>
+        <translation>Неправильный порядок спеллов</translation>
+    </message>
+    <message>
+        <source>Unexpected end of spell list</source>
+        <comment>unexpectedEndOfTokenListErrorText</comment>
+        <translation>Неожиданный конец списка спеллов</translation>
     </message>
 </context>
 <context>

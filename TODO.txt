@@ -20,7 +20,7 @@
 [done] Add ability to remove EXIF information from images
 [done] Add post sequence numbers
 [done] Improve mobile device compatibility
-* Implement auto post hiding system
+[done] Implement auto post hiding system
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

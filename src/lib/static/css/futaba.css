@@ -12,7 +12,7 @@ body.mobile {
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 a {
@@ -140,6 +140,12 @@ hr {
 .postSequenceNumber {
     color: red;
     font-size: 75%;
+}
+
+.hiddenPostList > div:nth-child(even) {
+    background-color: #FFFFEE;
+    margin-top: 3px;
+    margin-bottom: 3px;
 }
 
 /*
@@ -370,16 +376,16 @@ span.newPostCount {
 
 .rules {
     background-color: #F0E0D6;
-    margin-left: 80px;
-    margin-right: 80px;
+    margin-left: 5%;
+    margin-right: 5%;
     padding-top: 10px;
     padding-left: 10px;
 }
 
 .news {
     background-color: #F0E0D6;
-    margin-left: 80px;
-    margin-right: 80px;
+    margin-left: 5%;
+    margin-right: 5%;
 }
 
 .sectionHeader {
