@@ -1146,7 +1146,102 @@ lord.spell_op = function(post) {
 };
 
 lord.spell_wipe = function(post, args) {
-    //TODO
+    if (!post || !args)
+        return false;
+    var text = lord.queryOne("blockquote", post).textContent;
+    var list = args.split(",");
+    for (var i = 0; i < list.length; ++i) {
+        var a = list[i];
+        switch (a) {
+        case "samelines": {
+            var lines = text.replace(/>/g, "").split(/\s*\n\s*/);
+            if (lines.length > 5) {
+                lines.sort();
+                var len = lines.length;
+                for (var i = 0, n = len / 4; i < len;) {
+                    var line = lines[i];
+                    var j = 0;
+                    while (lines[i++] === line)
+                        ++j;
+                    if (j > 4 && j > n && line)
+                        return true;
+                }
+            }
+            break;
+        }
+        case "samewords": {
+            var words = text.replace(/[\s\.\?\!,>]+/g, " ").toUpperCase().split(" ");
+            if (words.length > 3) {
+                words.sort();
+                var keys = 0;
+                for (var i = 0, n = len / 4, pop = 0; i < words.length; keys++) {
+                    var word = words[i];
+                    var j = 0;
+                    while (words[i++] === word)
+                        ++j;
+                    if (words.length > 25) {
+                        if (j > pop && word.length > 2)
+                            pop = j;
+                         if (pop >= n)
+                            return true;
+                    }
+                }
+                if ((keys / len) < 0.25)
+                    return true;
+            }
+            break;
+        }
+        case "longwords": {
+            var words = text.replace(/https*:\/\/.*?(\s|$)/g, "").replace(/[\s\.\?!,>:;-]+/g, " ").split(" ");
+            if (words[0].length > 50 || words.length > 1 && (words.join("").length / words.length) > 10)
+                return true;
+            break;
+        }
+        case "symbols": {
+            var txt = text.replace(/\s+/g, "");
+            if (txt.length > 30 && (txt.replace(/[0-9a-zа-я\.\?!,]/ig, "").length / txt.length) > 0.4)
+                return true;
+            break;
+        }
+        case "capslock": {
+            var words = text.replace(/[\s\.\?!;,-]+/g, " ").trim().split(" ");
+            if (words.length > 4) {
+                var n = 0;
+                var capsw = 0;
+                var casew = 0;
+                for (var i = 0; i < words.length; i++) {
+                    var word = words[i];
+                    if ((word.match(/[a-zа-я]/ig) || []).length < 5)
+                        continue;
+                    if ((word.match(/[A-ZА-Я]/g) || []).length > 2)
+                        casew++;
+                    if (word === word.toUpperCase())
+                        capsw++;
+                    n++;
+                }
+                if ((capsw / n >= 0.3) && n > 4)
+                    return true;
+                else if ((casew / n) >= 0.3 && n > 8)
+                    return true;
+            }
+            break;
+        }
+        case "numbers": {
+            var txt = text.replace(/\s+/g, " ").replace(/>>\d+|https*:\/\/.*?(?: |$)/g, "");
+            if (txt.length > 30 && (txt.length - txt.replace(/\d/g, "").length) / words.length > 0.4)
+                return true;
+            break;
+        }
+        case "whitespace": {
+            if (/(?:\n\s*){10}/i.test(text))
+                return true;
+            break;
+        }
+        default: {
+            break;
+        }
+        }
+    }
     return false;
 };
 
@@ -3051,8 +3146,8 @@ lord.initializeOnLoadBaseBoard = function() {
         var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
         var key = function(name) {
             if (!hotkeys)
-                return lord.defaultHotkeys.dir[name];
-            return hotkeys[name] || lord.defaultHotkeys.dir[name];
+                return lord.DefaultHotkeys.dir[name];
+            return hotkeys[name] || lord.DefaultHotkeys.dir[name];
         };
         var btn = lord.queryOne(".leafButton.leafButtonPrevious");
         btn.title = btn.title + " (" + key("previousPageImage") + ")";
@@ -3086,7 +3181,7 @@ lord.initializeOnLoadBaseBoard = function() {
     var fav = lord.getLocalObject("favoriteThreads", {});
     var currentBoardName = lord.text("currentBoardName");
     if (lord.getLocalObject("spellsEnabled", true)) {
-        var result = lord.parseSpells(lord.getLocalObject("spells", ""));
+        var result = lord.parseSpells(lord.getLocalObject("spells", lord.DefaultSpells));
         if (result.root)  {
             lord.spells = result.root.spells;
         } else if (result.error) {

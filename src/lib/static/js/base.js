@@ -4,7 +4,8 @@ var lord = lord || {};
 
 /*Constants*/
 
-lord.defaultHotkeys = {
+lord.DefaultSpells = "#wipe(samelines,samewords,longwords,symbols,capslock,numbers,whitespace)";
+lord.DefaultHotkeys = {
     "dir": {},
     "rev": {}
 };
@@ -12,8 +13,8 @@ lord.defaultHotkeys = {
 lord._defineHotkey = function(name, key) {
     if (typeof name != "string" || typeof key != "string")
         return;
-    lord.defaultHotkeys.dir[name] = key;
-    lord.defaultHotkeys.rev[key] = name;
+    lord.DefaultHotkeys.dir[name] = key;
+    lord.DefaultHotkeys.rev[key] = name;
 };
 
 lord._defineHotkey("previousPageImage", "Ctrl+Left");
@@ -410,11 +411,11 @@ lord.editHotkeys = function() {
         hotkeys.dir = {};
     if (!hotkeys.rev)
         hotkeys.rev = {};
-    lord.forIn(lord.defaultHotkeys.dir, function(key, name) {
+    lord.forIn(lord.DefaultHotkeys.dir, function(key, name) {
         lord.nameOne(name, table).value = hotkeys.dir[name] || key;
     });
     lord.showDialog(null, null, table, function() {
-        lord.forIn(lord.defaultHotkeys.dir, function(key, name) {
+        lord.forIn(lord.DefaultHotkeys.dir, function(key, name) {
             key = lord.nameOne(name, table).value || key;
             hotkeys.dir[name] = key;
             hotkeys.rev[key] = name;
@@ -457,11 +458,11 @@ lord.editSpells = function() {
     var ta = lord.node("textarea");
     ta.rows = 10;
     ta.cols = 43;
-    ta.value = lord.getLocalObject("spells", "");
+    ta.value = lord.getLocalObject("spells", lord.DefaultSpells);
     lord.showDialog(null, null, ta, function() {
         lord.setLocalObject("spells", ta.value);
         if (lord.parseSpells && lord.getLocalObject("spellsEnabled", true)) {
-            var result = lord.parseSpells(lord.getLocalObject("spells", ""));
+            var result = lord.parseSpells(lord.getLocalObject("spells", lord.DefaultSpells));
             if (result.root)  {
                 lord.spells = result.root.spells;
                 var list = lord.getLocalObject("hiddenPosts", {});
@@ -578,7 +579,7 @@ lord.interceptHotkey = function(e) {
         key = "Shift+" + key;
     if (e.ctrlKey)
         key = "Ctrl+" + key;
-    var name = hotkeys.rev ? (hotkeys.rev[key] || lord.defaultHotkeys.rev[key]) : lord.defaultHotkeys.rev[key];
+    var name = hotkeys.rev ? (hotkeys.rev[key] || lord.DefaultHotkeys.rev[key]) : lord.DefaultHotkeys.rev[key];
     if (!name || !lord["hotkey_" + name])
         return;
     if (lord["hotkey_" + name]() !== false)
@@ -595,8 +596,8 @@ lord.initializeOnLoadSettings = function() {
         var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
         var key = function(name) {
             if (!hotkeys)
-                return lord.defaultHotkeys.dir[name];
-            return hotkeys[name] || lord.defaultHotkeys.dir[name];
+                return lord.DefaultHotkeys.dir[name];
+            return hotkeys[name] || lord.DefaultHotkeys.dir[name];
         };
         lord.queryOne("[name='settingsButton']").title = "(" + key("showSettings") + ")";
         lord.queryOne("[name='favoritesButton']").title = "(" + key("showFavorites") + ")";
