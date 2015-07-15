@@ -623,6 +623,11 @@ lord.createPostNode = function(res, permanent, boardName) {
         postLimit.style.display = "";
     else
         postLimit.parentNode.removeChild(postLimit);
+    var draftIndicator = lord.nameOne("draftIndicator", post);
+    if (!!res["draft"])
+        draftIndicator.style.display = "";
+    else
+        draftIndicator.parentNode.removeChild(draftIndicator);    
     var postSubject = lord.nameOne("postSubject", post);
     postSubject.appendChild(lord.node("text", res["subject"]));
     if (res["subject"].length < 1)
