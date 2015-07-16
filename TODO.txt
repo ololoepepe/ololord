@@ -22,6 +22,7 @@
 [done] Improve mobile device compatibility
 [done] Implement auto post hiding system
 [done] Implement preview masking
+[done] Use Web Workers for post data processing
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

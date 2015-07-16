@@ -25,6 +25,7 @@ struct OLOLORD_EXPORT BanLevel
 struct OLOLORD_EXPORT File
 {
     std::string size;
+    std::string sizeKB;
     std::string sizeTooltip;
     int sizeX;
     int sizeY;
@@ -147,6 +148,7 @@ public:
     std::string findSourceWithIqdbText;
     std::string fixedText;
     std::string fixThreadText;
+    std::string hideByImageText;
     std::string hidePostformMarkupText;
     std::string hidePostformRulesText;
     std::string hidePostFormText;

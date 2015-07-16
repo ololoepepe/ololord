@@ -423,6 +423,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
     c.fixThreadText = ts.translate("initBaseBoard", "Fix thread", "fixThreadText");
+    c.hideByImageText = ts.translate("initBaseBoard", "Hide by image hash", "hideByImageText");
     c.hidePostformMarkupText = ts.translate("initBaseBoard", "Hide markup", "hidePostformMarkupText");
     c.hidePostformRulesText = ts.translate("initBaseBoard", "Hide rules", "hidePostformRulesText");
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");

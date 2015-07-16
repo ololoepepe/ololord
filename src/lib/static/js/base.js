@@ -474,28 +474,12 @@ lord.editSpells = function() {
     ta.value = lord.getLocalObject("spells", lord.DefaultSpells);
     lord.showDialog(null, null, ta, function() {
         lord.setLocalObject("spells", ta.value);
-        if (lord.parseSpells && lord.getLocalObject("spellsEnabled", true)) {
-            var result = lord.parseSpells(lord.getLocalObject("spells", lord.DefaultSpells));
-            if (result.root)  {
-                lord.spells = result.root.spells;
-                var list = lord.getLocalObject("hiddenPosts", {});
-                var ps = lord.query(".post:not(#postTemplate), .opPost");
-                var f = function() { //NOTE: Using timeout to let UI update
-                    if (ps.length <= 0)
-                        return;
-                    var post = ps.shift();
-                    lord.applySpells(post, list);
-                    lord.tryHidePost(post, list);
-                    setTimeout(f, 1);
-                };
-                f();
-            } else if (result.error) {
-                var txt = result.error.text;
-                if (result.error.data)
-                    txt += ": " + result.error.data;
-                lord.showPopup(txt, {"type": "critical"});
-            }
-        }
+        if (!lord.worker || !lord.getLocalObject("spellsEnabled", true))
+            return;
+        lord.worker.postMessage({
+            "type": "parseSpells",
+            "data": lord.getLocalObject("spells", lord.DefaultSpells)
+        });
     });
 };
 

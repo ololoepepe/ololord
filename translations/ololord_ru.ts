@@ -3260,6 +3260,11 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>unexpectedEndOfTokenListErrorText</comment>
         <translation>Неожиданный конец списка спеллов</translation>
     </message>
+    <message>
+        <source>Hide by image hash</source>
+        <comment>hideByImageText</comment>
+        <translation>Скрывать по хешу картинки</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

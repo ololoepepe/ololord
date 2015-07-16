@@ -1388,7 +1388,8 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 QSharedPointer< ::FileInfo > fis = fi.load();
                 f.type = Tools::toStd(fis->mimeType());
                 f.sourceName = Tools::toStd(fis->name());
-                QString sz = QString::number(fis->size() / BeQt::Kilobyte) + "KB";
+                f.sizeKB = Tools::toStd(QString::number(double(fis->size()) / double(BeQt::Kilobyte)));
+                QString sz = QString::number(double(fis->size()) / double(BeQt::Kilobyte), 'f', 2) + "KB";
                 f.sizeX = fis->width();
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
@@ -1566,6 +1567,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
         cppcms::json::object f;
         f["type"] = file.type;
         f["size"] = file.size;
+        f["sizeKB"] = file.sizeKB;
         f["sizeTooltip"] = file.sizeTooltip;
         f["thumbSizeX"] = file.thumbSizeX;
         f["thumbSizeY"] = file.thumbSizeY;
