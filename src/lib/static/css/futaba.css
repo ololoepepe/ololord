@@ -565,6 +565,7 @@ span.newPostCount {
 }
 
 .postSubject {
+    font-weight: bold;
     color: #CC1105;
 }
 

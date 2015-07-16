@@ -21,7 +21,7 @@ lord.complainVideo = null;
 lord.files = null;
 lord.filesMap = null;
 lord.spells = null;
-lord.worker = new Worker("js/worker.js");
+lord.worker = new Worker("/js/worker.js");
 lord.youtubeApplied = false;
 
 /*Functions*/
@@ -42,51 +42,54 @@ lord.getPostData = function(post, youtube) {
             threadNumber = post.parentNode.id.replace("threadPosts", "");
     }
     var postNumber = +post.id.replace("post", "");
-    var blockquote = lord.queryOne("blockquote", post);
-    var files = [];
-    lord.query(".postFile", post).forEach(function(file) {
-        var img = lord.queryOne(".postFileFile > a > img", file);
-        var f = {
-            "type": +lord.nameOne("type", file).value,
-            "size": +lord.nameOne("sizeKB", file).value,
-            "sizeText": lord.getPlainText(lord.queryOne(".postFileSize", file)),
-            "width": +lord.nameOne("sizeX", file).value,
-            "height": +lord.nameOne("sizeY", file).value,
-            "thumb": {
-                "width": +img.width,
-                "height": +img.height,
-                "base64Data": lord.getImageBase64Data(img)
-            }
-        };
-        files.push(f);
-    });
-    var videos = [];
+    var p = {
+        "board": currentBoardName,
+        "thread": +threadNumber,
+        "number": postNumber
+    };
+    if (lord.getLocalObject("spellsEnabled", true)) {
+        var blockquote = lord.queryOne("blockquote", post);
+        var files = [];
+        lord.query(".postFile", post).forEach(function(file) {
+            var img = lord.queryOne(".postFileFile > a > img", file);
+            var f = {
+                "type": +lord.nameOne("type", file).value,
+                "size": +lord.nameOne("sizeKB", file).value,
+                "sizeText": lord.getPlainText(lord.queryOne(".postFileSize", file)),
+                "width": +lord.nameOne("sizeX", file).value,
+                "height": +lord.nameOne("sizeY", file).value,
+                "thumb": {
+                    "width": +img.width,
+                    "height": +img.height,
+                    "base64Data": lord.getImageBase64Data(img)
+                }
+            };
+            files.push(f);
+        });
+        var mailto = lord.queryOne(".mailtoName", post);
+        var trip = lord.queryOne(".tripcode", post);
+        p.hidden = !!lord.getLocalObject("hiddenPosts", {})[currentBoardName + "/" + postNumber];
+        p.innerHTML = post.innerHTML;
+        p.text = lord.getPlainText(blockquote);
+        p.textHTML = blockquote.innerHTML;
+        p.mailto = (mailto ? mailto.href : undefined);
+        p.tripcode = (trip ? trip.value : undefined);
+        p.userName = lord.queryOne(".someName", post).value;
+        p.isDefaultUserName = !!lord.queryOne(".defaultUserName", post);
+        p.subject = lord.queryOne(".postSubject", post).value;
+        p.isDefaultSubject = !!lord.queryOne(".defaultPostSubject", post);
+        p.files = ((files.length > 0) ? files : undefined);
+    }
     if (youtube) {
+        var videos = [];
         var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
             + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
         lord.query(q, post).forEach(function(video) {
             videos.push(video.href);
         });
+        p.youtube = ((videos.length > 0) ? videos: undefined)
     }
-    var mailto = lord.queryOne(".mailtoName", post);
-    var trip = lord.queryOne(".tripcode", post);
-    return {
-        "board": currentBoardName,
-        "thread": +threadNumber,
-        "number": postNumber,
-        "hidden": !!lord.getLocalObject("hiddenPosts", {})[currentBoardName + "/" + postNumber],
-        "innerHTML": post.innerHTML,
-        "text": lord.getPlainText(blockquote),
-        "textHTML": blockquote.innerHTML,
-        "mailto": (mailto ? mailto.href : undefined),
-        "tripcode": (trip ? trip.value : undefined),
-        "userName": lord.queryOne(".someName", post).value,
-        "isDefaultUserName": !!lord.queryOne(".defaultUserName", post),
-        "subject": lord.queryOne(".postSubject", post).value,
-        "isDefaultSubject": !!lord.queryOne(".defaultPostSubject", post),
-        "files": ((files.length > 0) ? files : undefined),
-        "youtube": ((videos.length > 0) ? videos: undefined)
-    };
+    return p;
 };
 
 lord.processPosts = function(spells, youtube) {
@@ -835,7 +838,7 @@ lord.addYoutubeButton = function(post, youtube) {
     if (!post || !youtube)
         return;
     lord.forIn(youtube, function(info, href) {
-        var link = lord.queryOne("a[href='" + href + "']");
+        var link = lord.queryOne("a[href='" + href + "']", post);
         if (!link)
             return;
         var img = lord.node("img");
@@ -954,10 +957,7 @@ lord.postNodeInserted = function(post) {
             "posts": posts,
             "spells": (lord.getLocalObject("spellsEnabled", true) ? lord.spells : undefined)
         }
-    }, [
-        youtube,
-        posts
-    ]);
+    }); //No way to transfer an object with subobjects
 };
 
 lord.showPasswordDialog = function(title, label, callback) {
@@ -1347,6 +1347,7 @@ lord.setPostHidden = function(boardName, postNumber) {
                     return;
                 list[bn + "/" + pn].subject = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
                 list[bn + "/" + pn].threadNumber = res["threadNumber"];
+                lord.setLocalObject("hiddenPosts", list);
             });
         })(boardName, postNumber);        
     }
@@ -2663,6 +2664,16 @@ lord.initializeOnLoadBaseBoard = function() {
         });
     } else if (lord.getLocalObject("showYoutubeVideosTitles", true)) {
         lord.processPosts(null, true);
+    } else {
+        var ps = lord.query(".post:not(#postTemplate), .opPost");
+        var f = function() {
+            if (ps.length <= 0)
+                return;
+            var post = ps.shift();
+            lord.tryHidePost(post);
+            setTimeout(f, 1);
+        };
+        f();
     }
     lord.query(".opPost").forEach(function(opPost) {
         var threadNumber = +opPost.id.replace("post", "");

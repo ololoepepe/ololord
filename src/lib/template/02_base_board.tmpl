@@ -259,7 +259,7 @@
             <% if ( post.subjectIsRaw ) %>
                 <%= post.subject | raw %>
             <% else %>
-                <b><%= post.subject %></b>
+                <%= post.subject %>
             <% end %>
         </span>
         <% if ( post.showRegistered && post.showTripcode ) %>
@@ -874,7 +874,7 @@
              style="display: none;">
         <img name="draftIndicator" src="/<%= sitePathPrefix %>img/edit.png" title="<%= draftText %>"
              style="display: none;" />
-        <b name="postSubject"></b>
+        <span class="postSubject" name="postSubject"></span>
         <img name="registered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
              style="display: none;">
         <span class="someName" name="someName"><span name="userName"></span></span>

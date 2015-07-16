@@ -570,6 +570,10 @@ span.newPostCount {
     font-style: italic;
 }
 
+.postSubject {
+    font-weight: bold;
+}
+
 .tripcode {
     color: green;
 }

@@ -501,7 +501,7 @@ lord.showHiddenPostList = function() {
             list[x].subject = txt;
             list[x].threadNumber = res["threadNumber"];
         } else {
-            txt = list[x].subject ? fav[x].subject : ("[" + res + "]");
+            txt = list[x].subject ? list[x].subject : ("[" + res + "]");
         }
         if (list[x].threadNumber) {
             var a = lord.node("a");
