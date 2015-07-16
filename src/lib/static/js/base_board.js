@@ -1156,6 +1156,7 @@ lord.insertPostNumber = function(postNumber) {
 };
 
 lord.quickReply = function(postNumber) {
+    var selection = document.getSelection().toString();
     var postForm = lord.id("postForm");
     if (lord.postForm.quickReply) {
         var prev = postForm.previousSibling;
@@ -1191,6 +1192,7 @@ lord.quickReply = function(postNumber) {
     else
         parent.appendChild(postForm);
     lord.insertPostNumber(postNumber);
+    lord.quoteSelectedText(selection);
     lord.postForm.quickReply = true;
 };
 
@@ -1842,6 +1844,30 @@ lord.setPostformRulesVisible = function(visible) {
     a.parentNode.replaceChild(aa, a);
 };
 
+lord.quoteSelectedText = function(selection) {
+    try {
+        var field = lord.nameOne("text", lord.id("postForm"));
+        var value = ">";
+        var pos = 0;
+        if (document.getSelection())
+            value += (selection || document.getSelection().toString());
+        if (typeof selection != "undefined" && selection.length < 1)
+            return;
+        if (field.selectionStart || field.selectionStart == "0") {
+            var startPos = field.selectionStart;
+            var endPos = field.selectionEnd;
+            field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+            pos = ((startPos < endPos) ? startPos : endPos) + value.length;
+        } else {
+            field.value += value;
+        }
+        field.setSelectionRange(pos, pos);
+        field.focus();
+    } catch (ex) {
+        //Do nothing
+    }
+};
+
 lord.markup = function(tag) {
     var wrap = function(opTag, clTag) {
         if (!opTag || !clTag)
@@ -1881,25 +1907,7 @@ lord.markup = function(tag) {
         break;
     }
     case ">": {
-        try {
-            var field = lord.nameOne("text", lord.id("postForm"));
-            var value = ">";
-            var pos = 0;
-            if (document.getSelection())
-                value += document.getSelection().toString();
-            if (field.selectionStart || field.selectionStart == "0") {
-                var startPos = field.selectionStart;
-                var endPos = field.selectionEnd;
-                field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
-                pos = ((startPos < endPos) ? startPos : endPos) + value.length;
-            } else {
-                field.value += value;
-            }
-            field.setSelectionRange(pos, pos);
-            field.focus();
-        } catch (ex) {
-            //Do nothing
-        }
+        lord.quoteSelectedText();
         break;
     }
     case "code": {

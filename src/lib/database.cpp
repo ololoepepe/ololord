@@ -1246,11 +1246,11 @@ bool editPost(EditPostParameters &p)
         post->setEmail(p.email);
         post->setName(p.name);
         post->setSubject(p.subject);
-        bool draftLast = post->draft();
         Thread thread = *post->thread().load();
-        if (post->draft() != draftLast) {
+        if (post->draft() != wasDraft) {
             if (thread.number() == post->number())
                 thread.setDraft(post->draft());
+            //TODO: update time if was draft and no longer is
         }
         if (!wasDraft)
             post->setModificationDateTime(QDateTime::currentDateTimeUtc());

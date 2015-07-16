@@ -23,6 +23,8 @@
 [done] Implement auto post hiding system
 [done] Implement preview masking
 [done] Use Web Workers for post data processing
+[done] Quote selected text on quick reply
+* Update posting date for drafts
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
