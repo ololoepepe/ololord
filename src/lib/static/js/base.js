@@ -500,6 +500,7 @@ lord.showHiddenPostList = function() {
             txt = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
             list[x].subject = txt;
             list[x].threadNumber = res["threadNumber"];
+            lord.setLocalObject("hiddenPosts", list);
         } else {
             txt = list[x].subject ? list[x].subject : ("[" + res + "]");
         }
