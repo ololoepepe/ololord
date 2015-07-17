@@ -614,7 +614,10 @@
             </tr>
             <% if ( content.mode.name != "ascetic" ) %>
                 <tr>
-                    <td colspan="2" class="postformMarkup">
+                    <td>
+                        <a class="hidePostformMarkupButton" />
+                    </td>
+                    <td class="postformMarkup">
                         <span>
                             <button class="button" onclick="lord.markup('b'); return false;" name="markupBold"
                                     title="<%= markupBold %>"><b>B</b></button>
@@ -646,7 +649,6 @@
                             <button class="button" onclick="lord.markup('url'); return false;" name="markupUrl"
                                     title="<%= markupUrl %>">http://</button>
                         </span>
-                        <a class="hidePostformRulesButton" />
                     </td>
                 </tr>
             <% end %>
@@ -679,10 +681,10 @@
             <% include customPostFormField42() %>
             <% if ( content.draftsEnabled && content.loggedIn ) %>
                 <tr>
-                    <td class="postformLabel">
+                    <td class="postformLabel" title="<%= postFormTooltipDraft %>">
                         <b><%= postFormLabelDraft %></b>
                     </td>
-                    <td class="postformField">
+                    <td class="postformField" title="<%= postFormTooltipDraft %>">
                         <% if ( content.draftsByDefault ) %>
                             <input type="checkbox" name="draft" value="true" checked="true" />
                         <% else %>

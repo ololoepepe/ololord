@@ -480,6 +480,15 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
     c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode", "postFormLabelTripcode");
+    c.postFormTooltipDraft = ts.translate("initBaseBoard", "A post marked as a draft is only visible to yourself and "
+                                          "moderators/admins. You may edit a draft as many times as you wish. "
+                                          "Finally, when you remove the \"draft\" mark, your post will become visible "
+                                          "to everybody, and you will not be able to edit it anymore.\n"
+                                          "Note, that you may also remove attached files or attach new ones while a "
+                                          "post is marked as a draft.\n"
+                                          "You have to be logged in (NO registration, only a browser cookie!) to use "
+                                          "drafts. You may edit your drafts from any browser and any device if you "
+                                          "are logged in with the same password.", "postFormTooltipDraft");
     c.postingDisabledText = currentThread
             ? ts.translate("initBaseBoard", "Posting is disabled for this thread", "postingDisabledText")
             : ts.translate("initBaseBoard", "Posting is disabled for this board", "postingDisabledText");

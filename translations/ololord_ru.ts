@@ -3265,6 +3265,15 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>hideByImageText</comment>
         <translation>Скрывать по хешу картинки</translation>
     </message>
+    <message>
+        <source>A post marked as a draft is only visible to yourself and moderators/admins. You may edit a draft as many times as you wish. Finally, when you remove the &quot;draft&quot; mark, your post will become visible to everybody, and you will not be able to edit it anymore.
+Note, that you may also remove attached files or attach new ones while a post is marked as a draft.
+You have to be logged in (NO registration, only a browser cookie!) to use drafts. You may edit your drafts from any browser and any device if you are logged in with the same password.</source>
+        <comment>postFormTooltipDraft</comment>
+        <translation>Пост, помеченный как черновик, виден только тебе и модераторам/админам. Ты можешь редактировать черновик сколько угодно. Наконец, когда ты уберешь пометку &quot;черновик&quot;, твой пост станет виден всем, и ты не сможешь больше его редактировать.
+Помни, что ты можешь также удалять прикрепленные файлы и прикреплять новые, пока пост помечен как черновик.
+Ты должен быть залогинен (НЕТ, никакой регистрации!), чтобы пользоваться черновиками. Ты можешь редактировать свои черновики с любого браузера/устройства, если ты залогинен с одним и тем же паролем.</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

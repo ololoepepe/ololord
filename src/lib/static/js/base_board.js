@@ -1855,7 +1855,7 @@ lord.setPostformRulesVisible = function(visible) {
     lord.query(".postformRules > ul").forEach(function(ul) {
         ul.style.display = hide ? "none" : "";
     });
-    var a = lord.queryOne(".postformRules > a");
+    var a = lord.queryOne("a.hidePostformRulesButton");
     var aa = lord.node("a");
     lord.addClass(aa, "hidePostformRulesButton");
     aa.onclick = lord.setPostformRulesVisible.bind(lord, hide);
@@ -1951,7 +1951,7 @@ lord.setPostformMarkupVisible = function(visible) {
     var hide = !visible;
     lord.setLocalObject("hidePostformMarkup", hide);
     lord.queryOne(".postformMarkup > span").style.display = hide ? "none" : "";
-    var a = lord.queryOne(".postformMarkup > a");
+    var a = lord.queryOne("a.hidePostformMarkupButton");
     lord.removeChildren(a);
     a.appendChild(lord.node("text", lord.text(hide ? "showPostformMarkupText" : "hidePostformMarkupText")));
     a.onclick = lord.setPostformMarkupVisible.bind(lord, hide);

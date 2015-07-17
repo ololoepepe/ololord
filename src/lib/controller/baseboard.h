@@ -196,6 +196,7 @@ public:
     std::string postFormLabelTripcode;
     std::list<std::string> postformRules;
     std::string postFormTextPlaceholder;
+    std::string postFormTooltipDraft;
     std::string postingDisabledText;
     bool postingEnabled;
     std::string postingSpeed;

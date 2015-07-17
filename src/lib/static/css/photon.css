@@ -135,6 +135,15 @@ hr {
     cursor: pointer;
 }
 
+.hidePostformMarkupButton {
+    text-decoration: none;
+    text-align: right;
+    font-size: 0.7em;
+    margin-left: auto;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
 .hiddenPostLink {
     text-decoration: line-through;
 }

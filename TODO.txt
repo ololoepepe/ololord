@@ -26,6 +26,7 @@
 [done] Quote selected text on quick reply
 [done] Update posting date for drafts
 [done] Fix image scaling and centering
+[done] Add draft system description
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
