@@ -345,12 +345,17 @@ lord.node = function(type, text) {
     return ("TEXT" == type) ? document.createTextNode(text ? text : "") : document.createElement(type);
 };
 
-lord.toCenter = function(element, sizeHintX, sizeHintY) {
+lord.toCenter = function(element, sizeHintX, sizeHintY, border) {
     var doc = document.documentElement;
     if (!sizeHintX || sizeHintX <= 0)
         sizeHintX = +element.offsetWidth;
     if (!sizeHintY  || sizeHintY <= 0)
         sizeHintY = +element.offsetHeight;
+    borded = +border;
+    if (!isNaN(border)) {
+        sizeHintX += border * 2;
+        sizeHintY += border * 2;
+    }
     element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
     element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
 };
@@ -686,4 +691,17 @@ lord.activateTab = function(a, tabIndex, display) {
 
 lord.notificationsEnabled = function() {
     return lord.getLocalObject("showAutoUpdateDesktopNotifications", false);
+};
+
+lord.nearlyEqual = function(a, b, epsilon) {
+    var absA = Math.abs(a);
+    var absB = Math.abs(b);
+    var diff = Math.abs(a - b);
+    if (a == b) {
+        return true;
+    } else if (a == 0 || b == 0 || diff < Number.MIN_VALUE) {
+        return diff < (epsilon * Number.MIN_VALUE);
+    } else {
+        return diff / (absA + absB) < epsilon;
+    }
 };

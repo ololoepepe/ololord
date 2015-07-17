@@ -228,6 +228,11 @@ Post::PostReferences Post::refersTo() const
     return refersTo_;
 }
 
+void Post::setDateTime(const QDateTime &dt)
+{
+    dateTime_ = dt.toUTC();
+}
+
 void Post::setModificationDateTime(const QDateTime &dt)
 {
     modificationDateTime_ = dt.toUTC();

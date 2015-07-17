@@ -1250,7 +1250,8 @@ bool editPost(EditPostParameters &p)
         if (post->draft() != wasDraft) {
             if (thread.number() == post->number())
                 thread.setDraft(post->draft());
-            //TODO: update time if was draft and no longer is
+            if (!post->draft())
+                post->setDateTime(QDateTime::currentDateTimeUtc());
         }
         if (!wasDraft)
             post->setModificationDateTime(QDateTime::currentDateTimeUtc());

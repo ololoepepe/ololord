@@ -292,7 +292,7 @@ lord.showFavorites = function() {
         });
     });
     document.body.appendChild(div);
-    lord.toCenter(div);
+    lord.toCenter(div, null, null, 1);
 };
 
 lord.switchMumWatching = function() {

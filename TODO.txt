@@ -24,7 +24,8 @@
 [done] Implement preview masking
 [done] Use Web Workers for post data processing
 [done] Quote selected text on quick reply
-* Update posting date for drafts
+[done] Update posting date for drafts
+[done] Fix image scaling and centering
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

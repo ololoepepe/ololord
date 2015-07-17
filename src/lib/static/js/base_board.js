@@ -131,6 +131,7 @@ lord.resetScale = function(image) {
     image.style.msTransform = tr;
     image.style.OTransform = tr;
     image.style.transform = tr;
+    lord.showPopup(parseFloat(image.scale.toString().substr(0, 5)) + "%", { "timeout": +lord.Second });
 };
 
 lord.removeReferences = function(postNumber) {
@@ -187,18 +188,34 @@ lord.addReferences = function(postNumber, referencedPosts) {
     }
 };
 
-lord.setInitialScale = function(image, sizeHintX, sizeHintY) {
+lord.setInitialScale = function(image, sizeHintX, sizeHintY, border) {
     if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
         return;
+    border = +border;
+    if (!isNaN(border)) {
+        sizeHintX += border * 2;
+        sizeHintY += border * 2;
+    }
     var doc = document.documentElement;
     var maxWidth = doc.clientWidth - 10;
     var maxHeight = doc.clientHeight - 10;
     var kw = 1;
     var kh = 1;
-    if (sizeHintX > maxWidth)
-        kw = maxWidth / sizeHintX;
-    if (sizeHintY > maxHeight)
-        kh = maxHeight / sizeHintY;
+    var s = lord.getLocalObject("imageZoomSensitivity", 25);
+    var k = 1;
+    while ((kw * sizeHintX) > maxWidth) {
+        if (((kw * 100) - (s / k)) > 0)
+            kw = ((kw * 100) - (s / k)) / 100;
+        else
+            k *= 10;
+    }
+    k = 1;
+    while ((kh * sizeHintY) > maxHeight) {
+        if (((kh * 100) - (s / k)) > 0)
+            kh = ((kh * 100) - (s / k)) / 100;
+        else
+            k *= 10;
+    }
     image.scale = ((kw < kh) ? kw : kh) * 100;
 };
 
@@ -1948,7 +1965,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.setInitialScale(lord.img, sizeHintX, sizeHintY);
         lord.resetScale(lord.img);
         lord.img.style.display = "";
-        lord.toCenter(lord.img, sizeHintX, sizeHintY);
+        lord.toCenter(lord.img, sizeHintX, sizeHintY, 3);
         if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
             setTimeout(function() {
                 lord.img.play();
@@ -2006,9 +2023,19 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         var delta = lord.getLocalObject("imageZoomSensitivity", 25);
         if ((e.wheelDelta || -e.detail) < 0)
             delta *= -1;
-        if ((lord.img.scale + delta) <= 0)
-            return;
-        lord.img.scale += delta;
+        var k = 1;
+        if (delta < 0) {
+            while ((lord.img.scale + (delta / k)) <= 0)
+                k *= 10;
+        } else {
+            //This is shitty, because floating point calculations are shitty
+            var s = parseFloat((lord.img.scale / (delta / k)).toString().substr(0, 5));
+            while (!lord.nearlyEqual(s - Math.floor(s), 0, 1 / 1000000)) {
+                k *= 10;
+                s = parseFloat((lord.img.scale / (delta / k)).toString().substr(0, 5));
+            }
+        }
+        lord.img.scale += (delta / k);
         lord.resetScale(lord.img);
     };
     if (lord.img.addEventListener) {
@@ -2057,7 +2084,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         };
     }
     document.body.appendChild(lord.img);
-    lord.toCenter(lord.img, sizeHintX, sizeHintY);
+    lord.toCenter(lord.img, sizeHintX, sizeHintY, 3);
     if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
         setTimeout(function() {
             lord.img.play();

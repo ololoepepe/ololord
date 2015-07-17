@@ -151,6 +151,7 @@ public:
     QString rawText() const;
     PostReferences referencedBy() const;
     PostReferences refersTo() const;
+    void setDateTime(const QDateTime &dt);
     void setModificationDateTime(const QDateTime &dt);
     void setBannedFor(bool banned);
     void setShowTripcode(bool show);
