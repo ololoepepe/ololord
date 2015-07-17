@@ -123,6 +123,8 @@ lord.processPosts = function(spells, youtube) {
 };
 
 lord.resetScale = function(image) {
+    if (!image.scale)
+        return;
     var k = (image.scale / 100);
     var tr = "scale(" + k + ", " + k + ")";
     //Fuck you all who create those stupid browser-specific features
@@ -827,8 +829,8 @@ lord.initFiles = function() {
         lord.files.push({
             "href": href,
             "type": type,
-            "sizeX": lord.nameOne("sizeX", div).value,
-            "sizeY": lord.nameOne("sizeY", div).value
+            "sizeX": +lord.nameOne("sizeX", div).value,
+            "sizeY": +lord.nameOne("sizeY", div).value
         });
         lord.filesMap[href] = lord.files.length - 1;
     });

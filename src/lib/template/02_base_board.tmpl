@@ -203,7 +203,7 @@
             <% else %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
-                         width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>"  class="<%= deviceType %>">
+                         width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>" class="<%= deviceType %>">
                 <% else %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
                          class="<%= deviceType %>">

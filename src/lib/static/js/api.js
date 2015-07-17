@@ -347,9 +347,11 @@ lord.node = function(type, text) {
 
 lord.toCenter = function(element, sizeHintX, sizeHintY, border) {
     var doc = document.documentElement;
-    if (!sizeHintX || sizeHintX <= 0)
+    sizeHintX = +sizeHintX;
+    sizeHintY = +sizeHintY;
+    if (isNaN(sizeHintX) || sizeHintX <= 0)
         sizeHintX = +element.offsetWidth;
-    if (!sizeHintY  || sizeHintY <= 0)
+    if (isNaN(sizeHintY)  || sizeHintY <= 0)
         sizeHintY = +element.offsetHeight;
     borded = +border;
     if (!isNaN(border)) {
