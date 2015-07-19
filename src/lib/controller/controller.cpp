@@ -229,14 +229,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                 "Well, actually, the admin may register someone manually (if he is a "
                                                 "fag), but there is no way to register through the web.",
                                                 "loginSystemDescriptionText");
-    c.maxAllowedRating = 0;
+    c.maxAllowedRating = 180;
     QString r = Tools::cookieValue(req, "maxAllowedRating");
+    if (!r.compare("SFW", Qt::CaseInsensitive))
+        c.maxAllowedRating = 0;
     if (!r.compare("R-15", Qt::CaseInsensitive))
         c.maxAllowedRating = 15;
     else if (!r.compare("R-18", Qt::CaseInsensitive))
         c.maxAllowedRating = 18;
-    else if (!r.compare("R-18G", Qt::CaseInsensitive))
-        c.maxAllowedRating = 180;
     c.maxAllowedRatingLabelText = ts.translate("initBase", "Maximum allowed rating:", "maxAllowedRatingLabelText");
     c.maxSearchQueryLength = 150;
     c.mode.name = Tools::toStd(Tools::cookieValue(req, "mode"));

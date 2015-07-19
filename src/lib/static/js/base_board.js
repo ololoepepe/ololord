@@ -393,9 +393,9 @@ lord.createPostFile = function(f, boardName, postNumber) {
     var image = lord.node("img");
     lord.addClass(image, lord.text("deviceType"));
     var maxRatingS = lord.getCookie("maxAllowedRating") || "R-18G";
-    var maxRating = 0;
-    if ("R-18G" == maxRatingS)
-        maxRating = 180;
+    var maxRating = 180;
+    if ("SFW" == maxRatingS)
+        maxRating = 0;
     else if ("R-18" == maxRatingS)
         maxRating = 18;
     else if ("R-15" == maxRatingS)

@@ -267,6 +267,10 @@ span.newPostCount {
     color: #789922;
 }
 
+.ratingSelectContainer {
+    display: block;
+}
+
 /*
     Board image
 */
