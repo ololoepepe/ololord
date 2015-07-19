@@ -114,6 +114,8 @@ public:
     std::string loginMessageText;
     std::string loginPlaceholderText;
     std::string loginSystemDescriptionText;
+    int maxAllowedRating;
+    std::string maxAllowedRatingLabelText;
     unsigned int maxSearchQueryLength;
     Mode mode;
     std::string modeLabelText;
@@ -128,6 +130,7 @@ public:
     std::string quickReplyActionDoNothingText;
     std::string quickReplyActionGotoThreadText;
     std::string quickReplyActionLabelText;
+    std::string ratingTooltip;
     std::string removeFromFavoritesText;
     std::string removeFromHiddenPostListText;
     std::string scriptSettingsLegendText;

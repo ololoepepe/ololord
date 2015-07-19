@@ -794,7 +794,7 @@ QStringList news(const QLocale &l)
     return *sl;
 }
 
-FileList postFiles(const cppcms::http::request &request)
+FileList postFiles(const cppcms::http::request &request, const PostParameters &params)
 {
     FileList list;
     cppcms::http::request::files_type files = const_cast<cppcms::http::request *>(&request)->files();
@@ -810,6 +810,14 @@ FileList postFiles(const cppcms::http::request &request)
         file.fileName = QFileInfo(fromStd(f->filename())).fileName();
         file.formFieldName = fromStd(f->name());
         file.mimeType = fromStd(f->mime());
+        file.rating = 0;
+        QString r = params.value(file.formFieldName + "_rating");
+        if ("R-15" == r)
+            file.rating = 15;
+        else if ("R-18" == r)
+            file.rating = 18;
+        else if ("R-18G" == r)
+            file.rating = 180;
         list << file;
     }
     return list;
@@ -1060,7 +1068,8 @@ Post toPost(const PostParameters &params, const FileList &files)
 
 Post toPost(const cppcms::http::request &req)
 {
-    return toPost(postParameters(req), postFiles(req));
+    PostParameters params = postParameters(req);
+    return toPost(params, postFiles(req, params));
 }
 
 std::locale toStd(const QLocale &l)

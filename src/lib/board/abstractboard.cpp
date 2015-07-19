@@ -132,7 +132,7 @@ QList<AbstractBoard::FileInfo> AbstractBoard::FileTransaction::fileInfos() const
 }
 
 void AbstractBoard::FileTransaction::addInfo(const QString &mainFileName, const QByteArray &hash,
-                                             const QString &mimeType, int size)
+                                             const QString &mimeType, int size, int rating)
 {
     FileInfo fi;
     if (!mainFileName.isEmpty())
@@ -140,6 +140,7 @@ void AbstractBoard::FileTransaction::addInfo(const QString &mainFileName, const 
     fi.hash = hash;
     fi.mimeType = mimeType;
     fi.size = size;
+    fi.rating = rating;
     minfos << fi;
 }
 
@@ -511,7 +512,7 @@ void AbstractBoard::addFile(cppcms::application &app)
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "add_file", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req);
+    Tools::FileList files = Tools::postFiles(req, params);
     QString err;
     if (!Controller::testAddFileParams(this, app, params, files, &err))
         return Tools::log(app, "add_file", "fail:" + err, logTarget);
@@ -620,7 +621,7 @@ void AbstractBoard::createPost(cppcms::application &app)
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_post", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req);
+    Tools::FileList files = Tools::postFiles(req, params);
     QString err;
     if (!Controller::testParams(this, app, params, files, true, &err))
         return Tools::log(app, "create_post", "fail:" + err, logTarget);
@@ -661,7 +662,7 @@ void AbstractBoard::createThread(cppcms::application &app)
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_thread", "fail:ban", logTarget);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req);
+    Tools::FileList files = Tools::postFiles(req, params);
     QString err;
     if (!Controller::testParams(this, app, params, files, false, &err))
         return Tools::log(app, "create_thread", "fail:" + err, logTarget);
@@ -1166,7 +1167,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
     QByteArray hash = QCryptographicHash::hash(f.data, QCryptographicHash::Sha1);
-    ft.addInfo(sfn, hash, mimeType, f.data.size());
+    ft.addInfo(sfn, hash, mimeType, f.data.size(), f.rating);
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
@@ -1394,6 +1395,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
                 f.thumbSizeY = fis->thumbHeight();
+                f.rating = fis->rating();
                 if (fis->mimeType().startsWith("image/") || fis->mimeType().startsWith("video/")) {
                     if (f.sizeX > 0 && f.sizeY > 0)
                         sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
@@ -1575,6 +1577,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
         f["sizeY"] = file.sizeY;
         f["sourceName"] = file.sourceName;
         f["thumbName"] = file.thumbName;
+        f["rating"] = file.rating;
         f["audioTagAlbum"] = file.audioTagAlbum;
         f["audioTagArtist"] = file.audioTagArtist;
         f["audioTagTitle"] = file.audioTagTitle;

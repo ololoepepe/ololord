@@ -27,6 +27,7 @@
 [done] Update posting date for drafts
 [done] Fix image scaling and centering
 [done] Add draft system description
+[done] Implement content rating system
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

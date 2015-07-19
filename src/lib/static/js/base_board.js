@@ -392,16 +392,35 @@ lord.createPostFile = function(f, boardName, postNumber) {
         f["sizeX"], f["sizeY"]);
     var image = lord.node("img");
     lord.addClass(image, lord.text("deviceType"));
-    var thumbSizeX = +f["thumbSizeX"];
-    var thumbSizeY = +f["thumbSizeY"];
-    if (!isNaN(thumbSizeX) && thumbSizeX > 0)
-        image.width = thumbSizeX;
-    if (!isNaN(thumbSizeY) && thumbSizeY > 0)
-        image.height = thumbSizeY;
-    if (lord.isSpecialThumbName(f["thumbName"])) {
-        image.src = "/" + sitePrefix + "img/" + f["thumbName"].replace("/", "_") + "_logo.png";
+    var maxRatingS = lord.getCookie("maxAllowedRating") || "R-18G";
+    var maxRating = 0;
+    if ("R-18G" == maxRatingS)
+        maxRating = 180;
+    else if ("R-18" == maxRatingS)
+        maxRating = 18;
+    else if ("R-15" == maxRatingS)
+        maxRating = 15;
+    if (f["rating"] > maxRating) {
+        image.width = 200;
+        image.height = 200;
+        var ratingMap = {
+            15: "r-15",
+            18: "r-18",
+            180: "r-18g"
+        };
+        image.src = "/" + sitePrefix + "img/" + ratingMap[+f["rating"]] + ".png";
     } else {
-        image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
+        var thumbSizeX = +f["thumbSizeX"];
+        var thumbSizeY = +f["thumbSizeY"];
+        if (!isNaN(thumbSizeX) && thumbSizeX > 0)
+            image.width = thumbSizeX;
+        if (!isNaN(thumbSizeY) && thumbSizeY > 0)
+            image.height = thumbSizeY;
+        if (lord.isSpecialThumbName(f["thumbName"])) {
+            image.src = "/" + sitePrefix + "img/" + f["thumbName"].replace("/", "_") + "_logo.png";
+        } else {
+            image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
+        }
     }
     aImage.appendChild(image);
     divImage.appendChild(aImage);
@@ -1234,7 +1253,7 @@ lord.addFile = function(boardName, postNumber) {
         var formData = new FormData(form);
         lord.query(".postformFile", form).forEach(function(div) {
             if (div.droppedFile)
-                formData.append("file", div.droppedFile);
+                formData.append(dir.droppedFileName || "file", div.droppedFile);
         });
         var xhr = new XMLHttpRequest();
         xhr.open("POST", form.action);
@@ -1626,7 +1645,12 @@ lord.fileAddedCommon = function(div, file) {
     var inp = lord.queryOne("input", div);
     if (!inp)
         return;
-    div.querySelector("span").appendChild(lord.node("text", file.name + " (" + lord.readableSize(file.size) + ")"));
+    var txt = file.name + " (" + lord.readableSize(file.size) + ")";
+    lord.queryOne(".postformFileText", div).appendChild(lord.node("text", txt));
+    var uuid = lord.createUuid();
+    lord.queryOne("input", div).name = "file_" + uuid;
+    div.droppedFileName = "file_" + uuid;
+    lord.queryOne(".ratingSelectContainer > select").name = "file_" + uuid + "_rating";
     lord.removeFileHash(div);
     var binaryReader = new FileReader();
     var prefix = lord.text("sitePathPrefix");
@@ -1840,7 +1864,7 @@ lord.browseFile = function(e, div) {
     var e = window.event || e;
     var a = e.target;
     while (!!a) {
-        if (a.tagName === "A")
+        if (a.tagName === "A" || a.tagName === "SELECT" || a.tagName === "OPTION")
             return;
         a = a.parentNode;
     }
@@ -2184,7 +2208,7 @@ lord.submitted = function(event, form) {
     var formData = new FormData(form);
     lord.query(".postformFile", form).forEach(function(div) {
         if (div.droppedFile)
-            formData.append("file", div.droppedFile);
+            formData.append(div.droppedFileName || "file", div.droppedFile);
     });
     var xhr = new XMLHttpRequest();
     xhr.open("POST", form.action);

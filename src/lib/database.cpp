@@ -589,7 +589,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         t->persist(ps);
         foreach (const AbstractBoard::FileInfo &fi, p.fileTransaction.fileInfos()) {
             FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
-                              fi.thumbHeight, fi.thumbWidth, fi.metaData, ps);
+                              fi.thumbHeight, fi.thumbWidth, fi.metaData, fi.rating, ps);
             t->persist(fileInfo);
         }
         if (!raw && !ps->draft() && !addToReferencedPosts(ps, refs, p.error, p.description, tq.locale()))
@@ -807,7 +807,7 @@ bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &par
         }
         foreach (const AbstractBoard::FileInfo &fi, infos) {
             FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
-                              fi.thumbHeight, fi.thumbWidth, fi.metaData, post.data);
+                              fi.thumbHeight, fi.thumbWidth, fi.metaData, fi.rating, post.data);
             t->persist(fileInfo);
         }
         t.commit();

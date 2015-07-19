@@ -60,6 +60,7 @@ struct File
     QString fileName;
     QString formFieldName;
     QString mimeType;
+    int rating;
 };
 
 struct Friend
@@ -207,7 +208,7 @@ OLOLORD_EXPORT void log(const char *where, const std::exception &e);
 OLOLORD_EXPORT unsigned int maxInfo(MaxInfo m, const QString &boardName = QString());
 OLOLORD_EXPORT QString mimeType(const QByteArray &data, bool *ok = 0);
 OLOLORD_EXPORT QStringList news(const QLocale &l);
-OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request);
+OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request, const PostParameters &params);
 OLOLORD_EXPORT PostParameters postParameters(const cppcms::http::request &request);
 OLOLORD_EXPORT cppcms::json::value readJsonValue(const QString &fileName, bool *ok = 0);
 OLOLORD_EXPORT void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content);

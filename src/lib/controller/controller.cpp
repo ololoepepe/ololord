@@ -229,6 +229,15 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                 "Well, actually, the admin may register someone manually (if he is a "
                                                 "fag), but there is no way to register through the web.",
                                                 "loginSystemDescriptionText");
+    c.maxAllowedRating = 0;
+    QString r = Tools::cookieValue(req, "maxAllowedRating");
+    if (!r.compare("R-15", Qt::CaseInsensitive))
+        c.maxAllowedRating = 15;
+    else if (!r.compare("R-18", Qt::CaseInsensitive))
+        c.maxAllowedRating = 18;
+    else if (!r.compare("R-18G", Qt::CaseInsensitive))
+        c.maxAllowedRating = 180;
+    c.maxAllowedRatingLabelText = ts.translate("initBase", "Maximum allowed rating:", "maxAllowedRatingLabelText");
     c.maxSearchQueryLength = 150;
     c.mode.name = Tools::toStd(Tools::cookieValue(req, "mode"));
     if (c.mode.name.empty())
@@ -258,6 +267,12 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.quickReplyActionGotoThreadText = ts.translate("initBase", "Redirects to thread",
                                                     "quickReplyActionGotoThreadText");
     c.quickReplyActionLabelText = ts.translate("initBase", "Quick reply outside thread:", "quickReplyActionLabelText");
+    c.ratingTooltip = ts.translate("initBase", "SFW - safe for work (no socially condemned content)\n"
+                                   "R-15 - restricted for 15 years (contains ecchi, idols, violence)\n"
+                                   "R-18 - restricted for 18 years (genitalis, coitus, offensive "
+                                   "religious/racist/nationalist content)\n"
+                                   "R-18G - restricted for 18 years, guidance advised (shemale, death, guro, scat, "
+                                   "defecation, urination, etc.)", "ratingTooltip");
     c.removeFromFavoritesText = ts.translate("initBase", "Remove from favorites", "removeFromFavoritesText");
     c.removeFromHiddenPostListText = ts.translate("initBase", "Remove from hidden post/thread list",
                                                   "removeFromHiddenPostListText");
@@ -537,6 +552,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
         c.postformRules.push_back(Tools::toStd(r.replace("%currentBoard.name%", board->name())));
     c.previousFileText = ts.translate("initBaseBoard", "Previous file", "previousFileText");
     c.quickReplyText = ts.translate("initBaseBoard", "Quick reply", "quickReplyText");
+    c.ratingLabelText = ts.translate("initBaseBoard", "Rating:", "ratingLabelText");
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");

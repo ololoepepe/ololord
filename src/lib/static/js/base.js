@@ -95,6 +95,14 @@ lord.searchKeyPress = function(e) {
     lord.doSearch();
 };
 
+lord.preventOnclick = function(event) {
+    if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+    }
+    return false;
+};
+
 lord.showSettings = function() {
     var div = lord.id("settingsDialogTemplate").cloneNode(true);
     div.id = "";
@@ -103,6 +111,9 @@ lord.showSettings = function() {
     var act = lord.getLocalObject("quickReplyAction", "goto_thread");
     lord.queryOne("[value='" + act + "']", sel).selected = true;
     lord.nameOne("hidePostformRules", div).checked = (lord.getCookie("hidePostformRules") == "true");
+    sel = lord.nameOne("ratingSelect", div);
+    var rt = lord.getCookie("maxAllowedRating") || "R-18G";
+    lord.queryOne("[value='" + rt + "']", sel).selected = true;
     var showNewPosts = lord.nameOne("showNewPosts", div);
     showNewPosts.checked = lord.getLocalObject("showNewPosts", true);
     var showYoutubeVideosTitles = lord.nameOne("showYoutubeVideosTitles", div);
@@ -170,6 +181,11 @@ lord.showSettings = function() {
         sel = lord.nameOne("captchaEngineSelect", div);
         var ce = sel.options[sel.selectedIndex].value;
         lord.setCookie("captchaEngine", ce, {
+            "expires": lord.Billion, "path": "/"
+        });
+        sel = lord.nameOne("ratingSelect", div);
+        rt = sel.options[sel.selectedIndex].value;
+        lord.setCookie("maxAllowedRating", rt, {
             "expires": lord.Billion, "path": "/"
         });
         var dd = !!lord.nameOne("draftsByDefault", div).checked;

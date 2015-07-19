@@ -2737,6 +2737,22 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>mumWatchingText</comment>
         <translation>Мамка в комнате!</translation>
     </message>
+    <message>
+        <source>Maximum allowed rating:</source>
+        <comment>maxAllowedRatingLabelText</comment>
+        <translation>Максимальный разрешенный рейтинг:</translation>
+    </message>
+    <message>
+        <source>SFW - safe for work (no socially condemned content)
+R-15 - restricted for 15 years (contains ecchi, idols, violence)
+R-18 - restricted for 18 years (genitalis, coitus, offensive religious/racist/nationalist content)
+R-18G - restricted for 18 years, guidance advised (shemale, death, guro, scat, defecation, urination, etc.)</source>
+        <comment>ratingTooltip</comment>
+        <translation>SFW - safe for work (отсутствует контент, осуждаемый обществом)
+R-15 - restricted for 15 years (содержит эччи, idols, сцены жестокости)
+R-18 - restricted for 18 years (гениталии, половой акт, оскорбительный материал религиозного/расового/национального характера)
+R-18G - restricted for 18 years, guidance adviced (транссексуалы, смерть, гуро, скат, дефекация, уринация, и т.д.)</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -3273,6 +3289,11 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <translation>Пост, помеченный как черновик, виден только тебе и модераторам/админам. Ты можешь редактировать черновик сколько угодно. Наконец, когда ты уберешь пометку &quot;черновик&quot;, твой пост станет виден всем, и ты не сможешь больше его редактировать.
 Помни, что ты можешь также удалять прикрепленные файлы и прикреплять новые, пока пост помечен как черновик.
 Ты должен быть залогинен (НЕТ, никакой регистрации, только cookie в браузере!), чтобы пользоваться черновиками. Ты можешь редактировать свои черновики с любого браузера/устройства, если ты залогинен с одним и тем же паролем.</translation>
+    </message>
+    <message>
+        <source>Rating:</source>
+        <comment>ratingLabelText</comment>
+        <translation>Рейтинг:</translation>
     </message>
 </context>
 <context>

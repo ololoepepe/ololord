@@ -240,13 +240,14 @@ private:
     PRAGMA_DB(not_null)
     int thumbWidth_;
     QByteArray metaData_;
+    int rating_;
     PRAGMA_DB(not_null)
     QLazySharedPointer<Post> post_;
 public:
     explicit FileInfo();
     explicit FileInfo(const QString &name, const QByteArray &hash, const QString &mimeType, int size, int height,
                       int width, const QString &thumbName, int thumbHeight, int thumbWidth, const QVariant &metaData,
-                      QSharedPointer<Post> post);
+                      int rating, QSharedPointer<Post> post);
 public:
     QString name() const;
     QByteArray hash() const;
@@ -258,6 +259,7 @@ public:
     int thumbHeight() const;
     int thumbWidth() const;
     QVariant metaData() const;
+    int rating() const;
     QLazySharedPointer<Post> post() const;
     void setMetaData(const QVariant &metaData);
 private:

@@ -197,7 +197,15 @@
         <input name="sizeY" type="hidden" value="<%= file.sizeY %>" />
         <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>"
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
-            <% if ( content.isSpecialThumbName(file.thumbName) ) %>
+            <% if ( content.maxAllowedRating < file.rating ) %>
+                <% if ( file.rating >= 180 ) %>
+                    <img src="/<%= sitePathPrefix %>img/r-18g.png" class="<%= deviceType %>" width="200" height="200">
+                <% elif ( file.rating >= 18 ) %>
+                    <img src="/<%= sitePathPrefix %>img/r-18.png" class="<%= deviceType %>" width="200" height="200">
+                <% elif ( file.rating >= 15 ) %>
+                    <img src="/<%= sitePathPrefix %>img/r-15.png" class="<%= deviceType %>" width="200" height="200">
+                <% end %>
+            <% elif ( content.isSpecialThumbName(file.thumbName) ) %>
                 <img src="/<%= sitePathPrefix %>img/<%= file.specialThumbName() %>_logo.png" class="<%= deviceType %>"
                      width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
             <% else %>
@@ -713,10 +721,28 @@
                                    class="postformFileRemoveButton">
                                     <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
                                          class="postformFileRemoveImage"></a>
+                                <span class="ratingSelectContainer">
+                                    <span><%= ratingLabelText %></span>
+                                    <select name="file_rating">
+                                        <option value="SFW" selected="true"
+                                                onclick="return lord.preventOnclick(event);">SFW</option>
+                                        <option value="R-15" onclick="return lord.preventOnclick(event);">R-15</option>
+                                        <option value="R-18" onclick="return lord.preventOnclick(event);">R-18</option>
+                                        <option value="R-18G" onclick="return lord.preventOnclick(event);">R-18G</option>
+                                    </select>
+                                    <img src="/<%= sitePathPrefix %>img/question.png" title="<%= ratingTooltip %>">
+                                </span>
                             </div>
                         <% else %>
                             <% c++ for (int i = 0; i < int(content.maxFileCount); ++i) { %>
-                                <input type="file" name="file" accept="<%= supportedFileTypes %>" />
+                                <% c++ out() << "<input type=\"file_" << i << "\" name=\"file\" accept=\"content.supportedFileTypes\" />"; %>
+                                <% c++ out() << "<select name=\"file_" << i << "_rating\">"; %>
+                                    <option value="SFW" selected="true">SFW</option>
+                                    <option value="R-15">R-15</option>
+                                    <option value="R-18">R-18</option>
+                                    <option value="R-18G">R-18G</option>
+                                </select>
+                                <img src="/<%= sitePathPrefix %>img/question.png" title="<%= ratingTooltip %>">
                                 <% c++ if (i < int(content.maxFileCount - 1)) {%>
                                     <br />
                                 <% c++ } %>

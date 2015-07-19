@@ -154,6 +154,7 @@ void ActionRoute::handleChangeSettings(const QString &action, const Tools::PostP
     setCookie("style", "styleChangeSelect", params);
     setCookie("time", "timeChangeSelect", params);
     setCookie("captchaEngine", "captchaEngineSelect", params);
+    setCookie("maxAllowedRating", "ratingSelect", params);
     setCookie("draftsByDefault", "draftsByDefault", params);
     setCookie("hidePostformRules", "hidePostformRules", params);
     QStringList hiddenBoards;

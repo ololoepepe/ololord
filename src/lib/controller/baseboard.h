@@ -34,6 +34,7 @@ struct OLOLORD_EXPORT File
     int thumbSizeX;
     int thumbSizeY;
     std::string type;
+    int rating;
     std::string audioTagAlbum;
     std::string audioTagArtist;
     std::string audioTagTitle;
@@ -204,6 +205,7 @@ public:
     std::string postLimitReachedText;
     std::string previousFileText;
     std::string quickReplyText;
+    std::string ratingLabelText;
     std::string referencedByText;
     std::string registeredText;
     std::string removeFileText;

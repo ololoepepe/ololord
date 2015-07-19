@@ -103,6 +103,37 @@
                         </tr>
                         <tr>
                             <td>
+                                <%= maxAllowedRatingLabelText %>
+                            </td>
+                            <td>
+                                <select name="ratingSelect" class="select">
+                                    <% if ( content.maxAllowedRating >= 180 ) %>
+                                        <option value="SFW">SFW</option>
+                                        <option value="R-15">R-15</option>
+                                        <option value="R-18">R-18</option>
+                                        <option value="R-18G" selected="true">R-18G</option>
+                                    <% elif ( content.maxAllowedRating >= 18 ) %>
+                                        <option value="SFW">SFW</option>
+                                        <option value="R-15">R-15</option>
+                                        <option value="R-18" selected="true">R-18</option>
+                                        <option value="R-18G">R-18G</option>
+                                    <% elif ( content.maxAllowedRating >= 15 ) %>
+                                        <option value="SFW">SFW</option>
+                                        <option value="R-15" selected="true">R-15</option>
+                                        <option value="R-18">R-18</option>
+                                        <option value="R-18G">R-18G</option>
+                                    <% else %>
+                                        <option value="SFW" selected="true">SFW</option>
+                                        <option value="R-15">R-15</option>
+                                        <option value="R-18">R-18</option>
+                                        <option value="R-18G">R-18G</option>
+                                    <% end %>
+                                </select>
+                                <img src="/<%= sitePathPrefix %>img/question.png" title="<%= ratingTooltip %>">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
                                 <%= draftsByDefaultLabelText %>
                             </td>
                             <td>

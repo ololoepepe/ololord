@@ -78,6 +78,7 @@ public:
         int thumbHeight;
         int thumbWidth;
         QVariant metaData;
+        int rating;
     };
     class OLOLORD_EXPORT FileTransaction
     {
@@ -93,7 +94,7 @@ public:
         void commit();
         QList<FileInfo> fileInfos() const;
         void addInfo(const QString &mainFileName = QString(), const QByteArray &hash = QByteArray(),
-                     const QString &mimeType = QString(), int size = 0);
+                     const QString &mimeType = QString(), int size = 0, int rating = 0);
         void setMainFile(const QString &fn, const QByteArray &hash, const QString &mimeType, int size);
         void setMainFileSize(int height, int width);
         void setThumbFile(const QString &fn);
