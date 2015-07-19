@@ -451,6 +451,99 @@ static void processWakabaMarkSpoiler(ProcessPostTextContext &c)
     processSimmetric(c, &processWakabaMarkUnderlined, "%%", "", "span", "<span class=\"spoiler\">");
 }
 
+static void processTagUrl(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\[url\\](.+)\\[/url\\]");
+    rx.setMinimal(true);
+    QRegExp rxLink(Tools::externalLinkRegexpPattern());
+    int ind = rx.indexIn(t);
+    while (ind >= 0) {
+        QString href = rx.cap(1);
+        if (!rxLink.exactMatch(href)) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
+        if (!Tools::externalLinkRootZoneExists(rxLink.cap(3))) {
+            ind = rx.indexIn(t, ind + rx.matchedLength());
+            continue;
+        }
+        QString hrefold = href;
+        if (!href.startsWith("http"))
+            href.prepend("http://");
+        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(hrefold) + "</a>";
+        t.replace(ind, rx.matchedLength(), result);
+        skip << qMakePair(ind, result.length());
+        ind = rx.indexIn(t, ind + result.length());
+    }
+    c.process(t, skip, &processWakabaMarkSpoiler);
+}
+
+static void processTags(ProcessPostTextContext &c)
+{
+    typedef QMap<QString, QString> StringMap;
+    init_once(StringMap, tags, StringMap()) {
+        tags.insert("[b]", "[/b]");
+        tags.insert("[i]", "[/i]");
+        tags.insert("[s]", "[/s]");
+        tags.insert("[u]", "[/u]");
+        tags.insert("[spoiler]", "[/spoiler]");
+        tags.insert("[sub]", "[/sub]");
+        tags.insert("[sup]", "[/sup]");
+    }
+    typedef QPair<QString, QString> StringPair;
+    typedef QMap<QString, StringPair> StringPairMap;
+    init_once(StringPairMap, htmls, StringPairMap()) {
+        htmls.insert("[b]", qMakePair(QString("<strong>"), QString("</strong>")));
+        htmls.insert("[i]", qMakePair(QString("<em>"), QString("</em>")));
+        htmls.insert("[s]", qMakePair(QString("<s>"), QString("</s>")));
+        htmls.insert("[u]", qMakePair(QString("<u>"), QString("</u>")));
+        htmls.insert("[spoiler]", qMakePair(QString("<span class=\"spoiler\">"), QString("</span>")));
+        htmls.insert("[sub]", qMakePair(QString("<sub>"), QString("</sub>")));
+        htmls.insert("[sup]", qMakePair(QString("<sup>"), QString("</sup>")));
+    }
+    ProcessPostTextFunction next = &processTagUrl;
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rxop(QStringList(tags.keys()).join("|").replace("[", "\\[").replace("]", "\\]"), Qt::CaseInsensitive);
+    int s = t.indexOf(rxop);
+    if (s < 0)
+        return c.process(t, skip, next);
+    QString bbop = rxop.cap();
+    QString bbcl = tags.value(bbop);
+    StringPair html = htmls.value(bbop);
+    QRegExp rx(QString(bbop + "|" + bbcl).replace("[", "\\[").replace("]", "\\]"), Qt::CaseInsensitive);
+    int ind = t.indexOf(rx, s + bbop.length());
+    int depth = 1;
+    while (ind >= 0) {
+        if (rx.cap() == bbop)
+            ++depth;
+        else
+            --depth;
+        if (!depth) {
+            t.replace(ind, bbcl.length(), html.second);
+            t.replace(s, bbop.length(), html.first);
+            skip << qMakePair(s, html.first.length());
+            skip << qMakePair(ind + (html.first.length() - bbop.length()), html.second.length());
+            s = t.indexOf(bbop, ind + (html.first.length() - bbop.length()) +  html.second.length(),
+                          Qt::CaseInsensitive);
+            next = &processTags;
+            if (s < 0)
+                break;
+            depth = 1;
+            ind = t.indexOf(rx, s + bbop.length());
+        } else {
+            ind = t.indexOf(rx, ind + rx.matchedLength());
+        }
+    }
+    c.process(t, skip, next);
+}
+
 static void processWakabaMarkQuote(ProcessPostTextContext &c)
 {
     if (!c.isValid())
@@ -470,7 +563,7 @@ static void processWakabaMarkQuote(ProcessPostTextContext &c)
             ind = rx.indexIn(t, ind + rx.matchedLength());
         }
     }
-    c.process(t, skip, &processWakabaMarkSpoiler);
+    c.process(t, skip, &processTags);
 }
 
 static void processWakabaMarkList(ProcessPostTextContext &c)
@@ -559,99 +652,6 @@ static void processWakabaMarkList(ProcessPostTextContext &c)
     c.process(t, skip, &processWakabaMarkQuote);
 }
 
-static void processTagUrl(ProcessPostTextContext &c)
-{
-    if (!c.isValid())
-        return;
-    SkipList skip;
-    QString t = c.mid();
-    QRegExp rx("\\[url\\](.+)\\[/url\\]");
-    rx.setMinimal(true);
-    QRegExp rxLink(Tools::externalLinkRegexpPattern());
-    int ind = rx.indexIn(t);
-    while (ind >= 0) {
-        QString href = rx.cap(1);
-        if (!rxLink.exactMatch(href)) {
-            ind = rx.indexIn(t, ind + rx.matchedLength());
-            continue;
-        }
-        if (!Tools::externalLinkRootZoneExists(rxLink.cap(3))) {
-            ind = rx.indexIn(t, ind + rx.matchedLength());
-            continue;
-        }
-        QString hrefold = href;
-        if (!href.startsWith("http"))
-            href.prepend("http://");
-        QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(hrefold) + "</a>";
-        t.replace(ind, rx.matchedLength(), result);
-        skip << qMakePair(ind, result.length());
-        ind = rx.indexIn(t, ind + result.length());
-    }
-    c.process(t, skip, &processWakabaMarkList);
-}
-
-static void processTags(ProcessPostTextContext &c)
-{
-    typedef QMap<QString, QString> StringMap;
-    init_once(StringMap, tags, StringMap()) {
-        tags.insert("[b]", "[/b]");
-        tags.insert("[i]", "[/i]");
-        tags.insert("[s]", "[/s]");
-        tags.insert("[u]", "[/u]");
-        tags.insert("[spoiler]", "[/spoiler]");
-        tags.insert("[sub]", "[/sub]");
-        tags.insert("[sup]", "[/sup]");
-    }
-    typedef QPair<QString, QString> StringPair;
-    typedef QMap<QString, StringPair> StringPairMap;
-    init_once(StringPairMap, htmls, StringPairMap()) {
-        htmls.insert("[b]", qMakePair(QString("<strong>"), QString("</strong>")));
-        htmls.insert("[i]", qMakePair(QString("<em>"), QString("</em>")));
-        htmls.insert("[s]", qMakePair(QString("<s>"), QString("</s>")));
-        htmls.insert("[u]", qMakePair(QString("<u>"), QString("</u>")));
-        htmls.insert("[spoiler]", qMakePair(QString("<span class=\"spoiler\">"), QString("</span>")));
-        htmls.insert("[sub]", qMakePair(QString("<sub>"), QString("</sub>")));
-        htmls.insert("[sup]", qMakePair(QString("<sup>"), QString("</sup>")));
-    }
-    ProcessPostTextFunction next = &processTagUrl;
-    if (!c.isValid())
-        return;
-    SkipList skip;
-    QString t = c.mid();
-    QRegExp rxop(QStringList(tags.keys()).join("|").replace("[", "\\[").replace("]", "\\]"), Qt::CaseInsensitive);
-    int s = t.indexOf(rxop);
-    if (s < 0)
-        return c.process(t, skip, next);
-    QString bbop = rxop.cap();
-    QString bbcl = tags.value(bbop);
-    StringPair html = htmls.value(bbop);
-    QRegExp rx(QString(bbop + "|" + bbcl).replace("[", "\\[").replace("]", "\\]"), Qt::CaseInsensitive);
-    int ind = t.indexOf(rx, s + bbop.length());
-    int depth = 1;
-    while (ind >= 0) {
-        if (rx.cap() == bbop)
-            ++depth;
-        else
-            --depth;
-        if (!depth) {
-            t.replace(ind, bbcl.length(), html.second);
-            t.replace(s, bbop.length(), html.first);
-            skip << qMakePair(s, html.first.length());
-            skip << qMakePair(ind + (html.first.length() - bbop.length()), html.second.length());
-            s = t.indexOf(bbop, ind + (html.first.length() - bbop.length()) +  html.second.length(),
-                          Qt::CaseInsensitive);
-            next = &processTags;
-            if (s < 0)
-                break;
-            depth = 1;
-            ind = t.indexOf(rx, s + bbop.length());
-        } else {
-            ind = t.indexOf(rx, ind + rx.matchedLength());
-        }
-    }
-    c.process(t, skip, next);
-}
-
 static void processTagTooltip(ProcessPostTextContext &c)
 {
     if (!c.isValid())
@@ -672,7 +672,7 @@ static void processTagTooltip(ProcessPostTextContext &c)
         indStart = rx.indexIn(t, indEnd + (op.length() - rx.matchedLength()));
         indEnd = t.indexOf("[/tooltip]", indStart + rx.matchedLength());
     }
-    c.process(t, skip, &processTags);
+    c.process(t, skip, &processWakabaMarkList);
 }
 
 static void processWakabaMarkMonospaceSingle(ProcessPostTextContext &c)
