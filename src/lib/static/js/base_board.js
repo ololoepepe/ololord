@@ -23,6 +23,7 @@ lord.filesMap = null;
 lord.spells = null;
 lord.worker = new Worker("/js/worker.js");
 lord.youtubeApplied = false;
+lord.lastSelectedElement = null;
 
 /*Functions*/
 
@@ -2339,7 +2340,9 @@ lord.posted = function(response) {
             resetButton();
             lord.resetPostForm();
             if (currentThreadNumber)
-                lord.updateThread(boardName, currentThreadNumber, true, lord.selectPost.bind(lord, postNumber));
+                lord.updateThread(boardName, currentThreadNumber, true, (function(pn) {
+                    window.location.hash = "#" + postNumber;
+                }).bind(lord, postNumber));
             lord.removeQuickReply();
             lord.resetCaptcha();
         } else if (threadNumber) {
@@ -2783,11 +2786,29 @@ lord.initializeOnLoadBaseBoard = function() {
         lord.setLocalObject("lastPostNumbers", lastPostNumbers);
     }
     lord.initFiles();
+    lord.hashChangedHandler(lord.hash());
+};
+
+lord.hashChangedHandler = function(hash) {
+    if (lord.lastSelectedElement)
+        lord.removeClass(lord.lastSelectedElement, "selectedPost");
+    var pn = +hash;
+    if (isNaN(pn))
+        return;
+    var post = lord.id("post" + pn);
+    if (!post)
+        return;
+    lord.lastSelectedElement = post;
+    lord.addClass(post, "selectedPost");
 };
 
 window.addEventListener("load", function load() {
     window.removeEventListener("load", load, false);
     lord.initializeOnLoadBaseBoard();
+}, false);
+
+window.addEventListener("hashchange", function(e) {
+    lord.hashChangedHandler(lord.hash());
 }, false);
 
 lord.message_spellsParsed = function(data) {

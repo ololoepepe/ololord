@@ -65,29 +65,12 @@ var lord = lord || {};
 
 /*Variables*/
 
-lord.lastSelectedElement = null;
 lord.autoUpdateTimer = null;
 lord.blinkTimer = null;
 lord.pageVisible = "visible";
 lord.isDownloading = false;
 
 /*Functions*/
-
-lord.addAnchorChangeListener = function(callback) {
-    if ("onhashchange" in window) {
-        window.onhashchange = function() {
-            callback(window.location.hash);
-        };
-    } else {
-        var storedHash = window.location.hash;
-        window.setInterval(function() {
-            if (window.location.hash != storedHash) {
-                storedHash = window.location.hash;
-                callback(storedHash);
-            }
-        }, 500);
-    }
-};
 
 lord.addVisibilityChangeListener = function(callback) {
     if ("hidden" in document)
@@ -107,12 +90,6 @@ lord.addVisibilityChangeListener = function(callback) {
             "type": document["hidden"] ? "blur" : "focus"
         });
     }
-};
-
-lord.anchorChangeListener = function(hash) {
-    if (!hash || hash.length < 1)
-        return;
-    lord.selectPost(hash.substring(1));
 };
 
 lord.visibilityChangeListener = function(e) {
@@ -152,18 +129,6 @@ lord.blinkFaviconNewMessage = function() {
         link.href = link.href.replace("favicon.ico", "img/favicon_newmessage.ico");
     else
         link.href = link.href.replace("img/favicon_newmessage.ico", "favicon.ico");
-};
-
-lord.selectPost = function(post) {
-    if (lord.lastSelectedElement)
-        lord.removeClass(lord.lastSelectedElement, "selectedPost");
-    lord.lastSelectedElement = null;
-    if (isNaN(+post))
-        return;
-    lord.lastSelectedElement = lord.id("post" + post);
-    if (lord.lastSelectedElement)
-        lord.addClass(lord.lastSelectedElement, "selectedPost");
-    window.location.href = window.location.href.split("#").shift() + "#" + post;
 };
 
 lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback) {
@@ -309,25 +274,19 @@ lord.downloadThread = function() {
 
 lord.initializeOnLoadThread = function() {
     lord.addVisibilityChangeListener(lord.visibilityChangeListener);
-    lord.addAnchorChangeListener(lord.anchorChangeListener);
     var enabled = lord.getLocalObject("autoUpdate", {})[lord.text("currentThreadNumber")];
     if (true === enabled || (false !== enabled && lord.getLocalObject("autoUpdateThreadsByDefault", false))) {
         var cbox = lord.id("autoUpdate_top");
         cbox.checked = true;
         lord.setAutoUpdateEnabled(cbox);
     }
-    var sl = window.location.href.split("#");
-    if (sl.length != 2)
-        return;
-    var post = sl[1];
-    if (post.substring(0, 1) === "i") {
-        post = post.substring(1);
+    var hash = lord.hash();
+    if (hash.substring(0, 1) === "i") {
+        hash = hash.substring(1);
         if (isNaN(+post))
             return;
         lord.showHidePostForm("Top");
-        lord.insertPostNumber(post);
-    } else {
-        lord.selectPost(post);
+        lord.insertPostNumber(hash);
     }
 };
 

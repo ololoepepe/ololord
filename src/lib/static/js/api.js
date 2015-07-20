@@ -715,3 +715,7 @@ lord.createUuid = function() {
         return v.toString(16);
     });
 };
+
+lord.hash = function() {
+    return window.location.hash.substr(1, window.location.hash.length - 1);
+};

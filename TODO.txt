@@ -28,6 +28,7 @@
 [done] Fix image scaling and centering
 [done] Add draft system description
 [done] Implement content rating system
+[done] Fix selecting posts on anchor change
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
