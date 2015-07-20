@@ -1890,10 +1890,20 @@ lord.setPostformRulesVisible = function(visible) {
 lord.quoteSelectedText = function(selection) {
     try {
         var field = lord.nameOne("text", lord.id("postForm"));
-        var value = ">";
+        var value = "";
         var pos = 0;
-        if (document.getSelection())
-            value += (selection || document.getSelection().toString());
+        if (document.getSelection()) {
+            value = "";
+            var sel = lord.arr((selection || document.getSelection().toString()).split("\n")).forEach(function(line) {
+                if ("" != line)
+                    value += ">" + line;
+                value += "\n";
+            });
+            value = value.substr(0, value.length - 1);
+        }
+        if ("" == value)
+            value += ">";
+        value += "\n";
         if (typeof selection != "undefined" && selection.length < 1)
             return;
         if (field.selectionStart || field.selectionStart == "0") {
