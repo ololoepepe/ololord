@@ -29,6 +29,7 @@
 [done] Add draft system description
 [done] Implement content rating system
 [done] Fix selecting posts on anchor change
+* Improve geolocation
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

@@ -1254,7 +1254,7 @@ lord.addFile = function(boardName, postNumber) {
         var formData = new FormData(form);
         lord.query(".postformFile", form).forEach(function(div) {
             if (div.droppedFile)
-                formData.append(dir.droppedFileName || "file", div.droppedFile);
+                formData.append(div.droppedFileName || "file", div.droppedFile);
         });
         var xhr = new XMLHttpRequest();
         xhr.open("POST", form.action);
