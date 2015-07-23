@@ -124,7 +124,7 @@ static SkipList externalLinks(const QString &s)
     int ind = rx.indexIn(s);
     SkipList skip;
     while (ind >= 0) {
-        if (Tools::externalLinkRootZoneExists(rx.cap(3)))
+        if (rx.cap(2).count('.') == 3 || Tools::externalLinkRootZoneExists(rx.cap(3)))
             skip << qMakePair(ind, rx.matchedLength());
         ind = rx.indexIn(s, ind + rx.matchedLength());
     }
@@ -285,7 +285,7 @@ static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
     QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
-        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+        if (rx.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rx.cap(3))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
@@ -352,7 +352,7 @@ static void processWakabaMarkMailto(ProcessPostTextContext &c)
     QRegExp rxLink(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
-        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+        if (rx.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rx.cap(3))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
@@ -467,7 +467,7 @@ static void processTagUrl(ProcessPostTextContext &c)
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
-        if (!Tools::externalLinkRootZoneExists(rxLink.cap(3))) {
+        if (rx.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rxLink.cap(3))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
@@ -844,7 +844,7 @@ void toHtml(QString *s)
     QRegExp rx(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(*s);
     while (ind >= 0) {
-        if (!Tools::externalLinkRootZoneExists(rx.cap(3))) {
+        if (rx.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rx.cap(3))) {
             ind = rx.indexIn(*s, ind + rx.matchedLength());
             continue;
         }

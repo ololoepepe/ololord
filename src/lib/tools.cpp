@@ -385,8 +385,15 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
 
 QString externalLinkRegexpPattern()
 {
-    init_once(QString, pattern, QString())
-        pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,17}\\.?)(\\/[\\w\\.\\-\\?\\=#~&%\\,\\(\\)]*)*\\/?(?!\\S)";
+    init_once(QString, pattern, QString()) {
+        QString schema = "https?:\\/\\/";
+        QString ip = "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}"
+                "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])";
+        QString hostname = "([\\w\\.\\-]+)\\.([a-z]{2,17}\\.?)";
+        QString port = ":\\d+";
+        QString path = "(\\/[\\w\\.\\-\\!\\?\\=#~&%\\,\\(\\)]*)*\\/?";
+        pattern = "(" + schema + ")?(" + hostname + "|" + ip + ")(" + port + ")?" + path + "(?!\\S)";
+    }
     return pattern;
 }
 
