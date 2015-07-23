@@ -1038,7 +1038,8 @@ lord.showHidePostForm = function(position) {
         if (lord.postForm.visibility[p])
             lord.showHidePostForm(p);
         theButton.innerHTML = lord.text("hidePostFormText");
-        lord.id("createActionContainer" + position).appendChild(postForm);
+        var t = lord.id("createActionContainer" + position);
+        lord.queryOne("div > div", t).appendChild(postForm);
     }
     lord.postForm.visibility[position] = !lord.postForm.visibility[position];
 };

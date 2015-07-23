@@ -124,11 +124,15 @@
 <div id="createActionContainer<%= position %>" class="createAction">
     <% if ( content.mode.name != "ascetic" ) %>
         <div>
-            [<a id="showHidePostFormButton<%= position %>"
-                href="javascript:lord.showHidePostForm('<%= position %>');"><%= showPostFormText %></a>]
+            <div>[<a id="showHidePostFormButton<%= position %>"
+                     href="javascript:lord.showHidePostForm('<%= position %>');"><%= showPostFormText %></a>]</div>
         </div>
     <% else %>
-        <% include postForm() %>
+        <div>
+            <div>
+                <% include postForm() %>
+            </div>
+        </div>
     <% end %>
 </div>
 <% end template %>

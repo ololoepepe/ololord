@@ -337,6 +337,14 @@ span.newPostCount {
     white-space: nowrap;
 }
 
+.createAction > div {
+    display: inline-block;
+}
+
+.createAction > div > div {
+    display: block;
+}
+
 .postFormVisible {
     display: block;
 }
