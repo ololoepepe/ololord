@@ -467,7 +467,7 @@ static void processTagUrl(ProcessPostTextContext &c)
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
-        if (rx.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rxLink.cap(3))) {
+        if (rx.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rxLink.cap(4))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
