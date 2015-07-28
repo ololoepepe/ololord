@@ -487,7 +487,7 @@
                         <% include postFile(file, post) %>
                     <% end %>
                 <% end %>
-                <% if ( post.files.size() < 2 ) %>
+                <% if ( (content.deviceType != "mobile" && post.files.size() < 2) || (content.deviceType == "mobile" && post.files.size() < 1) ) %>
                     <td class="postText">
                         <% if ( !thread ) %>
                              <blockquote id="post<%= post.number %>Text"
@@ -502,7 +502,7 @@
                 <% end %>
             </tr>
             <% include customPostBody1(post, thread) %>
-            <% if ( post.files.size() >= 2 ) %>
+            <% if ( post.files.size() >= 2 || (content.deviceType == "mobile" && post.files.size() >= 1) ) %>
                 <tr>
                     <% c++ out() << "<td colspan=\"" << (post.files.size() + 2) << "\" class=\"postText\">"; %>
                         <% if ( !thread ) %>

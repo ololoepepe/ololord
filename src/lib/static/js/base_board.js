@@ -534,7 +534,8 @@ lord.createPostNode = function(res, permanent, boardName) {
     var manyFilesTr = lord.nameOne("manyFilesTr", post);
     var textOneFile = lord.nameOne("textOneFile", post);
     var textManyFiles = lord.nameOne("textManyFiles", post);
-    if (res["files"].length < 2) {
+    if ((lord.text("deviceType") != "mobile" && res["files"].length < 2)
+        || (lord.text("deviceType") == "mobile" && res["files"].length < 1)) {
         manyFilesTr.parentNode.removeChild(manyFilesTr);
         textOneFile.innerHTML = res["text"];
         if (blockquoteThread)
