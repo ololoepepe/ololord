@@ -519,13 +519,13 @@ span.newPostCount {
     font-size: 0.6em;
 }
 
-.postFileFile > a > img.mobile {
+/*.postFileFile.mobile {
     -moz-transform: scale(0.7, 0.7);
     -ms-transform: scale(0.7, 0.7);
     -webkit-transform: scale(0.7, 0.7);
     -o-transform: scale(0.7, 0.7);
     transform: scale(0.7, 0.7);
-}
+}*/
 
 .postFileFile > a > img.mumWatching:not(:hover) {
     opacity: 0.05;

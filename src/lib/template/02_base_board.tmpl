@@ -194,7 +194,7 @@
             <% end %>
         <% end %>
     </div>
-    <div class="postFileFile">
+    <div class="postFileFile <%= deviceType %>">
         <input name="type" type="hidden" value="<%= file.type %>" />
         <input name="sizeKB" type="hidden" value="<%= file.sizeKB %>" />
         <input name="sizeX" type="hidden" value="<%= file.sizeX %>" />
@@ -203,22 +203,21 @@
            onclick="return lord.showImage('/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.sourceName %>', '<%= file.type %>', <%= file.sizeX %>, <%= file.sizeY %>);">
             <% if ( content.maxAllowedRating < file.rating ) %>
                 <% if ( file.rating >= 180 ) %>
-                    <img src="/<%= sitePathPrefix %>img/r-18g.png" class="<%= deviceType %>" width="200" height="200">
+                    <img src="/<%= sitePathPrefix %>img/r-18g.png" width="200" height="200">
                 <% elif ( file.rating >= 18 ) %>
-                    <img src="/<%= sitePathPrefix %>img/r-18.png" class="<%= deviceType %>" width="200" height="200">
+                    <img src="/<%= sitePathPrefix %>img/r-18.png" width="200" height="200">
                 <% elif ( file.rating >= 15 ) %>
-                    <img src="/<%= sitePathPrefix %>img/r-15.png" class="<%= deviceType %>" width="200" height="200">
+                    <img src="/<%= sitePathPrefix %>img/r-15.png" width="200" height="200">
                 <% end %>
             <% elif ( content.isSpecialThumbName(file.thumbName) ) %>
-                <img src="/<%= sitePathPrefix %>img/<%= file.specialThumbName() %>_logo.png" class="<%= deviceType %>"
+                <img src="/<%= sitePathPrefix %>img/<%= file.specialThumbName() %>_logo.png"
                      width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
             <% else %>
                 <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
                     <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
-                         width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>" class="<%= deviceType %>">
+                         width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
                 <% else %>
-                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
-                         class="<%= deviceType %>">
+                    <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
                 <% end %>
             <% end %>
         </a>

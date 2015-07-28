@@ -367,6 +367,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
     file.appendChild(divFileSearch);
     var divImage = lord.node("div");
     lord.addClass(divImage, "postFileFile");
+    lord.addClass(divImage, lord.text("deviceType"));
     var inpType = lord.node("input");
     inpType.type = "hidden";
     inpType.name = "type";
@@ -392,7 +393,6 @@ lord.createPostFile = function(f, boardName, postNumber) {
     aImage.onclick = lord.showImage.bind(lord, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"],
         f["sizeX"], f["sizeY"]);
     var image = lord.node("img");
-    lord.addClass(image, lord.text("deviceType"));
     var maxRatingS = lord.getCookie("maxAllowedRating") || "R-18G";
     var maxRating = 180;
     if ("SFW" == maxRatingS)
