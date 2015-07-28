@@ -390,8 +390,14 @@ lord.createPostFile = function(f, boardName, postNumber) {
     divImage.appendChild(inpSizeY);
     var aImage = lord.node("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
-    aImage.onclick = lord.showImage.bind(lord, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"],
-        f["sizeX"], f["sizeY"]);
+    (function(a, href, type, sizeX, sizeY) {
+        a.onclick = function(e) {
+            if (lord.showImage(href, type, sizeX, sizeY) === false) {
+                e.preventDefault();
+                return false;
+            }
+        };
+    })(aImage, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"], f["sizeX"], f["sizeY"]);
     var image = lord.node("img");
     var maxRatingS = lord.getCookie("maxAllowedRating") || "R-18G";
     var maxRating = 180;
