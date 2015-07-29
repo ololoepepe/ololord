@@ -356,6 +356,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.addToPlaylistText = ts.translate("initBaseBoard", "Add to playlist", "addToPlaylistText");
     c.addThreadToFavoritesText = ts.translate("initBaseBoard", "Add thread to favorites", "addThreadToFavoritesText");
     c.ajaxErrorText = ts.translate("initBaseBoard", "AJAX request returned status", "ajaxErrorText");
+    c.attachFileByLinkText = ts.translate("initBaseBoard", "Specify file URL", "attachFileByLinkText");
     c.audioTagAlbumText = ts.translate("initBaseBoard", "Album:", "audioTagAlbumText");
     c.audioTagArtistText = ts.translate("initBaseBoard", "Artist:", "audioTagArtistText");
     c.audioTagTitleText = ts.translate("initBaseBoard", "Title:", "audioTagTitleText");
@@ -444,6 +445,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.hidePostFormText = ts.translate("initBaseBoard", "Hide post form", "hidePostFormText");
     c.internalErrorText = ts.translate("initBaseBoard", "Internal error", "internalErrorText");
     c.kilobytesText = ts.translate("initBaseBoard", "KB", "kilobytesText");
+    c.linkLabelText = ts.translate("initBaseBoard", "URL:", "linkLabelText");
     c.loadingPostsText = ts.translate("initBaseBoard", "Loading posts...", "loadingPostsText");
     c.markupBold = ts.translate("initBaseBoard", "Bold text", "markupBold");
     c.markupCode = ts.translate("initBaseBoard", "Code block", "markupCode");

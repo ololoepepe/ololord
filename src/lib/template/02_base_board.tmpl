@@ -724,17 +724,24 @@
                                    class="postformFileRemoveButton">
                                     <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= removeFileText %>"
                                          class="postformFileRemoveImage"></a>
-                                <span class="ratingSelectContainer">
-                                    <span><%= ratingLabelText %></span>
-                                    <select name="file_rating">
-                                        <option value="SFW" selected="true"
-                                                onclick="return lord.preventOnclick(event);">SFW</option>
-                                        <option value="R-15" onclick="return lord.preventOnclick(event);">R-15</option>
-                                        <option value="R-18" onclick="return lord.preventOnclick(event);">R-18</option>
-                                        <option value="R-18G" onclick="return lord.preventOnclick(event);">R-18G</option>
-                                    </select>
-                                    <img src="/<%= sitePathPrefix %>img/question.png" title="<%= ratingTooltip %>">
-                                </span>
+                                <div>
+                                    <span class="ratingSelectContainer">
+                                        <span><%= ratingLabelText %></span>
+                                        <select name="file_rating">
+                                            <option value="SFW" selected="true"
+                                                    onclick="return lord.preventOnclick(event);">SFW</option>
+                                            <option value="R-15"
+                                                    onclick="return lord.preventOnclick(event);">R-15</option>
+                                            <option value="R-18"
+                                                    onclick="return lord.preventOnclick(event);">R-18</option>
+                                            <option value="R-18G"
+                                                    onclick="return lord.preventOnclick(event);">R-18G</option>
+                                        </select>
+                                        <img src="/<%= sitePathPrefix %>img/question.png" title="<%= ratingTooltip %>">
+                                    </span>
+                                    <!--a onclick="lord.attachFileByLink(this); return lord.preventOnclick(event);"
+                                       class="fileByLinkButton"><%= attachFileByLinkText %></a-->
+                                </div>
                             </div>
                         <% else %>
                             <% c++ for (int i = 0; i < int(content.maxFileCount); ++i) { %>
@@ -866,6 +873,7 @@
 <input type="hidden" id="internalErrorText" value="<%= internalErrorText %>" />
 <input type="hidden" id="unexpectedEndOfTokenListErrorText" value="<%= unexpectedEndOfTokenListErrorText %>" />
 <input type="hidden" id="noTokenInTableErrorText" value="<%= noTokenInTableErrorText %>" />
+<input type="hidden" id="linkLabelText" value="<%= linkLabelText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>

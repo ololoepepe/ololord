@@ -3295,6 +3295,16 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <comment>ratingLabelText</comment>
         <translation>Рейтинг:</translation>
     </message>
+    <message>
+        <source>Specify file URL</source>
+        <comment>attachFileByLinkText</comment>
+        <translation>Указать ссылку на файл</translation>
+    </message>
+    <message>
+        <source>URL:</source>
+        <comment>linkLabelText</comment>
+        <translation>Ссылка:</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

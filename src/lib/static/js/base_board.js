@@ -1794,15 +1794,35 @@ lord.fileAddedCommon = function(div, file) {
     })(div);
 };
 
+lord.attachFileByLinkInternal = function(div, url) {
+    (function(div, url) {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", url);
+        xhr.responseType = "blob";
+        xhr.onload = function() {
+            var blob = xhr.response;
+            var file = new File([blob], url.split("/").pop());
+            div.droppedFile = file;
+            lord.fileAddedCommon(div, file);
+        };
+        xhr.send(null);
+    })(div, url);
+};
+
 lord.fileDrop = function(e, div) {
     e.preventDefault();
     lord.removeClass(div, "drag");
     var inp = lord.queryOne("input", div);
     inp.parentNode.replaceChild(inp.cloneNode(true), inp);
     lord.clearFileInput(div);
-    var file = e.dataTransfer.files[0];
-    div.droppedFile = file;
-    lord.fileAddedCommon(div, file);
+    var dt = e.dataTransfer;
+    if (lord.in(dt.types, "text/uri-list")) {
+        lord.attachFileByLinkInternal(div, dt.getData("text/uri-list"));
+    } else if (dt.files) {
+        var file = e.dataTransfer.files[0];
+        div.droppedFile = file;
+        lord.fileAddedCommon(div, file);
+    }
     return false;
 };
 
@@ -1820,6 +1840,21 @@ lord.fileSelected = function(current) {
     lord.clearFileInput(div);
     div.droppedFile = file;
     lord.fileAddedCommon(div, file);
+};
+
+lord.attachFileByLink = function(a) {
+    if (!a)
+        return;
+    var div = a.parentNode;
+    if (!div)
+        return;
+    div = div.parentNode;
+    if (!div)
+        return;
+    var url = prompt(lord.text("linkLabelText"));
+    if (null === url)
+        return;
+    lord.attachFileByLinkInternal(div, url);
 };
 
 lord.removeFile = function(current) {

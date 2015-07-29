@@ -104,6 +104,7 @@ public:
     std::string addThreadToFavoritesText;
     std::string addToPlaylistText;
     std::string ajaxErrorText;
+    std::string attachFileByLinkText;
     std::string audioTagAlbumText;
     std::string audioTagArtistText;
     std::string audioTagTitleText;
@@ -155,6 +156,7 @@ public:
     std::string hidePostFormText;
     std::string internalErrorText;
     std::string kilobytesText;
+    std::string linkLabelText;
     std::string loadingPostsText;
     std::string markupBold;
     std::string markupCode;
