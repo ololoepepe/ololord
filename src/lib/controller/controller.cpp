@@ -325,6 +325,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.timeLabelText = ts.translate("initBase", "Time:", "timeLabelText");
     c.timeLocalText = ts.translate("initBase", "Local", "timeLocalText");
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
+    c.timeZoneOffset = Tools::cookieValue(req, "timeZoneOffset").toInt();
+    c.timeZoneOffsetLabelText = ts.translate("initBase", "Offset:", "timeZoneOffsetLabelText");
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
     c.toPlaylistPageText = ts.translate("initBase", "Playlist", "toPlaylistPageText");
     c.toMarkupPageText = ts.translate("initBase", "Markup", "toMarkupPageText");

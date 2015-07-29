@@ -69,7 +69,7 @@
                             <td>
                                 <%= timeLabelText %>
                             </td>
-                            <td>
+                            <td class="nowrap">
                                 <select name="timeChangeSelect" class="select">
                                     <% if ( content.currentTime == "local" ) %>
                                         <option value="server"><%= timeServerText %></option>
@@ -79,6 +79,9 @@
                                         <option value="local"><%= timeLocalText %></option>
                                     <% end %>
                                 </select>
+                                <%= timeZoneOffsetLabelText %>
+                                <input type="number" name="timeZoneOffset" value="<%= timeZoneOffset %>"
+                                       min="-720" max="840" />
                             </td>
                         </tr>
                         <tr>

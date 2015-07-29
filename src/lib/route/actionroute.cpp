@@ -157,6 +157,7 @@ void ActionRoute::handleChangeSettings(const QString &action, const Tools::PostP
     setCookie("maxAllowedRating", "ratingSelect", params);
     setCookie("draftsByDefault", "draftsByDefault", params);
     setCookie("hidePostformRules", "hidePostformRules", params);
+    setCookie("timeZoneOffset", "timeZoneOffset", params);
     QStringList hiddenBoards;
     foreach (const QString &key, params.keys()) {
         if (!key.startsWith("board_") || params.value(key).compare("true", Qt::CaseInsensitive))

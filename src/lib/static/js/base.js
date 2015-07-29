@@ -134,6 +134,8 @@ lord.showSettings = function() {
     leafThroughImagesOnly.checked = lord.getLocalObject("leafThroughImagesOnly", false);
     var imageZoomSensitivity = lord.nameOne("imageZoomSensitivity", div);
     imageZoomSensitivity.value = lord.getLocalObject("imageZoomSensitivity", 25);
+    var timeZoneOffset = lord.nameOne("timeZoneOffset", div);
+    timeZoneOffset.value = lord.getCookie("timeZoneOffset") || -date.getTimezoneOffset();    
     var autoUpdateThreadsByDefault = lord.nameOne("autoUpdateThreadsByDefault", div);
     var defaultAudioVideoVolume = lord.nameOne("defaultAudioVideoVolume", div);
     defaultAudioVideoVolume.value = lord.getLocalObject("defaultAudioVideoVolume", 100);
@@ -173,8 +175,12 @@ lord.showSettings = function() {
             "expires": lord.Billion, "path": "/"
         });
         if ("local" == tm) {
-            var date = new Date();
-            lord.setCookie("timeZoneOffset", -date.getTimezoneOffset(), {
+            var offset = +timeZoneOffset.value;
+            if (isNaN(offset)) {
+                var date = new Date();
+                offset = -date.getTimezoneOffset();
+            }
+            lord.setCookie("timeZoneOffset", offset, {
                 "expires": lord.Billion, "path": "/"
             });
         }

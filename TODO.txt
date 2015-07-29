@@ -30,8 +30,11 @@
 [done] Implement content rating system
 [done] Fix selecting posts on anchor change
 [done] Fix URL parsing
-* Improve geolocation
+[done] Improve timezone handling
+* Implement collapsible spoilers
+* Add ability to attach files by URL
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Use D-Pointer approach for the lib
+* Improve geolocation

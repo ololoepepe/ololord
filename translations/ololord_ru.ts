@@ -2753,6 +2753,11 @@ R-15 - restricted for 15 years (содержит эччи, idols, сцены ж�
 R-18 - restricted for 18 years (гениталии, половой акт, оскорбительный материал религиозного/расового/национального характера)
 R-18G - restricted for 18 years, guidance adviced (транссексуалы, смерть, гуро, скат, дефекация, уринация, и т.д.)</translation>
     </message>
+    <message>
+        <source>Offset:</source>
+        <comment>timeZoneOffsetLabelText</comment>
+        <translation>Коррекция:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
