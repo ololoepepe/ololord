@@ -451,6 +451,39 @@ static void processWakabaMarkSpoiler(ProcessPostTextContext &c)
     processSimmetric(c, &processWakabaMarkUnderlined, "%%", "", "span", "<span class=\"spoiler\">");
 }
 
+static void processWakabaMarkCollapsibleSpoiler(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    int i = 0;
+    int s = -1;
+    QChar last = '\0';
+    QString op = "<span class=\"cspoiler\"><span class=\"cspoilerTitle\" "
+            "onclick=\"lord.expandCollapseSpoiler(this);\">Spoiler</span><span class=\"cspoilerBody\" "
+            "style=\"display: none;\">";
+    while (i < t.length()) {
+        if (i <= (t.length() - 3) && t.mid(i, 3) == "%%%") {
+            if (s >= 0 && t.at(i) == last) {
+                t.replace(i, 3, "</span></span>");
+                t.replace(s, 3, op);
+                skip << qMakePair(s, op.length());
+                skip << qMakePair(i + (op.length() - 3), 14 + 3);
+                s = -1;
+                last = '\0';
+            } else if (QChar('\0') == last) {
+                s = i;
+                last = t.at(i);
+            }
+            i += 3;
+        } else {
+            ++i;
+        }
+    }
+    c.process(t, skip, &processWakabaMarkSpoiler);
+}
+
 static void processTagUrl(ProcessPostTextContext &c)
 {
     if (!c.isValid())
@@ -479,7 +512,7 @@ static void processTagUrl(ProcessPostTextContext &c)
         skip << qMakePair(ind, result.length());
         ind = rx.indexIn(t, ind + result.length());
     }
-    c.process(t, skip, &processWakabaMarkSpoiler);
+    c.process(t, skip, &processWakabaMarkCollapsibleSpoiler);
 }
 
 static void processTags(ProcessPostTextContext &c)
@@ -742,9 +775,34 @@ static void processTagCodeNolang(ProcessPostTextContext &c)
     processAsymmetric(c, &processTagCode, "code", "pre");
 }
 
+static void processTagCspoiler(ProcessPostTextContext &c)
+{
+    if (!c.isValid())
+        return;
+    SkipList skip;
+    QString t = c.mid();
+    QRegExp rx("\\[cspoiler\\s+title\\=\"(.*)\"\\s*\\]");
+    rx.setMinimal(true);
+    int indStart = rx.indexIn(t);
+    int indEnd = t.indexOf("[/cspoiler]", indStart + rx.matchedLength());
+    while (indStart >= 0 && indEnd > 0) {
+        QString title = rx.cap(1);
+        t.replace(indEnd, 11, "</span></span>");
+        QString op = "<span class=\"cspoiler\"><span class=\"cspoilerTitle\" title=\"Spoiler\" "
+                "onclick=\"lord.expandCollapseSpoiler(this);\">" + title
+                + "</span><span class=\"cspoilerBody\" style=\"display: none;\">";
+        t.replace(indStart, rx.matchedLength(), op);
+        skip << qMakePair(indStart, op.length());
+        skip << qMakePair(indEnd + (op.length() - rx.matchedLength()), 14);
+        indStart = rx.indexIn(t, indEnd + (op.length() - rx.matchedLength()));
+        indEnd = t.indexOf("[/cspoiler]", indStart + rx.matchedLength());
+    }
+    c.process(t, skip, &processTagCodeNolang);
+}
+
 static void processTagQuote(ProcessPostTextContext &c)
 {
-    processAsymmetric(c, &processTagCodeNolang, "q", "font", "<font face=\"monospace\">", true);
+    processAsymmetric(c, &processTagCspoiler, "q", "font", "<font face=\"monospace\">", true);
 }
 
 static void processWakabaMarkCode(ProcessPostTextContext &c)

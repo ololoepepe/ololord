@@ -274,6 +274,15 @@ span.newPostCount {
     cursor: pointer;
 }
 
+.cspoilerTitle {
+    cursor: pointer;
+    color: #E08060;
+}
+
+.cspoilerBody {
+    background-color: #F0D0B6;
+}
+
 /*
     Board image
 */

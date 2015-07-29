@@ -330,6 +330,19 @@ lord.switchMumWatching = function() {
     lord.setLocalObject("mumWatching", !watching);
 };
 
+lord.expandCollapseSpoiler = function(titleSpan) {
+    if (!titleSpan)
+        return;
+    var span = titleSpan.parentNode;
+    if (!span)
+        return;
+    var bodySpan = lord.queryOne(".cspoilerBody", span);
+    if (!bodySpan)
+        return;
+    var expanded = (bodySpan.style.display != "none");
+    bodySpan.style.display = expanded ? "none" : "block";
+};
+
 lord.removeThreadFromFavorites = function(boardName, threadNumber) {
     threadNumber = +threadNumber;
     if (!boardName || isNaN(threadNumber))

@@ -16,6 +16,8 @@ struct OLOLORD_EXPORT Markup : public Base
     std::string boldText;
     std::string codeMarkup;
     std::string combinedText;
+    std::string cspoilerText;
+    std::string cspoilerTitle;
     std::string doubleHyphen;
     std::string doubleMonospace;
     std::string emDash;

@@ -63,6 +63,10 @@
             <br />
             [spoiler]<span class="spoiler"><%= spoiler %></span>[/spoiler]
             <br /><br />
+            %%%<span class="cspoiler"><span class="cspoilerTitle" onclick="lord.expandCollapseSpoiler(this);">Spoiler</span><span class="cspoilerBody" style="display: none;"><%= cspoilerText %></span></span>%%%
+            <br />
+            [cspoiler title="<%= cspoilerTitle %>"]<span class="cspoiler"><span class="cspoilerTitle" title="Spoiler" onclick="lord.expandCollapseSpoiler(this);"><%= cspoilerTitle %></span><span class="cspoilerBody" style="display: none;"><%= cspoilerText %></span></span>[/cspoiler]
+            <br /><br />
             <%= tooltipText %>???"<%= tooltip %>" —&gt;
             <span class="tooltip" title="<%= tooltip %>"><%= tooltipText %></span>
             <br /><br />

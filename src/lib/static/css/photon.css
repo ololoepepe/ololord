@@ -280,6 +280,16 @@ span.newPostCount {
     cursor: pointer;
 }
 
+.cspoilerTitle {
+    cursor: pointer;
+    color: #304070;
+}
+
+.cspoilerBody {
+    background-color: #BBBBBB;
+    border: 1px solid #CCCCCC;
+}
+
 /*
     Board image
 */

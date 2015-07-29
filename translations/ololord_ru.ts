@@ -1102,6 +1102,16 @@ text</source>
         <comment>superscriptText</comment>
         <translation>верхний индекс</translation>
     </message>
+    <message>
+        <source>collapsible spoiler text</source>
+        <comment>cspoilerText</comment>
+        <translation>текст скрываемого спойлера</translation>
+    </message>
+    <message>
+        <source>collapsible spoiler title</source>
+        <comment>cspoilerTitle</comment>
+        <translation>заголовок скрываемого спойлера</translation>
+    </message>
 </context>
 <context>
     <name>PlaylistRoute</name>

@@ -32,6 +32,8 @@ void MarkupRoute::handle()
     Controller::initBase(c, application.request(), tq.translate("MarkupRoute", "Markup", "pageTitle"));
     c.basicMarkup = ts.translate("MarkupRoute", "Basic markup", "basicMarkup");
     c.boldText = ts.translate("MarkupRoute", "bold text", "boldText");
+    c.cspoilerText = ts.translate("MarkupRoute", "collapsible spoiler text", "cspoilerText");
+    c.cspoilerTitle = ts.translate("MarkupRoute", "collapsible spoiler title", "cspoilerTitle");
     c.codeMarkup = ts.translate("MarkupRoute", "Code markup", "codeMarkup");
     c.combinedText = ts.translate("MarkupRoute", "combined text", "combinedText");
     c.doubleHyphen = ts.translate("MarkupRoute", "double hyphen", "doubleHyphen");

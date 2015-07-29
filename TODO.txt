@@ -31,7 +31,7 @@
 [done] Fix selecting posts on anchor change
 [done] Fix URL parsing
 [done] Improve timezone handling
-* Implement collapsible spoilers
+[done] Implement collapsible spoilers
 * Add ability to attach files by URL
 
 * Reload codecha instead of reloading a page
