@@ -461,6 +461,11 @@ By default, the date of first site launch is used.</source>
         <comment>postFormTextPlaceholder</comment>
         <translation>Комментарий. Макс. длина %1</translation>
     </message>
+    <message>
+        <source>Attached file error</source>
+        <comment>error</comment>
+        <translation>Ошибка прикрепленного файла</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -1193,6 +1198,19 @@ text</source>
         <source>Settings</source>
         <comment>pageTitle</comment>
         <translation>Настройки</translation>
+    </message>
+</context>
+<context>
+    <name>Tools::postFiles</name>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
+    <message>
+        <source>Invalid parameters</source>
+        <comment>error</comment>
+        <translation>Неправильные параметры</translation>
     </message>
 </context>
 <context>

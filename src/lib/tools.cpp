@@ -14,6 +14,7 @@
 #include <BeQt>
 #include <BLogger>
 #include <BTextTools>
+#include <BUuid>
 
 #include <QByteArray>
 #include <QBuffer>
@@ -54,11 +55,16 @@
 
 #include <id3/tag.h>
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+
 #include <cmath>
 #include <istream>
 #include <list>
 #include <locale>
 #include <ostream>
+#include <sstream>
 #include <streambuf>
 #include <string>
 
@@ -801,14 +807,18 @@ QStringList news(const QLocale &l)
     return *sl;
 }
 
-FileList postFiles(const cppcms::http::request &request, const PostParameters &params)
+FileList postFiles(const cppcms::http::request &request, const PostParameters &params, const QString &boardName,
+                   bool *ok, QString *error, const QLocale &l)
 {
     FileList list;
     cppcms::http::request::files_type files = const_cast<cppcms::http::request *>(&request)->files();
+    TranslatorQt tq(l);
     foreach (int i, bRangeD(0, files.size() - 1)) {
         cppcms::http::file *f = files.at(i).get();
-        if (!f)
-            continue;
+        if (!f) {
+            return bRet(ok, false, error, tq.translate("Tools::postFiles", "Internal logic error", "error"),
+                        FileList());
+        }
         File file;
         std::istream &in = f->data();
         char *buff = new char[f->size()];
@@ -827,7 +837,44 @@ FileList postFiles(const cppcms::http::request &request, const PostParameters &p
             file.rating = 180;
         list << file;
     }
-    return list;
+    int maxSize = maxInfo(MaxFileSize, boardName);
+    foreach (const QString &key, params.keys()) {
+        if (!key.startsWith("file_url_"))
+            continue;
+        File file;
+        try {
+            curlpp::Cleanup curlppCleanup;
+            Q_UNUSED(curlppCleanup)
+            QString url = params.value(key);
+            curlpp::Easy request;
+            request.setOpt(curlpp::options::Url(Tools::toStd(url)));
+            request.setOpt(curlpp::options::MaxFileSize(maxSize));
+            std::ostringstream os;
+            os << request;
+            std::string s = os.str();
+            QByteArray data(s.data(), s.size());
+            file.data = data;
+        } catch (curlpp::RuntimeError &e) {
+            return bRet(ok, false, error, fromStd(e.what()), FileList());
+        } catch(curlpp::LogicError &e) {
+            return bRet(ok, false, error, fromStd(e.what()), FileList());
+        }
+        file.fileName = QFileInfo(key.split('/').last()).fileName();
+        file.formFieldName = key;
+        file.rating = 0;
+        QString id = key.mid(9);
+        if (BUuid(id).isNull())
+            return bRet(ok, false, error, tq.translate("Tools::postFiles", "Invalid parameters", "error"), FileList());
+        QString r = params.value("file_" + id + "_rating");
+        if ("R-15" == r)
+            file.rating = 15;
+        else if ("R-18" == r)
+            file.rating = 18;
+        else if ("R-18G" == r)
+            file.rating = 180;
+        list << file;
+    }
+    return bRet(ok, true, error, QString(), list);
 }
 
 PostParameters postParameters(const cppcms::http::request &request)
@@ -1073,10 +1120,10 @@ Post toPost(const PostParameters &params, const FileList &files)
     return p;
 }
 
-Post toPost(const cppcms::http::request &req)
+Post toPost(const cppcms::http::request &req, const QString &boardName)
 {
     PostParameters params = postParameters(req);
-    return toPost(params, postFiles(req, params));
+    return toPost(params, postFiles(req, params, boardName));
 }
 
 std::locale toStd(const QLocale &l)

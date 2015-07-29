@@ -764,6 +764,10 @@ lord.clearFileInput = function(div) {
     if (div.parentNode)
         lord.removeFileHash(div);
     div.fileHash = null;
+    if ("droppedFile" in div)
+        delete div.droppedFile;
+    if ("fileUrl" in div)
+        delete div.fileUrl;
 };
 
 lord.readableSize = function(sz) {
@@ -1263,6 +1267,8 @@ lord.addFile = function(boardName, postNumber) {
         lord.query(".postformFile", form).forEach(function(div) {
             if (div.droppedFile)
                 formData.append(div.droppedFileName || "file", div.droppedFile);
+            else if (div.fileUrl)
+                formData.append(div.droppedFileName, div.fileUrl);
         });
         var xhr = new XMLHttpRequest();
         xhr.open("POST", form.action);
@@ -1649,16 +1655,21 @@ lord.removeFileHash = function(div) {
 };
 
 lord.fileAddedCommon = function(div, file) {
-    if (!div || !file)
+    if (!div || (!file && !div.fileUrl))
         return;
     var inp = lord.queryOne("input", div);
     if (!inp)
         return;
-    var txt = file.name + " (" + lord.readableSize(file.size) + ")";
+    var fileName = file ? file.name : div.fileUrl.split("/").pop();
+    var txt = fileName;
+    if (file)
+        txt += " (" + lord.readableSize(file.size) + ")";
+    else
+        txt += " [URL]";
     lord.queryOne(".postformFileText", div).appendChild(lord.node("text", txt));
     var uuid = lord.createUuid();
     lord.queryOne("input", div).name = "file_" + uuid;
-    div.droppedFileName = "file_" + uuid;
+    div.droppedFileName = "file_" + (div.fileUrl ? "url_" : "") + uuid;
     lord.queryOne(".ratingSelectContainer > select").name = "file_" + uuid + "_rating";
     lord.removeFileHash(div);
     var binaryReader = new FileReader();
@@ -1687,40 +1698,42 @@ lord.fileAddedCommon = function(div, file) {
                 delete div.droppedFile;
         });
     };
-    if (lord.getLocalObject("checkFileExistence", true))
+    if (file && lord.getLocalObject("checkFileExistence", true))
         binaryReader.readAsArrayBuffer(file);
     var preview = function() {
+        if (!file)
+            return;
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function(e) {
             div.querySelector("img").src = e.target.result;
         };
     };
-    if (!!file.name.match(/\.(jpe?g|png|gif)$/i) && lord.getLocalObject("showAttachedFilePreview", true)) {
-        if (!file.name.match(/\.(jpe?g)$/i) || !lord.getLocalObject("stripExifFromJpeg", true))
+    if (!!fileName.match(/\.(jpe?g|png|gif)$/i) && lord.getLocalObject("showAttachedFilePreview", true)) {
+        if (!fileName.match(/\.(jpe?g)$/i) || !lord.getLocalObject("stripExifFromJpeg", true))
             preview();
-    } else if (!!file.name.match(/\.(jpe?g)$/i)) {
+    } else if (!!fileName.match(/\.(jpe?g)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/jpeg_file.png";
-    } else if (!!file.name.match(/\.(png)$/i)) {
+    } else if (!!fileName.match(/\.(png)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/png_file.png";
-    } else if (!!file.name.match(/\.(gif)$/i)) {
+    } else if (!!fileName.match(/\.(gif)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/gif_file.png";
-    } else if (!!file.name.match(/\.(mp3)$/i)) {
+    } else if (!!fileName.match(/\.(mp3)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/mp3_file.png";
-    } else if (!!file.name.match(/\.(mp4)$/i)) {
+    } else if (!!fileName.match(/\.(mp4)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/mp4_file.png";
-    } else if (!!file.name.match(/\.(ogg|ogv)$/i)) {
+    } else if (!!fileName.match(/\.(ogg|ogv)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/ogg_file.png";
-    } else if (!!file.name.match(/\.(webm)$/i)) {
+    } else if (!!fileName.match(/\.(webm)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/webm_file.png";
-    } else if (!!file.name.match(/\.(wav)$/i)) {
+    } else if (!!fileName.match(/\.(wav)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/wav_file.png";
-    } else if (!!file.name.match(/\.(pdf)$/i)) {
+    } else if (!!fileName.match(/\.(pdf)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/pdf_file.png";
     } else {
         div.querySelector("img").src = "/" + prefix + "img/file.png";
     }
-    if (!!file.name.match(/\.(jpe?g)$/i) && lord.getLocalObject("stripExifFromJpeg", true)) {
+    if (file && !!fileName.match(/\.(jpe?g)$/i) && lord.getLocalObject("stripExifFromJpeg", true)) {
         var fr = new FileReader();
         fr.onload = function() {
             var dv = new DataView(fr.result);
@@ -1794,21 +1807,6 @@ lord.fileAddedCommon = function(div, file) {
     })(div);
 };
 
-lord.attachFileByLinkInternal = function(div, url) {
-    (function(div, url) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", url);
-        xhr.responseType = "blob";
-        xhr.onload = function() {
-            var blob = xhr.response;
-            var file = new File([blob], url.split("/").pop());
-            div.droppedFile = file;
-            lord.fileAddedCommon(div, file);
-        };
-        xhr.send(null);
-    })(div, url);
-};
-
 lord.fileDrop = function(e, div) {
     e.preventDefault();
     lord.removeClass(div, "drag");
@@ -1817,7 +1815,10 @@ lord.fileDrop = function(e, div) {
     lord.clearFileInput(div);
     var dt = e.dataTransfer;
     if (lord.in(dt.types, "text/uri-list")) {
-        lord.attachFileByLinkInternal(div, dt.getData("text/uri-list"));
+        if (div.droppedFile)
+            delete div.droppedFile;
+        div.fileUrl = dt.getData("text/uri-list");
+        lord.fileAddedCommon(div);
     } else if (dt.files) {
         var file = e.dataTransfer.files[0];
         div.droppedFile = file;
@@ -1854,7 +1855,13 @@ lord.attachFileByLink = function(a) {
     var url = prompt(lord.text("linkLabelText"));
     if (null === url)
         return;
-    lord.attachFileByLinkInternal(div, url);
+    if (div.droppedFile)
+        delete div.droppedFile;
+    var inp = lord.queryOne("input", div);
+    inp.parentNode.replaceChild(inp.cloneNode(true), inp);
+    lord.clearFileInput(div);
+    div.fileUrl = url;
+    lord.fileAddedCommon(div);
 };
 
 lord.removeFile = function(current) {
@@ -2263,6 +2270,8 @@ lord.submitted = function(event, form) {
     lord.query(".postformFile", form).forEach(function(div) {
         if (div.droppedFile)
             formData.append(div.droppedFileName || "file", div.droppedFile);
+        else if (div.fileUrl)
+            formData.append(div.droppedFileName, div.fileUrl);
     });
     var xhr = new XMLHttpRequest();
     xhr.open("POST", form.action);

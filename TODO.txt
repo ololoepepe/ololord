@@ -32,7 +32,7 @@
 [done] Fix URL parsing
 [done] Improve timezone handling
 [done] Implement collapsible spoilers
-* Add ability to attach files by URL
+[done] Add ability to attach files by URL
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

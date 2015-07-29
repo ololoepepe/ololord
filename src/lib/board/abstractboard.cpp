@@ -511,9 +511,16 @@ void AbstractBoard::addFile(cppcms::application &app)
     QString logTarget = name();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "add_file", "fail:ban", logTarget);
+    TranslatorQt tq(req);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req, params);
+    bool ok = false;
     QString err;
+    Tools::FileList files = Tools::postFiles(req, params, name(), &ok, &err);
+    if (!ok) {
+        Controller::renderError(app, tq.translate("AbstractBoard", "Attached file error", "error"), err);
+        Tools::log(app, "add_file", "fail:" + err, logTarget);
+        return;
+    }
     if (!Controller::testAddFileParams(this, app, params, files, &err))
         return Tools::log(app, "add_file", "fail:" + err, logTarget);
     QString desc;
@@ -620,12 +627,18 @@ void AbstractBoard::createPost(cppcms::application &app)
     QString logTarget = name();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_post", "fail:ban", logTarget);
+    TranslatorQt tq(req);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req, params);
+    bool ok = false;
     QString err;
+    Tools::FileList files = Tools::postFiles(req, params, name(), &ok, &err);
+    if (!ok) {
+        Controller::renderError(app, tq.translate("AbstractBoard", "Attached file error", "error"), err);
+        Tools::log(app, "create_post", "fail:" + err, logTarget);
+        return;
+    }
     if (!Controller::testParams(this, app, params, files, true, &err))
         return Tools::log(app, "create_post", "fail:" + err, logTarget);
-    TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
         Controller::renderError(app, err,
@@ -661,12 +674,18 @@ void AbstractBoard::createThread(cppcms::application &app)
     QString logTarget = name();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_thread", "fail:ban", logTarget);
+    TranslatorQt tq(req);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req, params);
+    bool ok = false;
     QString err;
+    Tools::FileList files = Tools::postFiles(req, params, name(), &ok, &err);
+    if (!ok) {
+        Controller::renderError(app, tq.translate("AbstractBoard", "Attached file error", "error"), err);
+        Tools::log(app, "create_thread", "fail:" + err, logTarget);
+        return;
+    }
     if (!Controller::testParams(this, app, params, files, false, &err))
         return Tools::log(app, "create_thread", "fail:" + err, logTarget);
-    TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
         Controller::renderError(app, err,
