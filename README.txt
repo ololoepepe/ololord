@@ -52,6 +52,17 @@ http://www.imagemagick.org/script/binary-releases.php
 ffmpeg is used for creating video thumbnail. It may be downloaded here:
 https://www.ffmpeg.org/download.html
 
+ololord uses IPInfoDB database for geolocation. You have to download the
+appropriate DB file (in CSV format) yourself and convert it into SQLite 3
+database using the script (bin/ipinfodb-convert.sh). The .csv file may be
+downloaded here: http://lite.ip2location.com/database-ip-country-region-city
+(registration is required). After downloading the file, run:
+bin/ipinfodb-convert.sh <path/to/file.csv>
+And place the resulting ip2location.sqlite database file into the geolocation
+application directory (either shared or user). For example, in a UNIX-like
+system: "/usr/share/ololord/geolocation/ip2location.sqlite".
+Note: Geolocation is really fast (~5 milliseconds per query).
+
 ==============================================================================
  Building and installing (briefly)
 ==============================================================================
