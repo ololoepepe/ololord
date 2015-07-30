@@ -297,7 +297,11 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showYoutubeVideoTitleLabelText = ts.translate("initBase", "Show titles of YouTube videos:",
                                                     "showYoutubeVideoTitleLabelText");
+    c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
+    c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
+    if (c.siteProtocol.empty())
+        c.siteProtocol = "http";
     c.spellsLabelText = ts.translate("initBase", "Spells (command-based post hiding):", "spellsLabelText");
     c.strikeOutHiddenPostLinksLabelText = ts.translate("initBase", "Strike out links to hidden posts:",
                                                        "strikeOutHiddenPostLinksLabelText");

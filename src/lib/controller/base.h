@@ -147,7 +147,9 @@ public:
     std::string showNewPostsLabelText;
     std::string showPasswordText;
     std::string showYoutubeVideoTitleLabelText;
+    std::string siteDomain;
     std::string sitePathPrefix;
+    std::string siteProtocol;
     std::string spellsLabelText;
     std::string strikeOutHiddenPostLinksLabelText;
     std::string stripExifFromJpegLabelText;

@@ -3654,6 +3654,18 @@ The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
 По умолчанию ffmpeg (UNIX) или ffmpeg.exe (Windows).</translation>
     </message>
     <message>
+        <source>Site protocol.
+Either http or https</source>
+        <translation>Протокол сайта.
+Либо http, либо https</translation>
+    </message>
+    <message>
+        <source>Site domain name.
+Example: mysite.com</source>
+        <translation>Доменное имя сайта.
+Пример: mysite.com</translation>
+    </message>
+    <message>
         <source>Determines if real IP of a client is detected.
 Otherwise the address may be an address of a proxy server.
 Works for non-transparent proxies only (X-Forwarded-For, X-Client-IP).

@@ -842,6 +842,12 @@ void initSettings()
     nn->setDescription(t);
     /*======================================== Site ========================================*/
     n = new BSettingsNode("Site", root);
+    nn = new BSettingsNode(QVariant::String, "domain", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Site domain name.\n"
+                                               "Example: mysite.com"));
+    nn = new BSettingsNode(QVariant::String, "protocol", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Site protocol.\n"
+                                               "Either http or https"));
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
                                                "For example, if prefix is board/, the resulting URL will start with "
