@@ -500,7 +500,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         whois.src = whois.src.replace("%flagName%", res["flagName"]);
         whois.title = res["countryName"];
         if (!!res["cityName"])
-            whois.title += ": " + res["cityName"];
+            whois.title = res["cityName"] + ", " + whois.title;
     } else {
         whois.parentNode.removeChild(whois);
     }
