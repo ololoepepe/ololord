@@ -113,6 +113,9 @@ private:
     PRAGMA_DB(not_null)
     QByteArray password_;
     QString posterIp_;
+    QString countryCode_;
+    QString countryName_;
+    QString cityName_;
     bool rawHtml_;
     QString rawText_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(targetPost_))
@@ -130,7 +133,8 @@ private:
 public:
     explicit Post();
     explicit Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
-                  const QString &posterIp, const QByteArray &password, const QByteArray &hashpass = QByteArray());
+                  const QString &posterIp, const QString &countryCode, const QString &countryName,
+                  const QString &cityName, const QByteArray &password, const QByteArray &hashpass = QByteArray());
 public:
     quint64 id() const;
     QString board() const;
@@ -147,6 +151,9 @@ public:
     QByteArray password() const;
     bool draft() const;
     QString posterIp() const;
+    QString countryCode() const;
+    QString countryName() const;
+    QString cityName() const;
     bool rawHtml() const;
     QString rawText() const;
     PostReferences referencedBy() const;

@@ -19,8 +19,13 @@
 
 #include <BDirTools>
 #include <BeQt>
+#include <BSqlDatabase>
+#include <BSqlQuery>
+#include <BSqlResult>
+#include <BSqlWhere>
 #include <BTerminal>
 #include <BTextTools>
+#include <BUuid>
 
 #include <QByteArray>
 #include <QCryptographicHash>
@@ -564,7 +569,9 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             p.dateTime = QDateTime::currentDateTimeUtc();
         QByteArray hp = Tools::hashpass(p.request);
         QString ip = Tools::userIp(p.request);
-        QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, post.password, hp));
+        GeolocationInfo gli = geolocationInfo(ip);
+        QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, gli.countryCode,
+                                         gli.countryName, gli.cityName, post.password, hp));
         ps->setEmail(post.email);
         ps->setName(post.name);
         ps->setSubject(post.subject);
@@ -1320,30 +1327,6 @@ bool fileExists(const QString &hashString, bool *ok)
     return fileExists(hash, ok);
 }
 
-QVariant getFileMetaData(const QString &fileName, bool *ok, QString *error, const QLocale &l)
-{
-    TranslatorQt tq(l);
-    if (fileName.isEmpty())
-        return bRet(ok, false, error, tq.translate("getFileMetaData", "Invalid file name", "error"), QVariant());
-    try {
-        Transaction t;
-        if (!t) {
-            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "description"),
-                        QVariant());
-        }
-        Result<FileInfo> fi = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
-        if (fi.error) {
-            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "error"),
-                        QVariant());
-        }
-        if (!fi)
-            return bRet(ok, false, error, tq.translate("getFileMetaData", "No such file", "error"), QVariant());
-        return bRet(ok, true, error, QString(), fi->metaData());
-    } catch (const odb::exception &e) {
-        return bRet(ok, false, error, Tools::fromStd(e.what()), QVariant());
-    }
-}
-
 QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool *ok, QString *error,
                       QString *description, const QLocale &l)
 {
@@ -1373,6 +1356,78 @@ QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool
     } catch (const odb::exception &e) {
         return bRet(ok, false, error, tq.translate("findPosts", "Internal error", "error"), description,
                     Tools::fromStd(e.what()), QList<Post>());
+    }
+}
+
+GeolocationInfo geolocationInfo(const QString &ip)
+{
+    GeolocationInfo info;
+    info.ip = ip;
+    unsigned int n = Tools::ipNum(ip);
+    if (!n)
+        return info;
+    BSqlDatabase db("QSQLITE", "ip2location" + BUuid::createUuid().toString(true));
+    db.setDatabaseName(BDirTools::findResource("geolocation/ip2location.sqlite"));
+    if (!db.open())
+        return info;
+    static const QStringList Fields = QStringList() << "country_code" << "country_name" << "city_name";
+    BSqlResult r = db.select("ip2location", Fields, BSqlWhere("ip_to >= :ip LIMIT 1", ":ip", n));
+    if (!r)
+        return info;
+    info.cityName = r.value("city_name").toString();
+    info.countryCode = r.value("country_code").toString();
+    info.countryName = r.value("country_name").toString();
+    return info;
+}
+
+GeolocationInfo geolocationInfo(const cppcms::http::request &req)
+{
+    return geolocationInfo(Tools::fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
+}
+
+GeolocationInfo geolocationInfo(const QString &boardName, quint64 postNumber)
+{
+    try {
+        Transaction t;
+        if (!t)
+            return GeolocationInfo();
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error || !post)
+            return GeolocationInfo();
+        GeolocationInfo info;
+        info.countryCode = post->countryCode();
+        info.countryName = post->countryName();
+        info.cityName = post->cityName();
+        info.ip = post->posterIp();
+        return info;
+    }  catch (const odb::exception &e) {
+        Tools::log("Database::geolocationInfo", e);
+        return GeolocationInfo();
+    }
+}
+
+QVariant getFileMetaData(const QString &fileName, bool *ok, QString *error, const QLocale &l)
+{
+    TranslatorQt tq(l);
+    if (fileName.isEmpty())
+        return bRet(ok, false, error, tq.translate("getFileMetaData", "Invalid file name", "error"), QVariant());
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "description"),
+                        QVariant());
+        }
+        Result<FileInfo> fi = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
+        if (fi.error) {
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "error"),
+                        QVariant());
+        }
+        if (!fi)
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "No such file", "error"), QVariant());
+        return bRet(ok, true, error, QString(), fi->metaData());
+    } catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QVariant());
     }
 }
 

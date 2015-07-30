@@ -324,8 +324,6 @@ lord.createPostFile = function(f, boardName, postNumber) {
         a.appendChild(logo);
         divFileSearch.appendChild(lord.node("text", " "));
         divFileSearch.appendChild(a);
-        var siteDomain = lord.text("siteDomain");
-        var siteProtocol = lord.text("siteProtocol");
         [{
             "link": "//www.google.com/searchbyimage?image_url=",
             "text": lord.text("findSourceWithGoogleText"),
@@ -336,7 +334,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
             "img": "iqdb.png"
         }].forEach(function(el) {
             var a = lord.node("a");
-            a.href = el.link + siteProtocol + "://" + siteDomain + "/" + sitePrefix + boardName + "/" + f["sourceName"];
+            a.href = el.link + location.origin + "/" + sitePrefix + boardName + "/" + f["sourceName"];
             a.title = el.text;
             a.target = "_blank";
             var logo = lord.node("img");

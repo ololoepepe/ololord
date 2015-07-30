@@ -1,10 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>res/config.js</file>
-        <file>res/country_code_name_map.txt</file>
-        <file>res/ip_country_code_map.txt</file>
-        <file>res/ip_city_name_map.txt</file>
-        <file>res/city_name_timezone_map.txt</file>
         <file>res/yandex_captcha_script.js</file>
         <file>res/root-zones.txt</file>
         <file>res/lang_name_map.txt</file>

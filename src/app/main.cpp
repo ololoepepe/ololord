@@ -553,14 +553,14 @@ bool handleShowPoster(const QString &, const QStringList &args)
         bWriteLine(translate("showPoster", "Invalid post number"));
         return false;
     }
-    QString posterIp = Database::posterIp(boardName, postNumber);
-    if (posterIp.isEmpty()) {
+    Database::GeolocationInfo gli = Database::geolocationInfo(boardName, postNumber);
+    if (gli.ip.isEmpty()) {
         bWriteLine(translate("showPoster", "No such post"));
         return false;
     }
-    bWriteLine(translate("showPoster", "Poster IP:") + " " + posterIp);
-    QString cc = Tools::countryCode(posterIp);
-    QString cn = Tools::countryName(cc);
+    bWriteLine(translate("showPoster", "Poster IP:") + " " + gli.ip);
+    QString cc = gli.countryCode;
+    QString cn = gli.countryName;
     if (!cc.isEmpty()) {
         bWriteLine(translate("showPoster", "Poster country:") + " " + cc
                    + (!cn.isEmpty() ? ("(" + cn + ")") : QString()));
@@ -823,11 +823,6 @@ void initSettings()
     nn = new BSettingsNode(QVariant::UInt, "archive_limit", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum archived thread count per board.\n"
                                                "The default is 0 (do not archive)."));
-    nn = new BSettingsNode(QVariant::Bool, "guess_city_name", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Determines if poster city name should be guessed on "
-                                               "boards that allow this (e.g. /int/).\n"
-                                               "This operation is rather heavy, so you may turn it off.\n"
-                                               "The default is true."));
     nn = new BSettingsNode(QVariant::UInt, "captcha_quota", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum count of extra posts a user may make before "
                                                "solving captcha again.\n"
@@ -847,12 +842,6 @@ void initSettings()
     nn->setDescription(t);
     /*======================================== Site ========================================*/
     n = new BSettingsNode("Site", root);
-    nn = new BSettingsNode(QVariant::String, "domain", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Site domain name.\n"
-                                               "Example: mysite.com"));
-    nn = new BSettingsNode(QVariant::String, "protocol", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Site protocol.\n"
-                                               "Either http or https"));
     nn = new BSettingsNode(QVariant::String, "path_prefix", n);
     nn->setDescription(BTranslation::translate("initSettings", "Global site prefix.\n"
                                                "For example, if prefix is board/, the resulting URL will start with "

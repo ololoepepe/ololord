@@ -116,7 +116,8 @@ Post::Post()
 }
 
 Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
-           const QString &posterIp, const QByteArray &password, const QByteArray &hashpass)
+           const QString &posterIp, const QString &countryCode, const QString &countryName, const QString &cityName,
+           const QByteArray &password, const QByteArray &hashpass)
 {
     id_ = 0L;
     board_ = board;
@@ -128,6 +129,9 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     showTripcode_ = false;
     thread_ = thread;
     posterIp_ = posterIp;
+    countryCode_ = countryCode;
+    countryName_ = countryName;
+    cityName_ = cityName;
     rawHtml_ = false;
     draft_ = false;
     password_ = password;
@@ -206,6 +210,21 @@ bool Post::draft() const
 QString Post::posterIp() const
 {
     return posterIp_;
+}
+
+QString Post::countryCode() const
+{
+    return countryCode_;
+}
+
+QString Post::countryName() const
+{
+    return countryName_;
+}
+
+QString Post::cityName() const
+{
+    return cityName_;
 }
 
 bool Post::rawHtml() const

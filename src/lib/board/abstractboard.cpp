@@ -1493,12 +1493,10 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->showRegistered = false;
         p->showTripcode = post.showTripcode();
         if (showWhois()) {
-            QString countryCode = Tools::countryCode(post.posterIp());
-            p->flagName = Tools::toStd(Tools::flagName(countryCode));
+            p->flagName = Tools::toStd(Tools::flagName(post.countryCode()));
             if (!p->flagName.empty()) {
-                p->countryName = Tools::toStd(Tools::countryName(countryCode));
-                if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
-                    p->cityName = Tools::toStd(Tools::cityName(post.posterIp()));
+                p->countryName = Tools::toStd(post.countryName());
+                p->cityName = Tools::toStd(post.cityName());
             } else {
                 p->flagName = "default.png";
                 p->countryName = "Unknown country";

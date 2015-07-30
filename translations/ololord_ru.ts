@@ -1207,11 +1207,6 @@ text</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
     </message>
-    <message>
-        <source>Invalid parameters</source>
-        <comment>error</comment>
-        <translation>Неправильные параметры</translation>
-    </message>
 </context>
 <context>
     <name>addFile</name>
@@ -3627,14 +3622,6 @@ The default is 0 (do not archive).</source>
 По умолчанию 0 (не архивировать).</translation>
     </message>
     <message>
-        <source>Determines if poster city name should be guessed on boards that allow this (e.g. /int/).
-This operation is rather heavy, so you may turn it off.
-The default is true.</source>
-        <translation>Определяет, угадывать ли город автора поста на досках, где это разрешено (напр. /int/).
-Эта операция довольно &quot;тяжелая&quot;, поэтому вы можете отключить ее.
-По умолчанию true.</translation>
-    </message>
-    <message>
         <source>Maximum count of extra posts a user may make before solving captcha again.
 The default is 0 (solve captcha every time).</source>
         <translation>Максимальное количество дополнительных постов, которые пользователь может оставить без повторного воода капчи.
@@ -3665,18 +3652,6 @@ The default is 3.</source>
 The default is ffmpeg (UNIX) or ffmpeg.exe (Windows).</source>
         <translation>Команда вызова утилиты ffmpeg (возможно, полный путь).
 По умолчанию ffmpeg (UNIX) или ffmpeg.exe (Windows).</translation>
-    </message>
-    <message>
-        <source>Site protocol.
-Either http or https</source>
-        <translation>Протокол сайта.
-Либо http, либо https</translation>
-    </message>
-    <message>
-        <source>Site domain name.
-Example: mysite.com</source>
-        <translation>Доменное имя сайта.
-Пример: mysite.com</translation>
     </message>
     <message>
         <source>Determines if real IP of a client is detected.

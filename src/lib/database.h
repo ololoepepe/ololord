@@ -193,6 +193,14 @@ struct OLOLORD_EXPORT BanInfo
     int level;
 };
 
+struct OLOLORD_EXPORT GeolocationInfo
+{
+    QString cityName;
+    QString countryCode;
+    QString countryName;
+    QString ip;
+};
+
 struct OLOLORD_EXPORT RefKey
 {
     QString boardName;
@@ -295,6 +303,9 @@ OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);
 OLOLORD_EXPORT QList<Post> findPosts(const Search::Query &query, const QString &boardName = QString(), bool *ok = 0,
                                      QString *error = 0, QString *description = 0,
                                      const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT GeolocationInfo geolocationInfo(const QString &ip);
+OLOLORD_EXPORT GeolocationInfo geolocationInfo(const cppcms::http::request &req);
+OLOLORD_EXPORT GeolocationInfo geolocationInfo(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT QVariant getFileMetaData(const QString &fileName, bool *ok = 0, QString *error = 0,
                                         const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT int getNewPostCount(const cppcms::http::request &req, const QString &boardName, quint64 lastPostNumber,

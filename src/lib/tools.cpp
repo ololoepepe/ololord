@@ -6,6 +6,7 @@
 #include "controller/board.h"
 #include "controller/error.h"
 #include "controller/notfound.h"
+#include "database.h"
 #include "settingslocker.h"
 #include "translator.h"
 
@@ -14,7 +15,6 @@
 #include <BeQt>
 #include <BLogger>
 #include <BTextTools>
-#include <BUuid>
 
 #include <QByteArray>
 #include <QBuffer>
@@ -242,122 +242,12 @@ bool captchaEnabled(const QString &boardName)
             && (boardName.isEmpty() || s->value("Board/" + boardName + "/captcha_enabled", true).toBool());
 }
 
-QString cityName(const QString &ip)
-{
-    typedef QMap<IpRange, QString> NameMap;
-    QMutexLocker locker(&cityNameMutex);
-    init_once(NameMap, names, NameMap()) {
-        QString fn = BDirTools::findResource("res/ip_city_name_map.txt");
-        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
-        foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() < 3)
-                continue;
-            IpRange r(sll, 0, 1, true);
-            if (!r.isValid())
-                continue;
-            QString n = QStringList(sll.mid(2)).join(" ");
-            if (n.length() < sll.size() - 2)
-                continue;
-            names.insert(r, n);
-        }
-    }
-    unsigned int n = ipNum(ip);
-    if (!n)
-        return "";
-    static QMap<unsigned int, QString> map;
-    QString code = map.value(n);
-    if (!code.isEmpty())
-        return ("-" != code) ? code : "";
-    foreach (const IpRange &r, names.keys()) {
-        if (n >= r.start && n <= r.end) {
-            QString name = names.value(r);
-            map.insert(n, name);
-            return name;
-        }
-    }
-    map.insert(n, "-");
-    return "";
-}
-
-QString cityName(const cppcms::http::request &req)
-{
-    return cityName(fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
-}
-
 QString cookieValue(const cppcms::http::request &req, const QString &name)
 {
     if (name.isEmpty())
         return "";
     QByteArray ba = const_cast<cppcms::http::request *>(&req)->cookie_by_name(toStd(name)).value().data();
     return QUrl::fromPercentEncoding(ba);
-}
-
-QString countryCode(const QString &ip)
-{
-    typedef QMap<IpRange, QString> CodeMap;
-    QMutexLocker locker(&countryCodeMutex);
-    init_once(CodeMap, codes, CodeMap()) {
-        QString fn = BDirTools::findResource("res/ip_country_code_map.txt");
-        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
-        foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() != 3)
-                continue;
-            IpRange r(sll, 0, 1, true);
-            if (!r.isValid())
-                continue;
-            QString c = sll.last();
-            if (c.length() != 2)
-                continue;
-            codes.insert(r, c);
-        }
-    }
-    unsigned int n = ipNum(ip);
-    if (!n)
-        return "";
-    static QMap<unsigned int, QString> map;
-    QString code = map.value(n);
-    if (!code.isEmpty())
-        return ("-" != code) ? code : "";
-    foreach (const IpRange &r, codes.keys()) {
-        if (n >= r.start && n <= r.end) {
-            QString code = codes.value(r);
-            map.insert(n, code);
-            return code;
-        }
-    }
-    map.insert(n, "-");
-    return "";
-}
-
-QString countryCode(const cppcms::http::request &req)
-{
-    return countryCode(fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
-}
-
-QString countryName(const QString &countryCode)
-{
-    typedef QMap<QString, QString> NameMap;
-    QMutexLocker locker(&countryNameMutex);
-    init_once(NameMap, names, NameMap()) {
-        QString fn = BDirTools::findResource("res/country_code_name_map.txt");
-        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
-        foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() < 2)
-                continue;
-            if (sll.first().length() != 2)
-                continue;
-            QString name = QStringList(sll.mid(1)).join(" ");
-            if (name.length() < sll.length() - 1)
-                continue;
-            names.insert(sll.first(), name);
-        }
-    }
-    if (countryCode.length() != 2)
-        return "";
-    return names.value(countryCode);
 }
 
 QString customContent(const QString &prefix, const QLocale &l)
@@ -687,7 +577,7 @@ QLocale locale(const cppcms::http::request &req, const QLocale &defaultLocale)
 {
     QLocale l(cookieValue(req, "locale"));
     if (QLocale::c() == l)
-        l = QLocale(countryCode(req));
+        l = QLocale(Database::geolocationInfo(req).countryCode);
     return (QLocale::c() == l) ? defaultLocale : l;
 }
 
@@ -863,8 +753,6 @@ FileList postFiles(const cppcms::http::request &request, const PostParameters &p
         file.formFieldName = key;
         file.rating = 0;
         QString id = key.mid(9);
-        if (BUuid(id).isNull())
-            return bRet(ok, false, error, tq.translate("Tools::postFiles", "Invalid parameters", "error"), FileList());
         QString r = params.value("file_" + id + "_rating");
         if ("R-15" == r)
             file.rating = 15;
@@ -1011,30 +899,11 @@ QStringList supportedCodeLanguages()
 
 int timeZoneMinutesOffset(const cppcms::http::request &req, int defaultOffset)
 {
-    typedef QMap<QString, int> TimezoneMap;
-    QMutexLocker locker(&timezoneMutex);
-    init_once(TimezoneMap, timezones, TimezoneMap()) {
-        QString fn = BDirTools::findResource("res/city_name_timezone_map.txt");
-        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
-        foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() < 2)
-                continue;
-            if (sll.last().isEmpty())
-                continue;
-            bool ok = false;
-            int offset = sll.last().toInt(&ok);
-            if (!ok || offset < -720 || offset > 840)
-                continue;
-            timezones.insert(QStringList(sll.mid(0, sll.size() - 1)).join(" "), offset);
-        }
-    }
     bool ok = false;
     int offset = cookieValue(req, "timeZoneOffset").toInt(&ok);
-    if (ok && offset >= -720 && offset <= 840)
-        return offset;
-    return SettingsLocker()->value("Board/guess_city_name", true).toBool()
-            ? timezones.value(cityName(req), defaultOffset) : defaultOffset;
+    if (!ok || offset < -720 || offset > 840)
+        return defaultOffset;
+    return offset;
 }
 
 QByteArray toHashpass(const QString &s, bool *ok)

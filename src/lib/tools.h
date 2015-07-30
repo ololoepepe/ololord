@@ -46,7 +46,7 @@ class locale;
 namespace Tools
 {
 
-struct AudioTags
+struct OLOLORD_EXPORT AudioTags
 {
     QString album;
     QString artist;
@@ -54,7 +54,7 @@ struct AudioTags
     QString year;
 };
 
-struct File
+struct OLOLORD_EXPORT File
 {
     QByteArray data;
     QString fileName;
@@ -63,7 +63,7 @@ struct File
     int rating;
 };
 
-struct Friend
+struct OLOLORD_EXPORT Friend
 {
     QString name;
     QString title;
@@ -96,7 +96,7 @@ public:
     bool isValid() const;
 };
 
-struct IsMobile
+struct OLOLORD_EXPORT IsMobile
 {
     struct {
         bool device;
@@ -134,7 +134,7 @@ struct IsMobile
 
 typedef QList<File> FileList;
 
-struct Post
+struct OLOLORD_EXPORT Post
 {
     bool draft;
     QString email;
@@ -170,12 +170,7 @@ OLOLORD_EXPORT QStringList acceptedExternalBoards();
 OLOLORD_EXPORT AudioTags audioTags(const QString &fileName);
 OLOLORD_EXPORT QString captchaQuotaFile();
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
-OLOLORD_EXPORT QString cityName(const QString &ip);
-OLOLORD_EXPORT QString cityName(const cppcms::http::request &req);
 OLOLORD_EXPORT QString cookieValue(const cppcms::http::request &req, const QString &name);
-OLOLORD_EXPORT QString countryCode(const QString &ip);
-OLOLORD_EXPORT QString countryCode(const cppcms::http::request &req);
-OLOLORD_EXPORT QString countryName(const QString &countryCode);
 OLOLORD_EXPORT QString customContent(const QString &prefix, const QLocale &l);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
 OLOLORD_EXPORT QString externalLinkRegexpPattern();

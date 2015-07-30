@@ -135,6 +135,7 @@ lord.showSettings = function() {
     var imageZoomSensitivity = lord.nameOne("imageZoomSensitivity", div);
     imageZoomSensitivity.value = lord.getLocalObject("imageZoomSensitivity", 25);
     var timeZoneOffset = lord.nameOne("timeZoneOffset", div);
+    var date = new Date();
     timeZoneOffset.value = lord.getCookie("timeZoneOffset") || -date.getTimezoneOffset();    
     var autoUpdateThreadsByDefault = lord.nameOne("autoUpdateThreadsByDefault", div);
     var defaultAudioVideoVolume = lord.nameOne("defaultAudioVideoVolume", div);
