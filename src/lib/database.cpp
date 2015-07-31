@@ -1430,7 +1430,8 @@ void generateRss()
             Transaction t;
             if (!t)
                 continue;
-            QList<Post> list = query<Post, Post>((odb::query<Post>::board == boardName) + " LIMIT 500");
+            QList<Post> list = query<Post, Post>((odb::query<Post>::board == boardName)
+                                                 + " ORDER BY dateTime DESC LIMIT 500");
             foreach (const Post &post, list) {
                 QDomElement item = doc.createElement("item");
                 QDomElement title = doc.createElement("title");
