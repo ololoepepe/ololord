@@ -36,8 +36,8 @@
 [done] Improve geolocation
 [done] Get site protocol and domain from JS location object
 [done] Add threads catalogs
+[done] Implement RSS feed
 * Reimplement post text parser
-* Implement RSS feed
 
 * Implement moving threads between boards
 * Reload codecha instead of reloading a page

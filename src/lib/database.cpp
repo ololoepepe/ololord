@@ -5,6 +5,7 @@
 #include "captcha/abstractcaptchaengine.h"
 #include "controller/controller.h"
 #include "search.h"
+#include "settingslocker.h"
 #include "stored/banneduser.h"
 #include "stored/banneduser-odb.hxx"
 #include "stored/postcounter.h"
@@ -32,14 +33,22 @@
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
+#include <QDomCDATASection>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QDomNode>
+#include <QDomProcessingInstruction>
+#include <QDomText>
 #include <QFile>
 #include <QFileInfo>
 #include <QReadLocker>
 #include <QReadWriteLock>
 #include <QScopedPointer>
+#include <QSettings>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+#include <QTimeZone>
 #include <QVariant>
 #include <QVariantMap>
 #include <QWriteLocker>
@@ -52,6 +61,8 @@
 #include <odb/schema-catalog.hxx>
 #include <odb/sqlite/database.hxx>
 #include <odb/transaction.hxx>
+
+B_DECLARE_TRANSLATE_FUNCTION
 
 namespace Database
 {
@@ -174,6 +185,8 @@ public:
 
 static QReadWriteLock processTextLock(QReadWriteLock::Recursive);
 static QMutex postMutex(QMutex::Recursive);
+static QReadWriteLock rssLock(QReadWriteLock::Recursive);
+static QMap<QString, QString> rssMap;
 
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
                                  QString *description = 0, const QLocale &l = BCoreApplication::locale())
@@ -1359,6 +1372,134 @@ QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool
     }
 }
 
+void generateRss()
+{
+    QWriteLocker locker(&rssLock);
+    rssMap.clear();
+    QString siteProtocol;
+    QString siteDomain;
+    QString sitePathPrefix;
+    {
+        SettingsLocker s;
+        siteProtocol = s->value("Site/protocol").toString();
+        if (siteProtocol.isEmpty())
+            siteProtocol = "http";
+        siteDomain = s->value("Site/domain").toString();
+        sitePathPrefix = s->value("Site/path_prefix").toString();
+    }
+    QLocale locale = BCoreApplication::locale();
+    foreach (const QString &boardName, AbstractBoard::boardNames()) {
+        AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+        if (board.isNull())
+            continue;
+        QDomDocument doc;
+        doc.appendChild(doc.createProcessingInstruction("xml", "version=\"1.0\""));
+        QDomElement root = doc.createElement("rss");
+        root.setAttribute("version", "2.0");
+        root.setAttribute("xmlns:dc", "http://purl.org/dc/elements/1.1/");
+        root.setAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
+        QDomElement chan = doc.createElement("channel");
+        QDomElement title = doc.createElement("title");
+        title.appendChild(doc.createTextNode(translate("Database::generateRss", "Feed", "channel title") + " "
+                                             + siteDomain + "/" + sitePathPrefix + boardName));
+        chan.appendChild(title);
+        QDomElement link = doc.createElement("link");
+        link.appendChild(doc.createTextNode(siteProtocol + "://" + siteDomain + "/" + sitePathPrefix + boardName));
+        chan.appendChild(link);
+        QDomElement desc = doc.createElement("description");
+        desc.appendChild(doc.createTextNode(translate("Database::generateRss", "Last posts from board",
+                                                      "channel description") + " /" + boardName + "/"));
+        chan.appendChild(desc);
+        QDomElement lang = doc.createElement("language");
+        lang.appendChild(doc.createTextNode(locale.name().left(2)));
+        chan.appendChild(lang);
+        QDomElement pub = doc.createElement("pubDate");
+        pub.appendChild(doc.createTextNode(QLocale("en_US").toString(QDateTime::currentDateTimeUtc(),
+                                                                     "ddd, dd MMM yyyy hh:mm:ss +0000")));
+        chan.appendChild(pub);
+        QDomElement ttl = doc.createElement("ttl");
+        ttl.appendChild(doc.createTextNode("60"));
+        chan.appendChild(ttl);
+        QDomElement atomLink = doc.createElement("atom:link");
+        atomLink.setAttribute("href", siteProtocol + "://" + siteDomain + "/" + sitePathPrefix + boardName
+                              + "/rss.xml");
+        atomLink.setAttribute("rel", "self");
+        atomLink.setAttribute("type", "application/rss+xml");
+        chan.appendChild(atomLink);
+        try {
+            Transaction t;
+            if (!t)
+                continue;
+            QList<Post> list = query<Post, Post>((odb::query<Post>::board == boardName) + " LIMIT 500");
+            foreach (const Post &post, list) {
+                QDomElement item = doc.createElement("item");
+                QDomElement title = doc.createElement("title");
+                quint64 threadNumber = post.thread().load()->number();
+                bool thread = (post.number() == threadNumber);
+                QString t;
+                if (thread)
+                    t += "[" + translate("Database::generateRss", "New thread", "item title") + "]";
+                else
+                    t += translate("Database::generateRss", "Reply to thread", "item title") + "";
+                t += " ";
+                QString subj = post.subject();
+                if (subj.isEmpty())
+                    subj = post.rawText().left(150);
+                if (!subj.isEmpty()) {
+                    if (!thread)
+                        t += "\"";
+                    t += subj;
+                    if (!thread)
+                        t += "\"";
+                } else {
+                    t += QString::number(post.number());
+                }
+                title.appendChild(doc.createCDATASection(t));
+                item.appendChild(title);
+                QDomElement link = doc.createElement("link");
+                QString l = siteProtocol + "://" + siteDomain + "/" + sitePathPrefix + boardName + "/thread/"
+                        + QString::number(threadNumber) + ".html";
+                link.appendChild(doc.createTextNode(l));
+                item.appendChild(link);
+                QDomElement desc = doc.createElement("description");
+                QString d = "\n";
+                typedef QLazyWeakPointer<FileInfo> FileInfoLazy;
+                foreach (FileInfoLazy fil, post.fileInfos()) {
+                    QSharedPointer<FileInfo> fi = fil.load();
+                    d += "<img src=\"" + siteProtocol + "://" + siteDomain + "/" + sitePathPrefix + boardName + "/"
+                            + fi->thumbName() + "\"><br />";
+                }
+                d += post.text();
+                d += "\n";
+                desc.appendChild(doc.createCDATASection(d));
+                item.appendChild(desc);
+                QDomElement pub = doc.createElement("pubDate");
+                pub.appendChild(doc.createTextNode(QLocale("en_US").toString(post.dateTime(),
+                                                                             "ddd, dd MMM yyyy hh:mm:ss +0000")));
+                item.appendChild(pub);
+                QDomElement guid = doc.createElement("guid");
+                l += "#" + QString::number(post.number());
+                guid.setAttribute("isPermalink", "ture");
+                guid.appendChild(doc.createTextNode(l));
+                item.appendChild(guid);
+                QDomElement creator = doc.createElement("dc:creator");
+                QString c = post.name();
+                if (c.isEmpty())
+                    c = board->defaultUserName(locale);
+                creator.appendChild(doc.createTextNode(c));
+                item.appendChild(creator);
+                chan.appendChild(item);
+            }
+        } catch (const odb::exception &e) {
+            Tools::log("Database::generateRss", e);
+            continue;
+        }
+        root.appendChild(chan);
+        doc.appendChild(root);
+        rssMap.insert(boardName, doc.toString(4));
+    }
+}
+
 GeolocationInfo geolocationInfo(const QString &ip)
 {
     GeolocationInfo info;
@@ -1867,6 +2008,12 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
         }
     }
     return bRet(error, QString(), count);
+}
+
+QString rss(const QString &boardName)
+{
+    QReadLocker locker(&rssLock);
+    return rssMap.value(boardName);
 }
 
 bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error, const QLocale &l)

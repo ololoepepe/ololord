@@ -29,6 +29,7 @@ OlolordApplication::OlolordApplication(int &argc, char **argv, const QString &ap
 #endif
     captchaQuotaTimerId = startTimer(10 * BeQt::Minute);
     outdatedTimerId = startTimer(BeQt::Hour);
+    rssTimerId = startTimer(BeQt::Hour);
     searchTimerId = startTimer(10 * BeQt::Minute);
     uptimeTimer.start();
 }
@@ -47,6 +48,7 @@ OlolordApplication::OlolordApplication(int &argc, char **argv, const InitialSett
 #endif
     captchaQuotaTimerId = startTimer(10 * BeQt::Minute);
     outdatedTimerId = startTimer(BeQt::Hour);
+    rssTimerId = startTimer(BeQt::Hour);
     searchTimerId = startTimer(10 * BeQt::Minute);
     uptimeTimer.start();
 }
@@ -76,6 +78,8 @@ void OlolordApplication::timerEvent(QTimerEvent *e)
         Database::checkOutdatedEntries();
     else if (e->timerId() == searchTimerId && Search::isModified())
         BDirTools::writeFile(Tools::searchIndexFile(), Search::saveIndex());
+    else if (e->timerId() == rssTimerId)
+        Database::generateRss();
     else if (e->timerId() == captchaQuotaTimerId && AbstractBoard::isCaptchaQuotaModified())
         BDirTools::writeFile(Tools::captchaQuotaFile(), AbstractBoard::saveCaptchaQuota());
 }

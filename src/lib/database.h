@@ -303,6 +303,7 @@ OLOLORD_EXPORT bool fileExists(const QString &hashString, bool *ok = 0);
 OLOLORD_EXPORT QList<Post> findPosts(const Search::Query &query, const QString &boardName = QString(), bool *ok = 0,
                                      QString *error = 0, QString *description = 0,
                                      const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT void generateRss();
 OLOLORD_EXPORT GeolocationInfo geolocationInfo(const QString &ip);
 OLOLORD_EXPORT GeolocationInfo geolocationInfo(const cppcms::http::request &req);
 OLOLORD_EXPORT GeolocationInfo geolocationInfo(const QString &boardName, quint64 postNumber);
@@ -338,6 +339,7 @@ OLOLORD_EXPORT bool registerUser(const QByteArray &hashpass, RegisteredUser::Lev
                                  const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT int rerenderPosts(const QStringList boardNames = QStringList(), QString *error = 0,
                                  const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT QString rss(const QString &boardName);
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed, QString *error = 0,
                                    const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool setThreadFixed(const QString &boardName, quint64 threadNumber, bool fixed,

@@ -116,6 +116,7 @@ int main(int argc, char **argv)
         }
         Database::createSchema();
         Database::checkOutdatedEntries();
+        Database::generateRss();
         OlolordWebAppThread owt(conf);
         owt.start();
         ret = app.exec();

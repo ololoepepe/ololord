@@ -496,6 +496,11 @@ By default, the date of first site launch is used.</source>
         <comment>sortingModeLabelText</comment>
         <translation>Сортировать по:</translation>
     </message>
+    <message>
+        <source>RSS feed</source>
+        <comment>boardRssLinkText</comment>
+        <translation>Лента RSS</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -803,6 +808,29 @@ Apperas in the HTML pages.</source>
         <source>Codecha - programmers&apos; CAPTCHA</source>
         <comment>title</comment>
         <translation>Codecha - программистская CAPTCHA</translation>
+    </message>
+</context>
+<context>
+    <name>Database::generateRss</name>
+    <message>
+        <source>Feed</source>
+        <comment>channel title</comment>
+        <translation>Лента</translation>
+    </message>
+    <message>
+        <source>Last posts from board</source>
+        <comment>channel description</comment>
+        <translation>Последние посты доски</translation>
+    </message>
+    <message>
+        <source>New thread</source>
+        <comment>item title</comment>
+        <translation>Новый тред</translation>
+    </message>
+    <message>
+        <source>Reply to thread</source>
+        <comment>item title</comment>
+        <translation>Ответ в тред</translation>
     </message>
 </context>
 <context>

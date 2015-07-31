@@ -12,6 +12,7 @@ HEADERS += \
     $${PWD}/homeroute.h \
     $${PWD}/markuproute.h \
     $${PWD}/playlistroute.h \
+    $${PWD}/rssroute.h \
     $${PWD}/searchroute.h \
     $${PWD}/settingsroute.h \
     $${PWD}/staticfilesroute.h \
@@ -31,6 +32,7 @@ SOURCES += \
     $${PWD}/homeroute.cpp \
     $${PWD}/markuproute.cpp \
     $${PWD}/playlistroute.cpp \
+    $${PWD}/rssroute.cpp \
     $${PWD}/searchroute.cpp \
     $${PWD}/settingsroute.cpp \
     $${PWD}/staticfilesroute.cpp \

@@ -8,7 +8,7 @@ VER_PAT = 0
 
 CONFIG += release
 
-QT = gui
+QT = gui xml
 BEQT = core sql
 
 include(../../prefix.pri)

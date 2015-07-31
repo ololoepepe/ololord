@@ -840,6 +840,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         return;
     }
     c.boardCatalogLinkText = ts.translate("AbstractBoard", "Threads catalog", "boardCatalogLinkText");
+    c.boardRssLinkText = ts.translate("AbstractBoard", "RSS feed", "boardRssLinkText");
     c.boardRulesLinkText = ts.translate("AbstractBoard", "Borad rules", "boardRulesLinkText");
     c.currentPage = page;
     c.omittedPostsText = ts.translate("AbstractBoard", "Posts omitted:", "omittedPostsText");

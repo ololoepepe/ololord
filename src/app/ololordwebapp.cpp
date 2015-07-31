@@ -17,6 +17,7 @@
 #include <route/HomeRoute>
 #include <route/MarkupRoute>
 #include <route/PlaylistRoute>
+#include <route/RssRoute>
 #include <route/SearchRoute>
 #include <route/SettingsRoute>
 #include <route/StaticFilesRoute>
@@ -81,6 +82,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new MarkupRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new PlaylistRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new RssRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new SearchRoute(*this);
     routesMap.insert(r->regex(), r);
