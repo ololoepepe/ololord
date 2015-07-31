@@ -38,6 +38,7 @@ lord._defineEnum("RpcGetNewPostsId");
 lord._defineEnum("RpcGetPostId");
 lord._defineEnum("RpcGetThreadNumbersId");
 lord._defineEnum("RpcGetYandexCaptchaImageId");
+lord._defineEnum("RpcMoveThreadId");
 lord._defineEnum("RpcSetThreadFixedId");
 lord._defineEnum("RpcSetThreadOpenedId");
 lord._defineEnum("RpcSetVoteOpenedId");

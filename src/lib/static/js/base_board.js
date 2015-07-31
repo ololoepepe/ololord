@@ -642,6 +642,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var unfixButton = lord.nameOne("unfixButton", post);
     var openButton = lord.nameOne("openButton", post);
     var closeButton = lord.nameOne("closeButton", post);
+    var moveButton = lord.nameOne("moveButton", post);
     var banButton = lord.nameOne("banButton", post);
     var downloadButton = lord.nameOne("downloadButton", post);
     var favButton = lord.nameOne("addToFavoritesButton", post);
@@ -684,6 +685,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         unfixButton.parentNode.removeChild(unfixButton);
         openButton.parentNode.removeChild(openButton);
         closeButton.parentNode.removeChild(closeButton);
+        moveButton.parentNode.removeChild(moveButton);
         banButton.parentNode.removeChild(banButton);
         return post;
     }
@@ -707,6 +709,8 @@ lord.createPostNode = function(res, permanent, boardName) {
             closeButton.href = closeButton.href.replace("%postNumber%", res["number"]);
             openButton.parentNode.removeChild(openButton);
         }
+        moveButton.parentNode.removeChild(moveButton);
+        moveButton.href = moveButton.href.replace("%postNumber%", res["number"]);
         if (!inp) {
             toThread.style.display = "";
             var toThreadLink = lord.nameOne("toThreadLink", post);
@@ -719,6 +723,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         unfixButton.parentNode.removeChild(unfixButton);
         openButton.parentNode.removeChild(openButton);
         closeButton.parentNode.removeChild(closeButton);
+        moveButton.parentNode.removeChild(moveButton);
         toThread.parentNode.removeChild(toThread);
     }
     banButton.href = banButton.href.replace("%postNumber%", res["number"]);
@@ -1133,6 +1138,34 @@ lord.setThreadOpened = function(boardName, postNumber, opened) {
     if (!lord.getCookie("hashpass"))
         return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
     lord.ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], lord.RpcSetThreadOpenedId, lord.reloadPage);
+};
+
+lord.moveThread = function(boardName, threadNumber) {
+    if (!boardName || isNaN(+threadNumber))
+        return;
+    if (!lord.getCookie("hashpass"))
+        return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
+    var title = lord.text("moveThreadText");
+    var div = lord.node("div");
+    div.appendChild(lord.node("text", lord.text("boardLabelText")));
+    var selBoard = lord.id("availableBoardsSelect").cloneNode(true);
+    var b = lord.queryOne("[value='" + boardName + "']", selBoard);
+    b.parentNode.removeChild(b);
+    b = lord.queryOne("[value='*']", selBoard);
+    b.parentNode.removeChild(b);
+    selBoard.style.display = "block";
+    div.appendChild(selBoard);
+    div.appendChild(lord.node("text", lord.text("moveThreadWarningText")));
+    lord.showDialog(title, null, div, function() {
+        var targetBoardName = selBoard.options[selBoard.selectedIndex].value;
+        lord.ajaxRequest("move_thread", [boardName, +threadNumber, targetBoardName], lord.RpcMoveThreadId, function(res) {
+            var href = location.href.split("/" + boardName).shift();
+            if (href[href.length - 1] != "/")
+                href += "/";
+            href += targetBoardName + "/thread/" + res + ".html";
+            location.href = href;
+        });
+    });
 };
 
 lord.banUser = function(boardName, postNumber) {

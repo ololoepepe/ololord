@@ -178,6 +178,8 @@ public:
     std::string megabytesText;
     int moder;
     std::string modificationDateTimeText;
+    std::string moveThreadText;
+    std::string moveThreadWarningText;
     std::string nextFileText;
     std::string noCaptchaText;
     std::string notLoggedInText;

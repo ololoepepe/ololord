@@ -44,6 +44,7 @@ public:
     void getThreadNumbers(std::string boardName);
     void getYandexCaptchaImage(std::string type);
     QList<Handler> handlers() const;
+    void moveThread(std::string sourceBoardName, long long threadNumber, std::string targetBoardName);
     void setThreadFixed(std::string boardName, long long threadNumber, bool fixed);
     void setThreadOpened(std::string boardName, long long threadNumber, bool opened);
     void setVoteOpened(long long postNumber, bool opened, std::string password);

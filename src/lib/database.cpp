@@ -358,12 +358,14 @@ static void deleteFiles(const QString &boardName, const QStringList &fileNames)
         QFile::remove(path + "/" + fn);
 }
 
-static quint64 incrementPostCounter(const QString &boardName, QString *error = 0,
+static quint64 incrementPostCounter(const QString &boardName, quint64 delta = 1, QString *error = 0,
                                     const QLocale &l = BCoreApplication::locale())
 {
     TranslatorQt tq(l);
     if (!AbstractBoard::boardNames().contains(boardName))
         return bRet(error, tq.translate("incrementPostCounter", "Invalid board name", "error"), 0L);
+    if (!delta)
+        return bRet(error, tq.translate("incrementPostCounter", "Internal logic error", "error"), 0L);
     quint64 incremented = 0L;
     try {
         Transaction t;
@@ -377,7 +379,8 @@ static quint64 incrementPostCounter(const QString &boardName, QString *error = 0
         }
         if (counter.error || !counter)
             return bRet(error, tq.translate("incrementPostCounter", "Internal database error", "error"), 0L);
-        incremented = counter->incrementLastPostNumber();
+        while (delta--)
+            incremented = counter->incrementLastPostNumber();
         update(counter);
         t.commit();
     } catch (const odb::exception &e) {
@@ -548,7 +551,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         }
         QString err;
         quint64 postNumber = p.dateTime.isValid() ? lastPostNumber(boardName, &err, tq.locale())
-                                                  : incrementPostCounter(boardName, &err, tq.locale());
+                                                  : incrementPostCounter(boardName, 1, &err, tq.locale());
         if (!postNumber) {
             return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description, err,
                         false);
@@ -993,7 +996,7 @@ quint64 createThread(CreateThreadParameters &p)
             return bRet(p.error, tq.translate("createThread", "Internal database error", "error"), p.description,
                         tq.translate("createThread", "Internal database error", "error"), false);
         QString err;
-        quint64 postNumber = incrementPostCounter(p.params.value("board"), &err, p.locale);
+        quint64 postNumber = incrementPostCounter(p.params.value("board"), 1, &err, p.locale);
         if (!postNumber)
             return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description, err, 0L);
         if (p.threadLimit) {
@@ -1798,6 +1801,120 @@ bool moderOnBoard(const QByteArray &hashpass, const QString &board1, const QStri
         return true;
     QStringList boards = registeredUserBoards(hashpass);
     return (boards.contains("*") && boards.contains(board1) && (board2.isEmpty() || boards.contains(board2)));
+}
+
+quint64 moveThread(const cppcms::http::request &req, const QString &sourceBoard, quint64 threadNumber,
+                   const QString &targetBoard, QString *error)
+{
+    AbstractBoard::LockingWrapper srcBrd = AbstractBoard::board(sourceBoard);
+    AbstractBoard::LockingWrapper trgBrd = AbstractBoard::board(targetBoard);
+    TranslatorQt tq(req);
+    if (srcBrd.isNull() || trgBrd.isNull())
+        return bRet(error, tq.translate("Database::moveThread", "Invalid board name", "error"), 0);
+    if (!threadNumber)
+        return bRet(error, tq.translate("Database::moveThread", "Invalid thread number", "error"), 0);
+    if (sourceBoard == targetBoard)
+        return bRet(error, tq.translate("Database::moveThread", "Source and target boards are the same", "error"), 0);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("Database::moveThread", "Not logged in", "error"), 0);
+    if (!moderOnBoard(hashpass, sourceBoard, targetBoard))
+        return bRet(error, tq.translate("Database::moveThread", "Not enough rights", "error"), 0);
+    QString storagePath = Tools::storagePath();
+    if (storagePath.isEmpty())
+        return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
+    QString srcPath = storagePath + "/img/" + sourceBoard;
+    QString trgPath = storagePath + "/img/" + targetBoard;
+    if (!BDirTools::mkpath(trgPath))
+        return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::number == threadNumber
+                                                 && odb::query<Thread>::board == sourceBoard);
+        if (thread.error)
+            return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+        if (!thread)
+            return bRet(error, tq.translate("Database::moveThread", "No such thread", "error"), false);
+        QList<Post> posts = query<Post, Post>(odb::query<Post>::thread == thread->id());
+        if (posts.isEmpty())
+            return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+        if (posts.first().hashpass() != hashpass
+                && registeredUserLevel(posts.first().hashpass()) >= registeredUserLevel(hashpass)) {
+            return bRet(error, tq.translate("Database::moveThread", "Not enough rights", "error"), 0);
+        }
+        quint64 newPostNumber = incrementPostCounter(targetBoard, posts.size(), error, tq.locale());
+        if (!newPostNumber)
+            return 0;
+        quint64 newThreadNumber = newPostNumber - posts.size() + 1;
+        QMap<quint64, quint64> oldPostNumbers;
+        foreach (int i, bRangeR(posts.size() - 1, 0)) {
+            Post &post = posts[i];
+            QList<PostReference> referred = query<PostReference, PostReference>(
+                        odb::query<PostReference>::targetPost == post.id());
+            foreach (int j, bRangeD(0, referred.size() - 1)) {
+                PostReference &ref = referred[j];
+                QSharedPointer<Post> sourcePost = ref.sourcePost().load();
+                if (sourcePost.isNull())
+                    return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+                QString text = sourcePost->text();
+                QString stns = QString::number(threadNumber);
+                QString spns = QString::number(post.number());
+                QString ttns = QString::number(newThreadNumber);
+                QString tpns= QString::number(newPostNumber);
+                QString ns = "<a href=\"/" + targetBoard + "/thread/" + ttns + ".html#" + tpns + "\">&gt;&gt;/"
+                        + targetBoard + "/" + tpns + "</a>";
+                text.replace("<a href=\"/" + sourceBoard + "/thread/" + stns + ".html#" + spns + "\">&gt;&gt;" + spns
+                             + "</a>", ns);
+                text.replace("<a href=\"/" + sourceBoard + "/thread/" + stns + ".html#" + spns + "\">&gt;&gt;/"
+                             + sourceBoard + "/" + spns + "</a>", ns);
+                sourcePost->setText(text);
+                t->update(sourcePost);
+                Cache::removePost(sourcePost->board(), sourcePost->number());
+            }
+            QList<FileInfo> fileInfos = query<FileInfo, FileInfo>(odb::query<FileInfo>::post == post.id());
+            foreach (int j, bRangeD(0, fileInfos.size() - 1)) {
+                FileInfo &fi = fileInfos[j];
+                if (!QFile::rename(srcPath + "/" + fi.name(), trgPath + "/" + fi.name()))
+                    return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
+                if (!QFile::rename(srcPath + "/" + fi.thumbName(), trgPath + "/" + fi.thumbName()))
+                    return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
+            }
+            Cache::removePost(post.board(), post.number());
+            oldPostNumbers.insert(newPostNumber, post.number());
+            post.setNumber(newPostNumber);
+            --newPostNumber;
+        }
+        foreach (int i, bRangeD(0, posts.size() - 1)) {
+            Post &post = posts[i];
+            QList<PostReference> referenced = query<PostReference, PostReference>(
+                        odb::query<PostReference>::sourcePost == post.id());
+            foreach (int j, bRangeD(0, referenced.size() - 1)) {
+                PostReference &ref = referenced[j];
+                QSharedPointer<Post> targetPost = ref.targetPost().load();
+                if (targetPost.isNull())
+                    return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+                QString text = post.text();
+                QString tns = QString::number(targetPost->thread().load()->number());
+                QString spns = QString::number(oldPostNumbers.value(targetPost->number()));
+                QString tpns = QString::number(targetPost->number());
+                text.replace("<a href=\"/" + sourceBoard + "/thread/" + tns + ".html#" + spns + "\">&gt;&gt;" + spns
+                             + "</a>", "<a href=\"/" + targetBoard + "/thread/" + tns + ".html#" + tpns + "\">&gt;&gt;"
+                             + tpns + "</a>");
+                post.setText(text);
+            }
+            post.setBoard(targetBoard);
+            t->update(post);
+        }
+        thread->setBoard(targetBoard);
+        thread->setNumber(newThreadNumber);
+        update(thread);
+        t.commit();
+        return bRet(error, QString(), newThreadNumber);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), 0);
+    }
 }
 
 bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNumber)

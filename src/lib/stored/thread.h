@@ -59,6 +59,7 @@ public:
     bool draft() const;
     void setArchived(bool archived);
     void setBoard(const QString &board);
+    void setNumber(quint64 number);
     void setDateTime(const QDateTime &dateTime);
     void setFixed(bool fixed);
     void setPostingEnabled(bool enabled);
@@ -158,6 +159,8 @@ public:
     QString rawText() const;
     PostReferences referencedBy() const;
     PostReferences refersTo() const;
+    void setBoard(const QString &board);
+    void setNumber(quint64 number);
     void setDateTime(const QDateTime &dt);
     void setModificationDateTime(const QDateTime &dt);
     void setBannedFor(bool banned);

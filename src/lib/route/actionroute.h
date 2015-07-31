@@ -59,6 +59,7 @@ private:
     void handleEditPost(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleLogin(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleLogout(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
+    void handleMoveThread(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleSetThreadFixed(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleSetThreadOpened(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleSetVoteOpened(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);

@@ -514,6 +514,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
                     method_role);
     list << Handler("get_yandex_captcha_image",
                     cppcms::rpc::json_method(&ActionAjaxHandler::getYandexCaptchaImage, self), method_role);
+    list << Handler("move_thread", cppcms::rpc::json_method(&ActionAjaxHandler::moveThread, self), method_role);
     list << Handler("set_thread_fixed", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadFixed, self),
                     method_role);
     list << Handler("set_thread_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadOpened, self),
@@ -522,6 +523,32 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("unvote", cppcms::rpc::json_method(&ActionAjaxHandler::unvote, self), method_role);
     list << Handler("vote", cppcms::rpc::json_method(&ActionAjaxHandler::vote, self), method_role);
     return list;
+}
+
+void ActionAjaxHandler::moveThread(std::string sourceBoardName, long long threadNumber, std::string targetBoardName)
+{
+    try {
+        QString sbn = Tools::fromStd(sourceBoardName);
+        quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
+        QString tbn = Tools::fromStd(targetBoardName);
+        QString logTarget = sbn + "/" + QString::number(tn) + "/" + tbn;
+        Tools::log(server, "ajax_move_thread", "begin", logTarget);
+        if (!testBan(sbn) || !testBan(tbn))
+            return Tools::log(server, "ajax_move_thread", "fail:ban", logTarget);
+        QString err;
+        quint64 ntn = Database::moveThread(server.request(), sbn, tn, tbn, &err);
+        if (!ntn) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_move_thread", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(ntn);
+        Tools::log(server, "ajax_move_thread", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_move_thread", "fail:" + err);
+    }
 }
 
 void ActionAjaxHandler::setThreadFixed(std::string boardName, long long threadNumber, bool fixed)

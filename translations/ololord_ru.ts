@@ -655,6 +655,11 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Не удалось отредактировать пост</translation>
     </message>
+    <message>
+        <source>Failed to move thread</source>
+        <comment>error</comment>
+        <translation>Не удалось перенести тред</translation>
+    </message>
 </context>
 <context>
     <name>AddFileRoute</name>
@@ -831,6 +836,49 @@ Apperas in the HTML pages.</source>
         <source>Reply to thread</source>
         <comment>item title</comment>
         <translation>Ответ в тред</translation>
+    </message>
+</context>
+<context>
+    <name>Database::moveThread</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Source and target boards are the same</source>
+        <comment>error</comment>
+        <translation>Исходная и целевая борды совпадают</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such thread</source>
+        <comment>error</comment>
+        <translation>Нет такого треда</translation>
+    </message>
+    <message>
+        <source>Internal file system error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка файловой системы</translation>
     </message>
 </context>
 <context>
@@ -1174,6 +1222,59 @@ text</source>
         <source>collapsible spoiler title</source>
         <comment>cspoilerTitle</comment>
         <translation>заголовок скрываемого спойлера</translation>
+    </message>
+</context>
+<context>
+    <name>MoveThreadRoute</name>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Thread number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер треда</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Move thread</source>
+        <comment>pageTitle</comment>
+        <translation>Перенести тред</translation>
+    </message>
+    <message>
+        <source>Warning: post numbers will be changed, and so will the post references. But the raw post text will not bechanged, so be careful when editing posts in moved thread.</source>
+        <comment>moveThreadWarningText</comment>
+        <translation>Предупреждение: номера постов будут изменены, и ссылки на посты - тоже. Однако, исходный текст не будет изменен, поэтому будьте внимательны при редактировании постов в перенесенных тредах.</translation>
     </message>
 </context>
 <context>
@@ -2297,6 +2398,11 @@ Your choice:</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
 </context>
 <context>
     <name>initBase</name>
@@ -3391,6 +3497,16 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <comment>linkLabelText</comment>
         <translation>Ссылка:</translation>
     </message>
+    <message>
+        <source>Move thread</source>
+        <comment>moveThreadText</comment>
+        <translation>Перенести тред</translation>
+    </message>
+    <message>
+        <source>Warning: post numbers will be changed, and so will the post references. But the raw post text will not bechanged, so be careful when editing posts in moved thread.</source>
+        <comment>moveThreadWarningText</comment>
+        <translation>Предупреждение: номера постов будут изменены, и ссылки на посты - тоже. Однако, исходный текст не будет изменен, поэтому будьте внимательны при редактировании постов в перенесенных тредах.</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -4296,7 +4412,7 @@ The default is convert (UNIX) or convert.exe (Windows).</source>
     <message>
         <source>Not logged in</source>
         <comment>error</comment>
-        <translation>не залогинен</translation>
+        <translation>Не залогинен</translation>
     </message>
     <message>
         <source>Not enough rights</source>

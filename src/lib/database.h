@@ -327,6 +327,8 @@ OLOLORD_EXPORT bool moderOnBoard(const cppcms::http::request &req, const QString
                                  const QString &board2 = QString());
 OLOLORD_EXPORT bool moderOnBoard(const QByteArray &hashpass, const QString &boardName,
                                  const QString &board2 = QString());
+OLOLORD_EXPORT quint64 moveThread(const cppcms::http::request &req, const QString &sourceBoard, quint64 threadNumber,
+                                  const QString &targetBoard, QString *error = 0);
 OLOLORD_EXPORT bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNumber = 0);
 OLOLORD_EXPORT QString posterIp(const QString &boardName, quint64 postNumber);
 OLOLORD_EXPORT quint64 postThreadNumber(const QString &boardName, quint64 postNumber);

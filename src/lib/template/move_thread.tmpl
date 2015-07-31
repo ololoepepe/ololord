@@ -1,0 +1,42 @@
+<% c++ #include "controller/movethread.h" %>
+<% skin my_skin %>
+<% view move_thread uses Content::MoveThread extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+    </head>
+    <body class="<%= deviceType %>">
+        <% include baseTexts() %>
+        <% include customHeader() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <h1><%= pageTitle %></h1>
+        </div>
+        <form class="centerForm" method="post" accept-charset="utf-8" enctype="multipart/form-data"
+              action="/<%= sitePathPrefix %>action/move_thread">
+            <input type="hidden" name="sourceBoard" value="<%= currentBoardName %>" />
+            <input type="hidden" name="threadNumber" value="<%= threadNumber %>" />
+            <select name="targetBoard" class="select">
+                <% foreach board in availableBoards %>
+                    <% item %>
+                        <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+                    <% end %>
+                <% end %>
+            </select>
+            <input type="submit" name="submit" value="<%= confirmButtonText %>" />
+        </form>
+        <%= moveThreadWarningText %>
+        <% include customHeader() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

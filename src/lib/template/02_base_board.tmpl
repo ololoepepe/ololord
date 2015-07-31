@@ -419,6 +419,15 @@
                         </form>
                     <% end %>
                 <% end %>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <a name="moveButton"
+                       href="javascript:lord.moveThread('<%= currentBoard.name %>', '<%= post.number %>');">
+                        <img src="/<%= sitePathPrefix %>img/move.png" title="<%= moveThreadText %>" /></a>
+                <% elif ( content.loggedIn ) %>
+                    <a name="moveButton" target="_blank"
+                       href="/<%= sitePathPrefix %>move_thread?board=<%= currentBoard.name %>&thread=<%= post.number %>">
+                        <img src="/<%= sitePathPrefix %>img/move.png" title="<%= moveThreadText %>" /></a>
+                <% end %>
             <% end %>
             <% if ( content.moder ) %>
                 <% if ( content.mode.name != "ascetic" ) %>
@@ -874,6 +883,8 @@
 <input type="hidden" id="unexpectedEndOfTokenListErrorText" value="<%= unexpectedEndOfTokenListErrorText %>" />
 <input type="hidden" id="noTokenInTableErrorText" value="<%= noTokenInTableErrorText %>" />
 <input type="hidden" id="linkLabelText" value="<%= linkLabelText %>" />
+<input type="hidden" id="moveThreadText" value="<%= moveThreadText %>" />
+<input type="hidden" id="moveThreadWarningText" value="<%= moveThreadWarningText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>
@@ -942,6 +953,8 @@
                 <a name="openButton"
                    href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
                     <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                <a name="moveButton" href="javascript:lord.moveThread('<%= currentBoard.name %>', '%postNumber%');">
+                    <img src="/<%= sitePathPrefix %>img/move.png" title="<%= moveThreadText %>" /></a>
                 <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '%postNumber%');">
                     <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
                 <a name="downloadButton" href="javascript:lord.downloadThread();">

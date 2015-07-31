@@ -90,6 +90,11 @@ void Thread::setBoard(const QString &board)
     board_ = board;
 }
 
+void Thread::setNumber(quint64 number)
+{
+    number_ = number;
+}
+
 void Thread::setDateTime(const QDateTime &dateTime)
 {
     dateTime_ = dateTime;
@@ -245,6 +250,16 @@ Post::PostReferences Post::referencedBy() const
 Post::PostReferences Post::refersTo() const
 {
     return refersTo_;
+}
+
+void Post::setBoard(const QString &board)
+{
+    board_ = board;
+}
+
+void Post::setNumber(quint64 number)
+{
+    number_ = number;
 }
 
 void Post::setDateTime(const QDateTime &dt)

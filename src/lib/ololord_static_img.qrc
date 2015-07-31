@@ -301,5 +301,6 @@
         <file>static/img/r-18g.png</file>
         <file>static/img/catalog.png</file>
         <file>static/img/rss.png</file>
+        <file>static/img/move.png</file>
     </qresource>
 </RCC>

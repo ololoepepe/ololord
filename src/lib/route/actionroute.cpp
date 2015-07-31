@@ -99,6 +99,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("edit_post", &ActionRoute::handleEditPost);
         map.insert("login", &ActionRoute::handleLogin);
         map.insert("logout", &ActionRoute::handleLogout);
+        map.insert("move_thread", &ActionRoute::handleMoveThread);
         map.insert("set_thread_fixed", &ActionRoute::handleSetThreadFixed);
         map.insert("set_thread_opened", &ActionRoute::handleSetThreadOpened);
         map.insert("set_vote_opened", &ActionRoute::handleSetVoteOpened);
@@ -303,6 +304,29 @@ void ActionRoute::handleLogout(const QString &action, const Tools::PostParameter
     application.response().set_cookie(cppcms::http::cookie("hashpass", "", UINT_MAX, "/"));
     redirect();
     Tools::log(application, "action/" + action, "success");
+}
+
+void ActionRoute::handleMoveThread(const QString &action, const Tools::PostParameters &params,
+                                   const Translator::Qt &tq)
+{
+    QString sourceBoard = params.value("sourceBoard");
+    quint64 threadNumber = params.value("threadNumber").toULongLong();
+    QString targetBoard = params.value("targetBoard");
+    QString logTarget = sourceBoard + "/" + QString::number(threadNumber) + "/" + targetBoard;
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, sourceBoard)
+            || !Controller::testBanNonAjax(application, Controller::WriteAction, targetBoard)) {
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    }
+    QString err;
+    quint64 ntn = Database::moveThread(application.request(), sourceBoard, threadNumber, targetBoard, &err);
+    if (!ntn) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to move thread",
+                                                                 "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect(targetBoard + "/thread/" + QString::number(ntn) + ".html");
+    Tools::log(application, "action/" + action, "success", logTarget);
 }
 
 void ActionRoute::handleSetThreadFixed(const QString &action, const Tools::PostParameters &params,

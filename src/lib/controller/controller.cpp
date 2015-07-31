@@ -136,11 +136,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.currentLocale = toWithLocale(ts.locale());
     cppcms::http::request *mreq = const_cast<cppcms::http::request *>(&req);
     c.currentTime = mreq->cookie_by_name("time").value();
-    c.customFooterContent = Tools::toStd(Tools::customContent("footer", ts.locale()));
-    c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()));
+    QString deviceType = Tools::isMobile(req).any ? "mobile" : "desktop";
+    c.customFooterContent = Tools::toStd(Tools::customContent("footer", ts.locale()).replace("%deviceType%",
+                                                                                             deviceType));
+    c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()).replace("%deviceType%",
+                                                                                             deviceType));
     c.defaultAudioVideoVolumeLabelText = ts.translate("initBase", "Default audio and video files volume:",
                                                       "defaultAudioVideoVolumeLabelText");
-    c.deviceType = Tools::isMobile(req).any ? "mobile" : "desktop";
+    c.deviceType = Tools::toStd(deviceType);
     c.draftsByDefault = !Tools::cookieValue(req, "draftsByDefault").compare("true", Qt::CaseInsensitive);
     c.draftsByDefaultLabelText = ts.translate("initBase", "Mark posts as drafts by default:",
                                               "draftsByDefaultLabelText");
@@ -474,6 +477,10 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             c.moder = 0;
     }
     c.modificationDateTimeText = ts.translate("initBaseBoard", "Last modified:", "modificationDateTimeText");
+    c.moveThreadText = ts.translate("initBaseBoard", "Move thread", "moveThreadText");
+    c.moveThreadWarningText = ts.translate("initBaseBoard", "Warning: post numbers will be changed, and so will the "
+                                           "post references. But the raw post text will not bechanged, so be careful "
+                                           "when editing posts in moved thread.", "moveThreadWarningText");
     c.nextFileText = ts.translate("initBaseBoard", "Next file", "nextFileText");
     c.noCaptchaText = ts.translate("initBaseBoard", "You don't have to enter captcha", "noCaptchaText");
     c.notLoggedInText = ts.translate("initBaseBoard", "You are not logged in!", "notLoggedInText");

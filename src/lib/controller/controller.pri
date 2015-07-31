@@ -19,6 +19,7 @@ HEADERS += \
     $${PWD}/ipban.h \
     $${PWD}/markup.h \
     $${PWD}/mlpboard.h \
+    $${PWD}/movethread.h \
     $${PWD}/notfound.h \
     $${PWD}/playlist.h \
     $${PWD}/prboard.h \

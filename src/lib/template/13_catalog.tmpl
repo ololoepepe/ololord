@@ -100,7 +100,7 @@
                 lord.changeCatalogSortingMode = function() {
                     var sel = lord.nameOne("catalogSortingModeSelect");
                     var mode = sel.options[sel.selectedIndex].value;
-                    location.href = location.href.split("?").shift() + "?sort=" + mode;
+                    location.href = location.href.replace(location.hash, "").split("?").shift() + "?sort=" + mode;
                 };
             </script>
         <% end %>
