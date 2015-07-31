@@ -27,6 +27,7 @@ public:
     typedef Thread * ThreadPointer;
 public:
     std::string replyCountLabelText;
+    std::string sortingMode;
     std::string sortingModeBumpsLabelText;
     std::string sortingModeDateLabelText;
     std::string sortingModeLabelText;

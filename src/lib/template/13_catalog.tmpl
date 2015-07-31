@@ -132,8 +132,13 @@
             <%= sortingModeLabelText %>
             <% if ( content.mode.name != "ascetic" ) %>
                 <select name="catalogSortingModeSelect" class="select" onchange="lord.changeCatalogSortingMode();">
-                    <option value="date" selected="true"><%= sortingModeDateLabelText %></option>
-                    <option value="bumps"><%= sortingModeBumpsLabelText %></option>
+                    <% if ( content.sortingMode == "date" ) %>
+                        <option value="date" selected="true"><%= sortingModeDateLabelText %></option>
+                        <option value="bumps"><%= sortingModeBumpsLabelText %></option>
+                    <% else %>
+                        <option value="date"><%= sortingModeDateLabelText %></option>
+                        <option value="bumps" selected="true"><%= sortingModeBumpsLabelText %></option>
+                    <% end %>
                 </select>
             <% else %>
                 <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/catalog.html?sort=date"><%= sortingModeDateLabelText %></a>

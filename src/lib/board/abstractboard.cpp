@@ -870,6 +870,9 @@ void AbstractBoard::handleCatalog(cppcms::application &app)
     if (viewName.isEmpty())
         viewName = "catalog";
     Content::Catalog &c = *cc;
+    Tools::GetParameters params = Tools::getParameters(app.request());
+    QString sortBy = params.value("sort");
+    bool sortByBumps = !sortBy.compare("bumps", Qt::CaseInsensitive);
     try {
         Transaction t;
         if (!t) {
@@ -890,9 +893,6 @@ void AbstractBoard::handleCatalog(cppcms::application &app)
                 list.removeAt(i);
             }
         }
-        Tools::GetParameters params = Tools::getParameters(app.request());
-        QString sortBy = params.value("sort");
-        bool sortByBumps = !sortBy.compare("bumps", Qt::CaseInsensitive);
         qSort(list.begin(), list.end(), sortByBumps ? &threadGreaterThanByPosts : &threadLessThanByDate);
         foreach (const Thread &tt, list) {
             Content::Catalog::Thread thread;
@@ -923,6 +923,7 @@ void AbstractBoard::handleCatalog(cppcms::application &app)
         return;
     }
     c.replyCountLabelText = ts.translate("AbstractBoard", "Reply count:", "replyCountLabelText");
+    c.sortingMode = sortByBumps ? "bumps" : "date";
     c.sortingModeBumpsLabelText = ts.translate("AbstractBoard", "Bump count", "sortingModeLabelText");
     c.sortingModeDateLabelText = ts.translate("AbstractBoard", "Creation date", "sortingModeLabelText");
     c.sortingModeLabelText = ts.translate("AbstractBoard", "Sort by:", "sortingModeLabelText");
