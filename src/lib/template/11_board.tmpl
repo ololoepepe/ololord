@@ -22,7 +22,6 @@
         <% end %>
         </div>
     <% end %>
-<% empty %>
 <% end %>
 <% end template %>
 
@@ -97,7 +96,9 @@
             <h1>
                 <%= currentBoard.title %>
                 <sup>[<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/rules.html"
-                         title="<%= boardRulesLinkText %>">?</a>]</sup>
+                         title="<%= boardRulesLinkText %>"><img src="/<%= sitePathPrefix %>img/question.png"></a>]</sup>
+                <sup>[<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/catalog.html"
+                         title="<%= boardCatalogLinkText %>"><img src="/<%= sitePathPrefix %>img/catalog.png"></a>]</sup>
             </h1>
         </div>
         <% if ( content.postingEnabled ) %>

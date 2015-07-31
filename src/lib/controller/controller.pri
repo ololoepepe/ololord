@@ -5,6 +5,7 @@ HEADERS += \
     $${PWD}/base.h \
     $${PWD}/baseboard.h \
     $${PWD}/board.h \
+    $${PWD}/catalog.h \
     $${PWD}/cgboard.h \
     $${PWD}/controller.h \
     $${PWD}/echoboard.h \

@@ -44,6 +44,7 @@ struct OLOLORD_EXPORT Board : public BaseBoard
 public:
     typedef Thread * ThreadPointer;
 public:
+    std::string boardCatalogLinkText;
     std::string boardRulesLinkText;
     unsigned int currentPage;
     unsigned int lastPostNumber;

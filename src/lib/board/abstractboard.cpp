@@ -11,6 +11,7 @@
 #include "captcha/abstractcaptchaengine.h"
 #include "controller/baseboard.h"
 #include "controller/board.h"
+#include "controller/catalog.h"
 #include "controller/controller.h"
 #include "controller/editpost.h"
 #include "controller/rules.h"
@@ -90,7 +91,7 @@ static void scaleThumbnail(QImage &img, AbstractBoard::FileTransaction &ft)
     ft.setThumbFileSize(img.height(), img.width());
 }
 
-static bool threadLessThan(const Thread &t1, const Thread &t2)
+static bool threadLessThanByDate(const Thread &t1, const Thread &t2)
 {
     if (t1.fixed() == t2.fixed())
         return t1.dateTime().toUTC() > t2.dateTime().toUTC();
@@ -98,6 +99,11 @@ static bool threadLessThan(const Thread &t1, const Thread &t2)
         return true;
     else
         return false;
+}
+
+static bool threadGreaterThanByPosts(const Thread &t1, const Thread &t2)
+{
+    return t1.posts().size() > t2.posts().size();
 }
 
 AbstractBoard::FileTransaction::FileTransaction(AbstractBoard *board) :
@@ -771,7 +777,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                 list.removeAt(i);
             }
         }
-        qSort(list.begin(), list.end(), &threadLessThan);
+        qSort(list.begin(), list.end(), &threadLessThanByDate);
         pageCount = (list.size() / threadsPerPage()) + ((list.size() % threadsPerPage()) ? 1 : 0);
         if (!pageCount)
             pageCount = 1;
@@ -821,7 +827,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             c.threads.push_back(thread);
         }
         c.lastPostNumber = Database::lastPostNumber(name());
-    }  catch (const odb::exception &e) {
+    } catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
         Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         Tools::log(app, "board", "fail:" + err, logTarget);
@@ -833,6 +839,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
+    c.boardCatalogLinkText = ts.translate("AbstractBoard", "Threads catalog", "boardCatalogLinkText");
     c.boardRulesLinkText = ts.translate("AbstractBoard", "Borad rules", "boardRulesLinkText");
     c.currentPage = page;
     c.omittedPostsText = ts.translate("AbstractBoard", "Posts omitted:", "omittedPostsText");
@@ -843,6 +850,85 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     beforeRenderBoard(app.request(), cc.data());
     Tools::render(app, viewName, c);
     Tools::log(app, "board", "success", logTarget);
+}
+
+void AbstractBoard::handleCatalog(cppcms::application &app)
+{
+    QString logTarget = name();
+    if (!Controller::testBanNonAjax(app, Controller::ReadAction, name()))
+        return Tools::log(app, "catalog", "fail:ban", logTarget);
+    TranslatorQt tq(app.request());
+    TranslatorStd ts(app.request());
+    QString viewName;
+    QScopedPointer<Content::Catalog> cc(createCatalogController(app.request(), viewName));
+    if (cc.isNull()) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "catalog", "fail:" + err, logTarget);
+        return;
+    }
+    if (viewName.isEmpty())
+        viewName = "catalog";
+    Content::Catalog &c = *cc;
+    try {
+        Transaction t;
+        if (!t) {
+            QString err = tq.translate("AbstractBoard", "Internal database error", "description");
+            Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+            Tools::log(app, "catalog", "fail:" + err, logTarget);
+            return;
+        }
+        odb::query<Thread> q = odb::query<Thread>::board == name() && odb::query<Thread>::archived == false;
+        QByteArray hashpass = Tools::hashpass(app.request());
+        bool modOnBoard = Database::moderOnBoard(app.request(), name());
+        QList<Thread> list = Database::query<Thread, Thread>(q);
+        int lvl = Database::registeredUserLevel(app.request());
+        foreach (int i, bRangeR(list.size() - 1, 0)) {
+            Post opPost = *list.at(i).posts().first().load();
+            if (opPost.draft() && opPost.hashpass() != hashpass
+                    && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
+                list.removeAt(i);
+            }
+        }
+        Tools::GetParameters params = Tools::getParameters(app.request());
+        QString sortBy = params.value("sort");
+        bool sortByBumps = !sortBy.compare("bumps", Qt::CaseInsensitive);
+        qSort(list.begin(), list.end(), sortByBumps ? &threadGreaterThanByPosts : &threadLessThanByDate);
+        foreach (const Thread &tt, list) {
+            Content::Catalog::Thread thread;
+            const Thread::Posts &posts = tt.posts();
+            thread.replyCount = posts.size() - 1;
+            bool ok = false;
+            QString err;
+            thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+            thread.opPost.sequenceNumber = 1;
+            if (!ok) {
+                Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+                Tools::log(app, "catalog", "fail:" + err, logTarget);
+                return;
+            }
+            c.threads.push_back(thread);
+        }
+    } catch (const odb::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "catalog", "fail:" + err, logTarget);
+        return;
+    }
+    QString pageTitle = tq.translate("AbstractBoard", "Catalog", "pageTitle") + " - " + title(ts.locale());
+    if (!Controller::initBaseBoard(c, app.request(), this, true, pageTitle)) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "catalog", "fail:" + err, logTarget);
+        return;
+    }
+    c.replyCountLabelText = ts.translate("AbstractBoard", "Reply count:", "replyCountLabelText");
+    c.sortingModeBumpsLabelText = ts.translate("AbstractBoard", "Bump count", "sortingModeLabelText");
+    c.sortingModeDateLabelText = ts.translate("AbstractBoard", "Creation date", "sortingModeLabelText");
+    c.sortingModeLabelText = ts.translate("AbstractBoard", "Sort by:", "sortingModeLabelText");
+    beforeRenderCatalog(app.request(), cc.data());
+    Tools::render(app, viewName, c);
+    Tools::log(app, "catalog", "success", logTarget);
 }
 
 void AbstractBoard::handleEditPost(cppcms::application &app, quint64 postNumber)
@@ -1649,6 +1735,11 @@ void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Cont
     //
 }
 
+void AbstractBoard::beforeRenderCatalog(const cppcms::http::request &/*req*/, Content::Catalog */*c*/)
+{
+    //
+}
+
 void AbstractBoard::beforeRenderEditPost(const cppcms::http::request &/*req*/, Content::EditPost */*c*/,
                                          const Content::Post &/*post*/)
 {
@@ -1663,6 +1754,11 @@ void AbstractBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Con
 Content::Board *AbstractBoard::createBoardController(const cppcms::http::request &/*req*/, QString &/*viewName*/)
 {
     return new Content::Board;
+}
+
+Content::Catalog *AbstractBoard::createCatalogController(const cppcms::http::request &/*req*/, QString &/*viewName*/)
+{
+    return new Content::Catalog;
 }
 
 Content::EditPost *AbstractBoard::createEditPostController(const cppcms::http::request &/*req*/, QString &/*viewName*/)

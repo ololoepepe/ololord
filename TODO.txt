@@ -35,7 +35,11 @@
 [done] Add ability to attach files by URL
 [done] Improve geolocation
 [done] Get site protocol and domain from JS location object
+[done] Add threads catalogs
+* Reimplement post text parser
+* Implement RSS feed
 
+* Implement moving threads between boards
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Use D-Pointer approach for the lib

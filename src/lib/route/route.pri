@@ -4,6 +4,7 @@ HEADERS += \
     $${PWD}/addfileroute.h \
     $${PWD}/banuserroute.h \
     $${PWD}/boardroute.h \
+    $${PWD}/catalogroute.h \
     $${PWD}/editaudiotagsroute.h \
     $${PWD}/editpostroute.h \
     $${PWD}/framelistroute.h \
@@ -22,6 +23,7 @@ SOURCES += \
     $${PWD}/addfileroute.cpp \
     $${PWD}/banuserroute.cpp \
     $${PWD}/boardroute.cpp \
+    $${PWD}/catalogroute.cpp \
     $${PWD}/editaudiotagsroute.cpp \
     $${PWD}/editpostroute.cpp \
     $${PWD}/framelistroute.cpp \

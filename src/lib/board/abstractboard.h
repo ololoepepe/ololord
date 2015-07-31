@@ -5,6 +5,7 @@ namespace Content
 {
 
 class Board;
+class Catalog;
 class EditPost;
 class Post;
 class Thread;
@@ -176,6 +177,7 @@ public:
     bool draftsEnabled() const;
     virtual cppcms::json::value editedPostUserData(const Tools::PostParameters &params) const;
     virtual void handleBoard(cppcms::application &app, unsigned int page = 0);
+    virtual void handleCatalog(cppcms::application &app);
     virtual void handleEditPost(cppcms::application &app, quint64 postNumber);
     virtual void handleRules(cppcms::application &app);
     virtual void handleThread(cppcms::application &app, quint64 threadNumber);
@@ -206,10 +208,12 @@ public:
     virtual cppcms::json::object toJson(const Content::Post &post, const cppcms::http::request &req) const;
 protected:
     virtual void beforeRenderBoard(const cppcms::http::request &req, Content::Board *c);
+    virtual void beforeRenderCatalog(const cppcms::http::request &req, Content::Catalog *c);
     virtual void beforeRenderEditPost(const cppcms::http::request &req, Content::EditPost *c,
                                       const Content::Post &post);
     virtual void beforeRenderThread(const cppcms::http::request &req, Content::Thread *c);
     virtual Content::Board *createBoardController(const cppcms::http::request &req, QString &viewName);
+    virtual Content::Catalog *createCatalogController(const cppcms::http::request &req, QString &viewName);
     virtual Content::EditPost *createEditPostController(const cppcms::http::request &req, QString &viewName);
     virtual Content::Thread *createThreadController(const cppcms::http::request &req, QString &viewName);
 private:

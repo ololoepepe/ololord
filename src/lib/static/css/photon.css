@@ -291,6 +291,47 @@ span.newPostCount {
 }
 
 /*
+    Catalog
+*/
+
+.catalogContainer {
+    box-sizing: border-box;
+    color: #333333;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px;
+    text-align: center;
+}
+
+.catalogItem {
+    background-color: #DDDDDD;
+    box-sizing: border-box;
+    color: #333333;
+    display: inline-block;
+    height: 450px;
+    min-height: 450px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    position: relative;
+    text-align: center;
+    vertical-align:top;
+    width: 240px;
+    word-wrap: break-word;
+}
+
+.catalogItem:hover {
+    height: auto;
+}
+
+/*
     Board image
 */
 

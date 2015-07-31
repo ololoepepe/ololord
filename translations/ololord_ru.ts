@@ -466,6 +466,36 @@ By default, the date of first site launch is used.</source>
         <comment>error</comment>
         <translation>Ошибка прикрепленного файла</translation>
     </message>
+    <message>
+        <source>Catalog</source>
+        <comment>pageTitle</comment>
+        <translation>Каталог</translation>
+    </message>
+    <message>
+        <source>Threads catalog</source>
+        <comment>boardCatalogLinkText</comment>
+        <translation>Каталог тредов</translation>
+    </message>
+    <message>
+        <source>Reply count:</source>
+        <comment>replyCountLabelText</comment>
+        <translation>Ответов:</translation>
+    </message>
+    <message>
+        <source>Bump count</source>
+        <comment>sortingModeLabelText</comment>
+        <translation>Количеству бампов</translation>
+    </message>
+    <message>
+        <source>Creation date</source>
+        <comment>sortingModeLabelText</comment>
+        <translation>Дате создания</translation>
+    </message>
+    <message>
+        <source>Sort by:</source>
+        <comment>sortingModeLabelText</comment>
+        <translation>Сортировать по:</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
