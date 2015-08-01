@@ -8,7 +8,6 @@ namespace Content
 
 class Base;
 class BaseBoard;
-class Post;
 
 }
 
@@ -16,7 +15,6 @@ namespace Database
 {
 
 class BanInfo;
-class RefMap;
 
 }
 
@@ -36,7 +34,7 @@ class request;
 
 }
 
-#include "../global.h"
+#include "global.h"
 #include "tools.h"
 
 #include <QDateTime>
@@ -58,15 +56,9 @@ enum UserActionType
     WriteAction = 1
 };
 
-OLOLORD_EXPORT QList<Content::Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
-    quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
-OLOLORD_EXPORT Content::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
-                                     bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT void initBase(Content::Base &c, const cppcms::http::request &req, const QString &pageTitle = QString());
 OLOLORD_EXPORT bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, const AbstractBoard *board,
     bool postingEnabled, const QString &pageTitle = QString(), quint64 currentThread = 0);
-OLOLORD_EXPORT QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts = 0,
-                                       quint64 deletedPost = 0);
 OLOLORD_EXPORT void redirect(cppcms::application &app, const QString &where);
 OLOLORD_EXPORT void renderBan(cppcms::application &app, const Database::BanInfo &info);
 OLOLORD_EXPORT void renderBanAjax(cppcms::application &app, const Database::BanInfo &info);
@@ -110,8 +102,6 @@ OLOLORD_EXPORT bool testParamsNonAjax(const AbstractBoard *board, cppcms::applic
 OLOLORD_EXPORT bool testRequest(cppcms::application &app, int acceptedTypes, QString *error = 0);
 OLOLORD_EXPORT bool testRequestAjax(cppcms::application &app, int acceptedTypes, QString *error = 0);
 OLOLORD_EXPORT bool testRequestNonAjax(cppcms::application &app, int acceptedTypes, QString *error = 0);
-OLOLORD_EXPORT QString toHtml(const QString &s);
-OLOLORD_EXPORT void toHtml(QString *s);
 
 }
 

@@ -1,7 +1,7 @@
 #include "actionroute.h"
 
 #include "board/abstractboard.h"
-#include "controller/controller.h"
+#include "controller.h"
 #include "database.h"
 #include "settingslocker.h"
 #include "tools.h"

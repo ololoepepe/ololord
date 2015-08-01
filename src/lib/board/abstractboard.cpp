@@ -9,14 +9,15 @@
 #include "board/rpgboard.h"
 #include "cache.h"
 #include "captcha/abstractcaptchaengine.h"
+#include "controller.h"
 #include "controller/baseboard.h"
 #include "controller/board.h"
 #include "controller/catalog.h"
-#include "controller/controller.h"
 #include "controller/editpost.h"
 #include "controller/rules.h"
 #include "controller/thread.h"
 #include "database.h"
+#include "markup.h"
 #include "plugin/global/boardfactoryplugininterface.h"
 #include "settingslocker.h"
 #include "stored/postcounter.h"
@@ -1621,9 +1622,9 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.modificationDateTime = Tools::toStd(l.toString(Tools::dateTime(post.modificationDateTime(), req),
                                                           DateTimeFormat));
     }
-    pp.name = Tools::toStd(Controller::toHtml(post.name()));
+    pp.name = Tools::toStd(Markup::toHtml(post.name()));
     if (pp.name.empty()) {
-        pp.name = "<span class=\"userName defaultUserName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l)))
+        pp.name = "<span class=\"userName defaultUserName\">" + Tools::toStd(Markup::toHtml(defaultUserName(l)))
                 + "</span>";
     } else {
         pp.name = "<span class=\"userName\">" + pp.name + "</span>";
@@ -1640,14 +1641,14 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             if (lvl >= RegisteredUser::AdminLevel)
                 name = post.name();
             else if (lvl >= RegisteredUser::ModerLevel)
-                name = "<span class=\"moderName\">" + Controller::toHtml(post.name()) + "</span>";
+                name = "<span class=\"moderName\">" + Markup::toHtml(post.name()) + "</span>";
             else if (lvl >= RegisteredUser::UserLevel)
-                name = "<span class=\"userName\">" + Controller::toHtml(post.name()) + "</span>";
+                name = "<span class=\"userName\">" + Markup::toHtml(post.name()) + "</span>";
         }
         pp.name = Tools::toStd(name);
         if (pp.name.empty()) {
             pp.name = "<span class=\"userName defaultUserName\">"
-                    + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
+                    + Tools::toStd(Markup::toHtml(defaultUserName(l))) + "</span>";
         }
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);

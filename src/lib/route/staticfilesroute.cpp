@@ -2,7 +2,7 @@
 
 #include "board/abstractboard.h"
 #include "cache.h"
-#include "controller/controller.h"
+#include "controller.h"
 #include "settingslocker.h"
 #include "tools.h"
 

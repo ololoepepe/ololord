@@ -3,7 +3,7 @@
 #include "database.h"
 #include "captcha/abstractcaptchaengine.h"
 #include "captcha/abstractyandexcaptchaengine.h"
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/baseboard.h"
 #include "tools.h"
 #include "translator.h"
@@ -374,7 +374,7 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
         bool ok = false;
         QString err;
         const cppcms::http::request &req = server.request();
-        QList<Content::Post> posts = Controller::getNewPosts(req, bn, tn, lpn, &ok, &err);
+        QList<Content::Post> posts = Database::getNewPostsC(req, bn, tn, lpn, &ok, &err);
         if (!ok) {
             server.return_error(Tools::toStd(err));
             Tools::log(server, "ajax_get_new_posts", "fail:" + err, logTarget);
@@ -411,7 +411,7 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
         bool ok = false;
         QString err;
         const cppcms::http::request &req = server.request();
-        Content::Post post = Controller::getPost(req, bn, pn, &ok, &err);
+        Content::Post post = Database::getPostC(req, bn, pn, &ok, &err);
         if (!ok) {
             server.return_error(Tools::toStd(err));
             Tools::log(server, "ajax_get_post", "fail:" + err, logTarget);

@@ -3,7 +3,9 @@
 #include "board/abstractboard.h"
 #include "cache.h"
 #include "captcha/abstractcaptchaengine.h"
-#include "controller/controller.h"
+#include "controller.h"
+#include "controller/baseboard.h"
+#include "markup.h"
 #include "search.h"
 #include "settingslocker.h"
 #include "stored/banneduser.h"
@@ -153,7 +155,7 @@ public:
         threadNumber = 0;
         postNumber = 0;
         if (board)
-            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs);
     }
     explicit CreatePostInternalParameters(CreatePostParameters &p, AbstractBoard *board) :
         request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
@@ -166,7 +168,7 @@ public:
         threadNumber = 0;
         postNumber = 0;
         if (board)
-            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs);
     }
     explicit CreatePostInternalParameters(CreateThreadParameters &p, AbstractBoard *board) :
         request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
@@ -179,7 +181,7 @@ public:
         postNumber = 0;
         referencedPosts = 0;
         if (board)
-            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs);
     }
 };
 
@@ -672,7 +674,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     }
     foreach (quint64 id, postIds.keys()) {
         PostTmpInfo &tmp = postIds[id];
-        tmp.text = Controller::processPostText(tmp.text, tmp.board, 0, postNumber);
+        tmp.text = Markup::processPostText(tmp.text, tmp.board, 0, postNumber);
     }
     try {
         Transaction t;
@@ -1217,7 +1219,7 @@ bool editPost(EditPostParameters &p)
     QByteArray hashpass = Tools::hashpass(p.request);
     if (p.password.isEmpty() && hashpass.isEmpty())
         return bRet(p.error, tq.translate("editPost", "Invalid password", "error"), false);
-    QString processedText = Controller::processPostText(p.text, p.boardName, &p.referencedPosts);
+    QString processedText = Markup::processPostText(p.text, p.boardName, &p.referencedPosts);
     QReadLocker locker(&processTextLock);
     QMutexLocker plocker(&postMutex);
     try {
@@ -1674,6 +1676,32 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
     }
 }
 
+QList<Content::Post> getNewPostsC(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
+                                  quint64 lastPostNumber, bool *ok, QString *error)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (board.isNull()) {
+        return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"),
+                    QList<Content::Post>());
+    }
+    bool b = false;
+    QList<Post> posts = getNewPosts(req, boardName, threadNumber, lastPostNumber, &b, error);
+    if (!b)
+        return bRet(ok, false, QList<Content::Post>());
+    QList<Content::Post> list;
+    foreach (const Post &p, posts) {
+        list << board->toController(p, req, &b, error);
+        if (!b)
+            return bRet(ok, false, QList<Content::Post>());
+        if (!list.last().number) {
+            return bRet(ok, false, error, tq.translate("getNewPosts", "Internal logic error", "error"),
+                        QList<Content::Post>());
+        }
+    }
+    return bRet(ok, true, error, QString(), list);
+}
+
 Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok, QString *error)
 {
     AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
@@ -1702,6 +1730,25 @@ Post getPost(const cppcms::http::request &req, const QString &boardName, quint64
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), Post());
     }
+}
+
+Content::Post getPostC(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok,
+                       QString *error)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (board.isNull())
+        return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"), Content::Post());
+    bool b = false;
+    Post post = getPost(req, boardName, postNumber, &b, error);
+    if (!b)
+        return bRet(ok, false, Content::Post());
+    Content::Post p = board->toController(post, req, &b, error);
+    if (!b)
+        return bRet(ok, false, Content::Post());
+    if (!p.number)
+        return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"), Content::Post());
+    return bRet(ok, true, error, QString(), p);
 }
 
 QList<quint64> getThreadNumbers(const cppcms::http::request &req, const QString &boardName, bool *ok, QString *error)
@@ -2088,7 +2135,7 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
         bWriteLine(QString::number(curr) + "/" + QString::number(sz));
         ++curr;
         PostTmpInfo &tmp = postIds[id];
-        tmp.text = Controller::processPostText(tmp.text, tmp.board, &tmp.refs);
+        tmp.text = Markup::processPostText(tmp.text, tmp.board, &tmp.refs);
     }
     int count = 0;
     int offset = 0;

@@ -1,6 +1,6 @@
 #include "movethreadroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/movethread.h"
 #include "database.h"
 #include "tools.h"

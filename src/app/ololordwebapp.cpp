@@ -2,7 +2,7 @@
 
 #include "ololordajaxwebapp.h"
 
-#include <controller/Controller>
+#include <Controller>
 #include <plugin/RouteFactoryPluginInterface>
 #include <route/AbstractRoute>
 #include <route/ActionRoute>

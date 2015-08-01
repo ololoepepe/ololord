@@ -1,6 +1,6 @@
 #include "homeroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/home.h"
 #include "tools.h"
 #include "translator.h"

@@ -1,7 +1,7 @@
 #include "rssroute.h"
 
 #include "board/abstractboard.h"
-#include "controller/controller.h"
+#include "controller.h"
 #include "database.h"
 #include "tools.h"
 

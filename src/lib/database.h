@@ -1,6 +1,13 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
+namespace Content
+{
+
+class Post;
+
+}
+
 class Post;
 
 namespace Search
@@ -315,8 +322,12 @@ OLOLORD_EXPORT QVariantMap getNewPostCountEx(const cppcms::http::request &req, c
                                              bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardName,
                                        quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
+OLOLORD_EXPORT QList<Content::Post> getNewPostsC(const cppcms::http::request &req, const QString &boardName,
+    quint64 threadNumber, quint64 lastPostNumber, bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
                             bool *ok = 0, QString *error = 0);
+OLOLORD_EXPORT Content::Post getPostC(const cppcms::http::request &req, const QString &boardName, quint64 postNumber,
+                                     bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT QList<quint64> getThreadNumbers(const cppcms::http::request &req, const QString &boardName,
                                                bool *ok = 0, QString *error = 0);
 OLOLORD_EXPORT bool isOp(const QString &boardName, quint64 threadNumber, const QString &userIp,

@@ -1,6 +1,6 @@
 #include "playlistroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/playlist.h"
 #include "tools.h"
 #include "translator.h"

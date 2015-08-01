@@ -1,7 +1,7 @@
-#include "controller.h"
+#include "markup.h"
 
-#include "baseboard.h"
 #include "cache.h"
+#include "controller/baseboard.h"
 #include "database.h"
 #include "settingslocker.h"
 #include "tools.h"
@@ -41,7 +41,7 @@
 #include <sstream>
 #include <string>
 
-namespace Controller
+namespace Markup
 {
 
 struct ProcessPostTextContext;
@@ -916,51 +916,6 @@ void toHtml(QString *s)
     }
     ProcessPostTextContext c(*s, "", 0L);
     processPostText(c, skip, &toHtml);
-}
-
-QList<Content::Post> getNewPosts(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
-                                 quint64 lastPostNumber, bool *ok, QString *error)
-{
-    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
-    TranslatorQt tq(req);
-    if (board.isNull()) {
-        return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"),
-                    QList<Content::Post>());
-    }
-    bool b = false;
-    QList<Post> posts = Database::getNewPosts(req, boardName, threadNumber, lastPostNumber, &b, error);
-    if (!b)
-        return bRet(ok, false, QList<Content::Post>());
-    QList<Content::Post> list;
-    foreach (const Post &p, posts) {
-        list << board->toController(p, req, &b, error);
-        if (!b)
-            return bRet(ok, false, QList<Content::Post>());
-        if (!list.last().number) {
-            return bRet(ok, false, error, tq.translate("getNewPosts", "Internal logic error", "error"),
-                        QList<Content::Post>());
-        }
-    }
-    return bRet(ok, true, error, QString(), list);
-}
-
-Content::Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok,
-                      QString *error)
-{
-    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
-    TranslatorQt tq(req);
-    if (board.isNull())
-        return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"), Content::Post());
-    bool b = false;
-    Post post = Database::getPost(req, boardName, postNumber, &b, error);
-    if (!b)
-        return bRet(ok, false, Content::Post());
-    Content::Post p = board->toController(post, req, &b, error);
-    if (!b)
-        return bRet(ok, false, Content::Post());
-    if (!p.number)
-        return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"), Content::Post());
-    return bRet(ok, true, error, QString(), p);
 }
 
 }

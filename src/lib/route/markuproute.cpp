@@ -1,6 +1,6 @@
 #include "markuproute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/markup.h"
 #include "tools.h"
 #include "translator.h"

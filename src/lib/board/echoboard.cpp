@@ -1,6 +1,6 @@
 #include "echoboard.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/echoboard.h"
 #include "controller/echothread.h"
 #include "settingslocker.h"
