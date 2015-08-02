@@ -38,6 +38,7 @@
 [done] Add threads catalogs
 [done] Implement RSS feed
 [done] Implement moving threads between boards
+[done] Fix /echo/ script
 * Reimplement post text parser
 
 * Reload codecha instead of reloading a page

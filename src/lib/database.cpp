@@ -2102,9 +2102,11 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
 
 int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l)
 {
+    static const int Offset = 100;
     TranslatorQt tq(l);
     QWriteLocker locker(&processTextLock);
     QMap<quint64, PostTmpInfo> postIds;
+    int count = 0;
     try {
         Transaction t;
         if (!t)
@@ -2116,36 +2118,68 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                 qq = qq || (odb::query<Post>::board == board);
             q = q && qq;
         }
-        QList<PostIdBoardRawText> ids = query<PostIdBoardRawText, Post>(q);
-        foreach (const PostIdBoardRawText &id, ids) {
-            PostTmpInfo tmp;
-            tmp.board = id.board;
-            tmp.text = id.rawText;
-            postIds.insert(id.id, tmp);
-        }
+        Result<PostCount> pc = queryOne<PostCount, Post>(q);
+        if (pc.error || !pc)
+            return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), 0);
+        count = pc->count;
         t.commit();
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), -1);
+    }
+    for (int i = 0; i < count; i += Offset) {
+        int o = i + Offset;
+        if (o > count)
+            o = count;
+        bWriteLine(tq.translate("rerenderPosts", "Reading posts:", "message") + " "
+                   + QString::number(o) + "/" + QString::number(count));
+        try {
+            Transaction t;
+            if (!t)
+                return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
+            odb::query<Post> q = (odb::query<Post>::rawHtml == false);
+            if (!boardNames.isEmpty()) {
+                odb::query<Post> qq = (odb::query<Post>::board == boardNames.first());
+                foreach (const QString &board, boardNames.mid(1))
+                    qq = qq || (odb::query<Post>::board == board);
+                q = q && qq;
+            }
+            q = q + "LIMIT " + Tools::toStd(QString::number(Offset)) + " OFFSET " + Tools::toStd(QString::number(i));
+            QList<PostIdBoardRawText> ids = query<PostIdBoardRawText, Post>(q);
+            foreach (const PostIdBoardRawText &id, ids) {
+                PostTmpInfo tmp;
+                tmp.board = id.board;
+                tmp.text = id.rawText;
+                postIds.insert(id.id, tmp);
+            }
+            t.commit();
+        } catch (const odb::exception &e) {
+            return bRet(error, Tools::fromStd(e.what()), -1);
+        }
     }
     if (postIds.isEmpty())
         return bRet(error, QString(), 0);
     int sz = postIds.keys().size();
     int curr = 1;
     foreach (quint64 id, postIds.keys()) {
-        bWriteLine(QString::number(curr) + "/" + QString::number(sz));
+        bWriteLine(tq.translate("rerenderPosts", "Rendering posts:", "message") + " "
+                   + QString::number(curr) + "/" + QString::number(sz) + " ID=" + QString::number(id));
         ++curr;
         PostTmpInfo &tmp = postIds[id];
         tmp.text = Markup::processPostText(tmp.text, tmp.board, &tmp.refs);
     }
-    int count = 0;
+    count = 0;
     int offset = 0;
     while (offset < postIds.size()) {
+        int o = offset + Offset;
+        if (o > postIds.size())
+            o = postIds.size();
+        bWriteLine(tq.translate("rerenderPosts", "Writing posts:", "message") + " "
+                   + QString::number(o) + "/" + QString::number(postIds.size()));
         try {
             Transaction t;
             if (!t)
                 return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
             QString qs = "id IN (";
-            static const int Offset = 100;
             foreach (quint64 id, postIds.keys().mid(count, Offset))
                 qs += QString::number(id) + ", ";
             qs.remove(qs.length() - 2, 2);

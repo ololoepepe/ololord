@@ -4239,6 +4239,21 @@ The default is convert (UNIX) or convert.exe (Windows).</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>Reading posts:</source>
+        <comment>message</comment>
+        <translation>Считывание постов:</translation>
+    </message>
+    <message>
+        <source>Rendering posts:</source>
+        <comment>message</comment>
+        <translation>Рендеринг постов:</translation>
+    </message>
+    <message>
+        <source>Writing posts:</source>
+        <comment>message</comment>
+        <translation>Запись постов:</translation>
+    </message>
 </context>
 <context>
     <name>rpgBoard</name>

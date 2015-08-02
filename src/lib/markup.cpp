@@ -25,6 +25,7 @@
 #include <QRegExp>
 #include <QSettings>
 #include <QSharedPointer>
+#include <QStack>
 #include <QString>
 #include <QStringList>
 #include <QVariant>
@@ -149,7 +150,7 @@ static void toHtml(ProcessPostTextContext &c)
     c.text.replace(c.start, c.length, BTextTools::toHtml(c.text.mid(c.start, c.length), false));
 }
 
-void processPostText(ProcessPostTextContext &c, const SkipList &skip, ProcessPostTextFunction next)
+static void processPostText(ProcessPostTextContext &c, const SkipList &skip, ProcessPostTextFunction next)
 {
     if (!c.isValid() || !next)
         return;
@@ -352,7 +353,7 @@ static void processWakabaMarkMailto(ProcessPostTextContext &c)
     QRegExp rxLink(Tools::externalLinkRegexpPattern());
     int ind = rx.indexIn(t);
     while (ind >= 0) {
-        if (rx.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rx.cap(4))) {
+        if (rxLink.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rx.cap(4))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
@@ -500,7 +501,7 @@ static void processTagUrl(ProcessPostTextContext &c)
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
-        if (rx.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rxLink.cap(4))) {
+        if (rxLink.cap(2).count('.') != 3 && !Tools::externalLinkRootZoneExists(rxLink.cap(4))) {
             ind = rx.indexIn(t, ind + rx.matchedLength());
             continue;
         }
@@ -909,7 +910,7 @@ void toHtml(QString *s)
         s->insert(ind + rx.matchedLength(), "</a>");
         QString cap = rx.cap();
         if (!cap.startsWith("http"))
-            cap += "http://";
+            cap.prepend("http://");
         s->insert(ind, "<a href=\"" + cap + "\">");
         skip << qMakePair(ind, 11 + cap.length() + rx.matchedLength() + 4);
         ind = rx.indexIn(*s, ind + rx.matchedLength() + cap.length() + 15);

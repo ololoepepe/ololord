@@ -50,15 +50,10 @@
         lord.createPostNodeCustom = function(post, res, permanent, boardName) {
             if (!res["link"])
                 return;
-            var oldSubject = lord.nameOne("subject", post);
+            var oldSubject = lord.queryOne(".postSubject", post);
             var subject = lord.node("span");
             subject.className = "postSubject";
-            var a = lord.node("a");
-            a.href = res["link"];
-            a.target = "_blank";
-            var text = !!res["subject"] ? res["subject"].replace(/<a.+?>/, "").replace("</a>", "") : res["link"];
-            a.appendChild(lord.node("text", text));
-            subject.appendChild(a);
+            subject.innerHTML = res["subject"];
             oldSubject.parentNode.replaceChild(subject, oldSubject);
             //NOTE: This is dirty!
             var iframe = lord.nameOne("externalThreadFrame");
