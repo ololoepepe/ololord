@@ -596,6 +596,14 @@ span.newPostCount {
     filter: alpha(opacity=100);
 }
 
+.postToThread > a > button {
+    font-size: 1.2em;
+}
+
+.mobile.postActions {
+    display: block;
+}
+
 .desktop.postActions > a, .desktop.postActions > form {
     display: none;
 }
@@ -650,8 +658,21 @@ span.newPostCount {
     font-weight: bold;
 }
 
+.postSubject.mobile {
+    font-size: 0.8em;
+    display: block;
+}
+
 .tripcode {
     color: green;
+}
+
+.tripcode.mobile {
+    font-size: 0.8em;
+}
+
+.postDateTime.mobile {
+    font-size: 0.8em;
 }
 
 .moderName {
@@ -663,6 +684,10 @@ span.newPostCount {
     font-weight: bold;
     color: #006000;
 }*/
+
+.someName.mobile {
+    font-size: 0.8em;
+}
 
 .navigationButton {
     position: fixed;

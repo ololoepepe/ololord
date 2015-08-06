@@ -263,9 +263,9 @@
             <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= draftText %>" />
         <% end %>
         <% if ( !post.subject.empty() ) %>
-            <span class="postSubject">
+            <span class="postSubject <%= deviceType %>">
         <% else %>
-            <span class="postSubject defaultPostSubject">
+            <span class="postSubject defaultPostSubject <%= deviceType %>">
         <% end %>
             <% if ( post.subjectIsRaw ) %>
                 <%= post.subject | raw %>
@@ -276,7 +276,7 @@
         <% if ( post.showRegistered && post.showTripcode ) %>
             <img src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>">
         <% end %>
-        <span class="someName">
+        <span class="someName <%= deviceType %>">
             <% if ( !post.email.empty() ) %>
                 <a class="mailtoName" href="mailto:<%= post.email %>"><%= post.nameRaw %></a>
             <% else %>
@@ -284,7 +284,7 @@
             <% end %>
         </span>
         <% if ( !post.tripcode.empty() && post.showTripcode ) %>
-            <span class="tripcode"><%= post.tripcode %></span>
+            <span class="tripcode <%= deviceType %>"><%= post.tripcode %></span>
         <% end %>
         <% if ( content.showWhois && !post.flagName.empty() ) %>
             <% if ( !post.cityName.empty() ) %>
@@ -294,7 +294,7 @@
                 <img src="/<%= sitePathPrefix %>img/flag/<%= post.flagName %>" title="<%= post.countryName %>">
             <% end %>
         <% end %>
-        <%= post.dateTime %>
+        <span name="dateTime" class="postDateTime <%= deviceType %>"><%= post.dateTime %></span>
         <% if ( content.postingEnabled ) %>
             <% if ( thread ) %>
                 <% if ( content.moder ) %>
@@ -328,6 +328,7 @@
                 <% end %>
             <% end %>
         <% end %>
+        <span class="postSequenceNumber"><%= post.sequenceNumber %></span>
         <% if ( content.mode.name != "ascetic" && content.postingEnabled && ((thread && !thread->postLimitReached() && thread->postingEnabled) || (!thread && !dynamic_cast<Content::Thread *>(&content)->postLimitReached())) ) %>
             [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>"
                 name="quickReply">&gt;&gt;</a>]
@@ -480,10 +481,16 @@
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             <% end %>
         </span>
-        <span class="postSequenceNumber"><%= post.sequenceNumber %></span>
         <% if ( thread && post.number == post.threadNumber ) %>
-            [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"
-                name="toThreadLink"><%= toThread %></a>]
+            <span name="toThread" class="postToThread <%= deviceType %>">
+                <% if ( content.deviceType != "mobile" ) %>
+                    [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"
+                        name="toThreadLink"><%= toThread %></a>]
+                <% else %>
+                    <a name="toThreadLink"
+                       href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= post.number %>.html"><button class="button"><%= toThread %></button></a>
+                <% end %>
+            </span>
         <% end %>
     </div>
     <table class="threadPost">
@@ -924,14 +931,15 @@
              style="display: none;">
         <img name="draftIndicator" src="/<%= sitePathPrefix %>img/edit.png" title="<%= draftText %>"
              style="display: none;" />
-        <span class="postSubject" name="postSubject"></span>
+        <span class="postSubject <%= deviceType %>" name="postSubject"></span>
         <img name="registered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
              style="display: none;">
-        <span class="someName" name="someName"><span name="userName"></span></span>
-        <span name="tripcode" class="tripcode" style="display: none;"></span>
+        <span class="someName <%= deviceType %>" name="someName"><span name="userName"></span></span>
+        <span name="tripcode" class="tripcode <%= deviceType %>" style="display: none;"></span>
         <img name="whois" src="/<%= sitePathPrefix %>img/flag/%flagName%" style="display: none;">
-        <span name="dateTime"></span>
+        <span name="dateTime" class="postDateTime <%= deviceType %>"></span>
         #<a name="number"></a>
+        <span class="postSequenceNumber"></span>
         <span name="permanent" style="display: none;">
             [<a name="quickReply" href="javascript:lord.quickReply(%postNumber%);"
                 title="<%= quickReplyText %>">&gt;&gt;</a>]
@@ -970,10 +978,14 @@
                    href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%);">
                     <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
             </span>
-            <span class="postSequenceNumber"></span>
-            <span name="toThread" style="display: none;">
-                [<a name="toThreadLink"
-                    href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/%postNumber%.html"><%= toThread %></a>]
+            <span name="toThread" class="postToThread <%= deviceType %>" style="display: none;">
+                <% if ( content.deviceType != "mobile" ) %>
+                    [<a name="toThreadLink"
+                        href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/%postNumber%.html"><%= toThread %></a>]
+                <% else %>
+                    <a name="toThreadLink"
+                       href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/%postNumber%.html"><button class="button"><%= toThread %></button></a>
+                <% end %>
             </span>
         </span>
     </div>
