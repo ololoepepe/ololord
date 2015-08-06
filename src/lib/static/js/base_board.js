@@ -88,7 +88,7 @@ lord.getPostData = function(post, youtube) {
         lord.query(q, post).forEach(function(video) {
             videos.push(video.href);
         });
-        p.youtube = ((videos.length > 0) ? videos: undefined)
+        p.youtube = ((videos.length > 0) ? videos: undefined);
     }
     return p;
 };

@@ -40,6 +40,7 @@
 [done] Implement moving threads between boards
 [done] Fix /echo/ script
 * Reimplement post text parser
+* Improve post displaying on mobile devices
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

@@ -4,6 +4,7 @@
 
 body {
     background-color: #EEEEEE;
+    font-family: Verdana,sans-serif;
 }
 
 body.mobile {
@@ -658,10 +659,10 @@ span.newPostCount {
     color: blue;
 }
 
-.userName {
+/*.userName {
     font-weight: bold;
     color: #006000;
-}
+}*/
 
 .navigationButton {
     position: fixed;

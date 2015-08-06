@@ -41,6 +41,7 @@
 #include <QDomNode>
 #include <QDomProcessingInstruction>
 #include <QDomText>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QReadLocker>
@@ -2107,6 +2108,9 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
     QWriteLocker locker(&processTextLock);
     QMap<quint64, PostTmpInfo> postIds;
     int count = 0;
+    QElapsedTimer etmr;
+    bWriteLine(tq.translate("rerenderPosts", "Reading post count...", "message"));
+    etmr.start();
     try {
         Transaction t;
         if (!t)
@@ -2126,12 +2130,14 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), -1);
     }
+    qint64 elapsed = etmr.elapsed();
+    bWriteLine(tq.translate("rerenderPosts", "Read post count:", "message") + " " + QString::number(count) + " ("
+               + QString::number(elapsed) + " " + tq.translate("rerenderPosts", "ms", "message") + ")");
+    bWriteLine(tq.translate("rerenderPosts", "Reading posts...", "message"));
     for (int i = 0; i < count; i += Offset) {
         int o = i + Offset;
         if (o > count)
             o = count;
-        bWriteLine(tq.translate("rerenderPosts", "Reading posts:", "message") + " "
-                   + QString::number(o) + "/" + QString::number(count));
         try {
             Transaction t;
             if (!t)
@@ -2155,20 +2161,29 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
         } catch (const odb::exception &e) {
             return bRet(error, Tools::fromStd(e.what()), -1);
         }
+        bWriteLine(tq.translate("rerenderPosts", "Read posts:", "message") + " " + QString::number(o) + "/"
+                   + QString::number(count) + " (" + QString::number(etmr.elapsed() - elapsed)
+                   + tq.translate("rerenderPosts", "ms", "message") + ")");
+        elapsed = etmr.elapsed();
     }
     if (postIds.isEmpty())
         return bRet(error, QString(), 0);
     int sz = postIds.keys().size();
     int curr = 1;
     foreach (quint64 id, postIds.keys()) {
-        bWriteLine(tq.translate("rerenderPosts", "Rendering posts:", "message") + " "
+        bWriteLine(tq.translate("rerenderPosts", "Rendering post:", "message") + " "
                    + QString::number(curr) + "/" + QString::number(sz) + " ID=" + QString::number(id));
-        ++curr;
         PostTmpInfo &tmp = postIds[id];
         tmp.text = Markup::processPostText(tmp.text, tmp.board, &tmp.refs);
+        bWriteLine(tq.translate("rerenderPosts", "Rendered post:", "message") + " " + QString::number(curr) + "/"
+                   + QString::number(sz) + " (" + QString::number(etmr.elapsed() - elapsed)
+                   + tq.translate("rerenderPosts", "ms", "message") + ")");
+        elapsed = etmr.elapsed();
+        ++curr;
     }
     count = 0;
     int offset = 0;
+    bWriteLine(tq.translate("rerenderPosts", "Writing posts...", "message"));
     while (offset < postIds.size()) {
         int o = offset + Offset;
         if (o > postIds.size())
@@ -2205,7 +2220,13 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
         } catch (const odb::exception &e) {
             return bRet(error, Tools::fromStd(e.what()), -1);
         }
+        bWriteLine(tq.translate("rerenderPosts", "Wrote posts:", "message") + " " + QString::number(o) + "/"
+                   + QString::number(postIds.size()) + " (" + QString::number(etmr.elapsed() - elapsed)
+                   + tq.translate("rerenderPosts", "ms", "message") + ")");
+        elapsed = etmr.elapsed();
     }
+    bWriteLine(tq.translate("rerenderPosts", "Finished! Operation took", "message") + " "
+               + QString::number(etmr.elapsed()) + tq.translate("rerenderPosts", "ms", "message"));
     return bRet(error, QString(), count);
 }
 

@@ -4240,19 +4240,59 @@ The default is convert (UNIX) or convert.exe (Windows).</source>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
     <message>
-        <source>Reading posts:</source>
-        <comment>message</comment>
-        <translation>Считывание постов:</translation>
-    </message>
-    <message>
-        <source>Rendering posts:</source>
-        <comment>message</comment>
-        <translation>Рендеринг постов:</translation>
-    </message>
-    <message>
         <source>Writing posts:</source>
         <comment>message</comment>
         <translation>Запись постов:</translation>
+    </message>
+    <message>
+        <source>Reading post count...</source>
+        <comment>message</comment>
+        <translation>Считывание количества постов...</translation>
+    </message>
+    <message>
+        <source>Read post count:</source>
+        <comment>message</comment>
+        <translation>Считано количество постов:</translation>
+    </message>
+    <message>
+        <source>ms</source>
+        <comment>message</comment>
+        <translation>мс</translation>
+    </message>
+    <message>
+        <source>Reading posts...</source>
+        <comment>message</comment>
+        <translation>Считывание постов...</translation>
+    </message>
+    <message>
+        <source>Read posts:</source>
+        <comment>message</comment>
+        <translation>Считаны посты:</translation>
+    </message>
+    <message>
+        <source>Rendering post:</source>
+        <comment>message</comment>
+        <translation>Рендеринг поста:</translation>
+    </message>
+    <message>
+        <source>Rendered post:</source>
+        <comment>message</comment>
+        <translation>Пост отрендерен:</translation>
+    </message>
+    <message>
+        <source>Writing posts...</source>
+        <comment>message</comment>
+        <translation>Запись постов...</translation>
+    </message>
+    <message>
+        <source>Wrote posts:</source>
+        <comment>message</comment>
+        <translation>Пост записан:</translation>
+    </message>
+    <message>
+        <source>Finished! Operation took</source>
+        <comment>message</comment>
+        <translation>Готово! Операция заняла</translation>
     </message>
 </context>
 <context>

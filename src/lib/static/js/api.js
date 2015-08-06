@@ -154,7 +154,7 @@ lord.arr = function(obj) {
 lord.hasOwnProperties = function(obj) {
     if (!obj)
         return false;
-    for (x in obj) {
+    for (var x in obj) {
         if (obj.hasOwnProperty(x))
             return true;
     }
@@ -164,7 +164,7 @@ lord.hasOwnProperties = function(obj) {
 lord.forIn = function(obj, f) {
     if (!obj || typeof f != "function")
         return;
-    for (x in obj) {
+    for (var x in obj) {
         if (obj.hasOwnProperty(x))
             f(obj[x], x);
     }
@@ -304,7 +304,7 @@ lord.isInViewport = function(el) {
     return (rect.top >= 0 && rect.left >= 0
         && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
         && rect.right <= (window.innerWidth || document.documentElement.clientWidth));
-}
+};
 
 lord.addClass = function(element, classNames) {
     if (!element || !element.tagName || !classNames || typeof classNames != "string")
@@ -586,7 +586,7 @@ lord.base64ToArrayBuffer = function(base64) {
     for (var i = 0; i < len; i++)
         bytes[i] = binaryString.charCodeAt(i);
     return bytes.buffer;
-}
+};
 
 lord.getPlainText = function(node) {
     if (!node)
@@ -611,7 +611,7 @@ lord.getPlainText = function(node) {
                 else if (n.hasChildNodes())
                     findWhite(n);
             }
-        }
+        };
         findWhite(node);
         for(var i = 0; i < ws.length; i++)
             ws[i].parentNode.removeChild(ws[i]);

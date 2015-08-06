@@ -291,7 +291,7 @@ static void processWakabaMarkExternalLink(ProcessPostTextContext &c)
             continue;
         }
         QString cap = rx.cap();
-        if (!cap.startsWith("http"))
+        if (!cap.startsWith("http") && !cap.startsWith("ftp"))
             cap.prepend("http://");
         int ml = rx.matchedLength();
         if (cap.endsWith('.')) {
@@ -506,7 +506,7 @@ static void processTagUrl(ProcessPostTextContext &c)
             continue;
         }
         QString hrefold = href;
-        if (!href.startsWith("http"))
+        if (!href.startsWith("http") && !href.startsWith("ftp"))
             href.prepend("http://");
         QString result = "<a href=\"" + href + "\">" + BTextTools::toHtml(hrefold) + "</a>";
         t.replace(ind, rx.matchedLength(), result);
@@ -909,7 +909,7 @@ void toHtml(QString *s)
         }
         s->insert(ind + rx.matchedLength(), "</a>");
         QString cap = rx.cap();
-        if (!cap.startsWith("http"))
+        if (!cap.startsWith("http") && !cap.startsWith("ftp"))
             cap.prepend("http://");
         s->insert(ind, "<a href=\"" + cap + "\">");
         skip << qMakePair(ind, 11 + cap.length() + rx.matchedLength() + 4);
