@@ -2097,10 +2097,12 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         return false;
     }
     if (lord.isAudioType(type)) {
-        sizeHintX = 400;
+        sizeHintX = (lord.text("deviceType") == "mobile") ? 500 : 400;
         lord.img = lord.node("audio");
         lord.img.width = sizeHintX + "px";
         lord.img.controls = "controls";
+        if (lord.text("deviceType") == "mobile")
+            lord.img.scale = 60;
         lord.img.volume = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
         var src = lord.node("source");
         src.src = href;
