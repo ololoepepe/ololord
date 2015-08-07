@@ -7,6 +7,10 @@ body {
     font-family: Verdana,sans-serif;
 }
 
+body.desktop {
+    font-size: 14.4px;
+}
+
 body.mobile {
     -moz-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
