@@ -390,10 +390,9 @@ lord.createPostFile = function(f, boardName, postNumber) {
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
     (function(a, href, type, sizeX, sizeY) {
         a.onclick = function(e) {
-            if (lord.showImage(href, type, sizeX, sizeY) === false) {
-                e.preventDefault();
-                return false;
-            }
+            e.preventDefault();
+            lord.showImage(href, type, sizeX, sizeY);
+            return false;
         };
     })(aImage, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"], f["sizeX"], f["sizeY"]);
     var image = lord.node("img");
@@ -442,6 +441,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     post = post.cloneNode(true);
     post.id = !!permanent ? ("post" + res["number"]) : "";
     post.style.display = "";
+    post["fromAjax"] = true;
     if (!boardName)
         boardName = lord.text("currentBoardName");
     var fixed = lord.nameOne("fixed", post);
@@ -1602,7 +1602,6 @@ lord.viewPost = function(link, boardName, postNumber) {
             post = lord.createPostNode(res, false, boardName);
             if (!post)
                 return;
-            post["fromAjax"] = true;
             lord.viewPostStage2(link, boardName, postNumber, post);
         });
     } else {
@@ -1624,8 +1623,8 @@ lord.viewPost = function(link, boardName, postNumber) {
                     return;
                 var ind = img.src.lastIndexOf("/");
                 var href = img.src.substring(0, ind) + "/" + ajaxFile["sourceName"];
-                if (lord.showImage(href, ajaxFile["type"], ajaxFile["sizeX"], ajaxFile["sizeY"]) === false)
-                    e.preventDefault();
+                e.preventDefault();
+                lord.showImage(href, ajaxFile["type"], ajaxFile["sizeX"], ajaxFile["sizeY"]);
             });
         }
         lord.removeClass(post, "opPost");
