@@ -39,7 +39,9 @@
 [done] Implement RSS feed
 [done] Implement moving threads between boards
 [done] Fix /echo/ script
+[done] Fix ascetic mode actions/buttons
 * Reimplement post text parser
+* Check file size on the client side
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

@@ -881,11 +881,440 @@ static void processWakabaMarkMonospaceDouble(ProcessPostTextContext &c)
     processSimmetric(c, &processWakabaMarkPre, "``", "", "font", "<font face=\"monospace\">", true);
 }
 
+//TODO: New
+
+class ProcessingInfo
+{
+public:
+    enum SkipType
+    {
+        NoSkip = 0,
+        HtmlSkip,
+        CodeSkip
+    };
+public:
+    struct SkipInfo
+    {
+        int from;
+        int length;
+        SkipType type;
+    };
+public:
+    const QString BoardName;
+    const quint64 DeletedPost;
+    Database::RefMap * const ReferencedPosts;
+public:
+    QList<SkipInfo> skipList;
+    QString &mtext;
+public:
+    explicit ProcessingInfo(QString &txt, const QString &boardName, Database::RefMap *referencedPosts,
+                            quint64 deletedPost);
+public:
+    int find(const QRegExp &rx, int from = 0, bool escapable = false);
+    void insert(int from, const QString &txt, SkipType type = HtmlSkip);
+    void replace(int from, int length, const QString &txt, int correction, SkipType type = HtmlSkip);
+    const QString &text() const;
+};
+
+static bool isEscaped(const QString &s, int pos);
+
+ProcessingInfo::ProcessingInfo(QString &txt, const QString &boardName, Database::RefMap *referencedPosts,
+                               quint64 deletedPost) :
+    BoardName(boardName), DeletedPost(deletedPost), ReferencedPosts(referencedPosts), mtext(txt)
+{
+    //
+}
+
+int ProcessingInfo::find(const QRegExp &rx, int from, bool escapable)
+{
+    int ind = rx.indexIn(mtext, from);
+    while (ind >= 0) {
+        bool in = false;
+        foreach (int i, bRangeD(0, skipList.length() - 1)) {
+            const SkipInfo &inf = skipList.at(i);
+            if (ind >= inf.from && ind < (inf.from + inf.length)) {
+                ind = rx.indexIn(mtext, inf.from + inf.length + 1);
+                in = true;
+                break;
+            }
+        }
+        if (!in) {
+            if (escapable && isEscaped(mtext, ind))
+                ind = rx.indexIn(mtext, ind + 1);
+            else
+                return ind;
+        }
+    }
+    return -1;
+}
+
+void ProcessingInfo::insert(int from, const QString &txt, SkipType type)
+{
+    if (from < 0 || txt.length() <= 0 || from > mtext.length())
+        return;
+    SkipInfo info;
+    info.from = from;
+    info.length = txt.length();
+    info.type = type;
+    bool found = false;
+    foreach (int i, bRangeR(skipList.length() - 1, 0)) {
+        SkipInfo &inf = skipList[i];
+        if (from >= inf.from) {
+            if (NoSkip != type)
+                skipList.insert(i + 1, info);
+            found = true;
+            break;
+        }
+        inf.from += txt.length();
+    }
+    if (!found && NoSkip != type)
+        skipList.prepend(info);
+    mtext.insert(from, txt);
+}
+
+void ProcessingInfo::replace(int from, int length, const QString &txt, int correction, SkipType type)
+{
+    if (from < 0 || length <= 0 || txt.isEmpty() || (length + from) > mtext.length())
+        return;
+    SkipInfo info;
+    info.from = from;
+    info.length = txt.length();
+    info.type = type;
+    bool found = false;
+    foreach (int i, bRangeR(skipList.length() - 1, 0)) {
+        SkipInfo &inf = skipList[i];
+        if (from >= inf.from) {
+            if (NoSkip != type)
+                skipList.insert(i + 1, info);
+            found = true;
+            break;
+        }
+        //if (from + length > inf.from)
+        if (inf.from < (from + length))
+            inf.from -= correction;
+        else
+            inf.from += (txt.length() - length);
+    }
+    if (!found && NoSkip != type)
+        skipList.prepend(info);
+    mtext.replace(from, length, txt);
+}
+
+const QString &ProcessingInfo::text() const
+{
+    return mtext;
+}
+
+bool isEscaped(const QString &s, int pos)
+{
+    if (pos <= 0 || pos >= s.length())
+        return false;
+    int n = 0;
+    int i = pos - 1;
+    while (i >= 0 && s.at(i) == '\\') {
+        ++n;
+        --i;
+    }
+    return (n % 2);
+}
+
+static QString withoutEscaped(const QString &text)
+{
+    QString ntext = text;
+    int ind = ntext.lastIndexOf(QRegExp("``|''"));
+    while (ind >= 0) {
+        if (isEscaped(ntext, ind)) {
+            ntext.remove(ind - 1, 1);
+            ind = ntext.lastIndexOf(QRegExp("``|''"), ind - ntext.length() - 3);
+            continue;
+        }
+        ind = ntext.lastIndexOf(QRegExp("``|''"), ind - ntext.length() - 2);
+    }
+    return ntext;
+}
+
+typedef bool (*CheckFunction)(const QRegExp &rxOp, const QRegExp &rxCl);
+typedef QString (*ConversionFunction)(const QString &text, const QRegExp &rxOp, const QRegExp &rxCl, QString &op,
+                                      QString &cl, ProcessingInfo::SkipType &type);
+
+static int getIndE(ProcessingInfo &info, const QRegExp &rxOp, const QRegExp &rxCl, int inds, bool nestable,
+                   bool escapable, bool &nested)
+{
+    nested = false;
+    if (!nestable)
+        return (inds >= 0) ? info.find(rxCl, inds + rxOp.matchedLength(), escapable) : -1;
+    QRegExp rxOpT(rxOp);
+    if (inds >= 0) {
+        int indst = info.find(rxOpT, inds + rxOp.matchedLength(), escapable);
+        int indet = info.find(rxCl, inds + rxOp.matchedLength(), escapable);
+        int depth = 1;
+        while (indst >= 0 || indet >= 0) {
+            int tmp = (indst >= 0 && indst < indet) ? indst : indet;
+            int offs = (indst >= 0 && indst < indet) ? rxOpT.matchedLength() : rxCl.matchedLength();
+            depth += (tmp == indst) ? 1 : -1;
+            if (depth > 1)
+                nested = true;
+            if (!depth)
+                return tmp;
+            indst = info.find(rxOpT, tmp + offs, escapable);
+            indet = info.find(rxCl, tmp + offs, escapable);
+        }
+    }
+    return -1;
+}
+
+static void process(ProcessingInfo &info, ConversionFunction conversionFunction, const QRegExp &rxOp,
+                    const QRegExp &rxCl, bool nestable = false, bool escapable = false,
+                    CheckFunction checkFunction = 0)
+{
+    bool nested = false;
+    int inds = info.find(rxOp, 0, escapable);
+    int inde = getIndE(info, rxOp, rxCl, inds, nestable, escapable, nested);
+    bool rerun = false;
+    while (inds >= 0 && inde > inds) {
+        if (checkFunction && !checkFunction(rxOp, rxCl)) {
+            inds = info.find(rxOp, inde + rxCl.matchedLength() + 1, escapable);
+            inde = getIndE(info, rxOp, rxCl, inds, nestable, escapable, nested);
+            continue;
+        }
+        QString op;
+        QString cl;
+        ProcessingInfo::SkipType type = ProcessingInfo::NoSkip;
+        QString txt = info.text().mid(inds + rxOp.matchedLength(), inde - inds - rxOp.matchedLength());
+        int xxx = txt.length();
+        txt = conversionFunction(txt, rxOp, rxCl, op, cl, type);
+        if (!txt.isEmpty()) {
+            if (!cl.isEmpty())
+                info.insert(inde + rxCl.matchedLength(), cl);
+            info.replace(inds, inde - inds + rxCl.matchedLength(), txt, rxOp.matchedLength(), type);
+            if (!op.isEmpty())
+                info.insert(inds, op);
+            qDebug() << ">>>>>>>>>>>>>>>>>>>>>" << op << cl << (txt.length() - xxx);
+            foreach (ProcessingInfo::SkipInfo si, info.skipList) {
+                qDebug() << si.from << si.length << si.type << info.text().mid(si.from, si.length);
+            }
+            qDebug() << "<<<<<<<<<<<<<<<<<<<<<";
+            inds = info.find(rxOp, inds + txt.length() + op.length() + cl.length() + 1, escapable);
+        } else {
+            inds = info.find(rxOp, inde + rxCl.matchedLength() + 1, escapable);
+        }
+        if (nestable && nested)
+            rerun = true;
+        inde = getIndE(info, rxOp, rxCl, inds, nestable, escapable, nested);
+    }
+    if (rerun)
+        process(info, conversionFunction, rxOp, rxCl, nestable, escapable, checkFunction);
+}
+
+static void process(ProcessingInfo &info, ConversionFunction conversionFunction, const QRegExp &rxOp, bool nestable = false,
+                    bool escapable = false, CheckFunction checkFunction = 0)
+{
+    QRegExp rxCl(rxOp);
+    return process(info, conversionFunction, rxOp, rxCl, nestable, escapable, checkFunction);
+}
+
+static bool checkLangsMatch(const QRegExp &rxOp, const QRegExp &rxCl)
+{
+    return !rxOp.cap(1).isEmpty() && rxOp.cap(1) == rxCl.cap(1);
+}
+
+static QString convertMonospace(const QString &text, const QRegExp &, const QRegExp &, QString &op, QString &cl,
+                                ProcessingInfo::SkipType &type)
+{
+    op = "<font family=\"monospace\">";
+    cl = "</font>";
+    type = ProcessingInfo::CodeSkip;
+    return BTextTools::toHtml(withoutEscaped(text));
+}
+
+static QString convertNomarkup(const QString &text, const QRegExp &, const QRegExp &, QString &, QString &,
+                               ProcessingInfo::SkipType &type)
+{
+    type = ProcessingInfo::CodeSkip;
+    return BTextTools::toHtml(withoutEscaped(text));
+}
+
+static QString convertPre(const QString &text, const QRegExp &, const QRegExp &, QString &op, QString &cl,
+                          ProcessingInfo::SkipType &type)
+{
+    op = "<pre>";
+    cl = "</pre>";
+    type = ProcessingInfo::CodeSkip;
+    return withoutEscaped(text);
+}
+
+static QString convertCode(const QString &text, const QRegExp &rxOp, const QRegExp &, QString &op, QString &cl,
+                           ProcessingInfo::SkipType &type)
+{
+    init_once(QString, srchighlightPath, QString())
+        srchighlightPath = BDirTools::findResource("srchilite", BDirTools::AllResources);
+    if (srchighlightPath.isEmpty())
+        return "";
+    op = "<div class=\"codeBlock\">";
+    cl = "</div>";
+    type = ProcessingInfo::CodeSkip;
+    QString lang = rxOp.cap(1);
+    lang.replace("++", "pp");
+    if (lang.isEmpty())
+        lang = "nohilite";
+    std::istringstream in(Tools::toStd(text));
+    std::ostringstream out;
+    try {
+        srchilite::SourceHighlight sourceHighlight("html.outlang");
+        sourceHighlight.setDataDir(Tools::toStd(srchighlightPath));
+        sourceHighlight.highlight(in, out, Tools::toStd(lang + ".lang"));
+    } catch (const srchilite::ParserException &e) {
+        Tools::log("Markup::convertCode", e);
+        return "";
+    } catch (const srchilite::IOException &e) {
+        Tools::log("Markup::convertCode", e);
+        return "";
+    } catch (const std::exception &e) {
+        Tools::log("Markup::convertCode", e);
+        return "";
+    }
+    return Tools::fromStd(out.str());
+}
+
+static QString convertMarkup(const QString &text, const QRegExp &rxOp, const QRegExp &, QString &op, QString &cl,
+                             ProcessingInfo::SkipType &type)
+{
+    typedef QPair<QString, QString> WrapperPair;
+    typedef QMap<QString, WrapperPair> WrapperMap;
+    init_once(WrapperMap, map, WrapperMap()) {
+        map.insert("---", qMakePair(QString("<s>"), QString("</s>")));
+        map.insert("***", qMakePair(QString("<u>"), QString("</u>")));
+        map.insert("**", qMakePair(QString("<strong>"), QString("</strong>")));
+        map.insert("*", qMakePair(QString("<em>"), QString("</em>")));
+        map.insert("___", qMakePair(QString("<u>"), QString("</u>")));
+        map.insert("__", qMakePair(QString("<strong>"), QString("</strong>")));
+        map.insert("_", qMakePair(QString("<em>"), QString("</em>")));
+        map.insert("///", qMakePair(QString("<em>"), QString("</em>")));
+        map.insert("%%", qMakePair(QString("<span class=\"spoiler\">"), QString("</span>")));
+        map.insert("[b]", qMakePair(QString("<strong>"), QString("</strong>")));
+        map.insert("[i]", qMakePair(QString("<em>"), QString("</em>")));
+        map.insert("[s]", qMakePair(QString("<s>"), QString("</s>")));
+        map.insert("[u]", qMakePair(QString("<u>"), QString("</u>")));
+        map.insert("[sub]", qMakePair(QString("<sub>"), QString("</sub>")));
+        map.insert("[sup]", qMakePair(QString("<sup>"), QString("</sup>")));
+        map.insert("[spoiler]", qMakePair(QString("<span class=\"spoiler\">"), QString("</span>")));
+    }
+    WrapperPair p = map.value(rxOp.cap());
+    if (p.first.isEmpty())
+        return "";
+    type = ProcessingInfo::NoSkip;
+    if ("----" == rxOp.cap())
+        return "\u2014";
+    else if ("--" == rxOp.cap())
+        return "\u2013";
+    op = p.first;
+    cl = p.second;
+    return text;
+}
+
+static QString convertUrl(const QString &text, const QRegExp &, const QRegExp &, QString &, QString &,
+                          ProcessingInfo::SkipType &type)
+{
+    if (text.isEmpty())
+        return "";
+    type = ProcessingInfo::HtmlSkip;
+    QString href = text;
+    if (!href.startsWith("http") && !href.startsWith("ftp"))
+        href.prepend("http://");
+    return "<a href=\"" + href + "\">" + BTextTools::toHtml(text) + "</a>";
+}
+
+static QString convertCSpoiler(const QString &text, const QRegExp &rxOp, const QRegExp &, QString &op, QString &cl,
+                               ProcessingInfo::SkipType &type)
+{
+    QString title = rxOp.cap(1);
+    if (title.isEmpty())
+        title = "Spoiler";
+    type = ProcessingInfo::NoSkip;
+    op = "<span class=\"cspoiler\"><span class=\"cspoilerTitle\" title=\"Spoiler\" "
+         "onclick=\"lord.expandCollapseSpoiler(this);\">" + title
+          + "</span><span class=\"cspoilerBody\" style=\"display: none;\">";
+    cl = "</span></span>";
+    return text;
+}
+
+static QString convertTooltip(const QString &text, const QRegExp &rxOp, const QRegExp &, QString &op, QString &cl,
+                              ProcessingInfo::SkipType &type)
+{
+    QString tooltip = rxOp.cap(1);
+    type = ProcessingInfo::NoSkip;
+    op = "<span class=\"tooltip\" title=\"" + tooltip + "\">";
+    cl = "</span>";
+    return text;
+}
+
 QString processPostText(QString text, const QString &boardName, Database::RefMap *referencedPosts, quint64 deletedPost)
 {
-    ProcessPostTextContext c(text, boardName, referencedPosts, deletedPost);
-    processWakabaMarkMonospaceDouble(c);
+    init_once(QString, langs, QString()) {
+        QStringList sl = Tools::supportedCodeLanguages();
+        sl.removeAll("url");
+        langs = sl.join("|").replace("+", "\\+");
+    }
+    text.replace(QRegExp("\r*\n"), "\n");
+    ProcessingInfo info(text, boardName, referencedPosts, deletedPost);
+    process(info, &convertMonospace, QRegExp("``", Qt::CaseInsensitive, QRegExp::FixedString), false, true);
+    process(info, &convertNomarkup, QRegExp("''", Qt::CaseInsensitive, QRegExp::FixedString), false, true);
+    process(info, &convertPre, QRegExp("/\\-\\-pre\\s+", Qt::CaseInsensitive),
+            QRegExp("\\s+\\\\\\-\\-", Qt::CaseInsensitive));
+    process(info, &convertCode, QRegExp("/\\-\\-code\\s+(" + langs + ")\\s+", Qt::CaseInsensitive),
+            QRegExp("\\s+\\\\\\-\\-", Qt::CaseInsensitive));
+    process(info, &convertPre, QRegExp("[pre]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/pre]", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertCode, QRegExp("[code]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/code]", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertCode, QRegExp("\\[code\\s+lang\\=\"?(" + langs + ")\"?\\s*\\]", Qt::CaseInsensitive),
+            QRegExp("[/code]", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertCode, QRegExp("\\[(" + langs + ")\\]", Qt::CaseInsensitive),
+            QRegExp("\\[/(" + langs + ")\\]", Qt::CaseInsensitive), false, false, &checkLangsMatch);
+    process(info, &convertMonospace, QRegExp("[m]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/m]", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertNomarkup, QRegExp("[n]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/n]", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("----", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("---", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("--", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("***", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("**", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("*", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("___", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("__", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("_", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("///", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertCSpoiler, QRegExp("%%%", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("%%", Qt::CaseInsensitive, QRegExp::FixedString));
+    process(info, &convertMarkup, QRegExp("[b]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/b]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertMarkup, QRegExp("[i]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/i]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertMarkup, QRegExp("[s]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/s]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertMarkup, QRegExp("[u]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/u]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertMarkup, QRegExp("[sub]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/sub]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertMarkup, QRegExp("[sup]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/sup]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertMarkup, QRegExp("[spoiler]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/spoiler]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertUrl, QRegExp("[url]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/url]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertCSpoiler, QRegExp("[cspoiler]", Qt::CaseInsensitive, QRegExp::FixedString),
+            QRegExp("[/cspoiler]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertCSpoiler, QRegExp("\\[cspoiler\\s+title\\=\"([^\"]*)\"\\s*\\]", Qt::CaseInsensitive),
+            QRegExp("[/cspoiler]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    process(info, &convertTooltip, QRegExp("\\[tooltip\\s+title\\=\"([^\"]*)\"\\s*\\]", Qt::CaseInsensitive),
+            QRegExp("[/tooltip]", Qt::CaseInsensitive, QRegExp::FixedString), true);
+    //
+    //
     return text;
+    //ProcessPostTextContext c(text, boardName, referencedPosts, deletedPost);
+    //processWakabaMarkMonospaceDouble(c);
+    //return text;
 }
 
 QString toHtml(const QString &s)

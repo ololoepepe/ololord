@@ -73,8 +73,20 @@ static bool setMaxCacheSize(const BSettingsNode *node, const QVariant &value);
 static bool showDefaultThreadPassword(const BSettingsNode *node, const QVariant &value);
 static void updateLoggingMode();
 
+#include <Markup>
+#include <QElapsedTimer>
+
 int main(int argc, char **argv)
 {
+    BCoreApplication appp(argc, argv, "ololord", "Andrey Bogdanov");
+    QString src = BDirTools::readTextFile("/home/darkangel/tmp/markup_6.txt", "UTF-8");
+    QElapsedTimer etmr;
+    etmr.start();
+    QString text = Markup::processPostText(src, "b");
+    qDebug() << etmr.elapsed();
+    qDebug() << text;
+    return 0;
+    //
     static const QString AppName = "ololord";
     QString home = QDir::home().dirName();
     BApplicationServer s(9710 + qHash(home) % 10, AppName + "0" + home);

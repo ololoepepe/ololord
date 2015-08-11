@@ -5,8 +5,10 @@
 <% template threadActions(std::string position) %>
 <div class="threadActions">
     [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= backText %></a>]
-    [<a href="javascript:lord.updateThread('<%= currentBoard.name %>', <%= number %>);"
-        name="updateThreadButton"><%= updateThreadText %></a>]
+    <% if ( content.mode.name != "ascetic" ) %>
+        [<a href="javascript:lord.updateThread('<%= currentBoard.name %>', <%= number %>);"
+            name="updateThreadButton"><%= updateThreadText %></a>]
+    <% end %>
     <% if ( "top" == position ) %>
         [<a href="#bottom"><%= toBottomText %></a>]
     <% else %>
