@@ -118,6 +118,8 @@ private:
     QString countryName_;
     QString cityName_;
     bool rawHtml_;
+    bool extendedWakabaMarkEnabled_;
+    bool bbCodeEnabled_;
     QString rawText_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(targetPost_))
     PostReferences referencedBy_;
@@ -156,6 +158,8 @@ public:
     QString countryName() const;
     QString cityName() const;
     bool rawHtml() const;
+    bool extendedWakabaMarkEnabled() const;
+    bool bbCodeEnabled() const;
     QString rawText() const;
     PostReferences referencedBy() const;
     PostReferences refersTo() const;
@@ -169,6 +173,8 @@ public:
     void setName(const QString &name);
     void setDraft(bool draft);
     void setRawHtml(bool raw);
+    void setExtendedWakabaMarkEnabled(bool b);
+    void setBbCodeEnabled(bool b);
     void setRawText(const QString &text);
     void setSubject(const QString &subject);
     void setText(const QString &text);

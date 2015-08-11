@@ -21,9 +21,11 @@
 #include <QStringList>
 #include <QUrl>
 
+#include <cppcms/http_cookie.h>
 #include <cppcms/json.h>
 #include <cppcms/rpc_json.h>
 
+#include <climits>
 #include <string>
 
 ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
@@ -161,6 +163,10 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
         p.text = Tools::fromStd(params.at("text").str());
         p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
         p.draft = params.at("draft").boolean();
+        std::string mm = params.at("markupMode").str();
+        QString mmq = Tools::fromStd(mm);
+        p.extendedWakabaMarkEnabled = mmq.contains("ewm", Qt::CaseInsensitive);
+        p.bbCodeEnabled = mmq.contains("bbc", Qt::CaseInsensitive);
         p.userData = params.at("userData");
         QString err;
         p.error = &err;
@@ -169,6 +175,8 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
             Tools::log(server, "ajax_edit_post", "fail:" + err, logTarget);
             return;
         }
+
+        server.response().set_cookie(cppcms::http::cookie("markupMode", mm, UINT_MAX, "/"));
         cppcms::json::object refs;
         foreach (const Database::RefKey &key, p.referencedPosts.keys()) {
             std::string k = Tools::toStd(key.boardName) + "/" + Tools::toStd(QString::number(key.postNumber));

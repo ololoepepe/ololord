@@ -974,6 +974,28 @@ void AbstractBoard::handleEditPost(cppcms::application &app, quint64 postNumber)
     Controller::initBase(c, app.request(), tq.translate("AbstractBoard", "Edit post", "pageTitle"));
     TranslatorStd ts(app.request());
     c.currentBoardName = Tools::toStd(name());
+    QMap<QString, Content::EditPost::MarkupMode> mmmap;
+    Content::EditPost::MarkupMode mm;
+    mm.name = "none";
+    mm.title = ts.translate("AbstractBoard", "No markup", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "ewm_only";
+    mm.title = ts.translate("AbstractBoard", "Extended WakabaMark only", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "bbc_only";
+    mm.title = ts.translate("AbstractBoard", "bbCode only", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "ewm_and_bbc";
+    mm.title = ts.translate("AbstractBoard", "Extended WakabaMark and bbCode", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    QString mmc = Tools::fromStd(p.markupMode);
+    if (mmc.isEmpty())
+        mmc = "ewm_and_bbc";
+    c.currentMarkupMode = mmmap.value(mmc);
     c.draft = p.draft;
     c.draftsEnabled = draftsEnabled();
     c.email = p.email;
@@ -989,6 +1011,7 @@ void AbstractBoard::handleEditPost(cppcms::application &app, quint64 postNumber)
     c.name = p.rawName;
     c.postFormLabelDraft = ts.translate("AbstractBoard", "Draft:", "postFormLabelDraft");
     c.postFormLabelEmail = ts.translate("AbstractBoard", "E-mail:", "postFormLabelEmail");
+    c.postFormLabelMarkupMode = ts.translate("AbstractBoard", "Markup mode:", "postFormLabelMarkupMode");
     c.postFormLabelName = ts.translate("AbstractBoard", "Name:", "postFormLabelName");
     c.postFormLabelRaw = ts.translate("AbstractBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("AbstractBoard", "Subject:", "postFormLabelSubject");
@@ -1483,6 +1506,14 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->subjectIsRaw = false;
         p->rawName = Tools::toStd(post.name());
         p->draft = post.draft();
+        if (post.extendedWakabaMarkEnabled() && post.bbCodeEnabled())
+            p->markupMode = "ewm_and_bbc";
+        else if (post.extendedWakabaMarkEnabled())
+            p->markupMode = "ewm_only";
+        else if (post.bbCodeEnabled())
+            p->markupMode = "bbc_only";
+        else
+            p->markupMode = "none";
         p->userData = post.userData();
         quint64 threadNumber = 0;
         try {
@@ -1694,6 +1725,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["fixed"] = post.fixed;
     o["flagName"] = post.flagName;
     o["ip"] = post.ip;
+    o["markupMode"] = post.markupMode;
     o["name"] = post.name;
     o["nameRaw"] = post.nameRaw;
     o["number"] = post.number;

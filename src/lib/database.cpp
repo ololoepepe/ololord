@@ -75,6 +75,8 @@ struct PostTmpInfo
     RefMap refs;
     QString board;
     QString text;
+    bool extendedWakabaMarkEnabled;
+    bool bbCodeEnabled;
 };
 
 RefKey::RefKey()
@@ -155,8 +157,18 @@ public:
         referencedPosts = 0;
         threadNumber = 0;
         postNumber = 0;
+        QString mm = ps.value("markupMode");
+        if (mm.isEmpty())
+            mm = "ewm_and_bbc";
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (mm.contains("ewm", Qt::CaseInsensitive) && mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::AllLanguages;
+        else if (mm.contains("ewm", Qt::CaseInsensitive))
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::BBCodeLanguage;
         if (board)
-            processedText = Markup::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs, 0, ml);
     }
     explicit CreatePostInternalParameters(CreatePostParameters &p, AbstractBoard *board) :
         request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
@@ -168,8 +180,18 @@ public:
         referencedPosts = &p.referencedPosts;
         threadNumber = 0;
         postNumber = 0;
+        QString mm = params.value("markupMode");
+        if (mm.isEmpty())
+            mm = "ewm_and_bbc";
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (mm.contains("ewm", Qt::CaseInsensitive) && mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::AllLanguages;
+        else if (mm.contains("ewm", Qt::CaseInsensitive))
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::BBCodeLanguage;
         if (board)
-            processedText = Markup::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs, 0, ml);
     }
     explicit CreatePostInternalParameters(CreateThreadParameters &p, AbstractBoard *board) :
         request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
@@ -181,8 +203,18 @@ public:
         threadNumber = 0;
         postNumber = 0;
         referencedPosts = 0;
+        QString mm = params.value("markupMode");
+        if (mm.isEmpty())
+            mm = "ewm_and_bbc";
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (mm.contains("ewm", Qt::CaseInsensitive) && mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::AllLanguages;
+        else if (mm.contains("ewm", Qt::CaseInsensitive))
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::BBCodeLanguage;
         if (board)
-            processedText = Markup::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs, 0, ml);
     }
 };
 
@@ -597,6 +629,9 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         ps->setRawText(post.text);
         if (draft)
             ps->setDraft(true);
+        QString mm = p.params.value("markupMode");
+        ps->setExtendedWakabaMarkEnabled(mm.contains("ewm", Qt::CaseInsensitive));
+        ps->setBbCodeEnabled(mm.contains("bbc", Qt::CaseInsensitive));
         bool raw = post.raw && registeredUserLevel(p.request) >= RegisteredUser::AdminLevel;
         if (raw) {
             ps->setText(post.text);
@@ -667,6 +702,8 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             Post p = *ref.load()->sourcePost().load();
             tmp.board = p.board();
             tmp.text = p.rawText();
+            tmp.extendedWakabaMarkEnabled = p.extendedWakabaMarkEnabled();
+            tmp.bbCodeEnabled = p.bbCodeEnabled();
             postIds.insert(p.id(), tmp);
         }
         t.commit();
@@ -675,7 +712,14 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     }
     foreach (quint64 id, postIds.keys()) {
         PostTmpInfo &tmp = postIds[id];
-        tmp.text = Markup::processPostText(tmp.text, tmp.board, 0, postNumber);
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (tmp.extendedWakabaMarkEnabled && tmp.bbCodeEnabled)
+            ml = Markup::AllLanguages;
+        else if (tmp.extendedWakabaMarkEnabled)
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (tmp.bbCodeEnabled)
+            ml = Markup::BBCodeLanguage;
+        tmp.text = Markup::processPostText(tmp.text, tmp.board, 0, postNumber, ml);
     }
     try {
         Transaction t;
@@ -1220,7 +1264,14 @@ bool editPost(EditPostParameters &p)
     QByteArray hashpass = Tools::hashpass(p.request);
     if (p.password.isEmpty() && hashpass.isEmpty())
         return bRet(p.error, tq.translate("editPost", "Invalid password", "error"), false);
-    QString processedText = Markup::processPostText(p.text, p.boardName, &p.referencedPosts);
+    Markup::MarkupLanguage ml = Markup::NoLanguage;
+    if (p.extendedWakabaMarkEnabled && p.bbCodeEnabled)
+        ml = Markup::AllLanguages;
+    else if (p.extendedWakabaMarkEnabled)
+        ml = Markup::ExtendedWakabaMarkLanguage;
+    else if (p.bbCodeEnabled)
+        ml = Markup::BBCodeLanguage;
+    QString processedText = Markup::processPostText(p.text, p.boardName, &p.referencedPosts, 0, ml);
     QReadLocker locker(&processTextLock);
     QMutexLocker plocker(&postMutex);
     try {
@@ -1258,6 +1309,8 @@ bool editPost(EditPostParameters &p)
         post->setRawText(p.text);
         bool wasDraft = post->draft();
         post->setDraft(board->draftsEnabled() && p.draft);
+        post->setExtendedWakabaMarkEnabled(p.extendedWakabaMarkEnabled);
+        post->setBbCodeEnabled(p.bbCodeEnabled);
         if (!post->draft() && !removeFromReferencedPosts(post.data->id(), p.error, tq.locale()))
             return false;
         if (p.raw && lvl >= RegisteredUser::AdminLevel) {
@@ -2150,12 +2203,14 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                 q = q && qq;
             }
             q = q + "LIMIT " + Tools::toStd(QString::number(Offset)) + " OFFSET " + Tools::toStd(QString::number(i));
-            QList<PostIdBoardRawText> ids = query<PostIdBoardRawText, Post>(q);
-            foreach (const PostIdBoardRawText &id, ids) {
+            QList<Post> ids = query<Post, Post>(q);
+            foreach (const Post &id, ids) {
                 PostTmpInfo tmp;
-                tmp.board = id.board;
-                tmp.text = id.rawText;
-                postIds.insert(id.id, tmp);
+                tmp.board = id.board();
+                tmp.text = id.rawText();
+                tmp.extendedWakabaMarkEnabled = id.extendedWakabaMarkEnabled();
+                tmp.bbCodeEnabled = id.bbCodeEnabled();
+                postIds.insert(id.id(), tmp);
             }
             t.commit();
         } catch (const odb::exception &e) {
@@ -2174,7 +2229,14 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
         bWriteLine(tq.translate("rerenderPosts", "Rendering post:", "message") + " "
                    + QString::number(curr) + "/" + QString::number(sz) + " ID=" + QString::number(id));
         PostTmpInfo &tmp = postIds[id];
-        tmp.text = Markup::processPostText(tmp.text, tmp.board, &tmp.refs);
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (tmp.extendedWakabaMarkEnabled && tmp.bbCodeEnabled)
+            ml = Markup::AllLanguages;
+        else if (tmp.extendedWakabaMarkEnabled)
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (tmp.bbCodeEnabled)
+            ml = Markup::BBCodeLanguage;
+        tmp.text = Markup::processPostText(tmp.text, tmp.board, &tmp.refs, 0, ml);
         bWriteLine(tq.translate("rerenderPosts", "Rendered post:", "message") + " " + QString::number(curr) + "/"
                    + QString::number(sz) + " (" + QString::number(etmr.elapsed() - elapsed)
                    + tq.translate("rerenderPosts", "ms", "message") + ")");

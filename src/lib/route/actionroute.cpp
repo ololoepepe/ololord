@@ -178,6 +178,7 @@ void ActionRoute::handleCreatePost(const QString &action, const Tools::PostParam
     if (!testBoard(board.data(), action, params.value("board"), tq))
         return;
     board->createPost(application);
+    setCookie("markupMode", "markupMode", params);
 }
 
 void ActionRoute::handleCreateThread(const QString &action, const Tools::PostParameters &params,
@@ -187,6 +188,7 @@ void ActionRoute::handleCreateThread(const QString &action, const Tools::PostPar
     if (!testBoard(board.data(), action, params.value("board"), tq))
         return;
     board->createThread(application);
+    setCookie("markupMode", "markupMode", params);
 }
 
 void ActionRoute::handleDeleteFile(const QString &action, const Tools::PostParameters &params,
@@ -275,6 +277,9 @@ void ActionRoute::handleEditPost(const QString &action, const Tools::PostParamet
     p.subject = params.value("subject");
     p.text = params.value("text");
     p.draft = !params.value("draft").compare("true", Qt::CaseInsensitive);
+    QString mm = params.value("markupMode");
+    p.extendedWakabaMarkEnabled = mm.contains("ewm", Qt::CaseInsensitive);
+    p.bbCodeEnabled = mm.contains("bbc", Qt::CaseInsensitive);
     p.userData = board->editedPostUserData(params);
     QString err;
     p.error = &err;
@@ -283,6 +288,7 @@ void ActionRoute::handleEditPost(const QString &action, const Tools::PostParamet
         Tools::log(application, "action/" + action, "fail:" + err, logTarget);
         return;
     }
+    setCookie("markupMode", "markupMode", params);
     QString path = boardName + "/thread/" + QString::number(Database::postThreadNumber(boardName, postNumber))
             + ".html#" + QString::number(postNumber);
     redirect(path);

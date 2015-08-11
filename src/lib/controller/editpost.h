@@ -7,6 +7,7 @@
 
 #include <cppcms/view.h>
 
+#include <list>
 #include <string>
 
 namespace Content
@@ -14,10 +15,19 @@ namespace Content
 
 struct OLOLORD_EXPORT EditPost : public Base
 {
+    struct MarkupMode
+    {
+        std::string name;
+        std::string title;
+    };
+public:
     std::string currentBoardName;
+    MarkupMode currentMarkupMode;
     bool draft;
     bool draftsEnabled;
     std::string email;
+    MarkupMode markupMode;
+    std::list<MarkupMode> markupModes;
     unsigned int maxEmailLength;
     unsigned int maxNameLength;
     unsigned int maxSubjectLength;
@@ -25,6 +35,7 @@ struct OLOLORD_EXPORT EditPost : public Base
     std::string name;
     std::string postFormLabelDraft;
     std::string postFormLabelEmail;
+    std::string postFormLabelMarkupMode;
     std::string postFormLabelName;
     std::string postFormLabelRaw;
     std::string postFormLabelSubject;

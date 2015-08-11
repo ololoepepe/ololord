@@ -42,6 +42,9 @@
 <% template customPostFormField3() %>
 <% end template %>
 
+<% template customPostFormField31() %>
+<% end template %>
+
 <% template customPostFormField4() %>
 <% end template %>
 
@@ -75,7 +78,13 @@
 <% template customPostFormFieldEdit3() %>
 <% end template %>
 
+<% template customPostFormFieldEdit31() %>
+<% end template %>
+
 <% template customPostFormFieldEdit4() %>
+<% end template %>
+
+<% template customPostFormFieldEdit41() %>
 <% end template %>
 
 <% template customPostFormFieldEdit5() %>
@@ -245,6 +254,7 @@
     <% else %>
         <input name="draft" type="hidden" value="false" />
     <% end %>
+    <input name="markupMode" type="hidden" value="<%= post.markupMode %>" />
     <div class="postHeader">
         <% if ( post.number == post.threadNumber ) %>
             <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
@@ -681,6 +691,25 @@
                     </td>
                 </tr>
             <% end %>
+            <% include customPostFormField31() %>
+            <tr>
+                <td class="postformLabel">
+                    <b><%= postFormLabelMarkupMode %></b>
+                </td>
+                <td class="postformField">
+                    <select name="markupMode" class="select">
+                        <% foreach mode in markupModes %>
+                            <% item %>
+                                <% if ( mode.name == content.currentMarkupMode.name ) %>
+                                    <option value="<%= mode.name %>" selected="true"><%= mode.title %></option>
+                                <% else %>
+                                    <option value="<%= mode.name %>"><%= mode.title %></option>
+                                <% end %>
+                            <% end %>
+                        <% end %>
+                    </select>
+                </td>
+            </tr>
             <% include customPostFormField4() %>
             <% if ( content.moder >= 10 ) %>
                 <tr>
@@ -924,6 +953,7 @@
     <input name="name" type="hidden" value="" />
     <input name="subject" type="hidden" value="" />
     <input name="draft" type="hidden" value="false" />
+    <input name="markupMode" type="hidden" value="" />
     <div class="postHeader">
         <img name="fixed" src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixedText %>" style="display: none;">
         <img name="closed" src="/<%= sitePathPrefix %>img/closed.png" title="<%= closedText %>" style="display: none;">
@@ -1138,6 +1168,21 @@
                 </div>
             </td>
         </tr>
+        <% include customPostFormFieldEdit31() %>
+        <tr>
+            <td class="postformLabel">
+                <b><%= postFormLabelMarkupMode %></b>
+            </td>
+            <td class="postformField">
+               <select name="markupMode" class="select">
+                    <% foreach mode in markupModes %>
+                        <% item %>
+                            <option value="<%= mode.name %>"><%= mode.title %></option>
+                        <% end %>
+                    <% end %>
+                </select>
+            </td>
+        </tr>
         <% include customPostFormFieldEdit4() %>
         <% if ( content.moder >= 10 ) %>
             <tr>
@@ -1149,6 +1194,7 @@
                 </td>
             </tr>
         <% end %>
+        <% include customPostFormFieldEdit41() %>
         <% if ( content.draftsEnabled && content.loggedIn ) %>
             <tr>
                 <td class="postformLabel" title="<%= postFormTooltipDraft %>">

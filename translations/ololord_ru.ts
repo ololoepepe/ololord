@@ -501,6 +501,31 @@ By default, the date of first site launch is used.</source>
         <comment>boardRssLinkText</comment>
         <translation>Лента RSS</translation>
     </message>
+    <message>
+        <source>No markup</source>
+        <comment>markupMode name</comment>
+        <translation>Без разметки</translation>
+    </message>
+    <message>
+        <source>Extended WakabaMark only</source>
+        <comment>markupMode name</comment>
+        <translation>Только расширенная WakabaMark</translation>
+    </message>
+    <message>
+        <source>bbCode only</source>
+        <comment>markupMode name</comment>
+        <translation>Только bbCode</translation>
+    </message>
+    <message>
+        <source>Extended WakabaMark and bbCode</source>
+        <comment>markupMode name</comment>
+        <translation>Расширенная WakabaMark и bbCode</translation>
+    </message>
+    <message>
+        <source>Markup mode:</source>
+        <comment>postFormLabelMarkupMode</comment>
+        <translation>Режим разметки:</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -1122,16 +1147,6 @@ Apperas in the HTML pages.</source>
         <translation>подчеркнутый текст</translation>
     </message>
     <message>
-        <source>Each line starts with a special symbol and a space</source>
-        <comment>listDescription</comment>
-        <translation>Каждая строка начинается со специального символа и пробела</translation>
-    </message>
-    <message>
-        <source>monospace `font` with backtics inside</source>
-        <comment>doubleMonospace</comment>
-        <translation>моноширинный `шрифт` с кавычками</translation>
-    </message>
-    <message>
         <source>Link to a post on another board</source>
         <comment>postBoardLinkDescription</comment>
         <translation>Ссылка на пост с другой доски</translation>
@@ -1140,11 +1155,6 @@ Apperas in the HTML pages.</source>
         <source>Link to a post on the same board</source>
         <comment>postLinkDescription</comment>
         <translation>Ссылка на пост с текущей доски</translation>
-    </message>
-    <message>
-        <source>monospace font</source>
-        <comment>singleMonospace</comment>
-        <translation>моноширинный шрифт</translation>
     </message>
     <message>
         <source>quotation</source>
@@ -1222,6 +1232,26 @@ text</source>
         <source>collapsible spoiler title</source>
         <comment>cspoilerTitle</comment>
         <translation>заголовок скрываемого спойлера</translation>
+    </message>
+    <message>
+        <source>monospace font</source>
+        <comment>monospace</comment>
+        <translation>моноширинный шрифт</translation>
+    </message>
+    <message>
+        <source>no markup</source>
+        <comment>nomarkup</comment>
+        <translation>без разметки</translation>
+    </message>
+    <message>
+        <source>monospace \`` font with escaped \`` characters</source>
+        <comment>monospaceEscaped</comment>
+        <translation>моноширинный \&apos;&apos; шрифт с экранированными \&apos;&apos; символами</translation>
+    </message>
+    <message>
+        <source>no markup \&apos;&apos; with escaped \&apos;&apos; characters</source>
+        <comment>nomarkupEscaped</comment>
+        <translation>без разметки \&apos;&apos; с экранированными \&apos;&apos; символами</translation>
     </message>
 </context>
 <context>
@@ -3506,6 +3536,31 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <source>Warning: post numbers will be changed, and so will the post references. But the raw post text will not bechanged, so be careful when editing posts in moved thread.</source>
         <comment>moveThreadWarningText</comment>
         <translation>Предупреждение: номера постов будут изменены, и ссылки на посты - тоже. Однако, исходный текст не будет изменен, поэтому будьте внимательны при редактировании постов в перенесенных тредах.</translation>
+    </message>
+    <message>
+        <source>No markup</source>
+        <comment>markupMode name</comment>
+        <translation>Без разметки</translation>
+    </message>
+    <message>
+        <source>Extended WakabaMark only</source>
+        <comment>markupMode name</comment>
+        <translation>Только расширенная WakabaMark</translation>
+    </message>
+    <message>
+        <source>bbCode only</source>
+        <comment>markupMode name</comment>
+        <translation>Только bbCode</translation>
+    </message>
+    <message>
+        <source>Extended WakabaMark and bbCode</source>
+        <comment>markupMode name</comment>
+        <translation>Расширенная WakabaMark и bbCode</translation>
+    </message>
+    <message>
+        <source>Markup mode:</source>
+        <comment>postFormLabelMarkupMode</comment>
+        <translation>Режим разметки:</translation>
     </message>
 </context>
 <context>

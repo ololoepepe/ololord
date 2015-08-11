@@ -139,6 +139,8 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     cityName_ = cityName;
     rawHtml_ = false;
     draft_ = false;
+    extendedWakabaMarkEnabled_ = true;
+    bbCodeEnabled_ = true;
     password_ = password;
 }
 
@@ -237,6 +239,16 @@ bool Post::rawHtml() const
     return rawHtml_;
 }
 
+bool Post::extendedWakabaMarkEnabled() const
+{
+    return extendedWakabaMarkEnabled_;
+}
+
+bool Post::bbCodeEnabled() const
+{
+    return bbCodeEnabled_;
+}
+
 QString Post::rawText() const
 {
     return rawText_;
@@ -300,6 +312,16 @@ void Post::setDraft(bool draft)
 void Post::setRawHtml(bool raw)
 {
     rawHtml_ = raw;
+}
+
+void Post::setExtendedWakabaMarkEnabled(bool b)
+{
+    extendedWakabaMarkEnabled_ = b;
+}
+
+void Post::setBbCodeEnabled(bool b)
+{
+    bbCodeEnabled_ = b;
 }
 
 void Post::setRawText(const QString &text)

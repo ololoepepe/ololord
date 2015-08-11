@@ -14,7 +14,13 @@
 <% template customPostFormFieldEdit3() %>
 <% end template %>
 
+<% template customPostFormFieldEdit31() %>
+<% end template %>
+
 <% template customPostFormFieldEdit4() %>
+<% end template %>
+
+<% template customPostFormFieldEdit41() %>
 <% end template %>
 
 <% template customPostFormFieldEdit5() %>
@@ -88,6 +94,25 @@
                             </div>
                         </td>
                     </tr>
+                    <% include customPostFormFieldEdit31() %>
+                    <tr>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelMarkupMode %></b>
+                        </td>
+                        <td class="postformField">
+                            <select name="markupMode" class="select">
+                                <% foreach mode in markupModes %>
+                                    <% item %>
+                                        <% if ( mode.name == content.markupMode.name ) %>
+                                            <option value="<%= mode.name %>" selected="true"><%= mode.title %></option>
+                                        <% else %>
+                                            <option value="<%= mode.name %>"><%= mode.title %></option>
+                                        <% end %>
+                                    <% end %>
+                                <% end %>
+                            </select>
+                        </td>
+                    </tr>
                     <% include customPostFormFieldEdit4() %>
                     <% if ( content.moder >= 10 ) %>
                         <tr>
@@ -103,6 +128,7 @@
                             </td>
                         </tr>
                     <% end %>
+                    <% include customPostFormFieldEdit41() %>
                     <% if ( content.draftsEnabled && content.loggedIn && content.draft ) %>
                         <tr>
                             <td class="postformLabel">

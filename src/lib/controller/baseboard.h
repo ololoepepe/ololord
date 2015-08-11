@@ -68,6 +68,7 @@ public:
     bool fixed;
     std::string flagName;
     std::string ip;
+    std::string markupMode;
     std::string modificationDateTime;
     std::string name;
     std::string nameRaw;
@@ -97,6 +98,11 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     {
         std::string id;
         std::string name;
+    };
+    struct MarkupMode
+    {
+        std::string name;
+        std::string title;
     };
 public:
     std::string action;
@@ -133,6 +139,7 @@ public:
     std::string complainMessage;
     std::string complainText;
     AbstractBoard::BoardInfo currentBoard;
+    MarkupMode currentMarkupMode;
     unsigned long long currentThread;
     std::string deleteFileText;
     std::string deletePostText;
@@ -162,6 +169,7 @@ public:
     std::string markupCode;
     std::string markupItalics;
     std::string markupLang;
+    std::list<MarkupMode> markupModes;
     std::string markupQuotation;
     std::string markupSpoiler;
     std::string markupStrikedOut;
@@ -193,6 +201,7 @@ public:
     std::string postFormLabelCaptcha;
     std::string postFormLabelDraft;
     std::string postFormLabelEmail;
+    std::string postFormLabelMarkupMode;
     std::string postFormLabelName;
     std::string postFormLabelPassword;
     std::string postFormLabelRaw;

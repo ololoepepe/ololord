@@ -37,13 +37,10 @@ void MarkupRoute::handle()
     c.codeMarkup = ts.translate("MarkupRoute", "Code markup", "codeMarkup");
     c.combinedText = ts.translate("MarkupRoute", "combined text", "combinedText");
     c.doubleHyphen = ts.translate("MarkupRoute", "double hyphen", "doubleHyphen");
-    c.doubleMonospace = ts.translate("MarkupRoute", "monospace `font` with backtics inside", "doubleMonospace");
     c.emDash = ts.translate("MarkupRoute", "em dash", "emDash");
     c.enDash = ts.translate("MarkupRoute", "en dash", "enDash");
     c.italics = ts.translate("MarkupRoute", "italics", "italics");
     c.linkMarkup = ts.translate("MarkupRoute", "Link markup", "linkMarkup");
-    c.listDescription = ts.translate("MarkupRoute", "Each line starts with a special symbol and a space",
-                                     "listDescription");
     c.listItem1 = ts.translate("MarkupRoute", "first list item", "listItem1");
     c.listItem2 = ts.translate("MarkupRoute", "second list item", "listItem2");
     c.listItem3 = ts.translate("MarkupRoute", "third list item", "listItem3");
@@ -55,7 +52,11 @@ void MarkupRoute::handle()
     c.quadripleHyphen = ts.translate("MarkupRoute", "quadriple hyphen", "quadripleHyphen");
     c.quotation = ts.translate("MarkupRoute", "quotation", "quotation");
     c.replacementMarkup = ts.translate("MarkupRoute", "Auto replacement", "replacementMarkup");
-    c.singleMonospace = ts.translate("MarkupRoute", "monospace font", "singleMonospace");
+    c.monospace = ts.translate("MarkupRoute", "monospace font", "monospace");
+    c.monospaceEscaped = ts.translate("MarkupRoute", "monospace \\`` font with escaped \\`` characters",
+                                      "monospaceEscaped");
+    c.nomarkup = ts.translate("MarkupRoute", "no markup", "nomarkup");
+    c.nomarkupEscaped = ts.translate("MarkupRoute", "no markup \\'' with escaped \\'' characters", "nomarkupEscaped");
     c.spoiler = ts.translate("MarkupRoute", "spoiler", "spoiler");
     c.strikedoutText = ts.translate("MarkupRoute", "striked out text", "strikedoutText");
     c.subscript = ts.translate("MarkupRoute", "subscript", "subscriptText");

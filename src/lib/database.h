@@ -273,6 +273,8 @@ public:
     bool raw;
     QString subject;
     QString text;
+    bool extendedWakabaMarkEnabled;
+    bool bbCodeEnabled;
     cppcms::json::value userData;
     RefMap referencedPosts;
 public:

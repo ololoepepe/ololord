@@ -469,6 +469,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         draftIndicator.style.display = "";
     else
         draftIndicator.parentNode.removeChild(draftIndicator);    
+    
     var postSubject = lord.nameOne("postSubject", post);
     postSubject.appendChild(lord.node("text", res["subject"]));
     if (res["subject"].length < 1)
@@ -650,6 +651,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var rawHtml = lord.nameOne("rawHtml", post);
     if (res["rawHtml"])
         rawHtml.value = "true";
+    lord.nameOne("markupMode", post).value = res["markupMode"];
     lord.nameOne("draft", post).value = res["draft"];
     if ((moder || res["draft"]) && (res["files"].length < +lord.text("maxFileCount"))) {
         addFileButton.href = addFileButton.href.replace("%postNumber%", res["number"]);
@@ -1354,6 +1356,8 @@ lord.editPost = function(boardName, postNumber) {
         subject.value = lord.nameOne("subject", post).value;
         text.appendChild(lord.node("text", rawPostText));
         used.appendChild(lord.node("text", text.value.length.toString()));
+        var markupModeSelect = lord.nameOne("markupMode", form);
+        lord.queryOne("[value='" + lord.nameOne("markupMode", post).value + "']", markupModeSelect).selected = true;
         var moder = (lord.text("moder") === "true");
         var draftField = lord.nameOne("draft", form);
         var rawField = lord.nameOne("raw", form);
@@ -1375,6 +1379,11 @@ lord.editPost = function(boardName, postNumber) {
             } else if (!lord.isHashpass(pwd)) {
                 pwd = lord.toHashpass(pwd);
             }
+            var markupMode = markupModeSelect.options[markupModeSelect.selectedIndex].value;
+            lord.setCookie("markupMode", markupMode, {
+                "expires": lord.Billion, "path": "/"
+            });
+            lord.queryOne("[value='" + markupMode + "']", lord.id("postForm")).selected = true;
             var params = {
                 "boardName": boardName,
                 "postNumber": +postNumber,
@@ -1384,6 +1393,7 @@ lord.editPost = function(boardName, postNumber) {
                 "subject": subject.value,
                 "raw": !!rawField ? form.querySelector("[name='raw']").checked : false,
                 "draft": !!draftField ? draftField.checked : false,
+                "markupMode": markupMode,
                 "password": pwd,
                 "userData": null
             };

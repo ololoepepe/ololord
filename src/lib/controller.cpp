@@ -425,6 +425,28 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.complainMessage = ts.translate("initBaseBoard", "Go complain to your mum, you whiner!", "complainMessage");
     c.currentBoard.name = Tools::toStd(board->name());
     c.currentBoard.title = Tools::toStd(board->title(ts.locale()));
+    QMap<QString, Content::BaseBoard::MarkupMode> mmmap;
+    Content::BaseBoard::MarkupMode mm;
+    mm.name = "none";
+    mm.title = ts.translate("initBaseBoard", "No markup", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "ewm_only";
+    mm.title = ts.translate("initBaseBoard", "Extended WakabaMark only", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "bbc_only";
+    mm.title = ts.translate("initBaseBoard", "bbCode only", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "ewm_and_bbc";
+    mm.title = ts.translate("initBaseBoard", "Extended WakabaMark and bbCode", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    QString mmc = Tools::cookieValue(req, "markupMode");
+    if (mmc.isEmpty())
+        mmc = "ewm_and_bbc";
+    c.currentMarkupMode = mmmap.value(mmc);
     c.currentThread = currentThread;
     c.deleteFileText = ts.translate("initBaseBoard", "Delete file", "deleteFileText");
     c.deletePostText = ts.translate("initBaseBoard", "Delete post", "deletePostText");
@@ -501,6 +523,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelCaptcha = ts.translate("initBaseBoard", "Captcha:", "postFormLabelCaptcha");
     c.postFormLabelDraft = ts.translate("initBaseBoard", "Draft:", "postFormLabelDraft");
     c.postFormLabelEmail = ts.translate("initBaseBoard", "E-mail:", "postFormLabelEmail");
+    c.postFormLabelMarkupMode = ts.translate("initBaseBoard", "Markup mode:", "postFormLabelMarkupMode");
     c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
     c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
