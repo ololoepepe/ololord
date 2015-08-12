@@ -89,6 +89,7 @@ struct ListInfo
 };
 
 static bool isEscaped(const QString &s, int pos);
+static QString withoutEscaped(const QString &text);
 
 ProcessingInfo::ProcessingInfo(QString &txt, const QString &boardName, Database::RefMap *referencedPosts,
                                quint64 deletedPost) :
@@ -105,7 +106,7 @@ int ProcessingInfo::find(const QRegExp &rx, int from, bool escapable) const
         foreach (int i, bRangeD(0, skipList.length() - 1)) {
             const SkipInfo &inf = skipList.at(i);
             if (ind >= inf.from && ind < (inf.from + inf.length)) {
-                ind = rx.indexIn(mtext, inf.from + inf.length + 1);
+                ind = rx.indexIn(mtext, inf.from + inf.length);
                 in = true;
                 break;
             }
@@ -200,7 +201,7 @@ QString ProcessingInfo::toHtml() const
     int last = 0;
     foreach (int i, bRangeD(0, skipList.length() - 1)) {
         const SkipInfo &inf = skipList.at(i);
-        s += BTextTools::toHtml(mtext.mid(last, inf.from - last), false);
+        s += BTextTools::toHtml(withoutEscaped(mtext.mid(last, inf.from - last)), false);
         s += mtext.mid(inf.from, inf.length);
         last = inf.from + inf.length;
     }
@@ -209,7 +210,13 @@ QString ProcessingInfo::toHtml() const
     s.replace(QRegExp("</li>(\\s|&nbsp;|<br />)+</ul"), "</li></ul");
     s.replace(QRegExp("</li>(\\s|&nbsp;|<br />)+</ol"), "</li></ol");
     s.replace(QRegExp("<ol>(\\s|&nbsp;|<br />)+<li"), "<ol><li");
-    s.replace(QRegExp("<ul type\\=\"(disc|circle|square|d|c|s)\">(\\s|&nbsp;|<br />)+<li"), "<ul><li");
+    QRegExp rx("<ul type\\=\"(disc|circle|square)\">(\\s|&nbsp;|<br />)+<li");
+    int ind = rx.indexIn(s);
+    while (ind >= 0) {
+        QString ns = "<ul type=\"" + rx.cap(1) + "\"><li";
+        s.replace(ind, rx.matchedLength(), ns);
+        ind = rx.indexIn(s, ns.length());
+    }
     return s;
 }
 
@@ -226,7 +233,7 @@ bool isEscaped(const QString &s, int pos)
     return (n % 2);
 }
 
-static QString withoutEscaped(const QString &text)
+QString withoutEscaped(const QString &text)
 {
     QString ntext = text;
     int ind = ntext.lastIndexOf(QRegExp("``|''"));
@@ -280,9 +287,12 @@ static void process(ProcessingInfo &info, ConversionFunction conversionFunction,
     int inde = !rxCl.isEmpty() ? getIndE(info, rxOp, rxCl, inds, nestable, escapable, nested) : -1;
     bool rerun = false;
     while (inds >= 0 && (rxCl.isEmpty() || inde > inds)) {
-        if (!rxCl.isEmpty() && checkFunction && !checkFunction(info, rxOp, rxCl, inds, inde)) {
-            inds = info.find(rxOp, inde + rxCl.matchedLength() + 1, escapable);
-            inde = getIndE(info, rxOp, rxCl, inds, nestable, escapable, nested);
+        if (checkFunction && !checkFunction(info, rxOp, rxCl, inds, inde)) {
+            if (!rxCl.isEmpty())
+                inds = info.find(rxOp, inde + rxCl.matchedLength(), escapable);
+            else
+                inds = info.find(rxOp, inds + rxOp.matchedLength(), escapable);
+            inde = !rxCl.isEmpty() ? getIndE(info, rxOp, rxCl, inds, nestable, escapable, nested) : -1;
             continue;
         }
         QString op;
@@ -299,12 +309,12 @@ static void process(ProcessingInfo &info, ConversionFunction conversionFunction,
                 info.replace(inds, rxOp.matchedLength(), txt, rxOp.matchedLength(), type);
             if (!op.isEmpty())
                 info.insert(inds, op);
-            inds = info.find(rxOp, inds + txt.length() + op.length() + cl.length() + 1, escapable);
+            inds = info.find(rxOp, inds + txt.length() + op.length() + cl.length(), escapable);
         } else {
             if (!rxCl.isEmpty())
-                inds = info.find(rxOp, inde + rxCl.matchedLength() + 1, escapable);
+                inds = info.find(rxOp, inde + rxCl.matchedLength(), escapable);
             else
-                inds = info.find(rxOp, inds + rxOp.matchedLength() + 1, escapable);
+                inds = info.find(rxOp, inds + rxOp.matchedLength(), escapable);
         }
         if (nestable && nested)
             rerun = true;
@@ -342,25 +352,33 @@ static bool checkLangsMatch(ProcessingInfo &, const QRegExp &rxOp, const QRegExp
     return !rxOp.cap(1).isEmpty() && rxOp.cap(1) == rxCl.cap(1);
 }
 
+static bool checkExternalLink(ProcessingInfo &, const QRegExp &rxOp, const QRegExp &, int, int)
+{
+    return rxOp.cap(2).count('.') == 3 || Tools::externalLinkRootZoneExists(rxOp.cap(4));
+}
+
 static bool checkNotInterrupted(ProcessingInfo &info, const QRegExp &, const QRegExp &, int inds, int inde)
 {
-    return !info.in(inds, inde - inds + 1);
+    if (info.in(inds, inde - inds))
+        return false;
+    return (0 == inds || "\n" == info.text().mid(inds - 1, 1) || (info.in(inds - 6, 6, ProcessingInfo::HtmlSkip)
+                                                                  && info.text().mid(inds - 6, 6) == "<br />"));
 }
 
 static QString convertMonospace(ProcessingInfo &, const QString &text, const QRegExp &, const QRegExp &, QString &op,
                                 QString &cl, ProcessingInfo::SkipType &type)
 {
-    op = "<font family=\"monospace\">";
+    op = "<font face=\"monospace\">";
     cl = "</font>";
     type = ProcessingInfo::CodeSkip;
-    return BTextTools::toHtml(withoutEscaped(text));
+    return BTextTools::toHtml(withoutEscaped(text), false);
 }
 
 static QString convertNomarkup(ProcessingInfo &, const QString &text, const QRegExp &, const QRegExp &, QString &,
                                QString &, ProcessingInfo::SkipType &type)
 {
     type = ProcessingInfo::CodeSkip;
-    return BTextTools::toHtml(withoutEscaped(text));
+    return BTextTools::toHtml(withoutEscaped(text), false);
 }
 
 static QString convertPre(ProcessingInfo &, const QString &text, const QRegExp &, const QRegExp &, QString &op,
@@ -586,7 +604,8 @@ QString processPostText(QString text, const QString &boardName, Database::RefMap
         sl.removeAll("url");
         langs = sl.join("|").replace("+", "\\+");
     }
-    text.replace(QRegExp("\r*\n"), "\n");
+    text.replace(QRegExp("\r+\n"), "\n");
+    text.replace("\r", "\n");
     ProcessingInfo info(text, boardName, referencedPosts, deletedPost);
     if (ExtendedWakabaMarkLanguage & languages) {
         process(info, &convertMonospace, QRegExp("``", Qt::CaseInsensitive, QRegExp::FixedString), false, true);
@@ -611,7 +630,8 @@ QString processPostText(QString text, const QString &boardName, Database::RefMap
                 QRegExp("[/n]", Qt::CaseInsensitive, QRegExp::FixedString));
     }
     if ((ExtendedWakabaMarkLanguage & languages) || (BBCodeLanguage & languages)) {
-        process(info, &convertExternalLink, QRegExp(Tools::externalLinkRegexpPattern()), QRegExp());
+        process(info, &convertExternalLink, QRegExp(Tools::externalLinkRegexpPattern()), QRegExp(), false, false,
+                &checkExternalLink);
         process(info, &convertProtocol, QRegExp("(mailto|irc|news):(\\S+)"), QRegExp());
         processStrikedOutShitty(info);
         process(info, &convertTooltipShitty, QRegExp("([^\\?\\s]+)\\?{3}\"([^\"]+)\""), QRegExp());
@@ -666,8 +686,9 @@ QString processPostText(QString text, const QString &boardName, Database::RefMap
         process(info, &convertListItem, QRegExp("\\[li(\\s+value\\=\"?(\\d+)\"?\\s*)?\\]", Qt::CaseInsensitive),
                 QRegExp("[/li]", Qt::CaseInsensitive, QRegExp::FixedString), true);
     }
-    if ((ExtendedWakabaMarkLanguage & languages) || (BBCodeLanguage & languages))
-        process(info, &convertCitation, QRegExp("(^|\n)>"), QRegExp("\n|$"), false, false, &checkNotInterrupted);
+    if ((ExtendedWakabaMarkLanguage & languages) || (BBCodeLanguage & languages)) {
+        process(info, &convertCitation, QRegExp(">"), QRegExp("\n|$"), false, false, &checkNotInterrupted);
+    }
     return info.toHtml();
 }
 
