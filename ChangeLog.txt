@@ -1,3 +1,49 @@
+=== ololord 0.1.0-rc10 (13 August 2015) ===
+    * Fix /rpg/ JS
+    * Fix settings dialog size
+    * Split settings into groups using tabs
+    * Add ability to leaf through files
+    * Add ability to set image zoom sensitivity
+    * Implement auto update timer
+    * Implement desktop notifications
+    * Add ability to hide postform rules
+    * Implement user CSS
+    * Add ability to hide tripcodes/user names
+    * Strike out links to hidden posts
+    * Add ability to set default audio/video files volume
+    * Add ability to automatically mark a thread as favofite when posting a reply
+    * Improve adding threads to favorites
+    * Fix markup description
+    * Add markup buttons bar
+    * Implement hotkeys
+    * Fix displaying deleted favorite threads
+    * Remember deleted favorite thread subject
+    * Add ability to remove EXIF information from images
+    * Add post sequence numbers
+    * Improve mobile device compatibility
+    * Implement auto post hiding system
+    * Implement preview masking
+    * Use Web Workers for post data processing
+    * Quote selected text on quick reply
+    * Update posting date for drafts
+    * Fix image scaling and centering
+    * Add draft system description
+    * Implement content rating system
+    * Fix selecting posts on anchor change
+    * Fix URL parsing
+    * Improve timezone handling
+    * Implement collapsible spoilers
+    * Add ability to attach files by URL
+    * Improve geolocation
+    * Get site protocol and domain from JS location object
+    * Add threads catalogs
+    * Implement RSS feed
+    * Implement moving threads between boards
+    * Fix /echo/ script
+    * Fix ascetic mode actions/buttons
+    * Reimplement post text parser
+    * Check file size on the client side
+
 === ololord 0.1.0-rc9 (11 July 2015) ===
     * Implement "uptime" command
     * Fix post number links
