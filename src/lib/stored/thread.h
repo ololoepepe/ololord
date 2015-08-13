@@ -59,6 +59,7 @@ public:
     bool draft() const;
     void setArchived(bool archived);
     void setBoard(const QString &board);
+    void setNumber(quint64 number);
     void setDateTime(const QDateTime &dateTime);
     void setFixed(bool fixed);
     void setPostingEnabled(bool enabled);
@@ -113,7 +114,12 @@ private:
     PRAGMA_DB(not_null)
     QByteArray password_;
     QString posterIp_;
+    QString countryCode_;
+    QString countryName_;
+    QString cityName_;
     bool rawHtml_;
+    bool extendedWakabaMarkEnabled_;
+    bool bbCodeEnabled_;
     QString rawText_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(targetPost_))
     PostReferences referencedBy_;
@@ -130,7 +136,8 @@ private:
 public:
     explicit Post();
     explicit Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
-                  const QString &posterIp, const QByteArray &password, const QByteArray &hashpass = QByteArray());
+                  const QString &posterIp, const QString &countryCode, const QString &countryName,
+                  const QString &cityName, const QByteArray &password, const QByteArray &hashpass = QByteArray());
 public:
     quint64 id() const;
     QString board() const;
@@ -147,10 +154,18 @@ public:
     QByteArray password() const;
     bool draft() const;
     QString posterIp() const;
+    QString countryCode() const;
+    QString countryName() const;
+    QString cityName() const;
     bool rawHtml() const;
+    bool extendedWakabaMarkEnabled() const;
+    bool bbCodeEnabled() const;
     QString rawText() const;
     PostReferences referencedBy() const;
     PostReferences refersTo() const;
+    void setBoard(const QString &board);
+    void setNumber(quint64 number);
+    void setDateTime(const QDateTime &dt);
     void setModificationDateTime(const QDateTime &dt);
     void setBannedFor(bool banned);
     void setShowTripcode(bool show);
@@ -158,6 +173,8 @@ public:
     void setName(const QString &name);
     void setDraft(bool draft);
     void setRawHtml(bool raw);
+    void setExtendedWakabaMarkEnabled(bool b);
+    void setBbCodeEnabled(bool b);
     void setRawText(const QString &text);
     void setSubject(const QString &subject);
     void setText(const QString &text);
@@ -239,13 +256,14 @@ private:
     PRAGMA_DB(not_null)
     int thumbWidth_;
     QByteArray metaData_;
+    int rating_;
     PRAGMA_DB(not_null)
     QLazySharedPointer<Post> post_;
 public:
     explicit FileInfo();
     explicit FileInfo(const QString &name, const QByteArray &hash, const QString &mimeType, int size, int height,
                       int width, const QString &thumbName, int thumbHeight, int thumbWidth, const QVariant &metaData,
-                      QSharedPointer<Post> post);
+                      int rating, QSharedPointer<Post> post);
 public:
     QString name() const;
     QByteArray hash() const;
@@ -257,6 +275,7 @@ public:
     int thumbHeight() const;
     int thumbWidth() const;
     QVariant metaData() const;
+    int rating() const;
     QLazySharedPointer<Post> post() const;
     void setMetaData(const QVariant &metaData);
 private:

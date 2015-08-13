@@ -1,0 +1,169 @@
+<% c++ #include "controller/catalog.h" %>
+<% skin my_skin %>
+<% view catalog uses Content::Catalog extends base_board %>
+
+<% template postFileImage(Content::File file) %>
+<% if ( content.maxAllowedRating < file.rating ) %>
+    <% if ( file.rating >= 180 ) %>
+        <img src="/<%= sitePathPrefix %>img/r-18g.png" width="200" height="200">
+    <% elif ( file.rating >= 18 ) %>
+        <img src="/<%= sitePathPrefix %>img/r-18.png" width="200" height="200">
+    <% elif ( file.rating >= 15 ) %>
+        <img src="/<%= sitePathPrefix %>img/r-15.png" width="200" height="200">
+    <% end %>
+<% elif ( content.isSpecialThumbName(file.thumbName) ) %>
+    <img src="/<%= sitePathPrefix %>img/<%= file.specialThumbName() %>_logo.png"
+         width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
+<% else %>
+    <% if ( file.thumbSizeX > 0 && file.thumbSizeY > 0 ) %>
+        <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>"
+             width="<%= file.thumbSizeX %>" height="<%= file.thumbSizeY %>">
+    <% else %>
+        <img src="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= file.thumbName %>">
+    <% end %>
+<% end %>
+<% end template %>
+
+<% template threads() %>
+<% foreach thread in threads %>
+    <% item %>
+        <div class="catalogItem">
+            <% if ( thread.opPost.files.size() > 0 ) %>
+                <div>
+                    <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html">
+                        <% include postFileImage(thread.opPost.files.front()) %>
+                    </a>
+                </div>
+            <% end %>
+            <div>
+                <span class="someName">
+                    <% if ( !thread.opPost.email.empty() ) %>
+                        <a class="mailtoName" href="mailto:<%= thread.opPost.email %>"><%= thread.opPost.nameRaw %></a>
+                    <% else %>
+                        <%= thread.opPost.name | raw %>
+                    <% end %>
+                </span>
+                <%= replyCountLabelText %> <%= thread.replyCount %>
+                <% if ( !thread.opPost.subject.empty() ) %>
+                    <br />
+                    <span class="postSubject">
+                        <% if ( thread.opPost.subjectIsRaw ) %>
+                            <%= thread.opPost.subject | raw %>
+                        <% else %>
+                            <%= thread.opPost.subject %>
+                        <% end %>
+                    </span>
+                <% end %>
+            </div>
+            <div>
+                <blockquote><%= thread.opPost.text | raw %></blockquote>
+            </div>
+            <% if ( !thread.opPost.referencedBy.empty() ) %>
+                <div>
+                    <span name="referencedBy" class="referencedBy">
+                        <%= referencedByText %>
+                        <% foreach ref in thread.opPost.referencedBy %>
+                            <% item %>
+                                <% if ( ref.boardName != content.currentBoard.name ) %>
+                                    <a href="/<%= sitePathPrefix %><%= ref.boardName %>/thread/<%= ref.threadNumber %>.html#<%= ref.postNumber %>"
+                                       onmouseover="lord.viewPost(this, '<%= ref.boardName %>', <%= ref.postNumber %>);"
+                                       onmouseout="lord.noViewPost();">&gt;&gt;/<%= ref.boardName %>/<%= ref.postNumber %></a>
+                                <% else %>
+                                    <a href="/<%= sitePathPrefix %><%= ref.boardName %>/thread/<%= ref.threadNumber %>.html#<%= ref.postNumber %>"
+                                       onmouseover="lord.viewPost(this, '<%= ref.boardName %>', <%= ref.postNumber %>);"
+                                       onmouseout="lord.noViewPost();">&gt;&gt;<%= ref.postNumber %></a>
+                                <% end %>
+                            <% end %>
+                        <% end %>
+                    </span>
+                </div>
+            <% end %>
+        </div>
+    <% end %>
+<% end %>
+<% end template %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+        <% include boardHead() %>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <script>
+                /*ololord global object*/
+
+                var lord = lord || {};
+
+                /*Functions*/
+
+                lord.changeCatalogSortingMode = function() {
+                    var sel = lord.nameOne("catalogSortingModeSelect");
+                    var mode = sel.options[sel.selectedIndex].value;
+                    location.href = location.href.replace(location.hash, "").split("?").shift() + "?sort=" + mode;
+                };
+            </script>
+        <% end %>
+    </head>
+    <body class="<%= deviceType %>">
+        <% include baseTexts() %>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <% include boardTexts() %>
+        <% end %>
+        <% include customHeader() %>
+        <% include navigationButton("bottom") %>
+        <% include leafButton("previous") %>
+        <% include leafButton("next") %>
+        <% include navigationButton("top") %>
+        <a id="top"></a>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <% if ( !content.bannerFileName.empty() ) %>
+            <br />
+            <% include banner() %>
+        <% end %>
+        <div class="theTitle">
+            <h1>
+                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= currentBoard.title %></a>
+            </h1>
+            <%= sortingModeLabelText %>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <select name="catalogSortingModeSelect" class="select" onchange="lord.changeCatalogSortingMode();">
+                    <% if ( content.sortingMode == "date" ) %>
+                        <option value="date" selected="true"><%= sortingModeDateLabelText %></option>
+                        <option value="bumps"><%= sortingModeBumpsLabelText %></option>
+                    <% else %>
+                        <option value="date"><%= sortingModeDateLabelText %></option>
+                        <option value="bumps" selected="true"><%= sortingModeBumpsLabelText %></option>
+                    <% end %>
+                </select>
+            <% else %>
+                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/catalog.html?sort=date"><%= sortingModeDateLabelText %></a>
+                |
+                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/catalog.html?sort=bumps"><%= sortingModeBumpsLabelText %></a>
+            <% end %>
+        </div>
+        <hr />
+        <hr />
+        <div class="catalogContainer">
+            <% include threads() %>
+        </div>
+        <hr />
+        <% include navbar() %>
+        <% if ( content.postingEnabled ) %>
+            <hr />
+            <div class="navbar">
+                <span class="navbarItem">[<%= postingSpeedText %> <%= postingSpeed %>]</span>
+            </div>
+        <% end %>
+        <a id="bottom"></a>
+        <% include customFooter() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

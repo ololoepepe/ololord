@@ -84,7 +84,7 @@ int main(int argc, char **argv)
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         if (!force)
             s.listen();
-        app.setApplicationVersion("0.1.0-rc9");
+        app.setApplicationVersion("0.1.0-rc10");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -116,6 +116,7 @@ int main(int argc, char **argv)
         }
         Database::createSchema();
         Database::checkOutdatedEntries();
+        Database::generateRss();
         OlolordWebAppThread owt(conf);
         owt.start();
         ret = app.exec();
@@ -553,14 +554,14 @@ bool handleShowPoster(const QString &, const QStringList &args)
         bWriteLine(translate("showPoster", "Invalid post number"));
         return false;
     }
-    QString posterIp = Database::posterIp(boardName, postNumber);
-    if (posterIp.isEmpty()) {
+    Database::GeolocationInfo gli = Database::geolocationInfo(boardName, postNumber);
+    if (gli.ip.isEmpty()) {
         bWriteLine(translate("showPoster", "No such post"));
         return false;
     }
-    bWriteLine(translate("showPoster", "Poster IP:") + " " + posterIp);
-    QString cc = Tools::countryCode(posterIp);
-    QString cn = Tools::countryName(cc);
+    bWriteLine(translate("showPoster", "Poster IP:") + " " + gli.ip);
+    QString cc = gli.countryCode;
+    QString cn = gli.countryName;
     if (!cc.isEmpty()) {
         bWriteLine(translate("showPoster", "Poster country:") + " " + cc
                    + (!cn.isEmpty() ? ("(" + cn + ")") : QString()));
@@ -823,11 +824,6 @@ void initSettings()
     nn = new BSettingsNode(QVariant::UInt, "archive_limit", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum archived thread count per board.\n"
                                                "The default is 0 (do not archive)."));
-    nn = new BSettingsNode(QVariant::Bool, "guess_city_name", n);
-    nn->setDescription(BTranslation::translate("initSettings", "Determines if poster city name should be guessed on "
-                                               "boards that allow this (e.g. /int/).\n"
-                                               "This operation is rather heavy, so you may turn it off.\n"
-                                               "The default is true."));
     nn = new BSettingsNode(QVariant::UInt, "captcha_quota", n);
     nn->setDescription(BTranslation::translate("initSettings", "Maximum count of extra posts a user may make before "
                                                "solving captcha again.\n"

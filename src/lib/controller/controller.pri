@@ -5,8 +5,8 @@ HEADERS += \
     $${PWD}/base.h \
     $${PWD}/baseboard.h \
     $${PWD}/board.h \
+    $${PWD}/catalog.h \
     $${PWD}/cgboard.h \
-    $${PWD}/controller.h \
     $${PWD}/echoboard.h \
     $${PWD}/echothread.h \
     $${PWD}/editaudiotags.h \
@@ -18,6 +18,7 @@ HEADERS += \
     $${PWD}/ipban.h \
     $${PWD}/markup.h \
     $${PWD}/mlpboard.h \
+    $${PWD}/movethread.h \
     $${PWD}/notfound.h \
     $${PWD}/playlist.h \
     $${PWD}/prboard.h \
@@ -29,7 +30,3 @@ HEADERS += \
     $${PWD}/search.h \
     $${PWD}/settings.h \
     $${PWD}/thread.h
-
-SOURCES += \
-    $${PWD}/controller.cpp \
-    $${PWD}/markup.cpp

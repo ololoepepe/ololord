@@ -3,8 +3,11 @@
 #include "board/abstractboard.h"
 #include "cache.h"
 #include "captcha/abstractcaptchaengine.h"
-#include "controller/controller.h"
+#include "controller.h"
+#include "controller/baseboard.h"
+#include "markup.h"
 #include "search.h"
+#include "settingslocker.h"
 #include "stored/banneduser.h"
 #include "stored/banneduser-odb.hxx"
 #include "stored/postcounter.h"
@@ -19,22 +22,36 @@
 
 #include <BDirTools>
 #include <BeQt>
+#include <BSqlDatabase>
+#include <BSqlQuery>
+#include <BSqlResult>
+#include <BSqlWhere>
 #include <BTerminal>
 #include <BTextTools>
+#include <BUuid>
 
 #include <QByteArray>
 #include <QCryptographicHash>
 #include <QDateTime>
 #include <QDebug>
 #include <QDir>
+#include <QDomCDATASection>
+#include <QDomDocument>
+#include <QDomElement>
+#include <QDomNode>
+#include <QDomProcessingInstruction>
+#include <QDomText>
+#include <QElapsedTimer>
 #include <QFile>
 #include <QFileInfo>
 #include <QReadLocker>
 #include <QReadWriteLock>
 #include <QScopedPointer>
+#include <QSettings>
 #include <QSharedPointer>
 #include <QString>
 #include <QStringList>
+#include <QTimeZone>
 #include <QVariant>
 #include <QVariantMap>
 #include <QWriteLocker>
@@ -48,6 +65,8 @@
 #include <odb/sqlite/database.hxx>
 #include <odb/transaction.hxx>
 
+B_DECLARE_TRANSLATE_FUNCTION
+
 namespace Database
 {
 
@@ -56,6 +75,8 @@ struct PostTmpInfo
     RefMap refs;
     QString board;
     QString text;
+    bool extendedWakabaMarkEnabled;
+    bool bbCodeEnabled;
 };
 
 RefKey::RefKey()
@@ -136,8 +157,18 @@ public:
         referencedPosts = 0;
         threadNumber = 0;
         postNumber = 0;
+        QString mm = ps.value("markupMode");
+        if (mm.isEmpty())
+            mm = "ewm_and_bbc";
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (mm.contains("ewm", Qt::CaseInsensitive) && mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::AllLanguages;
+        else if (mm.contains("ewm", Qt::CaseInsensitive))
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::BBCodeLanguage;
         if (board)
-            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs, 0, ml);
     }
     explicit CreatePostInternalParameters(CreatePostParameters &p, AbstractBoard *board) :
         request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
@@ -149,8 +180,18 @@ public:
         referencedPosts = &p.referencedPosts;
         threadNumber = 0;
         postNumber = 0;
+        QString mm = params.value("markupMode");
+        if (mm.isEmpty())
+            mm = "ewm_and_bbc";
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (mm.contains("ewm", Qt::CaseInsensitive) && mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::AllLanguages;
+        else if (mm.contains("ewm", Qt::CaseInsensitive))
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::BBCodeLanguage;
         if (board)
-            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs, 0, ml);
     }
     explicit CreatePostInternalParameters(CreateThreadParameters &p, AbstractBoard *board) :
         request(p.request), params(p.params), files(p.files), locale(p.locale), fileTransaction(board)
@@ -162,13 +203,25 @@ public:
         threadNumber = 0;
         postNumber = 0;
         referencedPosts = 0;
+        QString mm = params.value("markupMode");
+        if (mm.isEmpty())
+            mm = "ewm_and_bbc";
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (mm.contains("ewm", Qt::CaseInsensitive) && mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::AllLanguages;
+        else if (mm.contains("ewm", Qt::CaseInsensitive))
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (mm.contains("bbc", Qt::CaseInsensitive))
+            ml = Markup::BBCodeLanguage;
         if (board)
-            processedText = Controller::processPostText(params.value("text"), board->name(), &refs);
+            processedText = Markup::processPostText(params.value("text"), board->name(), &refs, 0, ml);
     }
 };
 
 static QReadWriteLock processTextLock(QReadWriteLock::Recursive);
 static QMutex postMutex(QMutex::Recursive);
+static QReadWriteLock rssLock(QReadWriteLock::Recursive);
+static QMap<QString, QString> rssMap;
 
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
                                  QString *description = 0, const QLocale &l = BCoreApplication::locale())
@@ -340,12 +393,14 @@ static void deleteFiles(const QString &boardName, const QStringList &fileNames)
         QFile::remove(path + "/" + fn);
 }
 
-static quint64 incrementPostCounter(const QString &boardName, QString *error = 0,
+static quint64 incrementPostCounter(const QString &boardName, quint64 delta = 1, QString *error = 0,
                                     const QLocale &l = BCoreApplication::locale())
 {
     TranslatorQt tq(l);
     if (!AbstractBoard::boardNames().contains(boardName))
         return bRet(error, tq.translate("incrementPostCounter", "Invalid board name", "error"), 0L);
+    if (!delta)
+        return bRet(error, tq.translate("incrementPostCounter", "Internal logic error", "error"), 0L);
     quint64 incremented = 0L;
     try {
         Transaction t;
@@ -359,7 +414,8 @@ static quint64 incrementPostCounter(const QString &boardName, QString *error = 0
         }
         if (counter.error || !counter)
             return bRet(error, tq.translate("incrementPostCounter", "Internal database error", "error"), 0L);
-        incremented = counter->incrementLastPostNumber();
+        while (delta--)
+            incremented = counter->incrementLastPostNumber();
         update(counter);
         t.commit();
     } catch (const odb::exception &e) {
@@ -530,7 +586,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         }
         QString err;
         quint64 postNumber = p.dateTime.isValid() ? lastPostNumber(boardName, &err, tq.locale())
-                                                  : incrementPostCounter(boardName, &err, tq.locale());
+                                                  : incrementPostCounter(boardName, 1, &err, tq.locale());
         if (!postNumber) {
             return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description, err,
                         false);
@@ -564,13 +620,18 @@ static bool createPostInternal(CreatePostInternalParameters &p)
             p.dateTime = QDateTime::currentDateTimeUtc();
         QByteArray hp = Tools::hashpass(p.request);
         QString ip = Tools::userIp(p.request);
-        QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, post.password, hp));
+        GeolocationInfo gli = geolocationInfo(ip);
+        QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, gli.countryCode,
+                                         gli.countryName, gli.cityName, post.password, hp));
         ps->setEmail(post.email);
         ps->setName(post.name);
         ps->setSubject(post.subject);
         ps->setRawText(post.text);
         if (draft)
             ps->setDraft(true);
+        QString mm = p.params.value("markupMode");
+        ps->setExtendedWakabaMarkEnabled(mm.contains("ewm", Qt::CaseInsensitive));
+        ps->setBbCodeEnabled(mm.contains("bbc", Qt::CaseInsensitive));
         bool raw = post.raw && registeredUserLevel(p.request) >= RegisteredUser::AdminLevel;
         if (raw) {
             ps->setText(post.text);
@@ -589,7 +650,7 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         t->persist(ps);
         foreach (const AbstractBoard::FileInfo &fi, p.fileTransaction.fileInfos()) {
             FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
-                              fi.thumbHeight, fi.thumbWidth, fi.metaData, ps);
+                              fi.thumbHeight, fi.thumbWidth, fi.metaData, fi.rating, ps);
             t->persist(fileInfo);
         }
         if (!raw && !ps->draft() && !addToReferencedPosts(ps, refs, p.error, p.description, tq.locale()))
@@ -641,6 +702,8 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             Post p = *ref.load()->sourcePost().load();
             tmp.board = p.board();
             tmp.text = p.rawText();
+            tmp.extendedWakabaMarkEnabled = p.extendedWakabaMarkEnabled();
+            tmp.bbCodeEnabled = p.bbCodeEnabled();
             postIds.insert(p.id(), tmp);
         }
         t.commit();
@@ -649,7 +712,14 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     }
     foreach (quint64 id, postIds.keys()) {
         PostTmpInfo &tmp = postIds[id];
-        tmp.text = Controller::processPostText(tmp.text, tmp.board, 0, postNumber);
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (tmp.extendedWakabaMarkEnabled && tmp.bbCodeEnabled)
+            ml = Markup::AllLanguages;
+        else if (tmp.extendedWakabaMarkEnabled)
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (tmp.bbCodeEnabled)
+            ml = Markup::BBCodeLanguage;
+        tmp.text = Markup::processPostText(tmp.text, tmp.board, 0, postNumber, ml);
     }
     try {
         Transaction t;
@@ -807,7 +877,7 @@ bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &par
         }
         foreach (const AbstractBoard::FileInfo &fi, infos) {
             FileInfo fileInfo(fi.name, fi.hash, fi.mimeType, fi.size, fi.height, fi.width, fi.thumbName,
-                              fi.thumbHeight, fi.thumbWidth, fi.metaData, post.data);
+                              fi.thumbHeight, fi.thumbWidth, fi.metaData, fi.rating, post.data);
             t->persist(fileInfo);
         }
         t.commit();
@@ -973,7 +1043,7 @@ quint64 createThread(CreateThreadParameters &p)
             return bRet(p.error, tq.translate("createThread", "Internal database error", "error"), p.description,
                         tq.translate("createThread", "Internal database error", "error"), false);
         QString err;
-        quint64 postNumber = incrementPostCounter(p.params.value("board"), &err, p.locale);
+        quint64 postNumber = incrementPostCounter(p.params.value("board"), 1, &err, p.locale);
         if (!postNumber)
             return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description, err, 0L);
         if (p.threadLimit) {
@@ -1194,7 +1264,14 @@ bool editPost(EditPostParameters &p)
     QByteArray hashpass = Tools::hashpass(p.request);
     if (p.password.isEmpty() && hashpass.isEmpty())
         return bRet(p.error, tq.translate("editPost", "Invalid password", "error"), false);
-    QString processedText = Controller::processPostText(p.text, p.boardName, &p.referencedPosts);
+    Markup::MarkupLanguage ml = Markup::NoLanguage;
+    if (p.extendedWakabaMarkEnabled && p.bbCodeEnabled)
+        ml = Markup::AllLanguages;
+    else if (p.extendedWakabaMarkEnabled)
+        ml = Markup::ExtendedWakabaMarkLanguage;
+    else if (p.bbCodeEnabled)
+        ml = Markup::BBCodeLanguage;
+    QString processedText = Markup::processPostText(p.text, p.boardName, &p.referencedPosts, 0, ml);
     QReadLocker locker(&processTextLock);
     QMutexLocker plocker(&postMutex);
     try {
@@ -1232,6 +1309,8 @@ bool editPost(EditPostParameters &p)
         post->setRawText(p.text);
         bool wasDraft = post->draft();
         post->setDraft(board->draftsEnabled() && p.draft);
+        post->setExtendedWakabaMarkEnabled(p.extendedWakabaMarkEnabled);
+        post->setBbCodeEnabled(p.bbCodeEnabled);
         if (!post->draft() && !removeFromReferencedPosts(post.data->id(), p.error, tq.locale()))
             return false;
         if (p.raw && lvl >= RegisteredUser::AdminLevel) {
@@ -1246,11 +1325,12 @@ bool editPost(EditPostParameters &p)
         post->setEmail(p.email);
         post->setName(p.name);
         post->setSubject(p.subject);
-        bool draftLast = post->draft();
         Thread thread = *post->thread().load();
-        if (post->draft() != draftLast) {
+        if (post->draft() != wasDraft) {
             if (thread.number() == post->number())
                 thread.setDraft(post->draft());
+            if (!post->draft())
+                post->setDateTime(QDateTime::currentDateTimeUtc());
         }
         if (!wasDraft)
             post->setModificationDateTime(QDateTime::currentDateTimeUtc());
@@ -1319,30 +1399,6 @@ bool fileExists(const QString &hashString, bool *ok)
     return fileExists(hash, ok);
 }
 
-QVariant getFileMetaData(const QString &fileName, bool *ok, QString *error, const QLocale &l)
-{
-    TranslatorQt tq(l);
-    if (fileName.isEmpty())
-        return bRet(ok, false, error, tq.translate("getFileMetaData", "Invalid file name", "error"), QVariant());
-    try {
-        Transaction t;
-        if (!t) {
-            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "description"),
-                        QVariant());
-        }
-        Result<FileInfo> fi = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
-        if (fi.error) {
-            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "error"),
-                        QVariant());
-        }
-        if (!fi)
-            return bRet(ok, false, error, tq.translate("getFileMetaData", "No such file", "error"), QVariant());
-        return bRet(ok, true, error, QString(), fi->metaData());
-    } catch (const odb::exception &e) {
-        return bRet(ok, false, error, Tools::fromStd(e.what()), QVariant());
-    }
-}
-
 QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool *ok, QString *error,
                       QString *description, const QLocale &l)
 {
@@ -1372,6 +1428,207 @@ QList<Post> findPosts(const Search::Query &query, const QString &boardName, bool
     } catch (const odb::exception &e) {
         return bRet(ok, false, error, tq.translate("findPosts", "Internal error", "error"), description,
                     Tools::fromStd(e.what()), QList<Post>());
+    }
+}
+
+void generateRss()
+{
+    QWriteLocker locker(&rssLock);
+    rssMap.clear();
+    QString siteProtocol;
+    QString siteDomain;
+    QString sitePathPrefix;
+    {
+        SettingsLocker s;
+        siteProtocol = s->value("Site/protocol").toString();
+        if (siteProtocol.isEmpty())
+            siteProtocol = "http";
+        siteDomain = s->value("Site/domain").toString();
+        sitePathPrefix = s->value("Site/path_prefix").toString();
+    }
+    QLocale locale = BCoreApplication::locale();
+    foreach (const QString &boardName, AbstractBoard::boardNames()) {
+        AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+        if (board.isNull())
+            continue;
+        QDomDocument doc;
+        doc.appendChild(doc.createProcessingInstruction("xml", "version=\"1.0\""));
+        QDomElement root = doc.createElement("rss");
+        root.setAttribute("version", "2.0");
+        root.setAttribute("xmlns:dc", "http://purl.org/dc/elements/1.1/");
+        root.setAttribute("xmlns:atom", "http://www.w3.org/2005/Atom");
+        QDomElement chan = doc.createElement("channel");
+        QDomElement title = doc.createElement("title");
+        title.appendChild(doc.createTextNode(translate("Database::generateRss", "Feed", "channel title") + " "
+                                             + siteDomain + "/" + sitePathPrefix + boardName));
+        chan.appendChild(title);
+        QDomElement link = doc.createElement("link");
+        link.appendChild(doc.createTextNode(siteProtocol + "://" + siteDomain + "/" + sitePathPrefix + boardName));
+        chan.appendChild(link);
+        QDomElement desc = doc.createElement("description");
+        desc.appendChild(doc.createTextNode(translate("Database::generateRss", "Last posts from board",
+                                                      "channel description") + " /" + boardName + "/"));
+        chan.appendChild(desc);
+        QDomElement lang = doc.createElement("language");
+        lang.appendChild(doc.createTextNode(locale.name().left(2)));
+        chan.appendChild(lang);
+        QDomElement pub = doc.createElement("pubDate");
+        pub.appendChild(doc.createTextNode(QLocale("en_US").toString(QDateTime::currentDateTimeUtc(),
+                                                                     "ddd, dd MMM yyyy hh:mm:ss +0000")));
+        chan.appendChild(pub);
+        QDomElement ttl = doc.createElement("ttl");
+        ttl.appendChild(doc.createTextNode("60"));
+        chan.appendChild(ttl);
+        QDomElement atomLink = doc.createElement("atom:link");
+        atomLink.setAttribute("href", siteProtocol + "://" + siteDomain + "/" + sitePathPrefix + boardName
+                              + "/rss.xml");
+        atomLink.setAttribute("rel", "self");
+        atomLink.setAttribute("type", "application/rss+xml");
+        chan.appendChild(atomLink);
+        try {
+            Transaction t;
+            if (!t)
+                continue;
+            QList<Post> list = query<Post, Post>((odb::query<Post>::board == boardName)
+                                                 + " ORDER BY dateTime DESC LIMIT 500");
+            foreach (const Post &post, list) {
+                QDomElement item = doc.createElement("item");
+                QDomElement title = doc.createElement("title");
+                quint64 threadNumber = post.thread().load()->number();
+                bool thread = (post.number() == threadNumber);
+                QString t;
+                if (thread)
+                    t += "[" + translate("Database::generateRss", "New thread", "item title") + "]";
+                else
+                    t += translate("Database::generateRss", "Reply to thread", "item title") + "";
+                t += " ";
+                QString subj = post.subject();
+                if (subj.isEmpty())
+                    subj = post.rawText().left(150);
+                if (!subj.isEmpty()) {
+                    if (!thread)
+                        t += "\"";
+                    t += subj;
+                    if (!thread)
+                        t += "\"";
+                } else {
+                    t += QString::number(post.number());
+                }
+                title.appendChild(doc.createCDATASection(t));
+                item.appendChild(title);
+                QDomElement link = doc.createElement("link");
+                QString l = siteProtocol + "://" + siteDomain + "/" + sitePathPrefix + boardName + "/thread/"
+                        + QString::number(threadNumber) + ".html";
+                link.appendChild(doc.createTextNode(l));
+                item.appendChild(link);
+                QDomElement desc = doc.createElement("description");
+                QString d = "\n";
+                typedef QLazyWeakPointer<FileInfo> FileInfoLazy;
+                foreach (FileInfoLazy fil, post.fileInfos()) {
+                    QSharedPointer<FileInfo> fi = fil.load();
+                    d += "<img src=\"" + siteProtocol + "://" + siteDomain + "/" + sitePathPrefix + boardName + "/"
+                            + fi->thumbName() + "\"><br />";
+                }
+                d += post.text();
+                d += "\n";
+                desc.appendChild(doc.createCDATASection(d));
+                item.appendChild(desc);
+                QDomElement pub = doc.createElement("pubDate");
+                pub.appendChild(doc.createTextNode(QLocale("en_US").toString(post.dateTime(),
+                                                                             "ddd, dd MMM yyyy hh:mm:ss +0000")));
+                item.appendChild(pub);
+                QDomElement guid = doc.createElement("guid");
+                l += "#" + QString::number(post.number());
+                guid.setAttribute("isPermalink", "ture");
+                guid.appendChild(doc.createTextNode(l));
+                item.appendChild(guid);
+                QDomElement creator = doc.createElement("dc:creator");
+                QString c = post.name();
+                if (c.isEmpty())
+                    c = board->defaultUserName(locale);
+                creator.appendChild(doc.createTextNode(c));
+                item.appendChild(creator);
+                chan.appendChild(item);
+            }
+        } catch (const odb::exception &e) {
+            Tools::log("Database::generateRss", e);
+            continue;
+        }
+        root.appendChild(chan);
+        doc.appendChild(root);
+        rssMap.insert(boardName, doc.toString(4));
+    }
+}
+
+GeolocationInfo geolocationInfo(const QString &ip)
+{
+    GeolocationInfo info;
+    info.ip = ip;
+    unsigned int n = Tools::ipNum(ip);
+    if (!n)
+        return info;
+    BSqlDatabase db("QSQLITE", "ip2location" + BUuid::createUuid().toString(true));
+    db.setDatabaseName(BDirTools::findResource("geolocation/ip2location.sqlite"));
+    if (!db.open())
+        return info;
+    static const QStringList Fields = QStringList() << "country_code" << "country_name" << "city_name";
+    BSqlResult r = db.select("ip2location", Fields, BSqlWhere("ip_to >= :ip LIMIT 1", ":ip", n));
+    if (!r)
+        return info;
+    info.cityName = r.value("city_name").toString();
+    info.countryCode = r.value("country_code").toString();
+    info.countryName = r.value("country_name").toString();
+    return info;
+}
+
+GeolocationInfo geolocationInfo(const cppcms::http::request &req)
+{
+    return geolocationInfo(Tools::fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
+}
+
+GeolocationInfo geolocationInfo(const QString &boardName, quint64 postNumber)
+{
+    try {
+        Transaction t;
+        if (!t)
+            return GeolocationInfo();
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == boardName
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error || !post)
+            return GeolocationInfo();
+        GeolocationInfo info;
+        info.countryCode = post->countryCode();
+        info.countryName = post->countryName();
+        info.cityName = post->cityName();
+        info.ip = post->posterIp();
+        return info;
+    }  catch (const odb::exception &e) {
+        Tools::log("Database::geolocationInfo", e);
+        return GeolocationInfo();
+    }
+}
+
+QVariant getFileMetaData(const QString &fileName, bool *ok, QString *error, const QLocale &l)
+{
+    TranslatorQt tq(l);
+    if (fileName.isEmpty())
+        return bRet(ok, false, error, tq.translate("getFileMetaData", "Invalid file name", "error"), QVariant());
+    try {
+        Transaction t;
+        if (!t) {
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "description"),
+                        QVariant());
+        }
+        Result<FileInfo> fi = queryOne<FileInfo, FileInfo>(odb::query<FileInfo>::name == fileName);
+        if (fi.error) {
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "Internal database error", "error"),
+                        QVariant());
+        }
+        if (!fi)
+            return bRet(ok, false, error, tq.translate("getFileMetaData", "No such file", "error"), QVariant());
+        return bRet(ok, true, error, QString(), fi->metaData());
+    } catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QVariant());
     }
 }
 
@@ -1473,6 +1730,32 @@ QList<Post> getNewPosts(const cppcms::http::request &req, const QString &boardNa
     }
 }
 
+QList<Content::Post> getNewPostsC(const cppcms::http::request &req, const QString &boardName, quint64 threadNumber,
+                                  quint64 lastPostNumber, bool *ok, QString *error)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (board.isNull()) {
+        return bRet(ok, false, error, tq.translate("getNewPosts", "Invalid board name", "error"),
+                    QList<Content::Post>());
+    }
+    bool b = false;
+    QList<Post> posts = getNewPosts(req, boardName, threadNumber, lastPostNumber, &b, error);
+    if (!b)
+        return bRet(ok, false, QList<Content::Post>());
+    QList<Content::Post> list;
+    foreach (const Post &p, posts) {
+        list << board->toController(p, req, &b, error);
+        if (!b)
+            return bRet(ok, false, QList<Content::Post>());
+        if (!list.last().number) {
+            return bRet(ok, false, error, tq.translate("getNewPosts", "Internal logic error", "error"),
+                        QList<Content::Post>());
+        }
+    }
+    return bRet(ok, true, error, QString(), list);
+}
+
 Post getPost(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok, QString *error)
 {
     AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
@@ -1501,6 +1784,25 @@ Post getPost(const cppcms::http::request &req, const QString &boardName, quint64
     }  catch (const odb::exception &e) {
         return bRet(ok, false, error, Tools::fromStd(e.what()), Post());
     }
+}
+
+Content::Post getPostC(const cppcms::http::request &req, const QString &boardName, quint64 postNumber, bool *ok,
+                       QString *error)
+{
+    AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
+    TranslatorQt tq(req);
+    if (board.isNull())
+        return bRet(ok, false, error, tq.translate("getPost", "Invalid board name", "error"), Content::Post());
+    bool b = false;
+    Post post = getPost(req, boardName, postNumber, &b, error);
+    if (!b)
+        return bRet(ok, false, Content::Post());
+    Content::Post p = board->toController(post, req, &b, error);
+    if (!b)
+        return bRet(ok, false, Content::Post());
+    if (!p.number)
+        return bRet(ok, false, error, tq.translate("getPost", "Internal logic error", "error"), Content::Post());
+    return bRet(ok, true, error, QString(), p);
 }
 
 QList<quint64> getThreadNumbers(const cppcms::http::request &req, const QString &boardName, bool *ok, QString *error)
@@ -1600,6 +1902,120 @@ bool moderOnBoard(const QByteArray &hashpass, const QString &board1, const QStri
         return true;
     QStringList boards = registeredUserBoards(hashpass);
     return (boards.contains("*") && boards.contains(board1) && (board2.isEmpty() || boards.contains(board2)));
+}
+
+quint64 moveThread(const cppcms::http::request &req, const QString &sourceBoard, quint64 threadNumber,
+                   const QString &targetBoard, QString *error)
+{
+    AbstractBoard::LockingWrapper srcBrd = AbstractBoard::board(sourceBoard);
+    AbstractBoard::LockingWrapper trgBrd = AbstractBoard::board(targetBoard);
+    TranslatorQt tq(req);
+    if (srcBrd.isNull() || trgBrd.isNull())
+        return bRet(error, tq.translate("Database::moveThread", "Invalid board name", "error"), 0);
+    if (!threadNumber)
+        return bRet(error, tq.translate("Database::moveThread", "Invalid thread number", "error"), 0);
+    if (sourceBoard == targetBoard)
+        return bRet(error, tq.translate("Database::moveThread", "Source and target boards are the same", "error"), 0);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("Database::moveThread", "Not logged in", "error"), 0);
+    if (!moderOnBoard(hashpass, sourceBoard, targetBoard))
+        return bRet(error, tq.translate("Database::moveThread", "Not enough rights", "error"), 0);
+    QString storagePath = Tools::storagePath();
+    if (storagePath.isEmpty())
+        return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
+    QString srcPath = storagePath + "/img/" + sourceBoard;
+    QString trgPath = storagePath + "/img/" + targetBoard;
+    if (!BDirTools::mkpath(trgPath))
+        return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::number == threadNumber
+                                                 && odb::query<Thread>::board == sourceBoard);
+        if (thread.error)
+            return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+        if (!thread)
+            return bRet(error, tq.translate("Database::moveThread", "No such thread", "error"), false);
+        QList<Post> posts = query<Post, Post>(odb::query<Post>::thread == thread->id());
+        if (posts.isEmpty())
+            return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+        if (posts.first().hashpass() != hashpass
+                && registeredUserLevel(posts.first().hashpass()) >= registeredUserLevel(hashpass)) {
+            return bRet(error, tq.translate("Database::moveThread", "Not enough rights", "error"), 0);
+        }
+        quint64 newPostNumber = incrementPostCounter(targetBoard, posts.size(), error, tq.locale());
+        if (!newPostNumber)
+            return 0;
+        quint64 newThreadNumber = newPostNumber - posts.size() + 1;
+        QMap<quint64, quint64> oldPostNumbers;
+        foreach (int i, bRangeR(posts.size() - 1, 0)) {
+            Post &post = posts[i];
+            QList<PostReference> referred = query<PostReference, PostReference>(
+                        odb::query<PostReference>::targetPost == post.id());
+            foreach (int j, bRangeD(0, referred.size() - 1)) {
+                PostReference &ref = referred[j];
+                QSharedPointer<Post> sourcePost = ref.sourcePost().load();
+                if (sourcePost.isNull())
+                    return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+                QString text = sourcePost->text();
+                QString stns = QString::number(threadNumber);
+                QString spns = QString::number(post.number());
+                QString ttns = QString::number(newThreadNumber);
+                QString tpns= QString::number(newPostNumber);
+                QString ns = "<a href=\"/" + targetBoard + "/thread/" + ttns + ".html#" + tpns + "\">&gt;&gt;/"
+                        + targetBoard + "/" + tpns + "</a>";
+                text.replace("<a href=\"/" + sourceBoard + "/thread/" + stns + ".html#" + spns + "\">&gt;&gt;" + spns
+                             + "</a>", ns);
+                text.replace("<a href=\"/" + sourceBoard + "/thread/" + stns + ".html#" + spns + "\">&gt;&gt;/"
+                             + sourceBoard + "/" + spns + "</a>", ns);
+                sourcePost->setText(text);
+                t->update(sourcePost);
+                Cache::removePost(sourcePost->board(), sourcePost->number());
+            }
+            QList<FileInfo> fileInfos = query<FileInfo, FileInfo>(odb::query<FileInfo>::post == post.id());
+            foreach (int j, bRangeD(0, fileInfos.size() - 1)) {
+                FileInfo &fi = fileInfos[j];
+                if (!QFile::rename(srcPath + "/" + fi.name(), trgPath + "/" + fi.name()))
+                    return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
+                if (!QFile::rename(srcPath + "/" + fi.thumbName(), trgPath + "/" + fi.thumbName()))
+                    return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
+            }
+            Cache::removePost(post.board(), post.number());
+            oldPostNumbers.insert(newPostNumber, post.number());
+            post.setNumber(newPostNumber);
+            --newPostNumber;
+        }
+        foreach (int i, bRangeD(0, posts.size() - 1)) {
+            Post &post = posts[i];
+            QList<PostReference> referenced = query<PostReference, PostReference>(
+                        odb::query<PostReference>::sourcePost == post.id());
+            foreach (int j, bRangeD(0, referenced.size() - 1)) {
+                PostReference &ref = referenced[j];
+                QSharedPointer<Post> targetPost = ref.targetPost().load();
+                if (targetPost.isNull())
+                    return bRet(error, tq.translate("Database::moveThread", "Internal database error", "error"), 0);
+                QString text = post.text();
+                QString tns = QString::number(targetPost->thread().load()->number());
+                QString spns = QString::number(oldPostNumbers.value(targetPost->number()));
+                QString tpns = QString::number(targetPost->number());
+                text.replace("<a href=\"/" + sourceBoard + "/thread/" + tns + ".html#" + spns + "\">&gt;&gt;" + spns
+                             + "</a>", "<a href=\"/" + targetBoard + "/thread/" + tns + ".html#" + tpns + "\">&gt;&gt;"
+                             + tpns + "</a>");
+                post.setText(text);
+            }
+            post.setBoard(targetBoard);
+            t->update(post);
+        }
+        thread->setBoard(targetBoard);
+        thread->setNumber(newThreadNumber);
+        update(thread);
+        t.commit();
+        return bRet(error, QString(), newThreadNumber);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), 0);
+    }
 }
 
 bool postExists(const QString &boardName, quint64 postNumber, quint64 *threadNumber)
@@ -1740,9 +2156,14 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
 
 int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l)
 {
+    static const int Offset = 100;
     TranslatorQt tq(l);
     QWriteLocker locker(&processTextLock);
     QMap<quint64, PostTmpInfo> postIds;
+    int count = 0;
+    QElapsedTimer etmr;
+    bWriteLine(tq.translate("rerenderPosts", "Reading post count...", "message"));
+    etmr.start();
     try {
         Transaction t;
         if (!t)
@@ -1754,36 +2175,88 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                 qq = qq || (odb::query<Post>::board == board);
             q = q && qq;
         }
-        QList<PostIdBoardRawText> ids = query<PostIdBoardRawText, Post>(q);
-        foreach (const PostIdBoardRawText &id, ids) {
-            PostTmpInfo tmp;
-            tmp.board = id.board;
-            tmp.text = id.rawText;
-            postIds.insert(id.id, tmp);
-        }
+        Result<PostCount> pc = queryOne<PostCount, Post>(q);
+        if (pc.error || !pc)
+            return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), 0);
+        count = pc->count;
         t.commit();
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), -1);
+    }
+    qint64 elapsed = etmr.elapsed();
+    bWriteLine(tq.translate("rerenderPosts", "Read post count:", "message") + " " + QString::number(count) + " ("
+               + QString::number(elapsed) + " " + tq.translate("rerenderPosts", "ms", "message") + ")");
+    bWriteLine(tq.translate("rerenderPosts", "Reading posts...", "message"));
+    for (int i = 0; i < count; i += Offset) {
+        int o = i + Offset;
+        if (o > count)
+            o = count;
+        try {
+            Transaction t;
+            if (!t)
+                return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
+            odb::query<Post> q = (odb::query<Post>::rawHtml == false);
+            if (!boardNames.isEmpty()) {
+                odb::query<Post> qq = (odb::query<Post>::board == boardNames.first());
+                foreach (const QString &board, boardNames.mid(1))
+                    qq = qq || (odb::query<Post>::board == board);
+                q = q && qq;
+            }
+            q = q + "LIMIT " + Tools::toStd(QString::number(Offset)) + " OFFSET " + Tools::toStd(QString::number(i));
+            QList<Post> ids = query<Post, Post>(q);
+            foreach (const Post &id, ids) {
+                PostTmpInfo tmp;
+                tmp.board = id.board();
+                tmp.text = id.rawText();
+                tmp.extendedWakabaMarkEnabled = id.extendedWakabaMarkEnabled();
+                tmp.bbCodeEnabled = id.bbCodeEnabled();
+                postIds.insert(id.id(), tmp);
+            }
+            t.commit();
+        } catch (const odb::exception &e) {
+            return bRet(error, Tools::fromStd(e.what()), -1);
+        }
+        bWriteLine(tq.translate("rerenderPosts", "Read posts:", "message") + " " + QString::number(o) + "/"
+                   + QString::number(count) + " (" + QString::number(etmr.elapsed() - elapsed)
+                   + tq.translate("rerenderPosts", "ms", "message") + ")");
+        elapsed = etmr.elapsed();
     }
     if (postIds.isEmpty())
         return bRet(error, QString(), 0);
     int sz = postIds.keys().size();
     int curr = 1;
     foreach (quint64 id, postIds.keys()) {
-        bWriteLine(QString::number(curr) + "/" + QString::number(sz));
-        ++curr;
+        bWriteLine(tq.translate("rerenderPosts", "Rendering post:", "message") + " "
+                   + QString::number(curr) + "/" + QString::number(sz) + " ID=" + QString::number(id));
         PostTmpInfo &tmp = postIds[id];
-        tmp.text = Controller::processPostText(tmp.text, tmp.board, &tmp.refs);
+        Markup::MarkupLanguage ml = Markup::NoLanguage;
+        if (tmp.extendedWakabaMarkEnabled && tmp.bbCodeEnabled)
+            ml = Markup::AllLanguages;
+        else if (tmp.extendedWakabaMarkEnabled)
+            ml = Markup::ExtendedWakabaMarkLanguage;
+        else if (tmp.bbCodeEnabled)
+            ml = Markup::BBCodeLanguage;
+        tmp.text = Markup::processPostText(tmp.text, tmp.board, &tmp.refs, 0, ml);
+        bWriteLine(tq.translate("rerenderPosts", "Rendered post:", "message") + " " + QString::number(curr) + "/"
+                   + QString::number(sz) + " (" + QString::number(etmr.elapsed() - elapsed)
+                   + tq.translate("rerenderPosts", "ms", "message") + ")");
+        elapsed = etmr.elapsed();
+        ++curr;
     }
-    int count = 0;
+    count = 0;
     int offset = 0;
+    bWriteLine(tq.translate("rerenderPosts", "Writing posts...", "message"));
     while (offset < postIds.size()) {
+        int o = offset + Offset;
+        if (o > postIds.size())
+            o = postIds.size();
+        bWriteLine(tq.translate("rerenderPosts", "Writing posts:", "message") + " "
+                   + QString::number(o) + "/" + QString::number(postIds.size()));
         try {
             Transaction t;
             if (!t)
                 return bRet(error, tq.translate("rerenderPosts", "Internal database error", "error"), -1);
             QString qs = "id IN (";
-            static const int Offset = 100;
             foreach (quint64 id, postIds.keys().mid(count, Offset))
                 qs += QString::number(id) + ", ";
             qs.remove(qs.length() - 2, 2);
@@ -1809,8 +2282,20 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
         } catch (const odb::exception &e) {
             return bRet(error, Tools::fromStd(e.what()), -1);
         }
+        bWriteLine(tq.translate("rerenderPosts", "Wrote posts:", "message") + " " + QString::number(o) + "/"
+                   + QString::number(postIds.size()) + " (" + QString::number(etmr.elapsed() - elapsed)
+                   + tq.translate("rerenderPosts", "ms", "message") + ")");
+        elapsed = etmr.elapsed();
     }
+    bWriteLine(tq.translate("rerenderPosts", "Finished! Operation took", "message") + " "
+               + QString::number(etmr.elapsed()) + tq.translate("rerenderPosts", "ms", "message"));
     return bRet(error, QString(), count);
+}
+
+QString rss(const QString &boardName)
+{
+    QReadLocker locker(&rssLock);
+    return rssMap.value(boardName);
 }
 
 bool setThreadFixed(const QString &board, quint64 threadNumber, bool fixed, QString *error, const QLocale &l)

@@ -90,6 +90,11 @@ void Thread::setBoard(const QString &board)
     board_ = board;
 }
 
+void Thread::setNumber(quint64 number)
+{
+    number_ = number;
+}
+
 void Thread::setDateTime(const QDateTime &dateTime)
 {
     dateTime_ = dateTime;
@@ -116,7 +121,8 @@ Post::Post()
 }
 
 Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
-           const QString &posterIp, const QByteArray &password, const QByteArray &hashpass)
+           const QString &posterIp, const QString &countryCode, const QString &countryName, const QString &cityName,
+           const QByteArray &password, const QByteArray &hashpass)
 {
     id_ = 0L;
     board_ = board;
@@ -128,8 +134,13 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     showTripcode_ = false;
     thread_ = thread;
     posterIp_ = posterIp;
+    countryCode_ = countryCode;
+    countryName_ = countryName;
+    cityName_ = cityName;
     rawHtml_ = false;
     draft_ = false;
+    extendedWakabaMarkEnabled_ = true;
+    bbCodeEnabled_ = true;
     password_ = password;
 }
 
@@ -208,9 +219,34 @@ QString Post::posterIp() const
     return posterIp_;
 }
 
+QString Post::countryCode() const
+{
+    return countryCode_;
+}
+
+QString Post::countryName() const
+{
+    return countryName_;
+}
+
+QString Post::cityName() const
+{
+    return cityName_;
+}
+
 bool Post::rawHtml() const
 {
     return rawHtml_;
+}
+
+bool Post::extendedWakabaMarkEnabled() const
+{
+    return extendedWakabaMarkEnabled_;
+}
+
+bool Post::bbCodeEnabled() const
+{
+    return bbCodeEnabled_;
 }
 
 QString Post::rawText() const
@@ -226,6 +262,21 @@ Post::PostReferences Post::referencedBy() const
 Post::PostReferences Post::refersTo() const
 {
     return refersTo_;
+}
+
+void Post::setBoard(const QString &board)
+{
+    board_ = board;
+}
+
+void Post::setNumber(quint64 number)
+{
+    number_ = number;
+}
+
+void Post::setDateTime(const QDateTime &dt)
+{
+    dateTime_ = dt.toUTC();
 }
 
 void Post::setModificationDateTime(const QDateTime &dt)
@@ -261,6 +312,16 @@ void Post::setDraft(bool draft)
 void Post::setRawHtml(bool raw)
 {
     rawHtml_ = raw;
+}
+
+void Post::setExtendedWakabaMarkEnabled(bool b)
+{
+    extendedWakabaMarkEnabled_ = b;
+}
+
+void Post::setBbCodeEnabled(bool b)
+{
+    bbCodeEnabled_ = b;
 }
 
 void Post::setRawText(const QString &text)
@@ -332,7 +393,7 @@ FileInfo::FileInfo()
 
 FileInfo::FileInfo(const QString &name, const QByteArray &hash, const QString &mimeType, int size, int height,
                    int width, const QString &thumbName, int thumbHeight, int thumbWidth, const QVariant &metaData,
-                   QSharedPointer<Post> post)
+                   int rating, QSharedPointer<Post> post)
 {
     name_ = name;
     hash_ = hash;
@@ -344,6 +405,7 @@ FileInfo::FileInfo(const QString &name, const QByteArray &hash, const QString &m
     thumbHeight_ = thumbHeight;
     thumbWidth_ = thumbWidth;
     metaData_ = BeQt::serialize(metaData);
+    rating_ = rating;
     post_ = post;
 }
 
@@ -395,6 +457,11 @@ int FileInfo::thumbWidth() const
 QVariant FileInfo::metaData() const
 {
     return BeQt::deserialize(metaData_);
+}
+
+int FileInfo::rating() const
+{
+    return rating_;
 }
 
 QLazySharedPointer<Post> FileInfo::post() const

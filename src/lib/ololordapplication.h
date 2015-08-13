@@ -24,6 +24,7 @@ class OLOLORD_EXPORT OlolordApplication : public BCoreApplication
 private:
     int captchaQuotaTimerId;
     int outdatedTimerId;
+    int rssTimerId;
     int searchTimerId;
     QElapsedTimer uptimeTimer;
 public:

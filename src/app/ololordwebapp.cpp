@@ -2,20 +2,23 @@
 
 #include "ololordajaxwebapp.h"
 
-#include <controller/Controller>
+#include <Controller>
 #include <plugin/RouteFactoryPluginInterface>
 #include <route/AbstractRoute>
 #include <route/ActionRoute>
 #include <route/AddFileRoute>
 #include <route/BanUserRoute>
 #include <route/BoardRoute>
+#include <route/CatalogRoute>
 #include <route/EditAudioTagsRoute>
 #include <route/EditPostRoute>
 #include <route/FrameListRoute>
 #include <route/FrameRoute>
 #include <route/HomeRoute>
 #include <route/MarkupRoute>
+#include <route/MoveThreadRoute>
 #include <route/PlaylistRoute>
+#include <route/RssRoute>
 #include <route/SearchRoute>
 #include <route/SettingsRoute>
 #include <route/StaticFilesRoute>
@@ -65,6 +68,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     routesMap.insert(r->regex(), r);
     r = new BanUserRoute(*this);
     routesMap.insert(r->regex(), r);
+    r = new CatalogRoute(*this);
+    routesMap.insert(r->regex(), r);
     r = new EditAudioTagsRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new EditPostRoute(*this);
@@ -77,7 +82,11 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     routesMap.insert(r->regex(), r);
     r = new MarkupRoute(*this);
     routesMap.insert(r->regex(), r);
+    r = new MoveThreadRoute(*this);
+    routesMap.insert(r->regex(), r);
     r = new PlaylistRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new RssRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new SearchRoute(*this);
     routesMap.insert(r->regex(), r);

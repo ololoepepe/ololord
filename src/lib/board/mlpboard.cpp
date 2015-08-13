@@ -1,7 +1,7 @@
 #include "mlpboard.h"
 
+#include "controller.h"
 #include "controller/mlpboard.h"
-#include "controller/controller.h"
 #include "tools.h"
 #include "translator.h"
 

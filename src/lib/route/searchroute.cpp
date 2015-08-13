@@ -1,8 +1,9 @@
 #include "searchroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/search.h"
 #include "database.h"
+#include "markup.h"
 #include "search.h"
 #include "stored/thread.h"
 #include "stored/thread-odb.hxx"
@@ -84,7 +85,7 @@ void SearchRoute::handle()
             if (subj.length() > 100)
                 subj = subj.left(97) + "...";
             r.subject = Tools::toStd(subj);
-            txt = Controller::toHtml(txt);
+            txt = BTextTools::toHtml(txt, false);
             foreach (const QString &phrase, q.requiredPhrases + q.possiblePhrases) {
                 int ind = txt.indexOf(phrase, Qt::CaseInsensitive);
                 while (ind >= 0) {

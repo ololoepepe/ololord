@@ -18,26 +18,114 @@ lord.postForm = {
     "quickReply": false
 };
 lord.complainVideo = null;
+lord.files = null;
+lord.filesMap = null;
+lord.spells = null;
+lord.worker = new Worker("/js/worker.js");
+lord.youtubeApplied = false;
+lord.lastSelectedElement = null;
 
 /*Functions*/
-
-lord.isAudioType = function(type) {
-    return type in {"audio/mpeg": true, "audio/ogg": true, "audio/wav": true};
-};
-
-lord.isImageType = function(type) {
-    return type in {"image/gif": true, "image/jpeg": true, "image/png": true};
-};
-
-lord.isVideoType = function(type) {
-    return type in {"video/mp4": true, "video/ogg": true, "video/webm": true};
-};
 
 lord.isSpecialThumbName = function(thumbName) {
     return lord.isAudioType(thumbName) || lord.isImageType(thumbName) || lord.isVideoType(thumbName);
 };
 
+lord.getPostData = function(post, youtube) {
+    if (!post)
+        return null;
+    var currentBoardName = lord.text("currentBoardName");
+    var threadNumber = lord.text("currentThreadNumber");
+    if (!threadNumber) {
+        if (lord.hasClass(post, "opPost"))
+            threadNumber = postNumber;
+        else
+            threadNumber = post.parentNode.id.replace("threadPosts", "");
+    }
+    var postNumber = +post.id.replace("post", "");
+    var p = {
+        "board": currentBoardName,
+        "thread": +threadNumber,
+        "number": postNumber
+    };
+    if (lord.getLocalObject("spellsEnabled", true)) {
+        var blockquote = lord.queryOne("blockquote", post);
+        var files = [];
+        lord.query(".postFile", post).forEach(function(file) {
+            var img = lord.queryOne(".postFileFile > a > img", file);
+            var f = {
+                "type": +lord.nameOne("type", file).value,
+                "size": +lord.nameOne("sizeKB", file).value,
+                "sizeText": lord.getPlainText(lord.queryOne(".postFileSize", file)),
+                "width": +lord.nameOne("sizeX", file).value,
+                "height": +lord.nameOne("sizeY", file).value,
+                "thumb": {
+                    "width": +img.width,
+                    "height": +img.height,
+                    "base64Data": lord.getImageBase64Data(img)
+                }
+            };
+            files.push(f);
+        });
+        var mailto = lord.queryOne(".mailtoName", post);
+        var trip = lord.queryOne(".tripcode", post);
+        p.hidden = !!lord.getLocalObject("hiddenPosts", {})[currentBoardName + "/" + postNumber];
+        p.innerHTML = post.innerHTML;
+        p.text = lord.getPlainText(blockquote);
+        p.textHTML = blockquote.innerHTML;
+        p.mailto = (mailto ? mailto.href : undefined);
+        p.tripcode = (trip ? trip.value : undefined);
+        p.userName = lord.queryOne(".someName", post).value;
+        p.isDefaultUserName = !!lord.queryOne(".defaultUserName", post);
+        p.subject = lord.queryOne(".postSubject", post).value;
+        p.isDefaultSubject = !!lord.queryOne(".defaultPostSubject", post);
+        p.files = ((files.length > 0) ? files : undefined);
+    }
+    if (youtube) {
+        var videos = [];
+        var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
+            + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
+        lord.query(q, post).forEach(function(video) {
+            videos.push(video.href);
+        });
+        p.youtube = ((videos.length > 0) ? videos: undefined);
+    }
+    return p;
+};
+
+lord.processPosts = function(spells, youtube) {
+    if (!spells && !youtube)
+        return;
+    var hiddenPosts = lord.getLocalObject("hiddenPosts", {});
+    var ps = lord.query(".post:not(#postTemplate), .opPost");
+    var boardName = lord.text("currentBoardName");
+    var f = function(accumulator) { //NOTE: Using timeout to let UI update
+        if (!accumulator)
+            accumulator = [];
+        if (ps.length <= 0) {
+            youtube = youtube ? { "apiKey": lord.text("youtubeApiKey") } : undefined;
+            lord.worker.postMessage({
+                "type": "processPosts",
+                "data": {
+                    "youtube": youtube,
+                    "posts": accumulator,
+                    "spells": spells
+                }
+            }); //No way to transfer an object with subobjects
+            return;
+        }
+        var post = ps.shift();
+        var p = lord.getPostData(post, youtube);
+        if (p)
+            accumulator.push(p);
+        setTimeout(f.bind(lord, accumulator), 1);
+    };
+    f();
+};
+
 lord.resetScale = function(image) {
+    if (!image.scale)
+        return;
     var k = (image.scale / 100);
     var tr = "scale(" + k + ", " + k + ")";
     //Fuck you all who create those stupid browser-specific features
@@ -46,6 +134,7 @@ lord.resetScale = function(image) {
     image.style.msTransform = tr;
     image.style.OTransform = tr;
     image.style.transform = tr;
+    lord.showPopup(parseFloat(image.scale.toString().substr(0, 5)) + "%", { "timeout": +lord.Second });
 };
 
 lord.removeReferences = function(postNumber) {
@@ -102,18 +191,34 @@ lord.addReferences = function(postNumber, referencedPosts) {
     }
 };
 
-lord.setInitialScale = function(image, sizeHintX, sizeHintY) {
+lord.setInitialScale = function(image, sizeHintX, sizeHintY, border) {
     if (!sizeHintX || !sizeHintY || sizeHintX <= 0 || sizeHintY <= 0)
         return;
+    border = +border;
+    if (!isNaN(border)) {
+        sizeHintX += border * 2;
+        sizeHintY += border * 2;
+    }
     var doc = document.documentElement;
     var maxWidth = doc.clientWidth - 10;
     var maxHeight = doc.clientHeight - 10;
     var kw = 1;
     var kh = 1;
-    if (sizeHintX > maxWidth)
-        kw = maxWidth / sizeHintX;
-    if (sizeHintY > maxHeight)
-        kh = maxHeight / sizeHintY;
+    var s = lord.getLocalObject("imageZoomSensitivity", 25);
+    var k = 1;
+    while ((kw * sizeHintX) > maxWidth) {
+        if (((kw * 100) - (s / k)) > 0)
+            kw = ((kw * 100) - (s / k)) / 100;
+        else
+            k *= 10;
+    }
+    k = 1;
+    while ((kh * sizeHintY) > maxHeight) {
+        if (((kh * 100) - (s / k)) > 0)
+            kh = ((kh * 100) - (s / k)) / 100;
+        else
+            k *= 10;
+    }
     image.scale = ((kw < kh) ? kw : kh) * 100;
 };
 
@@ -197,6 +302,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
     file.appendChild(divFileName);
     var divFileSize = lord.node("div");
     lord.addClass(divFileSize, "postFileSize");
+    lord.addClass(divFileSize, lord.text("deviceType"));
     divFileSize.appendChild(lord.node("text", "(" + f["size"] + ")"));
     divFileSize.title = f["sizeTooltip"];
     file.appendChild(divFileSize);
@@ -210,8 +316,14 @@ lord.createPostFile = function(f, boardName, postNumber) {
     a.appendChild(logo);
     divFileSearch.appendChild(a);
     if (lord.isImageType(f["type"])) {
-        var siteDomain = lord.text("siteDomain");
-        var siteProtocol = lord.text("siteProtocol");
+        var a = lord.node("a");
+        a.onclick = lord.hideByImage.bind(lord, a);
+        a.title = lord.text("hideByImageText");
+        var logo = lord.node("img");
+        logo.src = "/" + sitePrefix + "img/hide.png";
+        a.appendChild(logo);
+        divFileSearch.appendChild(lord.node("text", " "));
+        divFileSearch.appendChild(a);
         [{
             "link": "//www.google.com/searchbyimage?image_url=",
             "text": lord.text("findSourceWithGoogleText"),
@@ -222,7 +334,7 @@ lord.createPostFile = function(f, boardName, postNumber) {
             "img": "iqdb.png"
         }].forEach(function(el) {
             var a = lord.node("a");
-            a.href = el.link + siteProtocol + "://" + siteDomain + "/" + sitePrefix + boardName + "/" + f["sourceName"];
+            a.href = el.link + location.origin + "/" + sitePrefix + boardName + "/" + f["sourceName"];
             a.title = el.text;
             a.target = "_blank";
             var logo = lord.node("img");
@@ -253,21 +365,66 @@ lord.createPostFile = function(f, boardName, postNumber) {
     file.appendChild(divFileSearch);
     var divImage = lord.node("div");
     lord.addClass(divImage, "postFileFile");
+    lord.addClass(divImage, lord.text("deviceType"));
+    var inpType = lord.node("input");
+    inpType.type = "hidden";
+    inpType.name = "type";
+    inpType.value = f["type"];
+    divImage.appendChild(inpType);
+    var inpSizeKB = lord.node("input");
+    inpSizeKB.type = "hidden";
+    inpSizeKB.name = "sizeKB";
+    inpSizeKB.value = f["sizeKB"];
+    divImage.appendChild(inpSizeKB);
+    var inpSizeX = lord.node("input");
+    inpSizeX.type = "hidden";
+    inpSizeX.name = "sizeX";
+    inpSizeX.value = f["sizeX"];
+    divImage.appendChild(inpSizeX);
+    var inpSizeY = lord.node("input");
+    inpSizeY.type = "hidden";
+    inpSizeY.name = "sizeY";
+    inpSizeY.value = f["sizeY"];
+    divImage.appendChild(inpSizeY);
     var aImage = lord.node("a");
     aImage.href = "/" + sitePrefix + boardName + "/" + f["sourceName"];
-    aImage.onclick = lord.showImage.bind(lord, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"],
-        f["sizeX"], f["sizeY"]);
+    (function(a, href, type, sizeX, sizeY) {
+        a.onclick = function(e) {
+            e.preventDefault();
+            lord.showImage(href, type, sizeX, sizeY);
+            return false;
+        };
+    })(aImage, "/" + sitePrefix + boardName + "/" + f["sourceName"], f["type"], f["sizeX"], f["sizeY"]);
     var image = lord.node("img");
-    var thumbSizeX = +f["thumbSizeX"];
-    var thumbSizeY = +f["thumbSizeY"];
-    if (!isNaN(thumbSizeX) && thumbSizeX > 0)
-        image.width = thumbSizeX;
-    if (!isNaN(thumbSizeY) && thumbSizeY > 0)
-        image.height = thumbSizeY;
-    if (lord.isSpecialThumbName(f["thumbName"])) {
-        image.src = "/" + sitePrefix + "img/" + f["thumbName"].replace("/", "_") + "_logo.png";
+    var maxRatingS = lord.getCookie("maxAllowedRating") || "R-18G";
+    var maxRating = 180;
+    if ("SFW" == maxRatingS)
+        maxRating = 0;
+    else if ("R-18" == maxRatingS)
+        maxRating = 18;
+    else if ("R-15" == maxRatingS)
+        maxRating = 15;
+    if (f["rating"] > maxRating) {
+        image.width = 200;
+        image.height = 200;
+        var ratingMap = {
+            15: "r-15",
+            18: "r-18",
+            180: "r-18g"
+        };
+        image.src = "/" + sitePrefix + "img/" + ratingMap[+f["rating"]] + ".png";
     } else {
-        image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
+        var thumbSizeX = +f["thumbSizeX"];
+        var thumbSizeY = +f["thumbSizeY"];
+        if (!isNaN(thumbSizeX) && thumbSizeX > 0)
+            image.width = thumbSizeX;
+        if (!isNaN(thumbSizeY) && thumbSizeY > 0)
+            image.height = thumbSizeY;
+        if (lord.isSpecialThumbName(f["thumbName"])) {
+            image.src = "/" + sitePrefix + "img/" + f["thumbName"].replace("/", "_") + "_logo.png";
+        } else {
+            image.src = "/" + sitePrefix + boardName + "/" + f["thumbName"];
+        }
     }
     aImage.appendChild(image);
     divImage.appendChild(aImage);
@@ -284,6 +441,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     post = post.cloneNode(true);
     post.id = !!permanent ? ("post" + res["number"]) : "";
     post.style.display = "";
+    post["fromAjax"] = true;
     if (!boardName)
         boardName = lord.text("currentBoardName");
     var fixed = lord.nameOne("fixed", post);
@@ -296,20 +454,42 @@ lord.createPostNode = function(res, permanent, boardName) {
         closed.style.display = "";
     else
         closed.parentNode.removeChild(closed);
-    lord.nameOne("postSubject", post).appendChild(lord.node("text", res["subject"]));
+    var bumpLimit = lord.nameOne("bumpLimit", post);
+    if (!!res["bumpLimitReached"])
+        bumpLimit.style.display = "";
+    else
+        bumpLimit.parentNode.removeChild(bumpLimit);
+    var postLimit = lord.nameOne("postLimit", post);
+    if (!!res["postLimitReached"])
+        postLimit.style.display = "";
+    else
+        postLimit.parentNode.removeChild(postLimit);
+    var draftIndicator = lord.nameOne("draftIndicator", post);
+    if (!!res["draft"])
+        draftIndicator.style.display = "";
+    else
+        draftIndicator.parentNode.removeChild(draftIndicator);    
+    
+    var postSubject = lord.nameOne("postSubject", post);
+    postSubject.appendChild(lord.node("text", res["subject"]));
+    if (res["subject"].length < 1)
+        lord.addClass(postSubject, "defaultPostSubject");
     var registered = lord.nameOne("registered", post);
     if (!!res["showRegistered"] && !!res["showTripcode"])
         registered.style.display = "";
     else
         registered.parentNode.removeChild(registered);
-    var name = lord.nameOne("userName", post);
+    var name = lord.nameOne("someName", post);
+    if (!!lord.getLocalObject("hideUserNames", false))
+        name.style.display = "none";
     if (!!res["email"])
-        name.innerHTML = "<a href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
+        name.innerHTML = "<a class='mailtoName' href='mailto:" + res["email"] + "'>" + res["nameRaw"] + "</a>";
     else
         name.innerHTML = res["name"];
     var tripcode = lord.nameOne("tripcode", post);
     if (!!res["showTripcode"] && "" !== res["tripcode"]) {
-        tripcode.style.display = "";
+        if (!lord.getLocalObject("hideTripcodes", false))
+            tripcode.style.display = "";
         tripcode.appendChild(lord.node("text", res["tripcode"]));
     } else {
         tripcode.parentNode.removeChild(tripcode);
@@ -321,7 +501,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         whois.src = whois.src.replace("%flagName%", res["flagName"]);
         whois.title = res["countryName"];
         if (!!res["cityName"])
-            whois.title += ": " + res["cityName"];
+            whois.title = res["cityName"] + ", " + whois.title;
     } else {
         whois.parentNode.removeChild(whois);
     }
@@ -359,7 +539,8 @@ lord.createPostNode = function(res, permanent, boardName) {
     var manyFilesTr = lord.nameOne("manyFilesTr", post);
     var textOneFile = lord.nameOne("textOneFile", post);
     var textManyFiles = lord.nameOne("textManyFiles", post);
-    if (res["files"].length < 2) {
+    if ((lord.text("deviceType") != "mobile" && res["files"].length < 2)
+        || (lord.text("deviceType") == "mobile" && res["files"].length < 1)) {
         manyFilesTr.parentNode.removeChild(manyFilesTr);
         textOneFile.innerHTML = res["text"];
         if (blockquoteThread)
@@ -405,12 +586,17 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     if (lord.createPostNodeCustom)
         lord.createPostNodeCustom(post, res, permanent, boardName);
+    if (res["sequenceNumber"]) {
+        var seqNum = lord.queryOne(".postSequenceNumber", post);
+        seqNum.appendChild(lord.node("text", res["sequenceNumber"]));
+    }
     var perm = lord.nameOne("permanent", post);
     if (!permanent) {
         perm.parentNode.removeChild(perm);
         lord.addClass(post, "temporary");
         return post;
     }
+    lord.nameOne("postAnchor", post).id = res["number"];
     var quickReply = lord.nameOne("quickReply", post);
     quickReply.href = quickReply.href.replace("%postNumber%", res["number"]);
     lord.removeReferences(res["number"]);
@@ -457,6 +643,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var unfixButton = lord.nameOne("unfixButton", post);
     var openButton = lord.nameOne("openButton", post);
     var closeButton = lord.nameOne("closeButton", post);
+    var moveButton = lord.nameOne("moveButton", post);
     var banButton = lord.nameOne("banButton", post);
     var downloadButton = lord.nameOne("downloadButton", post);
     var favButton = lord.nameOne("addToFavoritesButton", post);
@@ -464,6 +651,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var rawHtml = lord.nameOne("rawHtml", post);
     if (res["rawHtml"])
         rawHtml.value = "true";
+    lord.nameOne("markupMode", post).value = res["markupMode"];
     lord.nameOne("draft", post).value = res["draft"];
     if ((moder || res["draft"]) && (res["files"].length < +lord.text("maxFileCount"))) {
         addFileButton.href = addFileButton.href.replace("%postNumber%", res["number"]);
@@ -481,15 +669,25 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     if (res["number"] != res["threadNumber"] || !inp || +inp.value !== res["threadNumber"])
         downloadButton.parentNode.removeChild(downloadButton);
-    if (res["number"] == res["threadNumber"])
-        favButton.href = favButton.href.replace("%postNumber%", res["number"]);
-    else
+    if (res["number"] == res["threadNumber"]) {
+        var fav = lord.getLocalObject("favoriteThreads", {});
+        if (fav.hasOwnProperty(boardName + "/" + res["number"])) {
+            var img = lord.queryOne("img", favButton);
+            img.title = lord.text("removeFromFavoritesText");
+            img.src = img.src.replace("favorite.png", "favorite_active.png");
+            favButton.onclick = lord.removeThreadFromFavorites.bind(lord, boardName, res["number"]);
+        } else {
+            favButton.onclick = lord.addThreadToFavorites.bind(lord, boardName, res["number"]);
+        }
+    } else {
         favButton.parentNode.removeChild(favButton);
+    }
     if (!moder) {
         fixButton.parentNode.removeChild(fixButton);
         unfixButton.parentNode.removeChild(unfixButton);
         openButton.parentNode.removeChild(openButton);
         closeButton.parentNode.removeChild(closeButton);
+        moveButton.parentNode.removeChild(moveButton);
         banButton.parentNode.removeChild(banButton);
         return post;
     }
@@ -513,6 +711,8 @@ lord.createPostNode = function(res, permanent, boardName) {
             closeButton.href = closeButton.href.replace("%postNumber%", res["number"]);
             openButton.parentNode.removeChild(openButton);
         }
+        moveButton.parentNode.removeChild(moveButton);
+        moveButton.href = moveButton.href.replace("%postNumber%", res["number"]);
         if (!inp) {
             toThread.style.display = "";
             var toThreadLink = lord.nameOne("toThreadLink", post);
@@ -525,6 +725,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         unfixButton.parentNode.removeChild(unfixButton);
         openButton.parentNode.removeChild(openButton);
         closeButton.parentNode.removeChild(closeButton);
+        moveButton.parentNode.removeChild(moveButton);
         toThread.parentNode.removeChild(toThread);
     }
     banButton.href = banButton.href.replace("%postNumber%", res["number"]);
@@ -535,6 +736,7 @@ lord.updatePost = function(boardName, postNumber, post) {
     postNumber = +postNumber;
     if (!boardName || !post || isNaN(postNumber) || postNumber <= 0)
         return;
+    var seqNum = +lord.getPlainText(lord.queryOne(".postSequenceNumber", post));
     lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
         var newPost = lord.createPostNode(res, true);
         if (!newPost)
@@ -549,6 +751,8 @@ lord.updatePost = function(boardName, postNumber, post) {
                 postHeader.appendChild(bumpLimit.cloneNode(true));
         }
         post.parentNode.replaceChild(newPost, post);
+        if (!isNaN(seqNum))
+            lord.queryOne(".postSequenceNumber", newPost).appendChild(lord.node("text", seqNum));
         lord.postNodeInserted(newPost);
     });
 };
@@ -565,6 +769,10 @@ lord.clearFileInput = function(div) {
     if (div.parentNode)
         lord.removeFileHash(div);
     div.fileHash = null;
+    if ("droppedFile" in div)
+        delete div.droppedFile;
+    if ("fileUrl" in div)
+        delete div.fileUrl;
 };
 
 lord.readableSize = function(sz) {
@@ -622,6 +830,9 @@ lord.hideImage = function() {
         }
         lord.img.style.display = "none";
         lord.img = null;
+        lord.query(".leafButton").forEach(function(a) {
+            a.style.display = "none";
+        });
     }
 };
 
@@ -639,76 +850,90 @@ lord.globalOnclick = function(e) {
     lord.hideImage();
 };
 
-lord.addYoutubeButton = function(post) {
-    if (!post)
+lord.initFiles = function() {
+    if (!!lord.files)
         return;
-    var key = lord.text("youtubeApiKey");
-    if (!key)
+    lord.files = [];
+    lord.filesMap = {};
+    lord.query(".postFileFile").forEach(function(div) {
+        var href = lord.queryOne("a", div).href;
+        var type = lord.nameOne("type", div).value;
+        if ("application/pdf" == type)
+            return;
+        if (lord.getLocalObject("leafThroughImagesOnly", false) && !lord.isImageType(type))
+            return;
+        lord.files.push({
+            "href": href,
+            "type": type,
+            "sizeX": +lord.nameOne("sizeX", div).value,
+            "sizeY": +lord.nameOne("sizeY", div).value
+        });
+        lord.filesMap[href] = lord.files.length - 1;
+    });
+};
+
+lord.nextOrPreviousFile = function(previous) {
+    if (!lord.img || !lord.files || !lord.filesMap || lord.files.length < 1)
+        return null;
+    var href = lord.img.src;
+    if (!href)
+        href = lord.queryOne("source", lord.img).src;
+    if (!href)
+        return null;
+    var ind = lord.filesMap[href];
+    if (ind < 0)
+        return null;
+    if (!!previous)
+        return lord.files[(ind > 0) ? (ind - 1) : (lord.files.length - 1)];
+    else
+        return lord.files[(ind < lord.files.length - 1) ? (ind + 1) : 0];
+};
+
+lord.addYoutubeButton = function(post, youtube) {
+    if (!post || !youtube)
         return;
-    var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
-        + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
-    lord.query(q, post).forEach(function(link) {
-        if (link.href.replace("v=", "") == link.href)
+    lord.forIn(youtube, function(info, href) {
+        var link = lord.queryOne("a[href='" + href + "']", post);
+        if (!link)
             return;
         var img = lord.node("img");
         img.src = "https://youtube.com/favicon.ico";
         img.title = "YouTube";
         link.parentNode.insertBefore(img, link);
         link.parentNode.insertBefore(lord.node("text", " "), link);
+        link.replaceChild(lord.node("text", info.videoTitle), link.firstChild);
+        link.title = info.channelTitle;
         var a = lord.node("a");
         lord.addClass(a, "expandCollapse");
         a.lordExpanded = false;
-        (function (a, link) {
-            var videoId = link.href.split("v=").pop();
-            videoId = videoId.match(/[a-zA-Z0-9_\-]{11}/)[0];
-            var xhr = new XMLHttpRequest();
-            xhr.open("get", "https://www.googleapis.com/youtube/v3/videos?id=" + videoId + "&key=" + key
-                + "&part=snippet");
-            xhr.onreadystatechange = function() {
-                if (xhr.readyState === 4) {
-                    if (xhr.status != 200)
-                        return;
-                    var response;
-                    try {
-                        response = JSON.parse(xhr.responseText);
-                    } catch (ex) {
-                        return;
-                    }
-                    var title = response.items[0].snippet.title;
-                    link.replaceChild(lord.node("text", title), link.firstChild);
-                }
-            };
-            xhr.send(null);
-            a.onclick = function() {
-                if (a.lordExpanded) {
-                    a.parentNode.removeChild(a.nextSibling);
-                    a.parentNode.removeChild(a.nextSibling);
-                    a.replaceChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"), a.childNodes[0]);
-                    lord.removeClass(a.parentNode, "expand");
+        a.onclick = (function(videoId) {
+            if (this.lordExpanded) {
+                this.parentNode.removeChild(this.nextSibling);
+                this.parentNode.removeChild(this.nextSibling);
+                this.replaceChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"), this.childNodes[0]);
+                lord.removeClass(this.parentNode, "expand");
+            } else {
+                lord.addClass(this.parentNode, "expand");
+                var iframe = lord.node("iframe");
+                iframe.src = "https://youtube.com/embed/" + videoId + "?autoplay=1";
+                iframe.allowfullscreen = true;
+                iframe.frameborder = "0px";
+                iframe.height = "360";
+                iframe.width = "640";
+                iframe.display = "block";
+                var parent = this.parentNode;
+                var el = this.nextSibling;
+                if (el) {
+                    parent.insertBefore(lord.node("br"), el);
+                    parent.insertBefore(iframe, el);
                 } else {
-                    lord.addClass(a.parentNode, "expand");
-                    var iframe = lord.node("iframe");
-                    iframe.src = "https://youtube.com/embed/" + videoId + "?autoplay=1";
-                    iframe.allowfullscreen = true;
-                    iframe.frameborder = "0px";
-                    iframe.height = "360";
-                    iframe.width = "640";
-                    iframe.display = "block";
-                    var parent = a.parentNode;
-                    var el = a.nextSibling;
-                    if (el) {
-                        parent.insertBefore(lord.node("br"), el);
-                        parent.insertBefore(iframe, el);
-                    }
-                    else {
-                        parent.appendChild(lord.node("br"));
-                        parent.appendChild(iframe);
-                    }
-                    a.replaceChild(lord.node("text", "[" + lord.text("collapseVideoText") + "]"), a.childNodes[0]);
+                    parent.appendChild(lord.node("br"));
+                    parent.appendChild(iframe);
                 }
-                a.lordExpanded = !a.lordExpanded;
-            };
-        })(a, link);
+                this.replaceChild(lord.node("text", "[" + lord.text("collapseVideoText") + "]"), this.childNodes[0]);
+            }
+            this.lordExpanded = !this.lordExpanded;
+        }).bind(a, info.id);
         a.appendChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"));
         var el = link.nextSibling;
         var parent = link.parentNode;
@@ -722,6 +947,26 @@ lord.addYoutubeButton = function(post) {
     });
 };
 
+lord.addPostToHidden = function(boardName, postNumber) {
+    postNumber = +postNumber;
+    if (!boardName || isNaN(postNumber))
+        return;
+    var hiddenPosts = lord.getLocalObject("hiddenPosts", {});
+    hiddenPosts[boardName + "/" + postNumber] = {};
+    lord.setLocalObject("hiddenPosts", hiddenPosts);
+    (function(boardName, postNumber) {
+        lord.ajaxRequest("get_post", [boardName, +postNumber], lord.RpcGetPostId, function(res) {
+            if (!res)
+                return;
+            var hiddenPosts = lord.getLocalObject("hiddenPosts", {});
+            if (!hiddenPosts[boardName + "/" + postNumber])
+                return;
+            var subject = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+                hiddenPosts[boardName + "/" + postNumber].subject = subject;
+        });
+    })(boardName, postNumber);
+};
+
 lord.tryHidePost = function(post, list) {
     if (!post)
         return;
@@ -731,7 +976,6 @@ lord.tryHidePost = function(post, list) {
     var boardName = lord.text("currentBoardName");
     if (!list)
         list = lord.getLocalObject("hiddenPosts", {});
-    //TODO: Custom hide rules
     if (!list[boardName + "/" + postNumber])
         return;
     lord.addClass(post, "hiddenPost");
@@ -741,17 +985,34 @@ lord.tryHidePost = function(post, list) {
     lord.addClass(thread, "hiddenThread");
     lord.addClass(lord.id("threadOmitted" + postNumber), "hiddenPosts");
     lord.addClass(lord.id("threadPosts" + postNumber), "hiddenPosts");
+    lord.strikeOutHiddenPostLinks();
 };
 
 lord.postNodeInserted = function(post) {
     if (!post)
         return;
-    if (lord.getLocalObject("showYoutubeVideosTitles", true))
-        lord.addYoutubeButton(post);
-    lord.tryHidePost(post);
+    if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
+        lord.strikeOutHiddenPostLinks(post);
     var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
     lastPostNumbers[lord.text("currentBoardName")] = +post.id.replace("post", "");
     lord.setLocalObject("lastPostNumbers", lastPostNumbers);
+    lord.files = null;
+    lord.filesMap = null;
+    lord.initFiles();
+    var youtube = lord.getLocalObject("showYoutubeVideosTitles", true);
+    var p = lord.getPostData(post, youtube);
+    if (!p)
+        return;
+    youtube = youtube ? { "apiKey": lord.text("youtubeApiKey") } : undefined;
+    var posts = [p];
+    lord.worker.postMessage({
+        "type": "processPosts",
+        "data": {
+            "youtube": youtube,
+            "posts": posts,
+            "spells": (lord.getLocalObject("spellsEnabled", true) ? lord.spells : undefined)
+        }
+    }); //No way to transfer an object with subobjects
 };
 
 lord.showPasswordDialog = function(title, label, callback) {
@@ -793,7 +1054,8 @@ lord.showHidePostForm = function(position) {
         if (lord.postForm.visibility[p])
             lord.showHidePostForm(p);
         theButton.innerHTML = lord.text("hidePostFormText");
-        lord.id("createActionContainer" + position).appendChild(postForm);
+        var t = lord.id("createActionContainer" + position);
+        lord.queryOne("div > div", t).appendChild(postForm);
     }
     lord.postForm.visibility[position] = !lord.postForm.visibility[position];
 };
@@ -880,6 +1142,34 @@ lord.setThreadOpened = function(boardName, postNumber, opened) {
     lord.ajaxRequest("set_thread_opened", [boardName, +postNumber, !!opened], lord.RpcSetThreadOpenedId, lord.reloadPage);
 };
 
+lord.moveThread = function(boardName, threadNumber) {
+    if (!boardName || isNaN(+threadNumber))
+        return;
+    if (!lord.getCookie("hashpass"))
+        return lord.showPopup(lord.text("notLoggedInText"), {type: "critical"});
+    var title = lord.text("moveThreadText");
+    var div = lord.node("div");
+    div.appendChild(lord.node("text", lord.text("boardLabelText")));
+    var selBoard = lord.id("availableBoardsSelect").cloneNode(true);
+    var b = lord.queryOne("[value='" + boardName + "']", selBoard);
+    b.parentNode.removeChild(b);
+    b = lord.queryOne("[value='*']", selBoard);
+    b.parentNode.removeChild(b);
+    selBoard.style.display = "block";
+    div.appendChild(selBoard);
+    div.appendChild(lord.node("text", lord.text("moveThreadWarningText")));
+    lord.showDialog(title, null, div, function() {
+        var targetBoardName = selBoard.options[selBoard.selectedIndex].value;
+        lord.ajaxRequest("move_thread", [boardName, +threadNumber, targetBoardName], lord.RpcMoveThreadId, function(res) {
+            var href = location.href.split("/" + boardName).shift();
+            if (href[href.length - 1] != "/")
+                href += "/";
+            href += targetBoardName + "/thread/" + res + ".html";
+            location.href = href;
+        });
+    });
+};
+
 lord.banUser = function(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
@@ -950,6 +1240,7 @@ lord.insertPostNumber = function(postNumber) {
 };
 
 lord.quickReply = function(postNumber) {
+    var selection = document.getSelection().toString();
     var postForm = lord.id("postForm");
     if (lord.postForm.quickReply) {
         var prev = postForm.previousSibling;
@@ -985,6 +1276,7 @@ lord.quickReply = function(postNumber) {
     else
         parent.appendChild(postForm);
     lord.insertPostNumber(postNumber);
+    lord.quoteSelectedText(selection);
     lord.postForm.quickReply = true;
 };
 
@@ -1007,7 +1299,9 @@ lord.addFile = function(boardName, postNumber) {
         var formData = new FormData(form);
         lord.query(".postformFile", form).forEach(function(div) {
             if (div.droppedFile)
-                formData.append("file", div.droppedFile);
+                formData.append(div.droppedFileName || "file", div.droppedFile);
+            else if (div.fileUrl)
+                formData.append(div.droppedFileName, div.fileUrl);
         });
         var xhr = new XMLHttpRequest();
         xhr.open("POST", form.action);
@@ -1062,6 +1356,8 @@ lord.editPost = function(boardName, postNumber) {
         subject.value = lord.nameOne("subject", post).value;
         text.appendChild(lord.node("text", rawPostText));
         used.appendChild(lord.node("text", text.value.length.toString()));
+        var markupModeSelect = lord.nameOne("markupMode", form);
+        lord.queryOne("[value='" + lord.nameOne("markupMode", post).value + "']", markupModeSelect).selected = true;
         var moder = (lord.text("moder") === "true");
         var draftField = lord.nameOne("draft", form);
         var rawField = lord.nameOne("raw", form);
@@ -1083,6 +1379,11 @@ lord.editPost = function(boardName, postNumber) {
             } else if (!lord.isHashpass(pwd)) {
                 pwd = lord.toHashpass(pwd);
             }
+            var markupMode = markupModeSelect.options[markupModeSelect.selectedIndex].value;
+            lord.setCookie("markupMode", markupMode, {
+                "expires": lord.Billion, "path": "/"
+            });
+            lord.queryOne("[value='" + markupMode + "']", lord.id("postForm")).selected = true;
             var params = {
                 "boardName": boardName,
                 "postNumber": +postNumber,
@@ -1092,6 +1393,7 @@ lord.editPost = function(boardName, postNumber) {
                 "subject": subject.value,
                 "raw": !!rawField ? form.querySelector("[name='raw']").checked : false,
                 "draft": !!draftField ? draftField.checked : false,
+                "markupMode": markupMode,
                 "password": pwd,
                 "userData": null
             };
@@ -1130,11 +1432,43 @@ lord.setPostHidden = function(boardName, postNumber) {
         f(omitted, "hiddenPosts");
         f(posts, "hiddenPosts");
     }
-    if (!hidden)
+    if (!hidden) {
         list[boardName + "/" + postNumber] = {};
+        (function(bn, pn) {
+            lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                if (!res)
+                    return;
+                var list = lord.getLocalObject("hiddenPosts", {});
+                if (!list[bn + "/" + pn])
+                    return;
+                list[bn + "/" + pn].subject = (res["subject"] ? res["subject"] : res["text"]).substring(0, 150);
+                list[bn + "/" + pn].threadNumber = res["threadNumber"];
+                lord.setLocalObject("hiddenPosts", list);
+            });
+        })(boardName, postNumber);        
+    }
     else if (list[boardName + "/" + postNumber])
         delete list[boardName + "/" + postNumber];          
     lord.setLocalObject("hiddenPosts", list);
+    lord.strikeOutHiddenPostLinks();
+};
+
+lord.hideByImage = function(a) {
+    if (!a)
+        return;
+    var img = lord.queryOne(".postFileFile > a > img", a.parentNode.parentNode);
+    if (!img)
+        return;
+    var data = lord.base64ToArrayBuffer(lord.getImageBase64Data(img));
+    var hash = lord.generateImageHash(data, img.width, img.height);
+    if (!hash)
+        return;
+    var spells = lord.getLocalObject("spells", lord.DefaultSpells) + "\n#ihash(" + hash + ")";
+    lord.setLocalObject("spells", spells);
+    lord.worker.postMessage({
+        "type": "parseSpells",
+        "data": lord.getLocalObject("spells", lord.DefaultSpells)
+    });
 };
 
 lord.deleteFile = function(boardName, postNumber, fileName) {
@@ -1262,6 +1596,8 @@ lord.viewPostStage2 = function(link, boardName, postNumber, post) {
 };
 
 lord.viewPost = function(link, boardName, postNumber) {
+    if (lord.text("deviceType") == "mobile")
+        return;
     postNumber = +postNumber;
     if (!link || !boardName || isNaN(postNumber) || postNumber <= 0)
         return;
@@ -1276,7 +1612,6 @@ lord.viewPost = function(link, boardName, postNumber) {
             post = lord.createPostNode(res, false, boardName);
             if (!post)
                 return;
-            post["fromAjax"] = true;
             lord.viewPostStage2(link, boardName, postNumber, post);
         });
     } else {
@@ -1298,8 +1633,8 @@ lord.viewPost = function(link, boardName, postNumber) {
                     return;
                 var ind = img.src.lastIndexOf("/");
                 var href = img.src.substring(0, ind) + "/" + ajaxFile["sourceName"];
-                if (lord.showImage(href, ajaxFile["type"], ajaxFile["sizeX"], ajaxFile["sizeY"]) === false)
-                    e.preventDefault();
+                e.preventDefault();
+                lord.showImage(href, ajaxFile["type"], ajaxFile["sizeX"], ajaxFile["sizeY"]);
             });
         }
         lord.removeClass(post, "opPost");
@@ -1360,12 +1695,26 @@ lord.removeFileHash = function(div) {
 };
 
 lord.fileAddedCommon = function(div, file) {
-    if (!div || !file)
+    if (!div || (!file && !div.fileUrl))
         return;
     var inp = lord.queryOne("input", div);
     if (!inp)
         return;
-    div.querySelector("span").appendChild(lord.node("text", file.name + " (" + lord.readableSize(file.size) + ")"));
+    if (file && +file.size > +lord.text("maxFileSize")) {
+        var txt = lord.text("fileTooLargeWarningText") + " (>" + lord.readableSize(+lord.text("maxFileSize")) + ")";
+        lord.showPopup(txt, {type: "warning"});
+    }
+    var fileName = file ? file.name : div.fileUrl.split("/").pop();
+    var txt = fileName;
+    if (file)
+        txt += " (" + lord.readableSize(file.size) + ")";
+    else
+        txt += " [URL]";
+    lord.queryOne(".postformFileText", div).appendChild(lord.node("text", txt));
+    var uuid = lord.createUuid();
+    lord.queryOne("input", div).name = "file_" + uuid;
+    div.droppedFileName = "file_" + (div.fileUrl ? "url_" : "") + uuid;
+    lord.queryOne(".ratingSelectContainer > select").name = "file_" + uuid + "_rating";
     lord.removeFileHash(div);
     var binaryReader = new FileReader();
     var prefix = lord.text("sitePathPrefix");
@@ -1393,35 +1742,86 @@ lord.fileAddedCommon = function(div, file) {
                 delete div.droppedFile;
         });
     };
-    if (lord.getLocalObject("checkFileExistence", true))
+    if (file && lord.getLocalObject("checkFileExistence", true))
         binaryReader.readAsArrayBuffer(file);
-    if (!!file.name.match(/\.(jpe?g|png|gif)$/i) && lord.getLocalObject("showAttachedFilePreview", true)) {
+    var preview = function() {
+        if (!file)
+            return;
         var reader = new FileReader();
         reader.readAsDataURL(file);
         reader.onload = function(e) {
             div.querySelector("img").src = e.target.result;
         };
-    } else if (!!file.name.match(/\.(jpe?g)$/i)) {
+    };
+    if (!!fileName.match(/\.(jpe?g|png|gif)$/i) && lord.getLocalObject("showAttachedFilePreview", true)) {
+        if (!fileName.match(/\.(jpe?g)$/i) || !lord.getLocalObject("stripExifFromJpeg", true))
+            preview();
+    } else if (!!fileName.match(/\.(jpe?g)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/jpeg_file.png";
-    } else if (!!file.name.match(/\.(png)$/i)) {
+    } else if (!!fileName.match(/\.(png)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/png_file.png";
-    } else if (!!file.name.match(/\.(gif)$/i)) {
+    } else if (!!fileName.match(/\.(gif)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/gif_file.png";
-    } else if (!!file.name.match(/\.(mp3)$/i)) {
+    } else if (!!fileName.match(/\.(mp3)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/mp3_file.png";
-    } else if (!!file.name.match(/\.(mp4)$/i)) {
+    } else if (!!fileName.match(/\.(mp4)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/mp4_file.png";
-    } else if (!!file.name.match(/\.(ogg|ogv)$/i)) {
+    } else if (!!fileName.match(/\.(ogg|ogv)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/ogg_file.png";
-    } else if (!!file.name.match(/\.(webm)$/i)) {
+    } else if (!!fileName.match(/\.(webm)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/webm_file.png";
-    } else if (!!file.name.match(/\.(wav)$/i)) {
+    } else if (!!fileName.match(/\.(wav)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/wav_file.png";
-    } else if (!!file.name.match(/\.(pdf)$/i)) {
+    } else if (!!fileName.match(/\.(pdf)$/i)) {
         div.querySelector("img").src = "/" + prefix + "img/pdf_file.png";
     } else {
         div.querySelector("img").src = "/" + prefix + "img/file.png";
     }
+    if (file && !!fileName.match(/\.(jpe?g)$/i) && lord.getLocalObject("stripExifFromJpeg", true)) {
+        var fr = new FileReader();
+        fr.onload = function() {
+            var dv = new DataView(fr.result);
+            var offset = 0;
+            var recess = 0;
+            var pieces = [];
+            var i = 0;
+            if (dv.getUint16(offset) == 0xffd8) {
+                offset += 2;
+                var app1 = dv.getUint16(offset);
+                offset += 2;
+                while (offset < dv.byteLength) {
+                    if (app1 == 0xffe1) {
+                        pieces[i] = {
+                            "recess": recess,
+                            "offset": offset - 2
+                        };
+                        recess = offset + dv.getUint16(offset);
+                        i++;
+                    } else if (app1 == 0xffda) {
+                        break;
+                    }
+                    offset += dv.getUint16(offset);
+                    var app1 = dv.getUint16(offset);
+                    offset += 2;
+                }
+                if (pieces.length > 0) {
+                    var newPieces = [];
+                    pieces.forEach(function(v) {
+                        newPieces.push(fr.result.slice(v.recess, v.offset));
+                    });
+                    newPieces.push(fr.result.slice(recess));
+                    div.droppedFile = new File(newPieces, file.name, {"type": "image/jpeg"});
+                }
+                if (lord.getLocalObject("showAttachedFilePreview", true))
+                    preview();
+            }
+        };
+        fr.readAsArrayBuffer(file);
+    }
+    var f = inp.onchange;
+    delete inp.onchange;
+    inp.value = "";
+    inp.onchange = f;
     div.querySelector("a").style.display = "inline";
     var inpMax = lord.id("maxFileCount");
     if (!inpMax)
@@ -1457,9 +1857,17 @@ lord.fileDrop = function(e, div) {
     var inp = lord.queryOne("input", div);
     inp.parentNode.replaceChild(inp.cloneNode(true), inp);
     lord.clearFileInput(div);
-    var file = e.dataTransfer.files[0];
-    div.droppedFile = file;
-    lord.fileAddedCommon(div, file);
+    var dt = e.dataTransfer;
+    if (lord.in(dt.types, "text/uri-list")) {
+        if (div.droppedFile)
+            delete div.droppedFile;
+        div.fileUrl = dt.getData("text/uri-list");
+        lord.fileAddedCommon(div);
+    } else if (dt.files) {
+        var file = e.dataTransfer.files[0];
+        div.droppedFile = file;
+        lord.fileAddedCommon(div, file);
+    }
     return false;
 };
 
@@ -1471,9 +1879,33 @@ lord.fileSelected = function(current) {
         delete div.droppedFile;
     if (current.value == "")
         return lord.removeFile(current);
-    lord.clearFileInput(div);
     var file = current.files[0];
+    var inp = lord.queryOne("input", div);
+    inp.parentNode.replaceChild(inp.cloneNode(true), inp);
+    lord.clearFileInput(div);
+    div.droppedFile = file;
     lord.fileAddedCommon(div, file);
+};
+
+lord.attachFileByLink = function(a) {
+    if (!a)
+        return;
+    var div = a.parentNode;
+    if (!div)
+        return;
+    div = div.parentNode;
+    if (!div)
+        return;
+    var url = prompt(lord.text("linkLabelText"));
+    if (null === url)
+        return;
+    if (div.droppedFile)
+        delete div.droppedFile;
+    var inp = lord.queryOne("input", div);
+    inp.parentNode.replaceChild(inp.cloneNode(true), inp);
+    lord.clearFileInput(div);
+    div.fileUrl = url;
+    lord.fileAddedCommon(div);
 };
 
 lord.removeFile = function(current) {
@@ -1527,11 +1959,132 @@ lord.browseFile = function(e, div) {
     var e = window.event || e;
     var a = e.target;
     while (!!a) {
-        if (a.tagName === "A")
+        if (a.tagName === "A" || a.tagName === "SELECT" || a.tagName === "OPTION")
             return;
         a = a.parentNode;
     }
     inp.click();
+};
+
+lord.setPostformRulesVisible = function(visible) {
+    var hide = !visible;
+    lord.setCookie("hidePostformRules", hide, {
+        "expires": lord.Billion, "path": "/"
+    });
+    lord.query(".postformRules > ul").forEach(function(ul) {
+        ul.style.display = hide ? "none" : "";
+    });
+    var a = lord.queryOne("a.hidePostformRulesButton");
+    var aa = lord.node("a");
+    lord.addClass(aa, "hidePostformRulesButton");
+    aa.onclick = lord.setPostformRulesVisible.bind(lord, hide);
+    aa.appendChild(lord.node("text", lord.text(hide ? "showPostformRulesText" : "hidePostformRulesText")));
+    a.parentNode.replaceChild(aa, a);
+};
+
+lord.quoteSelectedText = function(selection) {
+    try {
+        var field = lord.nameOne("text", lord.id("postForm"));
+        var value = "";
+        var pos = 0;
+        if (document.getSelection()) {
+            value = "";
+            var sel = lord.arr((selection || document.getSelection().toString()).split("\n")).forEach(function(line) {
+                if ("" != line)
+                    value += ">" + line;
+                value += "\n";
+            });
+            value = value.substr(0, value.length - 1);
+        }
+        if ("" == value)
+            value += ">";
+        value += "\n";
+        if (typeof selection != "undefined" && selection.length < 1)
+            return;
+        if (field.selectionStart || field.selectionStart == "0") {
+            var startPos = field.selectionStart;
+            var endPos = field.selectionEnd;
+            field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+            pos = ((startPos < endPos) ? startPos : endPos) + value.length;
+        } else {
+            field.value += value;
+        }
+        field.setSelectionRange(pos, pos);
+        field.focus();
+    } catch (ex) {
+        //Do nothing
+    }
+};
+
+lord.markup = function(tag) {
+    var wrap = function(opTag, clTag) {
+        if (!opTag || !clTag)
+            return;
+        try {
+            var field = lord.nameOne("text", lord.id("postForm"));
+            var pos = 0;
+            if (field.selectionStart || field.selectionStart == "0") {
+                var startPos = field.selectionStart;
+                var endPos = field.selectionEnd;
+                var selected = field.value.substring(startPos, endPos);
+                var value = opTag + selected + clTag;
+                field.value = field.value.substring(0, startPos) + value + field.value.substring(endPos);
+                pos = ((startPos < endPos) ? startPos : endPos) + opTag.length;
+                if (selected.length > 0)
+                    pos += selected.length + clTag.length;
+            } else {
+                field.value += opTag + clTag;
+                pos = field.value.length - clTag.length;
+            }
+            field.setSelectionRange(pos, pos);
+            field.focus();
+        } catch (ex) {
+            //Do nothing
+        }
+    };
+    switch (tag) {
+    case "b":
+    case "i":
+    case "s":
+    case "u":
+    case "spoiler":
+    case "sup":
+    case "sub":
+    case "url": {
+        wrap("[" + tag + "]", "[/" + tag + "]");
+        break;
+    }
+    case ">": {
+        lord.quoteSelectedText();
+        break;
+    }
+    case "code": {
+        var sel = lord.queryOne(".postformMarkup > span > [name='langSelect']");
+        var lang = sel.options[sel.selectedIndex].value;
+        wrap("[" + (("-" != lang) ? (tag + " lang=\"" + lang + "\"") : tag) + "]", "[/" + tag + "]");
+        break;
+    }
+    default: {
+        break;
+    }
+    }
+};
+
+lord.changeLastCodeLang = function() {
+    var sel = lord.queryOne(".postformMarkup > span > [name='langSelect']");
+    var lang = sel.options[sel.selectedIndex].value;
+    lord.setLocalObject("lastCodeLang", lang);
+};
+
+lord.setPostformMarkupVisible = function(visible) {
+    var hide = !visible;
+    lord.setLocalObject("hidePostformMarkup", hide);
+    lord.queryOne(".postformMarkup > span").style.display = hide ? "none" : "";
+    var a = lord.queryOne("a.hidePostformMarkupButton");
+    lord.removeChildren(a);
+    a.appendChild(lord.node("text", lord.text(hide ? "showPostformMarkupText" : "hidePostformMarkupText")));
+    a.onclick = lord.setPostformMarkupVisible.bind(lord, hide);
+    return false;
 };
 
 lord.showImage = function(href, type, sizeHintX, sizeHintY) {
@@ -1543,19 +2096,27 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.setInitialScale(lord.img, sizeHintX, sizeHintY);
         lord.resetScale(lord.img);
         lord.img.style.display = "";
-        lord.toCenter(lord.img, sizeHintX, sizeHintY);
+        lord.toCenter(lord.img, sizeHintX, sizeHintY, 3);
         if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
             setTimeout(function() {
                 lord.img.play();
             }, 500);
         }
+        if (lord.getLocalObject("showLeafButtons", true)) {
+            lord.query(".leafButton").forEach(function(a) {
+                a.style.display = "";
+            });
+        }
         return false;
     }
     if (lord.isAudioType(type)) {
-        sizeHintX = 400;
+        sizeHintX = (lord.text("deviceType") == "mobile") ? 500 : 400;
         lord.img = lord.node("audio");
         lord.img.width = sizeHintX + "px";
         lord.img.controls = "controls";
+        if (lord.text("deviceType") == "mobile")
+            lord.img.scale = 60;
+        lord.img.volume = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
         var src = lord.node("source");
         src.src = href;
         src.type = type;
@@ -1570,6 +2131,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     } else if (lord.isVideoType(type)) {
         lord.img = lord.node("video");
         lord.img.controls = "controls";
+        lord.img.volume = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
         var src = lord.node("source");
         src.src = href;
         src.type = type;
@@ -1591,8 +2153,22 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     var wheelHandler = function(e) {
         var e = window.event || e; //Old IE support
         e.preventDefault();
-        var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-        lord.img.scale += delta;
+        var delta = lord.getLocalObject("imageZoomSensitivity", 25);
+        if ((e.wheelDelta || -e.detail) < 0)
+            delta *= -1;
+        var k = 1;
+        if (delta < 0) {
+            while ((lord.img.scale + (delta / k)) <= 0)
+                k *= 10;
+        } else {
+            //This is shitty, because floating point calculations are shitty
+            var s = parseFloat((lord.img.scale / (delta / k)).toString().substr(0, 5));
+            while (!lord.nearlyEqual(s - Math.floor(s), 0, 1 / 1000000)) {
+                k *= 10;
+                s = parseFloat((lord.img.scale / (delta / k)).toString().substr(0, 5));
+            }
+        }
+        lord.img.scale += (delta / k);
         lord.resetScale(lord.img);
     };
     if (lord.img.addEventListener) {
@@ -1623,6 +2199,9 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
                     lord.img.currentTime = 0;
                 }
                 lord.img.style.display = "none";
+                lord.query(".leafButton").forEach(function(a) {
+                    a.style.display = "none";
+                });
             }
         };
         lord.img.onmousemove = function(e) {
@@ -1638,33 +2217,72 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         };
     }
     document.body.appendChild(lord.img);
-    lord.toCenter(lord.img, sizeHintX, sizeHintY);
+    lord.toCenter(lord.img, sizeHintX, sizeHintY, 3);
     if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
         setTimeout(function() {
             lord.img.play();
         }, 500);
     }
     lord.images[href] = lord.img;
+    if (lord.getLocalObject("showLeafButtons", true)) {
+        lord.query(".leafButton").forEach(function(a) {
+            a.style.display = "";
+        });
+    }
     return false;
 };
 
-lord.addThreadToFavorites = function(boardName, threadNumber) {
+lord.previousFile = function() {
+    var f = lord.nextOrPreviousFile(true);
+    if (!f)
+        return;
+    lord.showImage(f.href, f.type, f.sizeX, f.sizeY);
+};
+
+lord.nextFile = function() {
+    var f = lord.nextOrPreviousFile(false);
+    if (!f)
+        return;
+    lord.showImage(f.href, f.type, f.sizeX, f.sizeY);
+};
+
+lord.addThreadToFavorites = function(boardName, threadNumber, callback, callbackError) {
     threadNumber = +threadNumber;
-    if (!boardName || isNaN(threadNumber))
-        return;
+    if (!boardName || isNaN(threadNumber)) {
+        if (typeof callbackError == "function")
+            callbackError();
+        return false;
+    }
     var fav = lord.getLocalObject("favoriteThreads", {});
-    if (fav.hasOwnProperty(boardName + "/" + threadNumber))
-        return;
+    if (fav.hasOwnProperty(boardName + "/" + threadNumber)) {
+        if (typeof callbackError == "function")
+            callbackError();
+        return false;
+    }
     lord.ajaxRequest("get_new_posts", [boardName, threadNumber, 0], lord.RpcGetNewPostsId, function(res) {
-        if (!res || res.length < 1)
-            return;
+        if (!res || res.length < 1) {
+            if (typeof callbackError == "function")
+                callbackError();
+            return false;
+        }
         var pn = res.pop()["number"];
+        var opPost = res.shift();
         fav[boardName + "/" + threadNumber] = {
             "lastPostNumber": pn,
-            "previousLastPostNumber": pn
+            "previousLastPostNumber": pn,
+            "subject": (opPost["subject"] ? opPost["subject"] : opPost["text"]).substring(0, 150)
         };
+        var opPost = lord.id("post" + threadNumber);
+        var btn = lord.nameOne("addToFavoritesButton", opPost);
+        var img = lord.queryOne("img", btn);
+        img.title = lord.text("removeFromFavoritesText");
+        img.src = img.src.replace("favorite.png", "favorite_active.png");
+        btn.onclick = lord.removeThreadFromFavorites.bind(lord, boardName, threadNumber);
         lord.setLocalObject("favoriteThreads", fav);
+        if (typeof callback == "function")
+            callback();
     });
+    return false;
 };
 
 lord.complain = function() {
@@ -1683,8 +2301,11 @@ lord.complain = function() {
 };
 
 lord.submitted = function(event, form) {
-    event.preventDefault();
-    var btn = form.querySelector("[name='submit']");
+    if (event)
+        event.preventDefault();
+    if (!form);
+        form = lord.id("postForm");
+    var btn = lord.nameOne("submit", form);
     btn.disabled = true;
     btn.value = lord.text("postFormButtonSubmitSending") + " 0%";
     var resetButton = function() {
@@ -1694,7 +2315,9 @@ lord.submitted = function(event, form) {
     var formData = new FormData(form);
     lord.query(".postformFile", form).forEach(function(div) {
         if (div.droppedFile)
-            formData.append("file", div.droppedFile);
+            formData.append(div.droppedFileName || "file", div.droppedFile);
+        else if (div.fileUrl)
+            formData.append(div.droppedFileName, div.fileUrl);
     });
     var xhr = new XMLHttpRequest();
     xhr.open("POST", form.action);
@@ -1774,57 +2397,69 @@ lord.posted = function(response) {
         btn.disabled = false;
         btn.value = lord.text("postFormButtonSubmit");
     };
-    if (postNumber) {
-        if (lord.postForm.quickReply && !currentThreadNumber) {
-            var action = lord.getLocalObject("quickReplyAction", "goto_thread");
-            if ("do_nothing" === action) {
-                //Do nothing
-            } else if ("append_post" == action) {
-                var parent = postForm.parentNode;
-                if (!lord.hasClass(parent, "threadPosts")) {
-                    parent = parent.nextSibling;
-                    if (!parent.tagName)
+    var f = function() {
+        if (postNumber) {
+            if (lord.postForm.quickReply && !currentThreadNumber) {
+                var action = lord.getLocalObject("quickReplyAction", "goto_thread");
+                if ("do_nothing" === action) {
+                    //Do nothing
+                } else if ("append_post" == action) {
+                    var parent = postForm.parentNode;
+                    if (!lord.hasClass(parent, "threadPosts")) {
                         parent = parent.nextSibling;
-                }
-                //NOTE: Yep, twice
-                if (!lord.hasClass(parent, "threadPosts")) {
-                    parent = parent.nextSibling;
-                    if (!parent.tagName)
-                        parent = parent.nextSibling;
-                }
-                lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
-                    var newPost = lord.createPostNode(res, true);
-                    if (newPost) {
-                        parent.appendChild(newPost, parent.lastChild);
-                        lord.postNodeInserted(newPost);
+                        if (!parent.tagName)
+                            parent = parent.nextSibling;
                     }
-                });
-            } else {
-                //The default
-                var href = window.location.href.split("#").shift();
-                href += "/thread/" + lord.nameOne("thread", postForm).value + ".html#" + postNumber;
-                window.location.href = href;
-                return;
+                    //NOTE: Yep, twice
+                    if (!lord.hasClass(parent, "threadPosts")) {
+                        parent = parent.nextSibling;
+                        if (!parent.tagName)
+                            parent = parent.nextSibling;
+                    }
+                    lord.ajaxRequest("get_post", [boardName, postNumber], lord.RpcGetPostId, function(res) {
+                        var newPost = lord.createPostNode(res, true);
+                        if (newPost) {
+                            var lastPost = lord.query(".post, .opPost", parent).pop();
+                            var seqNum = +lord.getPlainText(lord.queryOne(".postSequenceNumber", lastPost));
+                            if (!isNaN(seqNum))
+                                lord.queryOne(".postSequenceNumber", newPost).appendChild(lord.node("text", ++seqNum));
+                            parent.appendChild(newPost, parent.lastChild);
+                            lord.postNodeInserted(newPost);
+                        }
+                    });
+                } else {
+                    //The default
+                    var href = window.location.href.split("#").shift();
+                    href += "/thread/" + lord.nameOne("thread", postForm).value + ".html#" + postNumber;
+                    window.location.href = href;
+                    return;
+                }
             }
+            resetButton();
+            lord.resetPostForm();
+            if (currentThreadNumber)
+                lord.updateThread(boardName, currentThreadNumber, true, (function(pn) {
+                    window.location.hash = "#" + postNumber;
+                }).bind(lord, postNumber));
+            lord.removeQuickReply();
+            lord.resetCaptcha();
+        } else if (threadNumber) {
+            var href = window.location.href.split("#").shift();
+            window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/" + threadNumber
+                + ".html";
+        } else {
+            resetButton();
+            var errmsg = o.errorMessage;
+            var errdesc = o.errorDescription;
+            var txt = (errmsg && errdesc) ? (errmsg + ": " + errdesc) : response.substring(0, 150);
+            lord.showPopup(txt, {type: "critical"});
+            lord.resetCaptcha();
         }
-        resetButton();
-        lord.resetPostForm();
-        if (currentThreadNumber)
-            lord.updateThread(boardName, currentThreadNumber, true, lord.selectPost.bind(lord, postNumber));
-        lord.removeQuickReply();
-        lord.resetCaptcha();
-    } else if (threadNumber) {
-        var href = window.location.href.split("#").shift();
-        window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/" + threadNumber
-            + ".html";
-    } else {
-        resetButton();
-        var errmsg = o.errorMessage;
-        var errdesc = o.errorDescription;
-        var txt = (errmsg && errdesc) ? (errmsg + ": " + errdesc) : response.substring(0, 150);
-        lord.showPopup(txt, {type: "critical"});
-        lord.resetCaptcha();
-    }
+    };
+    if (lord.getLocalObject("addToFavoritesOnReply", false) && (postNumber || threadNumber))
+        lord.addThreadToFavorites(boardName, threadNumber || lord.nameOne("thread", postForm).value, f, f);
+    else
+        f();
 };
 
 lord.globalOnmouseover = function(e) {
@@ -1848,30 +2483,501 @@ lord.globalOnmouseout = function(e) {
     lord.noViewPost();
 };
 
+lord.strikeOutHiddenPostLinks = function(parent) {
+    if (!parent)
+        parent = document;
+    var list = lord.getLocalObject("hiddenPosts", {});
+    var cbn = lord.text("currentBoardName");
+    lord.query("a", parent).forEach(function(a) {
+        var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+)$/);
+        if (!m || !m.length || m.length < 3)
+            return;
+        var bn = m[2] ? m[2] : cbn;
+        var pn = m[m.length - 1];
+        if (list[bn + "/" + pn])
+            lord.addClass(a, "hiddenPostLink");
+        else
+            lord.removeClass(a, "hiddenPostLink");
+    });
+};
+
+lord.hotkey_previousPageImage = function() {
+    if (!!lord.img) {
+        lord.previousFile();
+        return false;
+    }
+    if (lord.text("currentThreadNumber"))
+        return;
+    var curr = lord.queryOne(".pagesItem.currentPage");
+    var list = lord.query(".pagesItem:not(.metaPage)");
+    for (var i = 1; i < list.length; ++i) {
+        if (curr == list[i]) {
+            window.location.href = lord.queryOne("a", list[i - 1]).href;
+            return false;
+        }
+    }
+};
+
+lord.hotkey_nextPageImage = function() {
+    if (!!lord.img) {
+        lord.nextFile();
+        return false;
+    }
+    if (lord.text("currentThreadNumber"))
+        return;
+    var curr = lord.queryOne(".pagesItem.currentPage");
+    var list = lord.query(".pagesItem:not(.metaPage)");
+    for (var i = 0; i < list.length - 1; ++i) {
+        if (curr == list[i]) {
+            window.location.href = lord.queryOne("a", list[i + 1]).href;
+            return false;
+        }
+    }
+};
+
+lord.currentPost = function() {
+    var list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", ""))
+            return list[i];
+    }
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]))
+            return list[i];
+    }
+    list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    if (list && list.length > 0)
+        return list[0];
+    return null;
+};
+
+lord.currentThread = function() {
+    if (lord.text("currentThreadNumber"))
+        return null;
+    var list = lord.query(".opPost:not(#postTemplate)");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]))
+            return lord.id(list[i].id.replace("post", "thread"));
+    }
+    list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", ""))
+            return lord.id(list[i].parentNode.id.replace("threadPosts", "thread"));
+    }
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]))
+            return lord.id(list[i].parentNode.id.replace("threadPosts", "thread"));
+    }
+    list = lord.query(".opPost:not(#postTemplate)");
+    if (list && list.length > 0)
+        return lord.id(list[0].id.replace("post", "thread"));
+    return null;
+};
+
+lord.previousNextThreadPostCommon = function(next, post) {
+    var list = null;
+    var f = function(list, i) {
+        if (next && i < list.length - 1)
+            return i + 1;
+        else if (!next && i > 0)
+            return i - 1;
+        return i;
+    };
+    if (!post && !lord.text("currentThreadNumber")) {
+        list = lord.query(".opPost:not(#postTemplate)");
+        for (var i = 0; i < list.length; ++i) {
+            if (lord.isInViewport(list[i])) {
+                i = f(list, i);
+                window.location.hash = list[i].id.replace("post", "");
+                return false;
+            }
+        }
+    }
+    list = lord.query(".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i]) && window.location.hash.replace("#", "") == list[i].id.replace("post", "")) {
+            if (post || lord.text("currentThreadNumber")) {
+                i = f(list, i);
+                window.location.hash = list[i].id.replace("post", "");
+            } else {
+                window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
+            }
+            return false;
+        }
+    }
+    for (var i = 0; i < list.length; ++i) {
+        if (lord.isInViewport(list[i])) {
+            if (post || lord.text("currentThreadNumber")) {
+                i = f(list, i);
+                window.location.hash = list[i].id.replace("post", "");
+            } else {
+                window.location.hash = list[i].parentNode.id.replace("threadPosts", "");
+            }
+            return false;
+        }
+    }
+    list = lord.query(!post ? ".opPost:not(#postTemplate)" : ".opPost:not(#postTemplate), .post:not(#postTemplate)");
+    if (list && list.length > 0) {
+        var ind = next ? 0 : (list.length - 1);
+        window.location.hash = list[ind].id.replace("post", "");
+        return false;
+    }
+};
+
+lord.hotkey_previousThreadPost = function() {
+    return lord.previousNextThreadPostCommon(false, false);
+};
+
+lord.hotkey_nextThreadPost = function() {
+    return lord.previousNextThreadPostCommon(true, false);
+};
+
+lord.hotkey_previousPost = function() {
+    return lord.previousNextThreadPostCommon(false, true);
+};
+
+lord.hotkey_nextPost = function() {
+    return lord.previousNextThreadPostCommon(true, true);
+};
+
+lord.hotkey_hidePost = function() {
+    var p = lord.currentPost();
+    if (!p)
+        return;
+    lord.setPostHidden(lord.text("currentBoardName"), p.id.replace("post", ""));
+    return false;
+};
+
+lord.hotkey_goToThread = function() {
+    var t = lord.currentThread();
+    if (!t)
+        return;
+    var opPost = lord.queryOne(".opPost", t);
+    window.open(lord.queryOne(".postHeader > [name='toThreadLink']", opPost).href, '_blank').focus();
+};
+
+lord.hotkey_expandThread = function() {
+    var t = lord.currentThread();
+    if (!t)
+        return;
+    var tn = +t.id.replace("thread", "");
+    var posts = lord.id("threadPosts" + tn);
+    if (!posts || posts.length < 1)
+        return;
+    (function(tn, posts) {
+        var div = lord.node("div");
+        div.appendChild(lord.node("text", lord.text("loadingPostsText")));
+        posts.parentNode.insertBefore(div, posts);
+        var lastPost = lord.query(".post", posts).pop();
+        var seqNum = 1;
+        lord.ajaxRequest("get_new_posts", [lord.text("currentBoardName"), tn, tn], lord.RpcGetNewPostsId, function(res) {
+            if (!res || res.length < 1)
+                return;
+            lord.removeChildren(posts);
+            var omitted = lord.id("threadOmitted" + tn);
+            if (omitted)
+                omitted.parentNode.removeChild(omitted);
+            div.parentNode.removeChild(div);
+            var ps = lord.arr(res);
+            var f = function() { //NOTE: Using timeout to let UI update
+                if (ps.length <= 0)
+                    return;
+                var newPost = lord.createPostNode(ps.shift(), true);
+                if (!newPost)
+                    return;
+                lord.removeClass(newPost, "newPost");
+                if (!isNaN(seqNum))
+                    lord.queryOne(".postSequenceNumber", newPost).appendChild(lord.node("text", ++seqNum));
+                posts.appendChild(newPost);
+                lord.postNodeInserted(newPost);
+                setTimeout(f, 1);
+            };
+            f();
+        });
+    })(tn, posts);
+    return false;
+};
+
+lord.hotkey_expandImage = function() {
+    var p = lord.currentPost();
+    if (!p)
+        return;
+    if (lord.img && lord.img.style.display != "none") {
+        lord.hideImage();
+    } else {
+        var f = lord.query(".postFileFile", p);
+        if (!f)
+            return;
+        f = f[0];
+        var href = lord.queryOne("a", f).href;
+        var type = lord.nameOne("type", f).value;
+        if ("application/pdf" == type) {
+            window.open(href, '_blank').focus();
+        } else {
+            var sizeX = lord.nameOne("sizeX", f).value;
+            var sizeY = lord.nameOne("sizeY", f).value;
+            lord.showImage(href, type, sizeX, sizeY);
+        }
+    }
+    return false;
+};
+
+lord.hotkey_quickReply = function() {
+    var p = lord.currentPost();
+    if (!p)
+        return;
+    lord.quickReply(p.id.replace("post", ""));
+    return false;
+};
+
+lord.hotkey_submitReply = function() {
+    lord.submitted();
+    return false;
+};
+
+lord.hotkey_updateThread = function() {
+    var tn = +lord.text("currentThreadNumber");
+    if (isNaN(tn))
+        return;
+    lord.updateThread(lord.text("currentBoardName"), tn);
+    return false;
+};
+
+lord.hotkey_markupCommon = function(tag) {
+    if (!tag)
+        return;
+    if (lord.id("hiddenPostForm") == lord.id("postForm").parentNode)
+        return;
+    lord.markup(tag);
+    return false;
+};
+
+lord.hotkey_markupBold = function() {
+    return lord.hotkey_markupCommon("b");
+};
+
+lord.hotkey_markupItalics = function() {
+    return lord.hotkey_markupCommon("i");
+};
+
+lord.hotkey_markupStrikedOut = function() {
+    return lord.hotkey_markupCommon("s");
+};
+
+lord.hotkey_markupUnderlined = function() {
+    return lord.hotkey_markupCommon("u");
+};
+
+lord.hotkey_markupSpoiler = function() {
+    return lord.hotkey_markupCommon("spoiler");
+};
+
+lord.hotkey_markupQuotation = function() {
+    return lord.hotkey_markupCommon(">");
+};
+
+lord.hotkey_markupCode = function() {
+    return lord.hotkey_markupCommon("code");
+};
+
 lord.initializeOnLoadBaseBoard = function() {
     document.body.onclick = lord.globalOnclick;
     document.body.onmouseover = lord.globalOnmouseover;
     document.body.onmouseout = lord.globalOnmouseout;
+    if (lord.getLocalObject("mumWatching", false)) {
+        var img = lord.queryOne("[name='switchMumWatchingButton'] > img");
+        img.src = "/" + lord.text("sitePathPrefix") + "img/mum_watching.png";
+        lord.query(".postFileFile > a > img").forEach(function(img) {
+            lord.addClass(img, "mumWatching");
+        });
+    }
+    if (lord.getLocalObject("hotkeysEnabled", true) && lord.text("deviceType") != "mobile") {
+        var hotkeys = lord.getLocalObject("hotkeys", {}).dir;
+        var key = function(name) {
+            if (!hotkeys)
+                return lord.DefaultHotkeys.dir[name];
+            return hotkeys[name] || lord.DefaultHotkeys.dir[name];
+        };
+        var btn = lord.queryOne(".leafButton.leafButtonPrevious");
+        btn.title = btn.title + " (" + key("previousPageImage") + ")";
+        btn = lord.queryOne(".leafButton.leafButtonNext");
+        btn.title = btn.title + " (" + key("nextPageImage") + ")";
+        lord.query("[name='quickReply']").forEach(function(a) {
+            a.title = a.title + " (" + key("quickReply") + ")";
+        });
+        lord.query("[name='toThreadLink']").forEach(function(a) {
+            a.title = "(" + key("goToThread") + ")";
+        });
+        lord.query("[name='hideButton'] > img").forEach(function(img) {
+            img.title = img.title + " (" + key("hidePost") + ")";
+        });
+        var table = lord.queryOne(".postformMarkup");
+        ["Bold", "Italics", "StrikedOut", "Underlined", "Spoiler", "Quotation", "Code"].forEach(function(s) {
+            s = "markup" + s;
+            var btn = lord.nameOne(s, table);
+            btn.title = btn.title + " (" + key(s) + ")";
+        });
+        lord.query("[name='updateThreadButton']").forEach(function(a) {
+            a.title = "(" + key("updateThread") + ")";
+        });
+        lord.nameOne("submit", lord.id("postForm")).title = "(" + key("submitReply") + ")";
+    }
     if (lord.getLocalObject("showTripcode", false)) {
         var postForm = lord.id("postForm");
         var sw = lord.nameOne("tripcode", postForm);
         sw.checked = true;
     }
-    var list = lord.getLocalObject("hiddenPosts", {});
-    var posts = lord.query(".post, .opPost");
-    posts.forEach(function(post) {
-        if (lord.getLocalObject("showYoutubeVideosTitles", true))
-            lord.addYoutubeButton(post);
-        lord.tryHidePost(post, list);
+    var fav = lord.getLocalObject("favoriteThreads", {});
+    var currentBoardName = lord.text("currentBoardName");
+    if (lord.getLocalObject("spellsEnabled", true)) {
+        lord.worker.postMessage({
+            "type": "parseSpells",
+            "data": lord.getLocalObject("spells", lord.DefaultSpells)
+        });
+    } else if (lord.getLocalObject("showYoutubeVideosTitles", true)) {
+        lord.processPosts(null, true);
+    } else {
+        var ps = lord.query(".post:not(#postTemplate), .opPost");
+        var f = function() {
+            if (ps.length <= 0)
+                return;
+            var post = ps.shift();
+            lord.tryHidePost(post);
+            setTimeout(f, 1);
+        };
+        f();
+    }
+    lord.query(".opPost").forEach(function(opPost) {
+        var threadNumber = +opPost.id.replace("post", "");
+        var btn = lord.nameOne("addToFavoritesButton", opPost);
+        if (fav.hasOwnProperty(currentBoardName + "/" + threadNumber)) {
+            var img = lord.queryOne("img", btn);
+            img.title = lord.text("removeFromFavoritesText");
+            img.src = img.src.replace("favorite.png", "favorite_active.png");
+            btn.onclick = lord.removeThreadFromFavorites.bind(lord, currentBoardName, threadNumber);
+        } else {
+            btn.onclick = lord.addThreadToFavorites.bind(lord, currentBoardName, threadNumber);
+        }
     });
+    if (!!lord.getLocalObject("hideTripcodes", false)) {
+        lord.query(".tripcode").forEach(function(span) {
+            span.style.display = "none";
+        });
+    }
+    if (!!lord.getLocalObject("hideUserNames", false)) {
+        lord.query(".someName").forEach(function(span) {
+            span.style.display = "none";
+        });
+    }
+    var lastLang = lord.getLocalObject("lastCodeLang", "-");
+    var sel = lord.queryOne(".postformMarkup > span > [name='langSelect']");
+    lord.arr(sel.options).forEach(function(opt) {
+        if (opt.value == lastLang)
+            opt.selected = true;
+    });
+    lord.setPostformMarkupVisible(!lord.getLocalObject("hidePostformMarkup", false));
+    if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
+        lord.strikeOutHiddenPostLinks();
     if (!lord.text("currentThreadNumber")) {
         var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
         lastPostNumbers[lord.text("currentBoardName")] = +lord.text("lastPostNumber");
         lord.setLocalObject("lastPostNumbers", lastPostNumbers);
     }
+    lord.initFiles();
+    lord.hashChangedHandler(lord.hash());
+};
+
+lord.hashChangedHandler = function(hash) {
+    if (lord.lastSelectedElement)
+        lord.removeClass(lord.lastSelectedElement, "selectedPost");
+    var pn = +hash;
+    if (isNaN(pn))
+        return;
+    var post = lord.id("post" + pn);
+    if (!post)
+        return;
+    lord.lastSelectedElement = post;
+    lord.addClass(post, "selectedPost");
 };
 
 window.addEventListener("load", function load() {
     window.removeEventListener("load", load, false);
     lord.initializeOnLoadBaseBoard();
 }, false);
+
+window.addEventListener("hashchange", function(e) {
+    lord.hashChangedHandler(lord.hash());
+}, false);
+
+lord.message_spellsParsed = function(data) {
+    if (!data)
+        return;
+    if (data.root)  {
+        lord.spells = data.root.spells;
+        var youtube = (lord.getLocalObject("showYoutubeVideosTitles", true) && !lord.youtubeApplied);
+        if (!lord.getLocalObject("spellsEnabled", true) && !youtube)
+            return;
+        lord.processPosts(lord.spells, youtube);
+    } else if (data.error) {
+        var txt = lord.text(data.error.text);
+        if (data.error.data)
+            txt += ": " + data.error.data;
+        lord.showPopup(txt, {"type": "critical"});
+    }
+};
+
+lord.message_postsProcessed = function(data) {
+    if (!data)
+        return;
+    if (data.posts) {
+        lord.youtubeApplied = true;
+        var posts = {};
+        lord.query(".post:not(#postTemplate), .opPost").forEach(function(post) {
+            posts[+post.id.replace("post", "")] = post;
+        });
+        var ps = data.posts;
+        var f = function() { //NOTE: Using timeout to let UI update
+            if (ps.length <= 0)
+                return;
+            var post = ps.shift();
+            var p = posts[post.number];
+            if (!p)
+                return;
+            if (post.youtube)
+                lord.addYoutubeButton(p, post.youtube);
+            if (post.modifications && post.modifications.length > 0) {
+                lord.forIn(post.modifications, function(value, key) {
+                    switch (key) {
+                    case "innerHTML":
+                        p.innerHTML = value;
+                        break;
+                    default:
+                        break;
+                    }
+                });
+            }
+            if (post.hidden)
+                lord.addPostToHidden(post.board, post.number);
+            lord.tryHidePost(p);
+            setTimeout(f, 1);
+        };
+        f();
+    } else if (data.error) {
+        var txt = lord.text(data.error.text);
+        if (data.error.data)
+            txt += ": " + data.error.data;
+        lord.showPopup(txt, {"type": "critical"});
+    }
+};
+
+lord.worker.addEventListener("message", function(msg) {
+    if (!msg || !msg.data)
+        return;
+    msg = msg.data;
+    if (!msg.type)
+        return;
+    var f = lord["message_" + msg.type];
+    if (!f)
+        return;
+    f(msg.data);
+});

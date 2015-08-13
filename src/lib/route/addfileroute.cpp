@@ -1,6 +1,6 @@
 #include "addfileroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/addfile.h"
 #include "database.h"
 #include "tools.h"

@@ -3,7 +3,7 @@
 #include "database.h"
 #include "captcha/abstractcaptchaengine.h"
 #include "captcha/abstractyandexcaptchaengine.h"
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/baseboard.h"
 #include "tools.h"
 #include "translator.h"
@@ -21,9 +21,11 @@
 #include <QStringList>
 #include <QUrl>
 
+#include <cppcms/http_cookie.h>
 #include <cppcms/json.h>
 #include <cppcms/rpc_json.h>
 
+#include <climits>
 #include <string>
 
 ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
@@ -161,6 +163,10 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
         p.text = Tools::fromStd(params.at("text").str());
         p.password = Tools::toHashpass(Tools::fromStd(params.at("password").str()));
         p.draft = params.at("draft").boolean();
+        std::string mm = params.at("markupMode").str();
+        QString mmq = Tools::fromStd(mm);
+        p.extendedWakabaMarkEnabled = mmq.contains("ewm", Qt::CaseInsensitive);
+        p.bbCodeEnabled = mmq.contains("bbc", Qt::CaseInsensitive);
         p.userData = params.at("userData");
         QString err;
         p.error = &err;
@@ -169,6 +175,8 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
             Tools::log(server, "ajax_edit_post", "fail:" + err, logTarget);
             return;
         }
+
+        server.response().set_cookie(cppcms::http::cookie("markupMode", mm, UINT_MAX, "/"));
         cppcms::json::object refs;
         foreach (const Database::RefKey &key, p.referencedPosts.keys()) {
             std::string k = Tools::toStd(key.boardName) + "/" + Tools::toStd(QString::number(key.postNumber));
@@ -374,7 +382,7 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
         bool ok = false;
         QString err;
         const cppcms::http::request &req = server.request();
-        QList<Content::Post> posts = Controller::getNewPosts(req, bn, tn, lpn, &ok, &err);
+        QList<Content::Post> posts = Database::getNewPostsC(req, bn, tn, lpn, &ok, &err);
         if (!ok) {
             server.return_error(Tools::toStd(err));
             Tools::log(server, "ajax_get_new_posts", "fail:" + err, logTarget);
@@ -411,7 +419,7 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
         bool ok = false;
         QString err;
         const cppcms::http::request &req = server.request();
-        Content::Post post = Controller::getPost(req, bn, pn, &ok, &err);
+        Content::Post post = Database::getPostC(req, bn, pn, &ok, &err);
         if (!ok) {
             server.return_error(Tools::toStd(err));
             Tools::log(server, "ajax_get_post", "fail:" + err, logTarget);
@@ -514,6 +522,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
                     method_role);
     list << Handler("get_yandex_captcha_image",
                     cppcms::rpc::json_method(&ActionAjaxHandler::getYandexCaptchaImage, self), method_role);
+    list << Handler("move_thread", cppcms::rpc::json_method(&ActionAjaxHandler::moveThread, self), method_role);
     list << Handler("set_thread_fixed", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadFixed, self),
                     method_role);
     list << Handler("set_thread_opened", cppcms::rpc::json_method(&ActionAjaxHandler::setThreadOpened, self),
@@ -522,6 +531,32 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("unvote", cppcms::rpc::json_method(&ActionAjaxHandler::unvote, self), method_role);
     list << Handler("vote", cppcms::rpc::json_method(&ActionAjaxHandler::vote, self), method_role);
     return list;
+}
+
+void ActionAjaxHandler::moveThread(std::string sourceBoardName, long long threadNumber, std::string targetBoardName)
+{
+    try {
+        QString sbn = Tools::fromStd(sourceBoardName);
+        quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
+        QString tbn = Tools::fromStd(targetBoardName);
+        QString logTarget = sbn + "/" + QString::number(tn) + "/" + tbn;
+        Tools::log(server, "ajax_move_thread", "begin", logTarget);
+        if (!testBan(sbn) || !testBan(tbn))
+            return Tools::log(server, "ajax_move_thread", "fail:ban", logTarget);
+        QString err;
+        quint64 ntn = Database::moveThread(server.request(), sbn, tn, tbn, &err);
+        if (!ntn) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_move_thread", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(ntn);
+        Tools::log(server, "ajax_move_thread", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_move_thread", "fail:" + err);
+    }
 }
 
 void ActionAjaxHandler::setThreadFixed(std::string boardName, long long threadNumber, bool fixed)

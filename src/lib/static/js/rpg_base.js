@@ -10,6 +10,7 @@ lord.customEditFormSet = function(form, post) {
     var createInp = function(id, text) {
         var lastN = +count.value;
         var div = lord.node("div");
+        lord.addClass(div, "nowrap");
         var inp = lord.node("input");
         inp.type = "text";
         inp.name = "voteVariant" + (lastN + 1);
@@ -168,6 +169,7 @@ lord.addVoteVariant = function() {
     var variants = lord.query("div > input", parent);
     var lastN = (variants && variants.length) ? +lord.last(variants).name.replace("voteVariant", "") : 0;
     var div = lord.node("div");
+    lord.addClass(div, "nowrap");
     var inp = lord.node("input");
     inp.type = "text";
     inp.name = "voteVariant" + (lastN + 1);
@@ -190,7 +192,7 @@ lord.removeVoteVariant = function(div) {
     var count = lord.nameOne("voteVariantCount", parent.parentNode);
     var i = 0;
     count.value = i;
-    lord.query("div > input", div).forEach(function(inp) {
+    lord.query("div > input", parent).forEach(function(inp) {
         ++i;
         inp.name = "voteVariant" + i;
         count.value = i;

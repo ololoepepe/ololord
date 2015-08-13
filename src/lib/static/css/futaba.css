@@ -2,19 +2,17 @@
     Base
 */
 
-@media only screen and (max-width: 768px) {
-    body {
-        -moz-text-size-adjust: 100%;
-        -webkit-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
-        text-size-adjust: 100%;
-        font-size: 16px;
-    }
-}
-
 body {
     background-color: #FFFFEE;
     color: #800000;
+}
+
+body.mobile {
+    -moz-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    font-size: 14px;
 }
 
 a {
@@ -91,6 +89,8 @@ hr {
     position: fixed;
     width: 600px;
     height: 600px;
+    max-width: 90%;
+    max-height: 90%;
     z-index: 9980;
     padding: 2px 2px 2px 2px;
 }
@@ -123,6 +123,40 @@ hr {
     border: 1px solid #800000;
 }
 
+.hidePostformRulesButton {
+    text-decoration: none;
+    margin-left: 30px;
+    cursor: pointer;
+}
+
+.hidePostformMarkupButton {
+    text-decoration: none;
+    text-align: right;
+    font-size: 0.7em;
+    margin-left: auto;
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.hiddenPostLink {
+    text-decoration: line-through;
+}
+
+.nowrap {
+    white-space: nowrap;
+}
+
+.postSequenceNumber {
+    color: red;
+    font-size: 75%;
+}
+
+.hiddenPostList > div:nth-child(even) {
+    background-color: #FFFFEE;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
 /*
     Ban
 */
@@ -148,9 +182,16 @@ hr {
     Board
 */
 
+#postForm {
+    overflow-x: auto;
+}
+
 blockquote {
-    margin-top: 5px;
-    margin-left: 10px;
+    margin-top: 14.4px;
+    margin-left: 25px;
+    margin-right: 25px;
+    margin-bottom: 14.4px;
+    padding-top: 10px;
     overflow-y: auto;
     overflow-x: auto;
     max-height: 300px;
@@ -214,6 +255,11 @@ span.newPostCount {
     white-space: nowrap;
 }
 
+.postformMarkup {
+    text-align: left;
+	font-size: 0.7em;
+}
+
 .postformRules {
     text-align: left;
 	font-size: 0.7em;
@@ -222,6 +268,60 @@ span.newPostCount {
 
 .quotation {
     color: #789922;
+}
+
+.fileByLinkButton {
+    cursor: pointer;
+}
+
+.cspoilerTitle {
+    cursor: pointer;
+    color: #E08060;
+}
+
+.cspoilerBody {
+    background-color: #F0D0B6;
+}
+
+/*
+    Catalog
+*/
+
+.catalogContainer {
+    box-sizing: border-box;
+    color: #800000;
+    padding-bottom: 0px;
+    padding-left: 0px;
+    padding-right: 0px;
+    padding-top: 0px;
+    text-align: center;
+}
+
+.catalogItem {
+    background-color: #F0E0D6;
+    box-sizing: border-box;
+    color: #800000;
+    display: inline-block;
+    height: 450px;
+    min-height: 450px;
+    margin-bottom: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    overflow: hidden;
+    padding-bottom: 5px;
+    padding-left: 5px;
+    padding-right: 5px;
+    padding-top: 5px;
+    position: relative;
+    text-align: center;
+    vertical-align:top;
+    width: 240px;
+    word-wrap: break-word;
+}
+
+.catalogItem:hover {
+    height: auto;
 }
 
 /*
@@ -279,6 +379,14 @@ span.newPostCount {
     margin-right: auto;
     text-align: center;
     white-space: nowrap;
+}
+
+.createAction > div {
+    display: inline-block;
+}
+
+.createAction > div > div {
+    display: block;
 }
 
 .postFormVisible {
@@ -342,16 +450,16 @@ span.newPostCount {
 
 .rules {
     background-color: #F0E0D6;
-    margin-left: 80px;
-    margin-right: 80px;
+    margin-left: 5%;
+    margin-right: 5%;
     padding-top: 10px;
     padding-left: 10px;
 }
 
 .news {
     background-color: #F0E0D6;
-    margin-left: 80px;
-    margin-right: 80px;
+    margin-left: 5%;
+    margin-right: 5%;
 }
 
 .sectionHeader {
@@ -410,6 +518,12 @@ span.newPostCount {
     margin-bottom: 4px;
     padding-top: 10px;
     padding-left: 10px;
+    width: 100%
+    overflow-x: auto;
+}
+
+.opPost {
+    overflow-x: auto;
 }
 
 .newPost {
@@ -445,6 +559,23 @@ span.newPostCount {
     color: #800000;
 }
 
+.postFileSize.mobile {
+    font-size: 0.6em;
+}
+
+/*.postFileFile.mobile {
+    -moz-transform: scale(0.7, 0.7);
+    -ms-transform: scale(0.7, 0.7);
+    -webkit-transform: scale(0.7, 0.7);
+    -o-transform: scale(0.7, 0.7);
+    transform: scale(0.7, 0.7);
+}*/
+
+.postFileFile > a > img.mumWatching:not(:hover) {
+    opacity: 0.05;
+    filter: alpha(opacity=5);
+}
+
 .postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img, .postFileSearch > form,
 .postHeader > span > form {
     opacity: 0.65;
@@ -457,7 +588,11 @@ span.newPostCount {
     filter: alpha(opacity=100);
 }
 
-.postActions > a, .postActions > form {
+.postToThread > a > button {
+    font-size: 1.2em;
+}
+
+.desktop.postActions > a, .desktop.postActions > form {
     display: none;
 }
 
@@ -466,11 +601,15 @@ span.newPostCount {
     filter: alpha(opacity=65);
 }
 
-.postActions:hover > a, .postActions:hover > form {
+.desktop.postActions:hover > a, .desktop.postActions:hover > form {
     display: inline;
 }
 
-.postActions:hover > img {
+.desktop.postActions:hover > img {
+    display: none;
+}
+
+.mobile.postActions > img {
     display: none;
 }
 
@@ -504,11 +643,25 @@ span.newPostCount {
 }
 
 .postSubject {
+    font-weight: bold;
     color: #CC1105;
+}
+
+.postSubject.mobile {
+    font-size: 0.8em;
+    display: block;
 }
 
 .tripcode {
     color: green;
+}
+
+.tripcode.mobile {
+    font-size: 0.8em;
+}
+
+.postDateTime.mobile {
+    font-size: 0.8em;
 }
 
 .moderName {
@@ -519,6 +672,10 @@ span.newPostCount {
 .userName {
     font-weight: bold;
     color: #117743;
+}
+
+.someName.mobile {
+    font-size: 0.8em;
 }
 
 .navigationButton {
@@ -540,6 +697,27 @@ span.newPostCount {
 
 .navigationButtonBottom {
     top: 30px;
+}
+
+.leafButton {
+    position: fixed;
+    top: 50%;
+    z-index: 9910;
+    opacity: 0.5;
+    filter: alpha(opacity=50);
+}
+
+.leafButton:hover {
+    opacity: 1;
+    filter: alpha(opacity=100);
+}
+
+.leafButtonPrevious {
+    left: 20px;
+}
+
+.leafButtonNext {
+    right: 20px;
 }
 
 .movableImage {
@@ -600,6 +778,22 @@ span.newPostCount {
     color: #707070;
 }
 
+ul.tabWidget > li {
+    display: inline;
+    background-color: #F0E0D6;
+    padding: 5px 10px 5px 10px;
+}
+
+ul.tabWidget > li > a {
+    color: #800000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+ul.tabWidget > li.activated {
+    background-color: #FFFFEE;
+}
+
 /*
     Rules
 */
@@ -616,6 +810,7 @@ span.newPostCount {
     margin-right: auto;
     text-align: right;
     white-space: nowrap;
+    overflow-x: auto;
 }
 
 /*
@@ -628,6 +823,7 @@ span.newPostCount {
     padding-bottom: 5px;
     text-align: left;
     white-spcace: nowrap;
+    overflow-x: auto;
 }
 
 /*
@@ -680,6 +876,7 @@ a.progressBlocking {
     margin-right: auto;
     text-align: left;
     white-space: nowrap;
+    overflow-x: auto;
 }
 
 .noNewPostsPopup {
@@ -718,6 +915,7 @@ a.progressBlocking {
     margin-right: auto;
     text-align: center;
     white-space: nowrap;
+    overflow-x: auto;
 }
 
 /* Vote */

@@ -1,6 +1,6 @@
 #include "editaudiotagsroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/editaudiotags.h"
 #include "database.h"
 #include "tools.h"

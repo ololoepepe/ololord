@@ -22,12 +22,12 @@
 
 <% template settings() %>
 <div class="settingsBar">
-    <span>
+    <span class="nowrap">
         <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/change_locale"
               enctype="multipart/form-data" class="inlineForm">
             <%= localeLabelText %>
             <% if ( content.mode.name != "ascetic" ) %>
-                <select id="localeChangeSelect" class="select" onchange="javascript:lord.changeLocale();">
+                <select id="localeChangeSelect" class="select" onchange="lord.changeLocale();">
             <% else %>
                 <select id="localeChangeSelect" name="localeChangeSelect" class="select">
             <% end %>
@@ -48,24 +48,32 @@
             <% end %>
         </form>
     </span>
-    <span>
+    <span class="nowrap">
         <% if ( content.mode.name != "ascetic" ) %>
-            <button class="button" onclick="javascript:lord.showSettings();"><%= settingsButtonText %></button>
+            <button class="button" onclick="lord.showSettings();"
+                    name="settingsButton"><%= settingsButtonText %></button>
         <% else %>
             <a href="/<%= sitePathPrefix %>settings"
                target="_blank"><button class="button"><%= settingsButtonText %></button></a>
         <% end %>
     </span>
-    <span>
+    <span class="nowrap">
         <% if ( content.mode.name != "ascetic" ) %>
-            <button class="button" onclick="javascript:lord.showFavorites();"><%= showFavoriteText %></button>
+            <button class="button" onclick="lord.showFavorites();"
+                    name="favoritesButton"><%= showFavoriteText %></button>
         <% end %>
     </span>
-    <span>
+    <span class="nowrap">
+        <% if ( content.mode.name != "ascetic" ) %>
+            <a onclick="lord.switchMumWatching();" name="switchMumWatchingButton"
+               title="<%= mumWatchingText %>"><img src="/<%= sitePathPrefix %>img/mum_not_watching.png"></a>
+        <% end %>
+    </span>
+    <span class="nowrap">
         <%= loginLabelText %>
         <% if ( content.loggedIn ) %>
             <% if ( content.mode.name != "ascetic" ) %>
-                <button class="button" onclick="javascript:lord.doLogout();"><%= loginButtonText %></button>
+                <button class="button" onclick="lord.doLogout();"><%= loginButtonText %></button>
             <% else %>
                 <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/logout"
                       enctype="multipart/form-data" class="inlineForm">
@@ -76,9 +84,9 @@
             <% if ( content.mode.name != "ascetic" ) %>
                 <input id="loginInput" type="password" class="input" name="hashpass"
                        placeholder="<%= loginPlaceholderText %>" />
-                <input id="showLoginCheckbox" type="checkbox" onclick="javascript:lord.switchShowLogin();"
+                <input id="showLoginCheckbox" type="checkbox" onclick="lord.switchShowLogin();"
                        name="showLogin" title="<%= showPasswordText %>" class="checkbox" />
-                <button class="button" onclick="javascript:lord.doLogin();"><%= loginButtonText %></button>
+                <button class="button" onclick="lord.doLogin();"><%= loginButtonText %></button>
             <% else %>
                 <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/login"
                       enctype="multipart/form-data" class="inlineForm">
@@ -134,7 +142,7 @@
             <% end %>
         </select>
         <% if ( content.mode.name != "ascetic" ) %>
-            <button class="button" onclick="javascript:lord.doSearch();"><%= searchButtonText %></button>
+            <button class="button" onclick="lord.doSearch();"><%= searchButtonText %></button>
         <% else %>
             <input type="submit" class="button" value="<%= searchButtonText %>" />
         <% end %>
@@ -144,8 +152,6 @@
 
 <% template baseTexts() %>
 <input type="hidden" id="sitePathPrefix" value="<%= sitePathPrefix %>" />
-<input type="hidden" id="siteDomain" value="<%= siteDomain %>" />
-<input type="hidden" id="siteProtocol" value="<%= siteProtocol %>" />
 <input type="hidden" id="showPasswordText" value="<%= showPasswordText %>" />
 <input type="hidden" id="cancelButtonText" value="<%= cancelButtonText %>" />
 <input type="hidden" id="closeButtonText" value="<%= closeButtonText %>" />
@@ -154,6 +160,8 @@
 <input type="hidden" id="favoriteThreadsText" value="<%= favoriteThreadsText %>" />
 <input type="hidden" id="settingsDialogTitle" value="<%= settingsDialogTitle %>" />
 <input type="hidden" id="error413Text" value="<%= error413Text %>" />
+<input type="hidden" id="hiddenPostListText" value="<%= hiddenPostListText %>" />
+<input type="hidden" id="removeFromHiddenPostListText" value="<%= removeFromHiddenPostListText %>" />
 <div id="settingsDialogTemplate" class="settingsDialog" style="display: none;">
     <fieldset>
         <legend><%= generalSettingsLegendText %></legend>
@@ -203,7 +211,7 @@
                     <td>
                         <%= timeLabelText %>
                     </td>
-                    <td>
+                    <td class="nowrap">
                         <select name="timeChangeSelect" class="select">
                             <% if ( content.currentTime == "local" ) %>
                                 <option value="server"><%= timeServerText %></option>
@@ -213,6 +221,8 @@
                                 <option value="local"><%= timeLocalText %></option>
                             <% end %>
                         </select>
+                        <%= timeZoneOffsetLabelText %>
+                        <input type="number" name="timeZoneOffset" min="-720" max="840" />
                     </td>
                 </tr>
                 <tr>
@@ -237,6 +247,19 @@
                 </tr>
                 <tr>
                     <td>
+                        <%= maxAllowedRatingLabelText %>
+                    </td>
+                    <td>
+                        <select name="ratingSelect" class="select">
+                            <option value="SFW">SFW</option>
+                            <option value="R-15">R-15</option>
+                            <option value="R-18">R-18</option>
+                            <option value="R-18G">R-18G</option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <%= draftsByDefaultLabelText %>
                     </td>
                     <td>
@@ -244,6 +267,18 @@
                             <input type="checkbox" name="draftsByDefault" value="true" checked="true" />
                         <% else %>
                             <input type="checkbox" name="draftsByDefault" value="true" />
+                        <% end %>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <%= hidePostformRulesLabelText %>
+                    </td>
+                    <td>
+                        <% if ( content.hidePostformRules ) %>
+                            <input type="checkbox" name="hidePostformRules" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="hidePostformRules" value="true" />
                         <% end %>
                     </td>
                 </tr>
@@ -278,61 +313,417 @@
     </fieldset>
     <fieldset>
         <legend><%= scriptSettingsLegendText %></legend>
-        <table>
-            <tbody>
-                <tr>
-                    <td>
-                        <%= quickReplyActionLabelText %>
-                    </td>
-                    <td>
-                        <select name="quickReplyActionSelect" class="select">
-                            <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
-                            <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
-                            <option value="append_post"><%= quickReplyActionAppendPostText %></option>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showNewPostsLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showNewPosts" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showYoutubeVideoTitleLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showYoutubeVideosTitles" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= checkFileExistenceLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="checkFileExistence" />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <%= showAttachedFilePreviewLabelText %>
-                    </td>
-                    <td>
-                        <input type="checkbox" name="showAttachedFilePreview" />
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <ul class="tabWidget nowrap">
+            <li name="1" class="activated"><a onclick="lord.activateTab(this, 1); return false;"><%= postsTabText %></a></li>
+            <li name="2" ><a onclick="lord.activateTab(this, 2); return false;"><%= filesTabText %></a></li>
+            <li name="3" ><a onclick="lord.activateTab(this, 3); return false;"><%= postformTabText %></a></li>
+            <li name="4" ><a onclick="lord.activateTab(this, 4); return false;"><%= hidingTabText %></a></li>
+            <li name="5" ><a onclick="lord.activateTab(this, 5); return false;"><%= otherTabText %></a></li>
+        </ul>
+        <div>
+            <table name="1">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= autoUpdateThreadsByDefaultLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="autoUpdateThreadsByDefault" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= autoUpdateIntervalLabelText %>
+                        </td>
+                        <td>
+                            <input type="number" min="1" name="autoUpdateInterval" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= showAutoUpdateTimerLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showAutoUpdateTimer" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= showAutoUpdateDesktopNotificationsLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showAutoUpdateDesktopNotifications" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table name="2" style="display: none;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= showLeafButtonsLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showLeafButtons" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= leafThroughImagesOnlyLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="leafThroughImagesOnly" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= imageZoomSensitivityLabelText %>
+                        </td>
+                        <td>
+                            <input type="number" min="1" name="imageZoomSensitivity" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= defaultAudioVideoVolumeLabelText %>
+                        </td>
+                        <td>
+                            <input type="number" min="0" max="100" name="defaultAudioVideoVolume" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table name="3" style="display: none;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= quickReplyActionLabelText %>
+                        </td>
+                        <td>
+                            <select name="quickReplyActionSelect" class="select">
+                                <option value="goto_thread"><%= quickReplyActionGotoThreadText %></option>
+                                <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
+                                <option value="append_post"><%= quickReplyActionAppendPostText %></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= checkFileExistenceLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="checkFileExistence" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= showAttachedFilePreviewLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showAttachedFilePreview" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= addToFavoritesOnReplyLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="addToFavoritesOnReply" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= hidePostformMarkupLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="hidePostformMarkup" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= stripExifFromJpegLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="stripExifFromJpeg" />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table name="4" style="display: none;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= hideTripcodesLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="hideTripcodes" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= hideUserNamesLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="hideUserNames" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= strikeOutHiddenPostLinksLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="strikeOutHiddenPostLinks" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= spellsLabelText %>
+                        </td>
+                        <td class="nowrap">
+                            <input type="checkbox" name="spellsEnabled" />
+                            <button class="button" onclick="lord.editSpells();"><%= editSpellsText %></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" class="nowrap">
+                            <button class="button"
+                                    onclick="lord.showHiddenPostList();"><%= showHiddenPostListText %></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table name="5" style="display: none;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <%= showNewPostsLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showNewPosts" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= showYoutubeVideoTitleLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="showYoutubeVideosTitles" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= hotkeysLabelText %>
+                        </td>
+                        <td class="nowrap">
+                            <input type="checkbox" name="hotkeysEnabled" />
+                            <button class="button" onclick="lord.editHotkeys();"><%= editHotkeysText %></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= userCssLabelText %>
+                        </td>
+                        <td class="nowrap">
+                            <input type="checkbox" name="userCssEnabled" />
+                            <button class="button" onclick="lord.editUserCss();"><%= editUserCssText %></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </fieldset>
 </div>
+<table id="hotkeysDialogTemplate" style="display: none;">
+    <tbody>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="previousPageImage"
+                       onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyPreviousPageImageLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="nextPageImage" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyNextPageImageLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="previousThreadPost"
+                       onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyPreviousThreadPostLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="nextThreadPost"
+                       onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyNextThreadPostLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="previousPost" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyPreviousPostLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="nextPost" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyNextPostLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="hidePost" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyHidePostLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="goToThread" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyGoToThreadLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="expandThread" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyExpandThreadLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="expandImage" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyExpandImageLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="quickReply" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyQuickReplyLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="submitReply" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeySubmitReplyLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="showFavorites" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyShowFavoritesLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="showSettings" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyShowSettingsLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="updateThread" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyUpdateThreadLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="markupBold" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyMarkupBoldLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="markupItalics" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyMarkupItalicsLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="markupStrikedOut" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyMarkupStrikedOutLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="markupUnderlined" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyMarkupUnderlinedLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="markupSpoiler" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyMarkupSpoilerLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="markupQuotation" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyMarkupQutationLabelText %>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <input type="text" readonly="true" name="markupCode" onkeypress="lord.assignHotkey(event, this);" />
+            </td>
+            <td>
+                – <%= hotkeyMarkupCodeLabelText %>
+            </td>
+        </tr>
+    </tbody>
+</table>
 <% end template %>
 
 <% template baseHead(bool javascript) %>
 <title><%= pageTitle %></title>
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+<% if ( "mobile" == content.deviceType ) %>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<% end %>
 <link id="favicon" rel="shortcut icon" href="/<%= sitePathPrefix %>favicon.ico">
 <link rel="stylesheet" type="text/css" href="/<%= sitePathPrefix %>css/<%= style.name %>.css">
 <% if ( javascript ) %>

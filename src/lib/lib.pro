@@ -8,8 +8,8 @@ VER_PAT = 0
 
 CONFIG += release
 
-QT = gui
-BEQT = core
+QT = gui xml
+BEQT = core sql
 
 include(../../prefix.pri)
 
@@ -17,7 +17,9 @@ DEFINES += OLOLORD_BUILD_LIB
 
 SOURCES += \
     cache.cpp \
+    controller.cpp \
     database.cpp \
+    markup.cpp \
     ololordapplication.cpp \
     search.cpp \
     settingslocker.cpp \
@@ -27,8 +29,10 @@ SOURCES += \
 
 HEADERS += \
     cache.h \
+    controller.h \
     database.h \
     global.h \
+    markup.h \
     ololordapplication.h \
     search.h \
     settingslocker.h \

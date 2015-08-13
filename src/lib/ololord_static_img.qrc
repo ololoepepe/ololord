@@ -291,5 +291,16 @@
         <file>static/img/question.png</file>
         <file>static/img/application_pdf_logo.png</file>
         <file>static/img/pdf_file.png</file>
+        <file>static/img/left.png</file>
+        <file>static/img/right.png</file>
+        <file>static/img/favorite_active.png</file>
+        <file>static/img/mum_watching.png</file>
+        <file>static/img/mum_not_watching.png</file>
+        <file>static/img/r-15.png</file>
+        <file>static/img/r-18.png</file>
+        <file>static/img/r-18g.png</file>
+        <file>static/img/catalog.png</file>
+        <file>static/img/rss.png</file>
+        <file>static/img/move.png</file>
     </qresource>
 </RCC>

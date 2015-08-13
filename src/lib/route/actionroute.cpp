@@ -1,7 +1,7 @@
 #include "actionroute.h"
 
 #include "board/abstractboard.h"
-#include "controller/controller.h"
+#include "controller.h"
 #include "database.h"
 #include "settingslocker.h"
 #include "tools.h"
@@ -99,6 +99,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("edit_post", &ActionRoute::handleEditPost);
         map.insert("login", &ActionRoute::handleLogin);
         map.insert("logout", &ActionRoute::handleLogout);
+        map.insert("move_thread", &ActionRoute::handleMoveThread);
         map.insert("set_thread_fixed", &ActionRoute::handleSetThreadFixed);
         map.insert("set_thread_opened", &ActionRoute::handleSetThreadOpened);
         map.insert("set_vote_opened", &ActionRoute::handleSetVoteOpened);
@@ -154,7 +155,10 @@ void ActionRoute::handleChangeSettings(const QString &action, const Tools::PostP
     setCookie("style", "styleChangeSelect", params);
     setCookie("time", "timeChangeSelect", params);
     setCookie("captchaEngine", "captchaEngineSelect", params);
-    setCookie("drafts_by_default", "draftsByDefault", params);
+    setCookie("maxAllowedRating", "ratingSelect", params);
+    setCookie("draftsByDefault", "draftsByDefault", params);
+    setCookie("hidePostformRules", "hidePostformRules", params);
+    setCookie("timeZoneOffset", "timeZoneOffset", params);
     QStringList hiddenBoards;
     foreach (const QString &key, params.keys()) {
         if (!key.startsWith("board_") || params.value(key).compare("true", Qt::CaseInsensitive))
@@ -174,6 +178,7 @@ void ActionRoute::handleCreatePost(const QString &action, const Tools::PostParam
     if (!testBoard(board.data(), action, params.value("board"), tq))
         return;
     board->createPost(application);
+    setCookie("markupMode", "markupMode", params);
 }
 
 void ActionRoute::handleCreateThread(const QString &action, const Tools::PostParameters &params,
@@ -183,6 +188,7 @@ void ActionRoute::handleCreateThread(const QString &action, const Tools::PostPar
     if (!testBoard(board.data(), action, params.value("board"), tq))
         return;
     board->createThread(application);
+    setCookie("markupMode", "markupMode", params);
 }
 
 void ActionRoute::handleDeleteFile(const QString &action, const Tools::PostParameters &params,
@@ -271,6 +277,9 @@ void ActionRoute::handleEditPost(const QString &action, const Tools::PostParamet
     p.subject = params.value("subject");
     p.text = params.value("text");
     p.draft = !params.value("draft").compare("true", Qt::CaseInsensitive);
+    QString mm = params.value("markupMode");
+    p.extendedWakabaMarkEnabled = mm.contains("ewm", Qt::CaseInsensitive);
+    p.bbCodeEnabled = mm.contains("bbc", Qt::CaseInsensitive);
     p.userData = board->editedPostUserData(params);
     QString err;
     p.error = &err;
@@ -279,6 +288,7 @@ void ActionRoute::handleEditPost(const QString &action, const Tools::PostParamet
         Tools::log(application, "action/" + action, "fail:" + err, logTarget);
         return;
     }
+    setCookie("markupMode", "markupMode", params);
     QString path = boardName + "/thread/" + QString::number(Database::postThreadNumber(boardName, postNumber))
             + ".html#" + QString::number(postNumber);
     redirect(path);
@@ -300,6 +310,29 @@ void ActionRoute::handleLogout(const QString &action, const Tools::PostParameter
     application.response().set_cookie(cppcms::http::cookie("hashpass", "", UINT_MAX, "/"));
     redirect();
     Tools::log(application, "action/" + action, "success");
+}
+
+void ActionRoute::handleMoveThread(const QString &action, const Tools::PostParameters &params,
+                                   const Translator::Qt &tq)
+{
+    QString sourceBoard = params.value("sourceBoard");
+    quint64 threadNumber = params.value("threadNumber").toULongLong();
+    QString targetBoard = params.value("targetBoard");
+    QString logTarget = sourceBoard + "/" + QString::number(threadNumber) + "/" + targetBoard;
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, sourceBoard)
+            || !Controller::testBanNonAjax(application, Controller::WriteAction, targetBoard)) {
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    }
+    QString err;
+    quint64 ntn = Database::moveThread(application.request(), sourceBoard, threadNumber, targetBoard, &err);
+    if (!ntn) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to move thread",
+                                                                 "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect(targetBoard + "/thread/" + QString::number(ntn) + ".html");
+    Tools::log(application, "action/" + action, "success", logTarget);
 }
 
 void ActionRoute::handleSetThreadFixed(const QString &action, const Tools::PostParameters &params,

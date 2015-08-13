@@ -1,6 +1,6 @@
 #include "homeroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/home.h"
 #include "tools.h"
 #include "translator.h"
@@ -30,7 +30,8 @@ void HomeRoute::handle()
     TranslatorStd ts(application.request());
     Controller::initBase(c, application.request(),
                          tq.translate("HomeRoute", "ololord - (almost) free communication", "pageTitle"));
-    c.custom = Tools::toStd(Tools::customContent("homepage", tq.locale()));
+    QString deviceType = Tools::isMobile(application.request()).any ? "mobile" : "desktop";
+    c.custom = Tools::toStd(Tools::customContent("homepage", tq.locale()).replace("%deviceType%", deviceType));
     foreach (const Tools::Friend &f, Tools::siteFriends()) {
         Content::Home::Friend ff;
         ff.name = Tools::toStd(f.name);

@@ -46,22 +46,7 @@ class locale;
 namespace Tools
 {
 
-struct File
-{
-    QByteArray data;
-    QString fileName;
-    QString formFieldName;
-    QString mimeType;
-};
-
-struct Friend
-{
-    QString name;
-    QString title;
-    QString url;
-};
-
-struct AudioTags
+struct OLOLORD_EXPORT AudioTags
 {
     QString album;
     QString artist;
@@ -69,8 +54,21 @@ struct AudioTags
     QString year;
 };
 
-typedef QList<File> FileList;
-typedef QList<Friend> FriendList;
+struct OLOLORD_EXPORT File
+{
+    QByteArray data;
+    QString fileName;
+    QString formFieldName;
+    QString mimeType;
+    int rating;
+};
+
+struct OLOLORD_EXPORT Friend
+{
+    QString name;
+    QString title;
+    QString url;
+};
 
 struct OLOLORD_EXPORT IpRange
 {
@@ -98,7 +96,45 @@ public:
     bool isValid() const;
 };
 
-struct Post
+struct OLOLORD_EXPORT IsMobile
+{
+    struct {
+        bool device;
+        bool phone;
+        bool tablet;
+    } amazon;
+    struct {
+        bool device;
+        bool phone;
+        bool tablet;
+    } android;
+    struct {
+        bool device;
+        bool ipod;
+        bool phone;
+        bool tablet;
+    } apple;
+    struct {
+        bool blackberry;
+        bool blackberry10;
+        bool device;
+        bool firefox;
+        bool opera;
+    } other;
+    struct {
+        bool device;
+        bool phone;
+        bool tablet;
+    } windows;
+    bool any;
+    bool phone;
+    bool sevenInch;
+    bool tablet;
+};
+
+typedef QList<File> FileList;
+
+struct OLOLORD_EXPORT Post
 {
     bool draft;
     QString email;
@@ -124,6 +160,7 @@ enum MaxInfo
     MaxLastPosts
 };
 
+typedef QList<Friend> FriendList;
 typedef QMap<QString, QString> GetParameters;
 typedef QMap<QString, QString> PostParameters;
 
@@ -133,12 +170,7 @@ OLOLORD_EXPORT QStringList acceptedExternalBoards();
 OLOLORD_EXPORT AudioTags audioTags(const QString &fileName);
 OLOLORD_EXPORT QString captchaQuotaFile();
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
-OLOLORD_EXPORT QString cityName(const QString &ip);
-OLOLORD_EXPORT QString cityName(const cppcms::http::request &req);
 OLOLORD_EXPORT QString cookieValue(const cppcms::http::request &req, const QString &name);
-OLOLORD_EXPORT QString countryCode(const QString &ip);
-OLOLORD_EXPORT QString countryCode(const cppcms::http::request &req);
-OLOLORD_EXPORT QString countryName(const QString &countryCode);
 OLOLORD_EXPORT QString customContent(const QString &prefix, const QLocale &l);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
 OLOLORD_EXPORT QString externalLinkRegexpPattern();
@@ -155,9 +187,11 @@ OLOLORD_EXPORT int ipBanLevel(const QString &ip);
 OLOLORD_EXPORT int ipBanLevel(const cppcms::http::request &req);
 OLOLORD_EXPORT bool isAudioType(const QString &mimeType);
 OLOLORD_EXPORT bool isImageType(const QString &mimeType);
+OLOLORD_EXPORT IsMobile isMobile(const cppcms::http::request &req);
 OLOLORD_EXPORT unsigned int ipNum(const QString &ip, bool *ok = 0);
 OLOLORD_EXPORT bool isSpecialThumbName(const QString &tn);
 OLOLORD_EXPORT bool isVideoType(const QString &mimeType);
+OLOLORD_EXPORT QString langName(const QString &id);
 OLOLORD_EXPORT QDateTime localDateTime(const QDateTime &dt, int offsetMinutes = -1000);
 OLOLORD_EXPORT QLocale locale(const cppcms::http::request &req,
                               const QLocale &defaultLocale = BCoreApplication::locale());
@@ -169,7 +203,9 @@ OLOLORD_EXPORT void log(const char *where, const std::exception &e);
 OLOLORD_EXPORT unsigned int maxInfo(MaxInfo m, const QString &boardName = QString());
 OLOLORD_EXPORT QString mimeType(const QByteArray &data, bool *ok = 0);
 OLOLORD_EXPORT QStringList news(const QLocale &l);
-OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request);
+OLOLORD_EXPORT FileList postFiles(const cppcms::http::request &request, const PostParameters &params,
+                                  const QString &baordName, bool *ok = 0, QString *error = 0,
+                                  const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT PostParameters postParameters(const cppcms::http::request &request);
 OLOLORD_EXPORT cppcms::json::value readJsonValue(const QString &fileName, bool *ok = 0);
 OLOLORD_EXPORT void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content);
@@ -184,7 +220,7 @@ OLOLORD_EXPORT int timeZoneMinutesOffset(const cppcms::http::request &req, int d
 OLOLORD_EXPORT QByteArray toHashpass(const QString &s, bool *ok = 0);
 OLOLORD_EXPORT cppcms::json::value toJson(const QVariant &v);
 OLOLORD_EXPORT Post toPost(const PostParameters &params, const FileList &files);
-OLOLORD_EXPORT Post toPost(const cppcms::http::request &req);
+OLOLORD_EXPORT Post toPost(const cppcms::http::request &req, const QString &boardName);
 OLOLORD_EXPORT std::locale toStd(const QLocale &l);
 OLOLORD_EXPORT std::string toStd(const QString &s);
 OLOLORD_EXPORT std::list<std::string> toStd(const QStringList &sl);

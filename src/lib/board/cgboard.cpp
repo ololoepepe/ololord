@@ -1,7 +1,7 @@
 #include "cgboard.h"
 
+#include "controller.h"
 #include "controller/cgboard.h"
-#include "controller/controller.h"
 #include "tools.h"
 #include "translator.h"
 

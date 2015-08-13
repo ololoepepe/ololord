@@ -44,7 +44,7 @@
             </script>
         <% end %>
     </head>
-    <body>
+    <body class="<%= deviceType %>">
         <div id="firstStageVideo" class="theVideo">
             <video id="theVideo" autoplay="on" loop="on">
                 <source src="/<%= sitePathPrefix %>video/<%= videoFileName %>" type="<%= videoType %>" />

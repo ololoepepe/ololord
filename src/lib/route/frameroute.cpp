@@ -1,6 +1,6 @@
 #include "frameroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/frame.h"
 #include "tools.h"
 #include "translator.h"

@@ -1,6 +1,6 @@
 #include "settingsroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/settings.h"
 #include "database.h"
 #include "search.h"

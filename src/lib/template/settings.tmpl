@@ -8,7 +8,7 @@
     <head>
         <% include baseHead(1) %>
     </head>
-    <body>
+    <body class="<%= deviceType %>">
         <% include baseTexts() %>
         <% include customHeader() %>
         <% include settings() %>
@@ -69,7 +69,7 @@
                             <td>
                                 <%= timeLabelText %>
                             </td>
-                            <td>
+                            <td class="nowrap">
                                 <select name="timeChangeSelect" class="select">
                                     <% if ( content.currentTime == "local" ) %>
                                         <option value="server"><%= timeServerText %></option>
@@ -79,6 +79,9 @@
                                         <option value="local"><%= timeLocalText %></option>
                                     <% end %>
                                 </select>
+                                <%= timeZoneOffsetLabelText %>
+                                <input type="number" name="timeZoneOffset" value="<%= timeZoneOffset %>"
+                                       min="-720" max="840" />
                             </td>
                         </tr>
                         <tr>
@@ -103,6 +106,37 @@
                         </tr>
                         <tr>
                             <td>
+                                <%= maxAllowedRatingLabelText %>
+                            </td>
+                            <td>
+                                <select name="ratingSelect" class="select">
+                                    <% if ( content.maxAllowedRating >= 180 ) %>
+                                        <option value="SFW">SFW</option>
+                                        <option value="R-15">R-15</option>
+                                        <option value="R-18">R-18</option>
+                                        <option value="R-18G" selected="true">R-18G</option>
+                                    <% elif ( content.maxAllowedRating >= 18 ) %>
+                                        <option value="SFW">SFW</option>
+                                        <option value="R-15">R-15</option>
+                                        <option value="R-18" selected="true">R-18</option>
+                                        <option value="R-18G">R-18G</option>
+                                    <% elif ( content.maxAllowedRating >= 15 ) %>
+                                        <option value="SFW">SFW</option>
+                                        <option value="R-15" selected="true">R-15</option>
+                                        <option value="R-18">R-18</option>
+                                        <option value="R-18G">R-18G</option>
+                                    <% else %>
+                                        <option value="SFW" selected="true">SFW</option>
+                                        <option value="R-15">R-15</option>
+                                        <option value="R-18">R-18</option>
+                                        <option value="R-18G">R-18G</option>
+                                    <% end %>
+                                </select>
+                                <img src="/<%= sitePathPrefix %>img/question.png" title="<%= ratingTooltip %>">
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
                                 <%= draftsByDefaultLabelText %>
                             </td>
                             <td>
@@ -110,6 +144,18 @@
                                     <input type="checkbox" name="draftsByDefault" value="true" checked="true" />
                                 <% else %>
                                     <input type="checkbox" name="draftsByDefault" value="true" />
+                                <% end %>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <%= hidePostformRulesLabelText %>
+                            </td>
+                            <td>
+                                <% if ( content.hidePostformRules ) %>
+                                    <input type="checkbox" name="hidePostformRules" value="true" checked="true" />
+                                <% else %>
+                                    <input type="checkbox" name="hidePostformRules" value="true" />
                                 <% end %>
                             </td>
                         </tr>

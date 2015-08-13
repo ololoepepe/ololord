@@ -1,6 +1,6 @@
 #include "banuserroute.h"
 
-#include "controller/controller.h"
+#include "controller.h"
 #include "controller/banuser.h"
 #include "database.h"
 #include "tools.h"

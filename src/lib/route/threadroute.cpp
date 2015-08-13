@@ -1,7 +1,7 @@
 #include "threadroute.h"
 
 #include "board/abstractboard.h"
-#include "controller/controller.h"
+#include "controller.h"
 #include "tools.h"
 
 #include <QDebug>

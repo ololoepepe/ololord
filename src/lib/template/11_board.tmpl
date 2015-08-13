@@ -6,7 +6,7 @@
 <% foreach thread in threads %>
     <% item %>
         <hr />
-        <div id="thread<%= thread.opPost.number %>">
+        <div id="thread<%= thread.opPost.number %>" class="thread">
             <% include post(thread.opPost, thread.self()) %>
         </div>
         <% if ( thread.omittedPosts() > 0 ) %>
@@ -22,14 +22,13 @@
         <% end %>
         </div>
     <% end %>
-<% empty %>
 <% end %>
 <% end template %>
 
 <% template pages() %>
 <div class="pages">
     <% if ( content.currentPage > 0 ) %>
-        <span class="pagesItem">
+        <span class="pagesItem metaPage">
         <% if ( 1 == content.currentPage ) %>
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= toPreviousPageText %></a>]
         <% else %>
@@ -41,22 +40,24 @@
     <% end %>
     <% foreach page in pages %>
         <% item %>
-            <span class="pagesItem">
             <% if ( page != content.currentPage ) %>
-                <% if ( page > 0 ) %>
-                    [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= page %>.html"><%= page %></a>]
-                <% else %>
-                    [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= page %></a>]
-                <% end %>
+                <span class="pagesItem">
+                    <% if ( page > 0 ) %>
+                        [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= page %>.html"><%= page %></a>]
+                    <% else %>
+                        [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>"><%= page %></a>]
+                    <% end %>
+                </span>
             <% else %>
-                [<b><%= page %></b>]
+                <span class="pagesItem currentPage">
+                    [<b><%= page %></b>]
+                </span>
             <% end %>
-            </span>
         <% end %>
     <% empty %>
     <% end %>
     <% if ( content.currentPage < content.pages.size() - 1 ) %>
-        <span class="pagesItem">
+        <span class="pagesItem metaPage">
             [<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/<%= nextPage() %>.html"><%= toNextPageText %></a>]
         </span>
     <% end %>
@@ -70,7 +71,7 @@
         <% include baseHead(1) %>
         <% include boardHead() %>
     </head>
-    <body>
+    <body class="<%= deviceType %>">
         <% include baseTexts() %>
         <% if ( content.mode.name != "ascetic" ) %>
             <% include boardTexts() %>
@@ -78,6 +79,8 @@
         <input type="hidden" id="lastPostNumber" value="<%= lastPostNumber %>" />
         <% include customHeader() %>
         <% include navigationButton("bottom") %>
+        <% include leafButton("previous") %>
+        <% include leafButton("next") %>
         <% include navigationButton("top") %>
         <a id="top"></a>
         <% include settings() %>
@@ -93,7 +96,11 @@
             <h1>
                 <%= currentBoard.title %>
                 <sup>[<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/rules.html"
-                         title="<%= boardRulesLinkText %>">?</a>]</sup>
+                         title="<%= boardRulesLinkText %>"><img src="/<%= sitePathPrefix %>img/question.png"></a>]</sup>
+                <sup>[<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/catalog.html"
+                         title="<%= boardCatalogLinkText %>"><img src="/<%= sitePathPrefix %>img/catalog.png"></a>]</sup>
+                <sup>[<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/rss.xml" target="_blank"
+                         title="<%= boardRssLinkText %>"><img src="/<%= sitePathPrefix %>img/rss.png"></a>]</sup>
             </h1>
         </div>
         <% if ( content.postingEnabled ) %>

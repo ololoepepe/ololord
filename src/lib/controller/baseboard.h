@@ -25,6 +25,7 @@ struct OLOLORD_EXPORT BanLevel
 struct OLOLORD_EXPORT File
 {
     std::string size;
+    std::string sizeKB;
     std::string sizeTooltip;
     int sizeX;
     int sizeY;
@@ -33,6 +34,7 @@ struct OLOLORD_EXPORT File
     int thumbSizeX;
     int thumbSizeY;
     std::string type;
+    int rating;
     std::string audioTagAlbum;
     std::string audioTagArtist;
     std::string audioTagTitle;
@@ -54,6 +56,8 @@ struct OLOLORD_EXPORT Post
     };
 public:
     bool bannedFor;
+    bool bumpLimitReached;
+    bool postLimitReached;
     std::string cityName;
     bool closed;
     std::string countryName;
@@ -64,6 +68,7 @@ public:
     bool fixed;
     std::string flagName;
     std::string ip;
+    std::string markupMode;
     std::string modificationDateTime;
     std::string name;
     std::string nameRaw;
@@ -76,6 +81,7 @@ public:
     std::string rawSubject;
     std::list<Ref> referencedBy;
     std::list<Ref> refersTo;
+    unsigned int sequenceNumber;
     bool showRegistered;
     std::string subject;
     bool subjectIsRaw;
@@ -88,16 +94,29 @@ public:
 
 struct OLOLORD_EXPORT BaseBoard : public Base
 {
+    struct Lang
+    {
+        std::string id;
+        std::string name;
+    };
+    struct MarkupMode
+    {
+        std::string name;
+        std::string title;
+    };
+public:
     std::string action;
     std::string addFileText;
     std::string addThreadToFavoritesText;
     std::string addToPlaylistText;
     std::string ajaxErrorText;
+    std::string attachFileByLinkText;
     std::string audioTagAlbumText;
     std::string audioTagArtistText;
     std::string audioTagTitleText;
     std::string audioTagYearText;
     std::list<AbstractBoard::BoardInfo> availableBoards;
+    std::list<Lang> availableLangs;
     std::string banExpiresLabelText;
     std::string banLevelLabelText;
     std::list<BanLevel> banLevels;
@@ -120,6 +139,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string complainMessage;
     std::string complainText;
     AbstractBoard::BoardInfo currentBoard;
+    MarkupMode currentMarkupMode;
     unsigned long long currentThread;
     std::string deleteFileText;
     std::string deletePostText;
@@ -133,14 +153,34 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string enterPasswordTitle;
     std::string expandVideoText;
     std::string fileExistsOnServerText;
+    std::string fileTooLargeWarningText;
     std::string findSourceWithGoogleText;
     std::string findSourceWithIqdbText;
     std::string fixedText;
     std::string fixThreadText;
+    std::string hideByImageText;
+    std::string hidePostformMarkupText;
+    std::string hidePostformRulesText;
     std::string hidePostFormText;
+    std::string internalErrorText;
     std::string kilobytesText;
+    std::string linkLabelText;
+    std::string loadingPostsText;
+    std::string markupBold;
+    std::string markupCode;
+    std::string markupItalics;
+    std::string markupLang;
+    std::list<MarkupMode> markupModes;
+    std::string markupQuotation;
+    std::string markupSpoiler;
+    std::string markupStrikedOut;
+    std::string markupSubscript;
+    std::string markupSuperscript;
+    std::string markupUnderlined;
+    std::string markupUrl;
     unsigned int maxEmailLength;
     unsigned int maxFileCount;
+    unsigned int maxFileSize;
     unsigned int maxNameLength;
     unsigned int maxSubjectLength;
     unsigned int maxPasswordLength;
@@ -148,8 +188,12 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string megabytesText;
     int moder;
     std::string modificationDateTimeText;
+    std::string moveThreadText;
+    std::string moveThreadWarningText;
+    std::string nextFileText;
     std::string noCaptchaText;
     std::string notLoggedInText;
+    std::string noTokenInTableErrorText;
     std::string openThreadText;
     std::string postActionsText;
     std::string postFormButtonSubmit;
@@ -159,6 +203,7 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postFormLabelCaptcha;
     std::string postFormLabelDraft;
     std::string postFormLabelEmail;
+    std::string postFormLabelMarkupMode;
     std::string postFormLabelName;
     std::string postFormLabelPassword;
     std::string postFormLabelRaw;
@@ -167,23 +212,29 @@ struct OLOLORD_EXPORT BaseBoard : public Base
     std::string postFormLabelTripcode;
     std::list<std::string> postformRules;
     std::string postFormTextPlaceholder;
+    std::string postFormTooltipDraft;
     std::string postingDisabledText;
     bool postingEnabled;
     std::string postingSpeed;
     std::string postingSpeedText;
     std::string postLimitReachedText;
+    std::string previousFileText;
     std::string quickReplyText;
+    std::string ratingLabelText;
     std::string referencedByText;
     std::string registeredText;
     std::string removeFileText;
     std::string selectFileText;
     std::string showHidePostText;
+    std::string showPostformMarkupText;
+    std::string showPostformRulesText;
     std::string showPostFormText;
     bool showWhois;
     std::string supportedFileTypes;
     std::string toBottomText;
     std::string toThread;
     std::string toTopText;
+    std::string unexpectedEndOfTokenListErrorText;
     std::string unfixThreadText;
     std::string youtubeApiKey;
 public:

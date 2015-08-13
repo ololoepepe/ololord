@@ -38,6 +38,7 @@ lord._defineEnum("RpcGetNewPostsId");
 lord._defineEnum("RpcGetPostId");
 lord._defineEnum("RpcGetThreadNumbersId");
 lord._defineEnum("RpcGetYandexCaptchaImageId");
+lord._defineEnum("RpcMoveThreadId");
 lord._defineEnum("RpcSetThreadFixedId");
 lord._defineEnum("RpcSetThreadOpenedId");
 lord._defineEnum("RpcSetVoteOpenedId");
@@ -48,8 +49,22 @@ lord._defineEnum("RpcVoteId");
 
 lord.popups = [];
 lord.unloading = false;
+lord.leftChain = [];
+lord.rightChain = [];
 
 /*Functions*/
+
+lord.isAudioType = function(type) {
+    return type in {"audio/mpeg": true, "audio/ogg": true, "audio/wav": true};
+};
+
+lord.isImageType = function(type) {
+    return type in {"image/gif": true, "image/jpeg": true, "image/png": true};
+};
+
+lord.isVideoType = function(type) {
+    return type in {"video/mp4": true, "video/ogg": true, "video/webm": true};
+};
 
 lord.getCookie = function(name) {
     var matches = document.cookie.match(
@@ -139,7 +154,7 @@ lord.arr = function(obj) {
 lord.hasOwnProperties = function(obj) {
     if (!obj)
         return false;
-    for (x in obj) {
+    for (var x in obj) {
         if (obj.hasOwnProperty(x))
             return true;
     }
@@ -149,16 +164,85 @@ lord.hasOwnProperties = function(obj) {
 lord.forIn = function(obj, f) {
     if (!obj || typeof f != "function")
         return;
-    for (x in obj) {
+    for (var x in obj) {
         if (obj.hasOwnProperty(x))
             f(obj[x], x);
     }
+};
+
+lord.removeChildren = function(obj) {
+    if (!obj || typeof obj.removeChild != "function")
+        return;
+    while (obj.firstChild)
+        obj.removeChild(obj.firstChild);
 };
 
 lord.last = function(arr) {
     if (!arr || !arr.length)
         return null;
     return arr[arr.length - 1];
+};
+
+lord.equal = function(x, y) {
+    var p;
+    if (isNaN(x) && isNaN(y) && typeof x === "number" && typeof y === "number")
+        return true;
+    if (x === y)
+        return true;
+    if ((typeof x === "function" && typeof y === "function") ||
+        (x instanceof Date && y instanceof Date) ||
+        (x instanceof RegExp && y instanceof RegExp) ||
+        (x instanceof String && y instanceof String) ||
+        (x instanceof Number && y instanceof Number)) {
+        return x.toString() === y.toString();
+    }
+    if (!(x instanceof Object && y instanceof Object))
+        return false;
+    if (x.isPrototypeOf(y) || y.isPrototypeOf(x))
+        return false;
+    if (x.constructor !== y.constructor)
+        return false;
+    if (x.prototype !== y.prototype)
+        return false;
+    if (lord.leftChain.indexOf(x) > -1 || lord.rightChain.indexOf(y) > -1)
+         return false;
+    for (p in y) {
+        if (y.hasOwnProperty(p) !== x.hasOwnProperty(p))
+            return false;
+        else if (typeof y[p] !== typeof x[p])
+            return false;
+    }
+    for (p in x) {
+        if (y.hasOwnProperty(p) !== x.hasOwnProperty(p))
+            return false;
+        else if (typeof y[p] !== typeof x[p])
+            return false;
+        switch (typeof (x[p])) {
+        case "object":
+        case "function":
+            lord.leftChain.push(x);
+            lord.rightChain.push(y);
+            if (!equal(x[p], y[p]))
+                return false;
+            lord.leftChain.pop();
+            lord.rightChain.pop();
+            break;
+        default:
+            if (x[p] !== y[p])
+                return false;
+            break;
+        }
+    }
+    return true;
+};
+
+lord.regexp = function(s) {
+    if (!s || typeof s != "string")
+        return null;
+    var m = s.match("/((\\\\/|[^/])+?)/(i(gm?|mg?)?|g(im?|mi?)?|m(ig?|gi?)?)?");
+    if (!m)
+        return null;
+    return new RegExp(m[1], m[3]);
 };
 
 lord.id = function(id) {
@@ -203,9 +287,23 @@ lord.nameOne = function(name, parent) {
 };
 
 lord.contains = function(s, subs) {
-    if (typeof s != "string" || typeof subs != "string")
+    if (typeof s == "string" && typeof subs == "string")
+        return s.replace(subs, "") != s;
+    var arr = lord.arr(s);
+    if (!arr || !arr.length || arr.length < 1)
         return false;
-    return s.replace(subs, "") != s;
+    arr.forEach(function(v) {
+        if (lord.equal(v, subs))
+            return true;
+    });
+    return false;
+};
+
+lord.isInViewport = function(el) {
+    var rect = el.getBoundingClientRect();
+    return (rect.top >= 0 && rect.left >= 0
+        && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight)
+        && rect.right <= (window.innerWidth || document.documentElement.clientWidth));
 };
 
 lord.addClass = function(element, classNames) {
@@ -248,12 +346,19 @@ lord.node = function(type, text) {
     return ("TEXT" == type) ? document.createTextNode(text ? text : "") : document.createElement(type);
 };
 
-lord.toCenter = function(element, sizeHintX, sizeHintY) {
+lord.toCenter = function(element, sizeHintX, sizeHintY, border) {
     var doc = document.documentElement;
-    if (!sizeHintX || sizeHintX <= 0)
+    sizeHintX = +sizeHintX;
+    sizeHintY = +sizeHintY;
+    if (isNaN(sizeHintX) || sizeHintX <= 0)
         sizeHintX = +element.offsetWidth;
-    if (!sizeHintY  || sizeHintY <= 0)
+    if (isNaN(sizeHintY)  || sizeHintY <= 0)
         sizeHintY = +element.offsetHeight;
+    borded = +border;
+    if (!isNaN(border)) {
+        sizeHintX += border * 2;
+        sizeHintY += border * 2;
+    }
     element.style.left = (doc.clientWidth / 2 - sizeHintX / 2) + "px";
     element.style.top = (doc.clientHeight / 2 - sizeHintY / 2) + "px";
 };
@@ -292,6 +397,19 @@ lord.showPopup = function(text, options) {
             lord.popups[i].style.top = top + "px";
         }
     }, timeout);
+};
+
+lord.showNotification = function(title, body, icon) {
+    if (!("Notification" in window))
+        return;
+    Notification.requestPermission(function(permission) {
+        if (permission !== "granted")
+            return;
+        var notification = new Notification(title, {
+            "body": body,
+            "icon": icon
+        });
+    });
 };
 
 lord.showDialog = function(title, label, body, callback, afterShow) {
@@ -335,7 +453,14 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
     div2.appendChild(ok);
     root.appendChild(div2);
     dialog = picoModal({
-        "content": root
+        "content": root,
+        "modalStyles": function (styles) {
+            styles.maxHeight = "80%";
+            styles.maxWidth = "80%";
+            styles.overflow = "auto";
+            styles.border = "1px solid #777777";
+            return styles;
+        }
     }).afterShow(function(modal) {
         if (!!afterShow)
             afterShow();
@@ -364,7 +489,7 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                 if (!!err) {
                     lord.showPopup(err, {type: "critical"});
                     if (typeof errorCallback == "function")
-                        errorCallback();
+                        errorCallback(err);
                     return;
                 }
                 if (typeof callback == "function")
@@ -381,7 +506,7 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                     }
                     lord.showPopup(text, {type: "critical"});
                     if (typeof errorCallback == "function")
-                        errorCallback();
+                        errorCallback(text);
                 }
             }
         }
@@ -399,4 +524,199 @@ lord.toHashpass = function(s) {
     var hash = CryptoJS.SHA1(s).toString(CryptoJS.enc.Hex);
     var parts = hash.match(/.{1,8}/g);
     return parts.join("-");
+};
+
+lord.generateImageHash = function(imageData, sizeX, sizeY) {
+    sizeX = +sizeX;
+    sizeY = +sizeY;
+    if (!imageData || isNaN(sizeX) || isNaN(sizeY))
+        return null;
+    var buf = new Uint8Array(imageData);
+    var oldw = sizeX;
+    var oldh = sizeY;
+    var size = oldw * oldh;
+    for (var i = 0, j = 0; i < size; i++, j += 4)
+        buf[i] = buf[j] * 0.3 + buf[j + 1] * 0.59 + buf[j + 2] * 0.11;
+    var newh = 8;
+    var neww = 8;
+    var levels = 3;
+    var areas = 256 / levels;
+    var values = 256 / (levels - 1);
+    var hash = 0;
+    for (var i = 0; i < newh; i++) {
+        for (var j = 0; j < neww; j++) {
+            var tmp = i / (newh - 1) * (oldh - 1);
+            var l = Math.min(tmp | 0, oldh - 2);
+            var u = tmp - l;
+            tmp = j / (neww - 1) * (oldw - 1);
+            var c = Math.min(tmp | 0, oldw - 2);
+            var t = tmp - c;
+            var first = buf[l * oldw + c] * ((1 - t) * (1 - u));
+            first += buf[l * oldw + c + 1] * (t * (1 - u));
+            first += buf[(l + 1) * oldw + c + 1] * (t * u);
+            first += buf[(l + 1) * oldw + c] * ((1 - t) * u);
+            first /= areas;
+            first = values * (first | 0);
+            hash = (hash << 4) + Math.min(first, 255);
+            var g = hash & 4026531840;
+            if (g)
+                hash ^= g >>> 24;
+            hash &= ~g;
+        }
+    }
+    return hash;
+};
+
+lord.getImageBase64Data = function(img) {
+    if (!img)
+        return null;
+    var canvas = lord.node("canvas");
+    canvas.width = img.width;
+    canvas.height = img.height;
+    var ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0);
+    var dataURL = canvas.toDataURL("image/png");
+    return dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+};
+
+lord.base64ToArrayBuffer = function(base64) {
+    var binaryString = atob(base64);
+    var len = binaryString.length;
+    var bytes = new Uint8Array(len);
+    for (var i = 0; i < len; i++)
+        bytes[i] = binaryString.charCodeAt(i);
+    return bytes.buffer;
+};
+
+lord.getPlainText = function(node) {
+    if (!node)
+        return "";
+    function normalize(a) {
+        if (!a)
+            return "";
+        a = a.replace(/ +/g, " ").replace(/[\t]+/gm, "").replace(/[ ]+$/gm, "").replace(/^[ ]+/gm, "");
+        a = a.replace(/\n+/g, "\n").replace(/\n+$/, "").replace(/^\n+/, "").replace(/\nNEWLINE\n/g, "\n\n");
+        return a.replace(/NEWLINE\n/g, "\n\n");
+    }
+    function removeWhiteSpace(node) {
+        var isWhite = function(node) {
+            return !(/[^\t\n\r ]/.test(node.nodeValue));
+        };
+        var ws = [];
+        var findWhite = function(node) {
+            for(var i = 0; i < node.childNodes.length; i++) {
+                var n = node.childNodes[i];
+                if (n.nodeType == 3 && isWhite(n))
+                    ws.push(n);
+                else if (n.hasChildNodes())
+                    findWhite(n);
+            }
+        };
+        findWhite(node);
+        for(var i = 0; i < ws.length; i++)
+            ws[i].parentNode.removeChild(ws[i]);
+    }
+    function sty(n, prop) {
+        if (n.style[prop])
+            return n.style[prop];
+        var s = n.currentStyle || n.ownerDocument.defaultView.getComputedStyle(n, null);
+        if (n.tagName == "SCRIPT")
+            return "none";
+        if(!s[prop])
+            return ("LI,P,TR".indexOf(n.tagName) > -1) ? "block" : n.style[prop];
+        if (s[prop] =="block" && n.tagName=="TD")
+            return "feaux-inline";
+        return s[prop];
+    }
+    var blockTypeNodes = "table-row,block,list-item";
+    function isBlock(n) {
+        var s = sty(n, "display") || "feaux-inline";
+        if (blockTypeNodes.indexOf(s) > -1)
+            return true;
+        return false;
+    }
+    function recurse(n) {
+        if (/pre/.test(sty(n, "whiteSpace"))) {
+            t += n.innerHTML.replace(/\t/g, " ").replace(/\n/g, " ");
+            return "";
+        }
+        var s = sty(n, "display");
+        if (s == "none")
+            return "";
+        var gap = isBlock(n) ? "\n" : " ";
+        t += gap;
+        for (var i = 0; i < n.childNodes.length; i++) {
+            var c = n.childNodes[i];
+            if (c.nodeType == 3)
+                t += c.nodeValue;
+            if (c.childNodes.length)
+                recurse(c);
+        }
+        t += gap;
+        return t;
+    }
+    node = node.cloneNode(true);
+    node.innerHTML = node.innerHTML.replace(/<br>/g, "\n");
+    var paras = node.getElementsByTagName("p");
+    for (var i = 0; i < paras.length; i++)
+        paras[i].innerHTML += "NEWLINE";
+    var t = "";
+    removeWhiteSpace(node);
+    return normalize(recurse(node));
+};
+
+lord.activateTab = function(a, tabIndex, display) {
+    if (!a)
+        return;
+    tabIndex = +tabIndex;
+    if (isNaN(tabIndex))
+        return;
+    var tab = a.parentNode;
+    var header = tab.parentNode;
+    var widget = header.nextSibling.nextSibling;
+    var page = lord.nameOne(tabIndex, widget);
+    if (typeof display != "string")
+        display = "block";
+    lord.arr(widget.childNodes).forEach(function(node) {
+        if (node.nodeType != 1) //Element
+            return;
+        node.style.display = ((node == page) ? display : "none");
+    });
+    lord.arr(header.childNodes).forEach(function(node) {
+        if (node.nodeType != 1) //Element
+            return;
+        if (node == tab)
+            lord.addClass(node, "activated");
+        else
+            lord.removeClass(node, "activated");
+    });
+};
+
+lord.notificationsEnabled = function() {
+    return lord.getLocalObject("showAutoUpdateDesktopNotifications", false);
+};
+
+lord.nearlyEqual = function(a, b, epsilon) {
+    var absA = Math.abs(a);
+    var absB = Math.abs(b);
+    var diff = Math.abs(a - b);
+    if (a == b) {
+        return true;
+    } else if (a == 0 || b == 0 || diff < Number.MIN_VALUE) {
+        return diff < (epsilon * Number.MIN_VALUE);
+    } else {
+        return diff / (absA + absB) < epsilon;
+    }
+};
+
+lord.createUuid = function() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+        var r = (Math.random() * 16) | 0;
+        var v = (c == "x") ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+};
+
+lord.hash = function() {
+    return window.location.hash.substr(1, window.location.hash.length - 1);
 };

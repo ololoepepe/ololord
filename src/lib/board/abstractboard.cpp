@@ -9,13 +9,15 @@
 #include "board/rpgboard.h"
 #include "cache.h"
 #include "captcha/abstractcaptchaengine.h"
+#include "controller.h"
 #include "controller/baseboard.h"
 #include "controller/board.h"
-#include "controller/controller.h"
+#include "controller/catalog.h"
 #include "controller/editpost.h"
 #include "controller/rules.h"
 #include "controller/thread.h"
 #include "database.h"
+#include "markup.h"
 #include "plugin/global/boardfactoryplugininterface.h"
 #include "settingslocker.h"
 #include "stored/postcounter.h"
@@ -90,7 +92,7 @@ static void scaleThumbnail(QImage &img, AbstractBoard::FileTransaction &ft)
     ft.setThumbFileSize(img.height(), img.width());
 }
 
-static bool threadLessThan(const Thread &t1, const Thread &t2)
+static bool threadLessThanByDate(const Thread &t1, const Thread &t2)
 {
     if (t1.fixed() == t2.fixed())
         return t1.dateTime().toUTC() > t2.dateTime().toUTC();
@@ -98,6 +100,11 @@ static bool threadLessThan(const Thread &t1, const Thread &t2)
         return true;
     else
         return false;
+}
+
+static bool threadGreaterThanByPosts(const Thread &t1, const Thread &t2)
+{
+    return t1.posts().size() > t2.posts().size();
 }
 
 AbstractBoard::FileTransaction::FileTransaction(AbstractBoard *board) :
@@ -132,7 +139,7 @@ QList<AbstractBoard::FileInfo> AbstractBoard::FileTransaction::fileInfos() const
 }
 
 void AbstractBoard::FileTransaction::addInfo(const QString &mainFileName, const QByteArray &hash,
-                                             const QString &mimeType, int size)
+                                             const QString &mimeType, int size, int rating)
 {
     FileInfo fi;
     if (!mainFileName.isEmpty())
@@ -140,6 +147,7 @@ void AbstractBoard::FileTransaction::addInfo(const QString &mainFileName, const 
     fi.hash = hash;
     fi.mimeType = mimeType;
     fi.size = size;
+    fi.rating = rating;
     minfos << fi;
 }
 
@@ -510,9 +518,16 @@ void AbstractBoard::addFile(cppcms::application &app)
     QString logTarget = name();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "add_file", "fail:ban", logTarget);
+    TranslatorQt tq(req);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req);
+    bool ok = false;
     QString err;
+    Tools::FileList files = Tools::postFiles(req, params, name(), &ok, &err);
+    if (!ok) {
+        Controller::renderError(app, tq.translate("AbstractBoard", "Attached file error", "error"), err);
+        Tools::log(app, "add_file", "fail:" + err, logTarget);
+        return;
+    }
     if (!Controller::testAddFileParams(this, app, params, files, &err))
         return Tools::log(app, "add_file", "fail:" + err, logTarget);
     QString desc;
@@ -619,12 +634,18 @@ void AbstractBoard::createPost(cppcms::application &app)
     QString logTarget = name();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_post", "fail:ban", logTarget);
+    TranslatorQt tq(req);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req);
+    bool ok = false;
     QString err;
+    Tools::FileList files = Tools::postFiles(req, params, name(), &ok, &err);
+    if (!ok) {
+        Controller::renderError(app, tq.translate("AbstractBoard", "Attached file error", "error"), err);
+        Tools::log(app, "create_post", "fail:" + err, logTarget);
+        return;
+    }
     if (!Controller::testParams(this, app, params, files, true, &err))
         return Tools::log(app, "create_post", "fail:" + err, logTarget);
-    TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
         Controller::renderError(app, err,
@@ -660,12 +681,18 @@ void AbstractBoard::createThread(cppcms::application &app)
     QString logTarget = name();
     if (!Controller::testBan(app, Controller::WriteAction, name()))
         return Tools::log(app, "create_thread", "fail:ban", logTarget);
+    TranslatorQt tq(req);
     Tools::PostParameters params = Tools::postParameters(req);
-    Tools::FileList files = Tools::postFiles(req);
+    bool ok = false;
     QString err;
+    Tools::FileList files = Tools::postFiles(req, params, name(), &ok, &err);
+    if (!ok) {
+        Controller::renderError(app, tq.translate("AbstractBoard", "Attached file error", "error"), err);
+        Tools::log(app, "create_thread", "fail:" + err, logTarget);
+        return;
+    }
     if (!Controller::testParams(this, app, params, files, false, &err))
         return Tools::log(app, "create_thread", "fail:" + err, logTarget);
-    TranslatorQt tq(req);
     if (!postingEnabled()) {
         QString err = tq.translate("AbstractBoard", "Posting disabled", "error");
         Controller::renderError(app, err,
@@ -751,7 +778,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
                 list.removeAt(i);
             }
         }
-        qSort(list.begin(), list.end(), &threadLessThan);
+        qSort(list.begin(), list.end(), &threadLessThanByDate);
         pageCount = (list.size() / threadsPerPage()) + ((list.size() % threadsPerPage()) ? 1 : 0);
         if (!pageCount)
             pageCount = 1;
@@ -772,19 +799,24 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             bool ok = false;
             QString err;
             thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+            thread.opPost.sequenceNumber = 1;
             if (!ok) {
                 Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                 Tools::log(app, "board", "fail:" + err, logTarget);
                 return;
             }
             unsigned int maxPosts = Tools::maxInfo(Tools::MaxLastPosts, name());
-            foreach (int i, bRangeR(posts.size() - 1, 1)) {
-                Post post = *posts.at(i).load();
+            unsigned int i = posts.size();
+            foreach (int j, bRangeR(posts.size() - 1, 1)) {
+                Post post = *posts.at(j).load();
                 if (post.draft() && hashpass != post.hashpass()
                         && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
                     continue;
                 }
-                thread.lastPosts.push_front(toController(post, app.request(), &ok, &err));
+                Content::Post p = toController(post, app.request(), &ok, &err);
+                p.sequenceNumber = i;
+                --i;
+                thread.lastPosts.push_front(p);
                 if (!ok) {
                     Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                     Tools::log(app, "board", "fail:" + err, logTarget);
@@ -796,7 +828,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             c.threads.push_back(thread);
         }
         c.lastPostNumber = Database::lastPostNumber(name());
-    }  catch (const odb::exception &e) {
+    } catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
         Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         Tools::log(app, "board", "fail:" + err, logTarget);
@@ -808,6 +840,8 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         Tools::log(app, "board", "fail:" + err, logTarget);
         return;
     }
+    c.boardCatalogLinkText = ts.translate("AbstractBoard", "Threads catalog", "boardCatalogLinkText");
+    c.boardRssLinkText = ts.translate("AbstractBoard", "RSS feed", "boardRssLinkText");
     c.boardRulesLinkText = ts.translate("AbstractBoard", "Borad rules", "boardRulesLinkText");
     c.currentPage = page;
     c.omittedPostsText = ts.translate("AbstractBoard", "Posts omitted:", "omittedPostsText");
@@ -818,6 +852,86 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     beforeRenderBoard(app.request(), cc.data());
     Tools::render(app, viewName, c);
     Tools::log(app, "board", "success", logTarget);
+}
+
+void AbstractBoard::handleCatalog(cppcms::application &app)
+{
+    QString logTarget = name();
+    if (!Controller::testBanNonAjax(app, Controller::ReadAction, name()))
+        return Tools::log(app, "catalog", "fail:ban", logTarget);
+    TranslatorQt tq(app.request());
+    TranslatorStd ts(app.request());
+    QString viewName;
+    QScopedPointer<Content::Catalog> cc(createCatalogController(app.request(), viewName));
+    if (cc.isNull()) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "catalog", "fail:" + err, logTarget);
+        return;
+    }
+    if (viewName.isEmpty())
+        viewName = "catalog";
+    Content::Catalog &c = *cc;
+    Tools::GetParameters params = Tools::getParameters(app.request());
+    QString sortBy = params.value("sort");
+    bool sortByBumps = !sortBy.compare("bumps", Qt::CaseInsensitive);
+    try {
+        Transaction t;
+        if (!t) {
+            QString err = tq.translate("AbstractBoard", "Internal database error", "description");
+            Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+            Tools::log(app, "catalog", "fail:" + err, logTarget);
+            return;
+        }
+        odb::query<Thread> q = odb::query<Thread>::board == name() && odb::query<Thread>::archived == false;
+        QByteArray hashpass = Tools::hashpass(app.request());
+        bool modOnBoard = Database::moderOnBoard(app.request(), name());
+        QList<Thread> list = Database::query<Thread, Thread>(q);
+        int lvl = Database::registeredUserLevel(app.request());
+        foreach (int i, bRangeR(list.size() - 1, 0)) {
+            Post opPost = *list.at(i).posts().first().load();
+            if (opPost.draft() && opPost.hashpass() != hashpass
+                    && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
+                list.removeAt(i);
+            }
+        }
+        qSort(list.begin(), list.end(), sortByBumps ? &threadGreaterThanByPosts : &threadLessThanByDate);
+        foreach (const Thread &tt, list) {
+            Content::Catalog::Thread thread;
+            const Thread::Posts &posts = tt.posts();
+            thread.replyCount = posts.size() - 1;
+            bool ok = false;
+            QString err;
+            thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+            thread.opPost.sequenceNumber = 1;
+            if (!ok) {
+                Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+                Tools::log(app, "catalog", "fail:" + err, logTarget);
+                return;
+            }
+            c.threads.push_back(thread);
+        }
+    } catch (const odb::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "catalog", "fail:" + err, logTarget);
+        return;
+    }
+    QString pageTitle = tq.translate("AbstractBoard", "Catalog", "pageTitle") + " - " + title(ts.locale());
+    if (!Controller::initBaseBoard(c, app.request(), this, true, pageTitle)) {
+        QString err = tq.translate("AbstractBoard", "Internal logic error", "description");
+        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        Tools::log(app, "catalog", "fail:" + err, logTarget);
+        return;
+    }
+    c.replyCountLabelText = ts.translate("AbstractBoard", "Reply count:", "replyCountLabelText");
+    c.sortingMode = sortByBumps ? "bumps" : "date";
+    c.sortingModeBumpsLabelText = ts.translate("AbstractBoard", "Bump count", "sortingModeLabelText");
+    c.sortingModeDateLabelText = ts.translate("AbstractBoard", "Creation date", "sortingModeLabelText");
+    c.sortingModeLabelText = ts.translate("AbstractBoard", "Sort by:", "sortingModeLabelText");
+    beforeRenderCatalog(app.request(), cc.data());
+    Tools::render(app, viewName, c);
+    Tools::log(app, "catalog", "success", logTarget);
 }
 
 void AbstractBoard::handleEditPost(cppcms::application &app, quint64 postNumber)
@@ -860,6 +974,28 @@ void AbstractBoard::handleEditPost(cppcms::application &app, quint64 postNumber)
     Controller::initBase(c, app.request(), tq.translate("AbstractBoard", "Edit post", "pageTitle"));
     TranslatorStd ts(app.request());
     c.currentBoardName = Tools::toStd(name());
+    QMap<QString, Content::EditPost::MarkupMode> mmmap;
+    Content::EditPost::MarkupMode mm;
+    mm.name = "none";
+    mm.title = ts.translate("AbstractBoard", "No markup", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "ewm_only";
+    mm.title = ts.translate("AbstractBoard", "Extended WakabaMark only", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "bbc_only";
+    mm.title = ts.translate("AbstractBoard", "bbCode only", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    mm.name = "ewm_and_bbc";
+    mm.title = ts.translate("AbstractBoard", "Extended WakabaMark and bbCode", "markupMode name");
+    mmmap.insert(Tools::fromStd(mm.name), mm);
+    c.markupModes.push_back(mm);
+    QString mmc = Tools::fromStd(p.markupMode);
+    if (mmc.isEmpty())
+        mmc = "ewm_and_bbc";
+    c.currentMarkupMode = mmmap.value(mmc);
     c.draft = p.draft;
     c.draftsEnabled = draftsEnabled();
     c.email = p.email;
@@ -875,6 +1011,7 @@ void AbstractBoard::handleEditPost(cppcms::application &app, quint64 postNumber)
     c.name = p.rawName;
     c.postFormLabelDraft = ts.translate("AbstractBoard", "Draft:", "postFormLabelDraft");
     c.postFormLabelEmail = ts.translate("AbstractBoard", "E-mail:", "postFormLabelEmail");
+    c.postFormLabelMarkupMode = ts.translate("AbstractBoard", "Markup mode:", "postFormLabelMarkupMode");
     c.postFormLabelName = ts.translate("AbstractBoard", "Name:", "postFormLabelName");
     c.postFormLabelRaw = ts.translate("AbstractBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("AbstractBoard", "Subject:", "postFormLabelSubject");
@@ -987,15 +1124,20 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         bool ok = false;
         QString err;
         c.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+        c.opPost.sequenceNumber = 1;
         if (!ok)
             return Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+        unsigned int i = 2;
         foreach (int j, bRangeD(1, posts.size() - 1)) {
             Post post = *posts.at(j).load();
             if (post.draft() && hashpass != post.hashpass()
                     && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
                 continue;
             }
-            c.posts.push_back(toController(post, app.request(), &ok, &err));
+            Content::Post p = toController(post, app.request(), &ok, &err);
+            p.sequenceNumber = i;
+            ++i;
+            c.posts.push_back(p);
             if (!ok) {
                 Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                 Tools::log(app, "thread", "fail:" + err, logTarget);
@@ -1156,7 +1298,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         suffix = suffixes.value(mimeType);
     QString sfn = path + "/" + dt + "." + suffix;
     QByteArray hash = QCryptographicHash::hash(f.data, QCryptographicHash::Sha1);
-    ft.addInfo(sfn, hash, mimeType, f.data.size());
+    ft.addInfo(sfn, hash, mimeType, f.data.size(), f.rating);
     if (!BDirTools::writeFile(sfn, f.data))
         return false;
     QImage img;
@@ -1358,11 +1500,20 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->bannedFor = post.bannedFor();
         p->email = Tools::toStd(post.email());
         p->number = post.number();
+        p->sequenceNumber = 0;
         p->rawSubject = Tools::toStd(post.subject());
         p->subject = p->rawSubject;
         p->subjectIsRaw = false;
         p->rawName = Tools::toStd(post.name());
         p->draft = post.draft();
+        if (post.extendedWakabaMarkEnabled() && post.bbCodeEnabled())
+            p->markupMode = "ewm_and_bbc";
+        else if (post.extendedWakabaMarkEnabled())
+            p->markupMode = "ewm_only";
+        else if (post.bbCodeEnabled())
+            p->markupMode = "bbc_only";
+        else
+            p->markupMode = "none";
         p->userData = post.userData();
         quint64 threadNumber = 0;
         try {
@@ -1377,11 +1528,13 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 QSharedPointer< ::FileInfo > fis = fi.load();
                 f.type = Tools::toStd(fis->mimeType());
                 f.sourceName = Tools::toStd(fis->name());
-                QString sz = QString::number(fis->size() / BeQt::Kilobyte) + "KB";
+                f.sizeKB = Tools::toStd(QString::number(double(fis->size()) / double(BeQt::Kilobyte)));
+                QString sz = QString::number(double(fis->size()) / double(BeQt::Kilobyte), 'f', 2) + "KB";
                 f.sizeX = fis->width();
                 f.sizeY = fis->height();
                 f.thumbSizeX = fis->thumbWidth();
                 f.thumbSizeY = fis->thumbHeight();
+                f.rating = fis->rating();
                 if (fis->mimeType().startsWith("image/") || fis->mimeType().startsWith("video/")) {
                     if (f.sizeX > 0 && f.sizeY > 0)
                         sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
@@ -1430,6 +1583,8 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             bool op = (post.number() == threadNumber);
             p->fixed = op && thread->fixed();
             p->closed = op && !thread->postingEnabled();
+            p->bumpLimitReached = op && thread->posts().size() >= int(bumpLimit());
+            p->postLimitReached = op && thread->posts().size() >= int(postLimit());
             typedef QLazySharedPointer<PostReference> PostReferenceSP;
             foreach (PostReferenceSP reference, post.referencedBy()) {
                 QSharedPointer<Post> rp = reference.load()->sourcePost().load();
@@ -1458,12 +1613,10 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         p->showRegistered = false;
         p->showTripcode = post.showTripcode();
         if (showWhois()) {
-            QString countryCode = Tools::countryCode(post.posterIp());
-            p->flagName = Tools::toStd(Tools::flagName(countryCode));
+            p->flagName = Tools::toStd(Tools::flagName(post.countryCode()));
             if (!p->flagName.empty()) {
-                p->countryName = Tools::toStd(Tools::countryName(countryCode));
-                if (SettingsLocker()->value("Board/guess_city_name", true).toBool())
-                    p->cityName = Tools::toStd(Tools::cityName(post.posterIp()));
+                p->countryName = Tools::toStd(post.countryName());
+                p->cityName = Tools::toStd(post.cityName());
             } else {
                 p->flagName = "default.png";
                 p->countryName = "Unknown country";
@@ -1500,11 +1653,13 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
         pp.modificationDateTime = Tools::toStd(l.toString(Tools::dateTime(post.modificationDateTime(), req),
                                                           DateTimeFormat));
     }
-    pp.name = Tools::toStd(Controller::toHtml(post.name()));
-    if (pp.name.empty())
-        pp.name = "<span class=\"userName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
-    else
+    pp.name = Tools::toStd(Markup::toHtml(post.name()));
+    if (pp.name.empty()) {
+        pp.name = "<span class=\"userName defaultUserName\">" + Tools::toStd(Markup::toHtml(defaultUserName(l)))
+                + "</span>";
+    } else {
         pp.name = "<span class=\"userName\">" + pp.name + "</span>";
+    }
     pp.nameRaw = Tools::toStd(post.name());
     if (pp.nameRaw.empty())
         pp.nameRaw = Tools::toStd(defaultUserName(l));
@@ -1517,13 +1672,15 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             if (lvl >= RegisteredUser::AdminLevel)
                 name = post.name();
             else if (lvl >= RegisteredUser::ModerLevel)
-                name = "<span class=\"moderName\">" + Controller::toHtml(post.name()) + "</span>";
+                name = "<span class=\"moderName\">" + Markup::toHtml(post.name()) + "</span>";
             else if (lvl >= RegisteredUser::UserLevel)
-                name = "<span class=\"userName\">" + Controller::toHtml(post.name()) + "</span>";
+                name = "<span class=\"userName\">" + Markup::toHtml(post.name()) + "</span>";
         }
         pp.name = Tools::toStd(name);
-        if (pp.name.empty())
-            pp.name = "<span class=\"userName\">" + Tools::toStd(Controller::toHtml(defaultUserName(l))) + "</span>";
+        if (pp.name.empty()) {
+            pp.name = "<span class=\"userName defaultUserName\">"
+                    + Tools::toStd(Markup::toHtml(defaultUserName(l))) + "</span>";
+        }
         hashpass += SettingsLocker()->value("Site/tripcode_salt").toString().toUtf8();
         QByteArray tripcode = QCryptographicHash::hash(hashpass, QCryptographicHash::Md5);
         pp.tripcode = Tools::toStd("!" + QString::fromLatin1(tripcode.toBase64()).left(10));
@@ -1537,6 +1694,8 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["bannedFor"] = post.bannedFor;
     o["cityName"] = post.cityName;
     o["closed"] = post.closed;
+    o["bumpLimitReached"] = post.bumpLimitReached;
+    o["postLimitReached"] = post.postLimitReached;
     o["countryName"] = post.countryName;
     o["dateTime"] = post.dateTime;
     o["modificationDateTime"] = post.modificationDateTime;
@@ -1547,6 +1706,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
         cppcms::json::object f;
         f["type"] = file.type;
         f["size"] = file.size;
+        f["sizeKB"] = file.sizeKB;
         f["sizeTooltip"] = file.sizeTooltip;
         f["thumbSizeX"] = file.thumbSizeX;
         f["thumbSizeY"] = file.thumbSizeY;
@@ -1554,6 +1714,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
         f["sizeY"] = file.sizeY;
         f["sourceName"] = file.sourceName;
         f["thumbName"] = file.thumbName;
+        f["rating"] = file.rating;
         f["audioTagAlbum"] = file.audioTagAlbum;
         f["audioTagArtist"] = file.audioTagArtist;
         f["audioTagTitle"] = file.audioTagTitle;
@@ -1564,6 +1725,7 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["fixed"] = post.fixed;
     o["flagName"] = post.flagName;
     o["ip"] = post.ip;
+    o["markupMode"] = post.markupMode;
     o["name"] = post.name;
     o["nameRaw"] = post.nameRaw;
     o["number"] = post.number;
@@ -1608,6 +1770,11 @@ void AbstractBoard::beforeRenderBoard(const cppcms::http::request &/*req*/, Cont
     //
 }
 
+void AbstractBoard::beforeRenderCatalog(const cppcms::http::request &/*req*/, Content::Catalog */*c*/)
+{
+    //
+}
+
 void AbstractBoard::beforeRenderEditPost(const cppcms::http::request &/*req*/, Content::EditPost */*c*/,
                                          const Content::Post &/*post*/)
 {
@@ -1622,6 +1789,11 @@ void AbstractBoard::beforeRenderThread(const cppcms::http::request &/*req*/, Con
 Content::Board *AbstractBoard::createBoardController(const cppcms::http::request &/*req*/, QString &/*viewName*/)
 {
     return new Content::Board;
+}
+
+Content::Catalog *AbstractBoard::createCatalogController(const cppcms::http::request &/*req*/, QString &/*viewName*/)
+{
+    return new Content::Catalog;
 }
 
 Content::EditPost *AbstractBoard::createEditPostController(const cppcms::http::request &/*req*/, QString &/*viewName*/)

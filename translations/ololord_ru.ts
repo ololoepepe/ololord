@@ -461,6 +461,71 @@ By default, the date of first site launch is used.</source>
         <comment>postFormTextPlaceholder</comment>
         <translation>Комментарий. Макс. длина %1</translation>
     </message>
+    <message>
+        <source>Attached file error</source>
+        <comment>error</comment>
+        <translation>Ошибка прикрепленного файла</translation>
+    </message>
+    <message>
+        <source>Catalog</source>
+        <comment>pageTitle</comment>
+        <translation>Каталог</translation>
+    </message>
+    <message>
+        <source>Threads catalog</source>
+        <comment>boardCatalogLinkText</comment>
+        <translation>Каталог тредов</translation>
+    </message>
+    <message>
+        <source>Reply count:</source>
+        <comment>replyCountLabelText</comment>
+        <translation>Ответов:</translation>
+    </message>
+    <message>
+        <source>Bump count</source>
+        <comment>sortingModeLabelText</comment>
+        <translation>Количеству бампов</translation>
+    </message>
+    <message>
+        <source>Creation date</source>
+        <comment>sortingModeLabelText</comment>
+        <translation>Дате создания</translation>
+    </message>
+    <message>
+        <source>Sort by:</source>
+        <comment>sortingModeLabelText</comment>
+        <translation>Сортировать по:</translation>
+    </message>
+    <message>
+        <source>RSS feed</source>
+        <comment>boardRssLinkText</comment>
+        <translation>Лента RSS</translation>
+    </message>
+    <message>
+        <source>No markup</source>
+        <comment>markupMode name</comment>
+        <translation>Без разметки</translation>
+    </message>
+    <message>
+        <source>Extended WakabaMark only</source>
+        <comment>markupMode name</comment>
+        <translation>Только расширенная WakabaMark</translation>
+    </message>
+    <message>
+        <source>bbCode only</source>
+        <comment>markupMode name</comment>
+        <translation>Только bbCode</translation>
+    </message>
+    <message>
+        <source>Extended WakabaMark and bbCode</source>
+        <comment>markupMode name</comment>
+        <translation>Расширенная WakabaMark и bbCode</translation>
+    </message>
+    <message>
+        <source>Markup mode:</source>
+        <comment>postFormLabelMarkupMode</comment>
+        <translation>Режим разметки:</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -615,6 +680,11 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Не удалось отредактировать пост</translation>
     </message>
+    <message>
+        <source>Failed to move thread</source>
+        <comment>error</comment>
+        <translation>Не удалось перенести тред</translation>
+    </message>
 </context>
 <context>
     <name>AddFileRoute</name>
@@ -768,6 +838,72 @@ Apperas in the HTML pages.</source>
         <source>Codecha - programmers&apos; CAPTCHA</source>
         <comment>title</comment>
         <translation>Codecha - программистская CAPTCHA</translation>
+    </message>
+</context>
+<context>
+    <name>Database::generateRss</name>
+    <message>
+        <source>Feed</source>
+        <comment>channel title</comment>
+        <translation>Лента</translation>
+    </message>
+    <message>
+        <source>Last posts from board</source>
+        <comment>channel description</comment>
+        <translation>Последние посты доски</translation>
+    </message>
+    <message>
+        <source>New thread</source>
+        <comment>item title</comment>
+        <translation>Новый тред</translation>
+    </message>
+    <message>
+        <source>Reply to thread</source>
+        <comment>item title</comment>
+        <translation>Ответ в тред</translation>
+    </message>
+</context>
+<context>
+    <name>Database::moveThread</name>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Source and target boards are the same</source>
+        <comment>error</comment>
+        <translation>Исходная и целевая борды совпадают</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>No such thread</source>
+        <comment>error</comment>
+        <translation>Нет такого треда</translation>
+    </message>
+    <message>
+        <source>Internal file system error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка файловой системы</translation>
     </message>
 </context>
 <context>
@@ -1011,16 +1147,6 @@ Apperas in the HTML pages.</source>
         <translation>подчеркнутый текст</translation>
     </message>
     <message>
-        <source>Each line starts with a special symbol and a space</source>
-        <comment>listDescription</comment>
-        <translation>Каждая строка начинается со специального символа и пробела</translation>
-    </message>
-    <message>
-        <source>monospace `font` with backtics inside</source>
-        <comment>doubleMonospace</comment>
-        <translation>моноширинный `шрифт` с кавычками</translation>
-    </message>
-    <message>
         <source>Link to a post on another board</source>
         <comment>postBoardLinkDescription</comment>
         <translation>Ссылка на пост с другой доски</translation>
@@ -1029,11 +1155,6 @@ Apperas in the HTML pages.</source>
         <source>Link to a post on the same board</source>
         <comment>postLinkDescription</comment>
         <translation>Ссылка на пост с текущей доски</translation>
-    </message>
-    <message>
-        <source>monospace font</source>
-        <comment>singleMonospace</comment>
-        <translation>моноширинный шрифт</translation>
     </message>
     <message>
         <source>quotation</source>
@@ -1091,6 +1212,99 @@ text</source>
         <source>quadriple hyphen</source>
         <comment>quadripleHyphen</comment>
         <translation>четырехкратный дефис</translation>
+    </message>
+    <message>
+        <source>subscript</source>
+        <comment>subscriptText</comment>
+        <translation>индекс</translation>
+    </message>
+    <message>
+        <source>superscript</source>
+        <comment>superscriptText</comment>
+        <translation>верхний индекс</translation>
+    </message>
+    <message>
+        <source>collapsible spoiler text</source>
+        <comment>cspoilerText</comment>
+        <translation>текст скрываемого спойлера</translation>
+    </message>
+    <message>
+        <source>collapsible spoiler title</source>
+        <comment>cspoilerTitle</comment>
+        <translation>заголовок скрываемого спойлера</translation>
+    </message>
+    <message>
+        <source>monospace font</source>
+        <comment>monospace</comment>
+        <translation>моноширинный шрифт</translation>
+    </message>
+    <message>
+        <source>no markup</source>
+        <comment>nomarkup</comment>
+        <translation>без разметки</translation>
+    </message>
+    <message>
+        <source>monospace \`` font with escaped \`` characters</source>
+        <comment>monospaceEscaped</comment>
+        <translation>моноширинный \&apos;&apos; шрифт с экранированными \&apos;&apos; символами</translation>
+    </message>
+    <message>
+        <source>no markup \&apos;&apos; with escaped \&apos;&apos; characters</source>
+        <comment>nomarkupEscaped</comment>
+        <translation>без разметки \&apos;&apos; с экранированными \&apos;&apos; символами</translation>
+    </message>
+</context>
+<context>
+    <name>MoveThreadRoute</name>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Board name is empty</source>
+        <comment>description</comment>
+        <translation>Пустое имя доски</translation>
+    </message>
+    <message>
+        <source>Invalid thread number</source>
+        <comment>error</comment>
+        <translation>Неверный номер треда</translation>
+    </message>
+    <message>
+        <source>Thread number is null</source>
+        <comment>description</comment>
+        <translation>Нулевой номер треда</translation>
+    </message>
+    <message>
+        <source>Unknown board</source>
+        <comment>error</comment>
+        <translation>Неизвестная доска</translation>
+    </message>
+    <message>
+        <source>There is no such board</source>
+        <comment>description</comment>
+        <translation>Нет такой доски</translation>
+    </message>
+    <message>
+        <source>Move thread</source>
+        <comment>pageTitle</comment>
+        <translation>Перенести тред</translation>
+    </message>
+    <message>
+        <source>Warning: post numbers will be changed, and so will the post references. But the raw post text will not bechanged, so be careful when editing posts in moved thread.</source>
+        <comment>moveThreadWarningText</comment>
+        <translation>Предупреждение: номера постов будут изменены, и ссылки на посты - тоже. Однако, исходный текст не будет изменен, поэтому будьте внимательны при редактировании постов в перенесенных тредах.</translation>
     </message>
 </context>
 <context>
@@ -1173,6 +1387,14 @@ text</source>
         <source>Settings</source>
         <comment>pageTitle</comment>
         <translation>Настройки</translation>
+    </message>
+</context>
+<context>
+    <name>Tools::postFiles</name>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
     </message>
 </context>
 <context>
@@ -2206,6 +2428,11 @@ Your choice:</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>Internal logic error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка в логике программы</translation>
+    </message>
 </context>
 <context>
     <name>initBase</name>
@@ -2405,11 +2632,6 @@ Your choice:</source>
         <translation>Скрыть доски:</translation>
     </message>
     <message>
-        <source>Show new posts:</source>
-        <comment>showNewPostsLabelText</comment>
-        <translation>Показывать новые посты:</translation>
-    </message>
-    <message>
         <source>Show titles of YouTube videos:</source>
         <comment>showYoutubeVideoTitleLabelText</comment>
         <translation>Показывать названия видео с YouTube:</translation>
@@ -2466,6 +2688,292 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
 Погоди секундочку. Система логина НЕ СОХРАНЯЕТ никаких данных на сервере. Она только хранит cookie на вашем ПК, что позволяет редактировать, удалять посты и т.д. без ввода пароля каждый раз, и ничего более.
 
 Ну, на самом деле админ может кого-то зарегистрировать вручную (если он мудак), но способ зарегистрироваться через веб-интерфейс отсутствует.</translation>
+    </message>
+    <message>
+        <source>Leaf through images only:</source>
+        <comment>leafThroughImagesOnlyLabelText</comment>
+        <translation>Пролистывать только картинки:</translation>
+    </message>
+    <message>
+        <source>Show file leaf buttons:</source>
+        <comment>showLeafButtonsLabelText</comment>
+        <translation>Показывать кнопки пролистывания файлов:</translation>
+    </message>
+    <message>
+        <source>Image zoom sensitivity, %:</source>
+        <comment>imageZoomSensitivityLabelText</comment>
+        <translation>Чувствительность зума картинок, %:</translation>
+    </message>
+    <message>
+        <source>Auto update interval (sec):</source>
+        <comment>autoUpdateIntervalLabelText</comment>
+        <translation>Интервал автообновленияы (сек):</translation>
+    </message>
+    <message>
+        <source>Auto update threads by default:</source>
+        <comment>autoUpdateThreadsByDefaultLabelText</comment>
+        <translation>По умолчанию автоматически обновлять треды:</translation>
+    </message>
+    <message>
+        <source>Show auto update timer:</source>
+        <comment>showAutoUpdateTimerLabelText</comment>
+        <translation>Показывать таймер автообновления:</translation>
+    </message>
+    <message>
+        <source>Show desktop notifications:</source>
+        <comment>showAutoUpdateDesktopNotificationsLabelText</comment>
+        <translation>Показывать уведомления на рабочем столе:</translation>
+    </message>
+    <message>
+        <source>Files</source>
+        <comment>filesTabText</comment>
+        <translation>Файлы</translation>
+    </message>
+    <message>
+        <source>Other</source>
+        <comment>otherTabText</comment>
+        <translation>Прочее</translation>
+    </message>
+    <message>
+        <source>Hide postform rules:</source>
+        <comment>hidePostformRulesLabelText</comment>
+        <translation>Скрывать правила под формой ответа:</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <comment>editUserCssText</comment>
+        <translation>Редактировать</translation>
+    </message>
+    <message>
+        <source>User CSS:</source>
+        <comment>userCssLabelText</comment>
+        <translation>Пользовательские CSS:</translation>
+    </message>
+    <message>
+        <source>Hide tripcodes:</source>
+        <comment>hideTripcodesLabelText</comment>
+        <translation>Скрывать трипкоды:</translation>
+    </message>
+    <message>
+        <source>Hiding</source>
+        <comment>hidingTabText</comment>
+        <translation>Скрытие</translation>
+    </message>
+    <message>
+        <source>Hide user names:</source>
+        <comment>hideUserNamesLabelText</comment>
+        <translation>Скрывать имена пользователей:</translation>
+    </message>
+    <message>
+        <source>Strike out links to hidden posts:</source>
+        <comment>strikeOutHiddenPostLinksLabelText</comment>
+        <translation>Зачеркивать ссылки на скрытые посты:</translation>
+    </message>
+    <message>
+        <source>Postform and posting</source>
+        <comment>postformTabText</comment>
+        <translation>Форма и постинг</translation>
+    </message>
+    <message>
+        <source>Posts and threads</source>
+        <comment>postsTabText</comment>
+        <translation>Посты и треды</translation>
+    </message>
+    <message>
+        <source>Show new post count near board names:</source>
+        <comment>showNewPostsLabelText</comment>
+        <translation>Показывать количество новых постов рядом с именами борд:</translation>
+    </message>
+    <message>
+        <source>Default audio and video files volume:</source>
+        <comment>defaultAudioVideoVolumeLabelText</comment>
+        <translation>Громкость аудио- и видеофайлов по умолчанию:</translation>
+    </message>
+    <message>
+        <source>Add thread to favorites on reply:</source>
+        <comment>addToFavoritesOnReplyLabelText</comment>
+        <translation>Добавлять тред в избранное при ответе:</translation>
+    </message>
+    <message>
+        <source>Hide postform markup:</source>
+        <comment>hidePostformMarkupLabelText</comment>
+        <translation>Скрывать разметку под формой ответа:</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <comment>editHotkeysText</comment>
+        <translation>Редактировать</translation>
+    </message>
+    <message>
+        <source>Previous page/file</source>
+        <comment>hotkeyPreviousPageImageLabelText</comment>
+        <translation>Предыдущая страница/файл</translation>
+    </message>
+    <message>
+        <source>Previous thread (on board)/post (in thread)</source>
+        <comment>hotkeyPreviousThreadPostLabelText</comment>
+        <translation>Предыдущий тред (на доске)/пост (в треде)</translation>
+    </message>
+    <message>
+        <source>Next page/file</source>
+        <comment>hotkeyNextPageImageLabelText</comment>
+        <translation>Следующая страница/файл</translation>
+    </message>
+    <message>
+        <source>Next thread (on board)/post (in thread)</source>
+        <comment>hotkeyNextThreadPostLabelText</comment>
+        <translation>Следующий тред (на доске)/пост (в треде)</translation>
+    </message>
+    <message>
+        <source>Hotkeys:</source>
+        <comment>hotkeysLabelText</comment>
+        <translation>Горячие клавиши:</translation>
+    </message>
+    <message>
+        <source>Previous post (in thread/on board)</source>
+        <comment>hotkeyPreviousPostLabelText</comment>
+        <translation>Предыдущий пост (в треде/на доске)</translation>
+    </message>
+    <message>
+        <source>Next post (inthread/on board)</source>
+        <comment>hotkeyNextPostLabelText</comment>
+        <translation>Следующий пост (в треде/на доске)</translation>
+    </message>
+    <message>
+        <source>Expand thread</source>
+        <comment>hotkeyExpandThreadLabelText</comment>
+        <translation>Развернуть тред</translation>
+    </message>
+    <message>
+        <source>Go to thread</source>
+        <comment>hotkeyGoToThreadLabelText</comment>
+        <translation>Перейти к треду</translation>
+    </message>
+    <message>
+        <source>Hide post/thread</source>
+        <comment>hotkeyHidePostLabelText</comment>
+        <translation>Скрыть пост/тред</translation>
+    </message>
+    <message>
+        <source>Quick reply</source>
+        <comment>hotkeyQuickReplyLabelText</comment>
+        <translation>Быстрый ответ</translation>
+    </message>
+    <message>
+        <source>Expand post file</source>
+        <comment>hotkeyExpandImageLabelText</comment>
+        <translation>Развернуть файл в посте</translation>
+    </message>
+    <message>
+        <source>Bold text</source>
+        <comment>hotkeyMarkupBoldLabelText</comment>
+        <translation>Жирный текст</translation>
+    </message>
+    <message>
+        <source>Code block</source>
+        <comment>hotkeyMarkupCodeLabelText</comment>
+        <translation>Блок кода</translation>
+    </message>
+    <message>
+        <source>Italics</source>
+        <comment>hotkeyMarkupItalicsLabelText</comment>
+        <translation>Курсив</translation>
+    </message>
+    <message>
+        <source>Quote selected text</source>
+        <comment>hotkeyMarkupQutationLabelText</comment>
+        <translation>Цитировать выделенный текст</translation>
+    </message>
+    <message>
+        <source>Spoiler</source>
+        <comment>hotkeyMarkupSpoilerLabelText</comment>
+        <translation>Спойлер</translation>
+    </message>
+    <message>
+        <source>Striked out text</source>
+        <comment>hotkeyMarkupStrikedOutLabelText</comment>
+        <translation>Зачеркнутый текст</translation>
+    </message>
+    <message>
+        <source>Underlined text</source>
+        <comment>hotkeyMarkupUnderlinedLabelText</comment>
+        <translation>Подчеркнутый текст</translation>
+    </message>
+    <message>
+        <source>Update thread (in thread only)</source>
+        <comment>hotkeyUpdateThreadLabelText</comment>
+        <translation>Обновить тред (только в треде)</translation>
+    </message>
+    <message>
+        <source>Show favorite threads</source>
+        <comment>hotkeyShowFavoritesLabelText</comment>
+        <translation>Показать избранные треды</translation>
+    </message>
+    <message>
+        <source>Show settings</source>
+        <comment>hotkeyShowSettingsLabelText</comment>
+        <translation>Показать настройки</translation>
+    </message>
+    <message>
+        <source>Submit reply</source>
+        <comment>hotkeySubmitReplyLabelText</comment>
+        <translation>Отправить пост</translation>
+    </message>
+    <message>
+        <source>Strip EXIF from JPEG files:</source>
+        <comment>stripExifFromJpegLabelText</comment>
+        <translation>Удалять EXIF из файлов JPEG:</translation>
+    </message>
+    <message>
+        <source>Edit</source>
+        <comment>editSpellsText</comment>
+        <translation>Редактировать</translation>
+    </message>
+    <message>
+        <source>Spells (command-based post hiding):</source>
+        <comment>spellsLabelText</comment>
+        <translation>Спеллы (скрытие постов на основе команд):</translation>
+    </message>
+    <message>
+        <source>Hidden posts/threads</source>
+        <comment>hiddenPostListText</comment>
+        <translation>Скрытые посты/треды</translation>
+    </message>
+    <message>
+        <source>Remove from hidden post/thread list</source>
+        <comment>removeFromHiddenPostListText</comment>
+        <translation>Убрать из списка скрытых постов/тредов</translation>
+    </message>
+    <message>
+        <source>Show hidden post/thread list</source>
+        <comment>showHiddenPostListText</comment>
+        <translation>Показать список скрытых постов/тредов</translation>
+    </message>
+    <message>
+        <source>Mum is watching me!</source>
+        <comment>mumWatchingText</comment>
+        <translation>Мамка в комнате!</translation>
+    </message>
+    <message>
+        <source>Maximum allowed rating:</source>
+        <comment>maxAllowedRatingLabelText</comment>
+        <translation>Максимальный разрешенный рейтинг:</translation>
+    </message>
+    <message>
+        <source>SFW - safe for work (no socially condemned content)
+R-15 - restricted for 15 years (contains ecchi, idols, violence)
+R-18 - restricted for 18 years (genitalis, coitus, offensive religious/racist/nationalist content)
+R-18G - restricted for 18 years, guidance advised (shemale, death, guro, scat, defecation, urination, etc.)</source>
+        <comment>ratingTooltip</comment>
+        <translation>SFW - safe for work (отсутствует контент, осуждаемый обществом)
+R-15 - restricted for 15 years (содержит эччи, idols, сцены жестокости)
+R-18 - restricted for 18 years (гениталии, половой акт, оскорбительный материал религиозного/расового/национального характера)
+R-18G - restricted for 18 years, guidance adviced (транссексуалы, смерть, гуро, скат, дефекация, уринация, и т.д.)</translation>
+    </message>
+    <message>
+        <source>Offset:</source>
+        <comment>timeZoneOffsetLabelText</comment>
+        <translation>Коррекция:</translation>
     </message>
 </context>
 <context>
@@ -2885,6 +3393,180 @@ Well, actually, the admin may register someone manually (if he is a fag), but th
         <comment>draftText</comment>
         <translation>Черновик</translation>
     </message>
+    <message>
+        <source>Next file</source>
+        <comment>nextFileText</comment>
+        <translation>Следующий файл</translation>
+    </message>
+    <message>
+        <source>Previous file</source>
+        <comment>previousFileText</comment>
+        <translation>Предыдущий файл</translation>
+    </message>
+    <message>
+        <source>Hide rules</source>
+        <comment>hidePostformRulesText</comment>
+        <translation>Скрыть правила</translation>
+    </message>
+    <message>
+        <source>Show rules</source>
+        <comment>showPostformRulesText</comment>
+        <translation>Показать правила</translation>
+    </message>
+    <message>
+        <source>Hide markup</source>
+        <comment>hidePostformMarkupText</comment>
+        <translation>Скрыть разметку</translation>
+    </message>
+    <message>
+        <source>Show markup</source>
+        <comment>showPostformMarkupText</comment>
+        <translation>Показать разметку</translation>
+    </message>
+    <message>
+        <source>Bold text</source>
+        <comment>markupBold</comment>
+        <translation>Жирный текст</translation>
+    </message>
+    <message>
+        <source>Italics</source>
+        <comment>markupItalics</comment>
+        <translation>Курсив</translation>
+    </message>
+    <message>
+        <source>Spoiler</source>
+        <comment>markupSpoiler</comment>
+        <translation>Спойлер</translation>
+    </message>
+    <message>
+        <source>Subscript</source>
+        <comment>markupSubscript</comment>
+        <translation>Индекс</translation>
+    </message>
+    <message>
+        <source>Superscript</source>
+        <comment>markupSuperscript</comment>
+        <translation>Верхний индекс</translation>
+    </message>
+    <message>
+        <source>Underlined text</source>
+        <comment>markupUnderlined</comment>
+        <translation>Подчеркнутый текст</translation>
+    </message>
+    <message>
+        <source>URL (external link)</source>
+        <comment>markupUrl</comment>
+        <translation>URL (внешняя ссылка)</translation>
+    </message>
+    <message>
+        <source>Code block</source>
+        <comment>markupCode</comment>
+        <translation>Блок кода</translation>
+    </message>
+    <message>
+        <source>Code block syntax</source>
+        <comment>markupLang</comment>
+        <translation>Синтаксис блока кода</translation>
+    </message>
+    <message>
+        <source>Quote selected text</source>
+        <comment>markupQuotation</comment>
+        <translation>Цитировать выделенный текст</translation>
+    </message>
+    <message>
+        <source>Loading posts...</source>
+        <comment>loadingPostsText</comment>
+        <translation>Загрузка постов...</translation>
+    </message>
+    <message>
+        <source>Striked out text</source>
+        <comment>markupStrikedOut</comment>
+        <translation>Зачеркнутый текст</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>internalErrorText</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Invalid spell order</source>
+        <comment>noTokenInTableErrorText</comment>
+        <translation>Неправильный порядок спеллов</translation>
+    </message>
+    <message>
+        <source>Unexpected end of spell list</source>
+        <comment>unexpectedEndOfTokenListErrorText</comment>
+        <translation>Неожиданный конец списка спеллов</translation>
+    </message>
+    <message>
+        <source>Hide by image hash</source>
+        <comment>hideByImageText</comment>
+        <translation>Скрывать по хешу картинки</translation>
+    </message>
+    <message>
+        <source>A post marked as a draft is only visible to yourself and moderators/admins. You may edit a draft as many times as you wish. Finally, when you remove the &quot;draft&quot; mark, your post will become visible to everybody, and you will not be able to edit it anymore.
+Note, that you may also remove attached files or attach new ones while a post is marked as a draft.
+You have to be logged in (NO registration, only a browser cookie!) to use drafts. You may edit your drafts from any browser and any device if you are logged in with the same password.</source>
+        <comment>postFormTooltipDraft</comment>
+        <translation>Пост, помеченный как черновик, виден только тебе и модераторам/админам. Ты можешь редактировать черновик сколько угодно. Наконец, когда ты уберешь пометку &quot;черновик&quot;, твой пост станет виден всем, и ты не сможешь больше его редактировать.
+Помни, что ты можешь также удалять прикрепленные файлы и прикреплять новые, пока пост помечен как черновик.
+Ты должен быть залогинен (НЕТ, никакой регистрации, только cookie в браузере!), чтобы пользоваться черновиками. Ты можешь редактировать свои черновики с любого браузера/устройства, если ты залогинен с одним и тем же паролем.</translation>
+    </message>
+    <message>
+        <source>Rating:</source>
+        <comment>ratingLabelText</comment>
+        <translation>Рейтинг:</translation>
+    </message>
+    <message>
+        <source>Specify file URL</source>
+        <comment>attachFileByLinkText</comment>
+        <translation>Указать ссылку на файл</translation>
+    </message>
+    <message>
+        <source>URL:</source>
+        <comment>linkLabelText</comment>
+        <translation>Ссылка:</translation>
+    </message>
+    <message>
+        <source>Move thread</source>
+        <comment>moveThreadText</comment>
+        <translation>Перенести тред</translation>
+    </message>
+    <message>
+        <source>Warning: post numbers will be changed, and so will the post references. But the raw post text will not bechanged, so be careful when editing posts in moved thread.</source>
+        <comment>moveThreadWarningText</comment>
+        <translation>Предупреждение: номера постов будут изменены, и ссылки на посты - тоже. Однако, исходный текст не будет изменен, поэтому будьте внимательны при редактировании постов в перенесенных тредах.</translation>
+    </message>
+    <message>
+        <source>No markup</source>
+        <comment>markupMode name</comment>
+        <translation>Без разметки</translation>
+    </message>
+    <message>
+        <source>Extended WakabaMark only</source>
+        <comment>markupMode name</comment>
+        <translation>Только расширенная WakabaMark</translation>
+    </message>
+    <message>
+        <source>bbCode only</source>
+        <comment>markupMode name</comment>
+        <translation>Только bbCode</translation>
+    </message>
+    <message>
+        <source>Extended WakabaMark and bbCode</source>
+        <comment>markupMode name</comment>
+        <translation>Расширенная WakabaMark и bbCode</translation>
+    </message>
+    <message>
+        <source>Markup mode:</source>
+        <comment>postFormLabelMarkupMode</comment>
+        <translation>Режим разметки:</translation>
+    </message>
+    <message>
+        <source>Selected file is too large</source>
+        <comment>fileTooLargeWarningText</comment>
+        <translation>Выбранный файл слишком большой</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>
@@ -3172,14 +3854,6 @@ The default is 1.</source>
 The default is 0 (do not archive).</source>
         <translation>Максимальное количество архивируемых тредов на каждой доске.
 По умолчанию 0 (не архивировать).</translation>
-    </message>
-    <message>
-        <source>Determines if poster city name should be guessed on boards that allow this (e.g. /int/).
-This operation is rather heavy, so you may turn it off.
-The default is true.</source>
-        <translation>Определяет, угадывать ли город автора поста на досках, где это разрешено (напр. /int/).
-Эта операция довольно &quot;тяжелая&quot;, поэтому вы можете отключить ее.
-По умолчанию true.</translation>
     </message>
     <message>
         <source>Maximum count of extra posts a user may make before solving captcha again.
@@ -3625,6 +4299,61 @@ The default is convert (UNIX) or convert.exe (Windows).</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
+    <message>
+        <source>Writing posts:</source>
+        <comment>message</comment>
+        <translation>Запись постов:</translation>
+    </message>
+    <message>
+        <source>Reading post count...</source>
+        <comment>message</comment>
+        <translation>Считывание количества постов...</translation>
+    </message>
+    <message>
+        <source>Read post count:</source>
+        <comment>message</comment>
+        <translation>Считано количество постов:</translation>
+    </message>
+    <message>
+        <source>ms</source>
+        <comment>message</comment>
+        <translation>мс</translation>
+    </message>
+    <message>
+        <source>Reading posts...</source>
+        <comment>message</comment>
+        <translation>Считывание постов...</translation>
+    </message>
+    <message>
+        <source>Read posts:</source>
+        <comment>message</comment>
+        <translation>Считаны посты:</translation>
+    </message>
+    <message>
+        <source>Rendering post:</source>
+        <comment>message</comment>
+        <translation>Рендеринг поста:</translation>
+    </message>
+    <message>
+        <source>Rendered post:</source>
+        <comment>message</comment>
+        <translation>Пост отрендерен:</translation>
+    </message>
+    <message>
+        <source>Writing posts...</source>
+        <comment>message</comment>
+        <translation>Запись постов...</translation>
+    </message>
+    <message>
+        <source>Wrote posts:</source>
+        <comment>message</comment>
+        <translation>Пост записан:</translation>
+    </message>
+    <message>
+        <source>Finished! Operation took</source>
+        <comment>message</comment>
+        <translation>Готово! Операция заняла</translation>
+    </message>
 </context>
 <context>
     <name>rpgBoard</name>
@@ -3798,7 +4527,7 @@ The default is convert (UNIX) or convert.exe (Windows).</source>
     <message>
         <source>Not logged in</source>
         <comment>error</comment>
-        <translation>не залогинен</translation>
+        <translation>Не залогинен</translation>
     </message>
     <message>
         <source>Not enough rights</source>

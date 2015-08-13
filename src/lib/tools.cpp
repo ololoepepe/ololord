@@ -6,6 +6,7 @@
 #include "controller/board.h"
 #include "controller/error.h"
 #include "controller/notfound.h"
+#include "database.h"
 #include "settingslocker.h"
 #include "translator.h"
 
@@ -54,11 +55,16 @@
 
 #include <id3/tag.h>
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+
 #include <cmath>
 #include <istream>
 #include <list>
 #include <locale>
 #include <ostream>
+#include <sstream>
 #include <streambuf>
 #include <string>
 
@@ -236,122 +242,12 @@ bool captchaEnabled(const QString &boardName)
             && (boardName.isEmpty() || s->value("Board/" + boardName + "/captcha_enabled", true).toBool());
 }
 
-QString cityName(const QString &ip)
-{
-    typedef QMap<IpRange, QString> NameMap;
-    QMutexLocker locker(&cityNameMutex);
-    init_once(NameMap, names, NameMap()) {
-        QString fn = BDirTools::findResource("res/ip_city_name_map.txt");
-        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
-        foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() < 3)
-                continue;
-            IpRange r(sll, 0, 1, true);
-            if (!r.isValid())
-                continue;
-            QString n = QStringList(sll.mid(2)).join(" ");
-            if (n.length() < sll.size() - 2)
-                continue;
-            names.insert(r, n);
-        }
-    }
-    unsigned int n = ipNum(ip);
-    if (!n)
-        return "";
-    static QMap<unsigned int, QString> map;
-    QString code = map.value(n);
-    if (!code.isEmpty())
-        return ("-" != code) ? code : "";
-    foreach (const IpRange &r, names.keys()) {
-        if (n >= r.start && n <= r.end) {
-            QString name = names.value(r);
-            map.insert(n, name);
-            return name;
-        }
-    }
-    map.insert(n, "-");
-    return "";
-}
-
-QString cityName(const cppcms::http::request &req)
-{
-    return cityName(fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
-}
-
 QString cookieValue(const cppcms::http::request &req, const QString &name)
 {
     if (name.isEmpty())
         return "";
     QByteArray ba = const_cast<cppcms::http::request *>(&req)->cookie_by_name(toStd(name)).value().data();
     return QUrl::fromPercentEncoding(ba);
-}
-
-QString countryCode(const QString &ip)
-{
-    typedef QMap<IpRange, QString> CodeMap;
-    QMutexLocker locker(&countryCodeMutex);
-    init_once(CodeMap, codes, CodeMap()) {
-        QString fn = BDirTools::findResource("res/ip_country_code_map.txt");
-        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
-        foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() != 3)
-                continue;
-            IpRange r(sll, 0, 1, true);
-            if (!r.isValid())
-                continue;
-            QString c = sll.last();
-            if (c.length() != 2)
-                continue;
-            codes.insert(r, c);
-        }
-    }
-    unsigned int n = ipNum(ip);
-    if (!n)
-        return "";
-    static QMap<unsigned int, QString> map;
-    QString code = map.value(n);
-    if (!code.isEmpty())
-        return ("-" != code) ? code : "";
-    foreach (const IpRange &r, codes.keys()) {
-        if (n >= r.start && n <= r.end) {
-            QString code = codes.value(r);
-            map.insert(n, code);
-            return code;
-        }
-    }
-    map.insert(n, "-");
-    return "";
-}
-
-QString countryCode(const cppcms::http::request &req)
-{
-    return countryCode(fromStd(const_cast<cppcms::http::request *>(&req)->remote_addr()));
-}
-
-QString countryName(const QString &countryCode)
-{
-    typedef QMap<QString, QString> NameMap;
-    QMutexLocker locker(&countryNameMutex);
-    init_once(NameMap, names, NameMap()) {
-        QString fn = BDirTools::findResource("res/country_code_name_map.txt");
-        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
-        foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() < 2)
-                continue;
-            if (sll.first().length() != 2)
-                continue;
-            QString name = QStringList(sll.mid(1)).join(" ");
-            if (name.length() < sll.length() - 1)
-                continue;
-            names.insert(sll.first(), name);
-        }
-    }
-    if (countryCode.length() != 2)
-        return "";
-    return names.value(countryCode);
 }
 
 QString customContent(const QString &prefix, const QLocale &l)
@@ -385,8 +281,15 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
 
 QString externalLinkRegexpPattern()
 {
-    init_once(QString, pattern, QString())
-        pattern = "(https?:\\/\\/)?([\\w\\.\\-]+)\\.([a-z]{2,17}\\.?)(\\/[\\w\\.\\-\\?\\=#~&%\\,\\(\\)]*)*\\/?(?!\\S)";
+    init_once(QString, pattern, QString()) {
+        QString schema = "https?:\\/\\/|ftp:\\/\\/";
+        QString ip = "(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}"
+                "([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])";
+        QString hostname = "([\\w\\.\\-]+)\\.([a-z]{2,17}\\.?)";
+        QString port = ":\\d+";
+        QString path = "(\\/[\\w\\.\\-\\!\\?\\=\\+#~&%:\\,\\(\\)]*)*\\/?";
+        pattern = "(" + schema + ")?(" + hostname + "|" + ip + ")(" + port + ")?" + path + "(?!\\S)";
+    }
     return pattern;
 }
 
@@ -543,6 +446,54 @@ bool isImageType(const QString &mimeType)
     return types.contains(mimeType);
 }
 
+IsMobile isMobile(const cppcms::http::request &req)
+{
+    static const QRegExp AmazonPhone("(?=.*\\bAndroid\\b)(?=.*\\bSD4930UR\\b)");
+    static const QRegExp AmazonTablet("(?=.*\\bAndroid\\b)(?=.*\\b(?:KFOT|KFTT|KFJWI|KFJWA|KFSOWI|KFTHWI|KFTHWA|"
+                                      "KFAPWI|KFAPWA|KFARWI|KFASWI|KFSAWI|KFSAWA)\\b)");
+    static const QRegExp AndroidPhone("(?=.*\\bAndroid\\b)(?=.*\\bMobile\\b)");
+    static const QRegExp AndroidTablet("Android");
+    static const QRegExp AppleIPod("iPod");
+    static const QRegExp ApplePhone("iPhone");
+    static const QRegExp AppleTablet("iPad");
+    static const QRegExp OtherBlackberry("BlackBerry");
+    static const QRegExp OtherBlackberry10("BB10");
+    static const QRegExp OtherFirefox("(?=.*\\bFirefox\\b)(?=.*\\bMobile\\b)");
+    static const QRegExp OtherOpera("Opera Mini");
+    static const QRegExp SevenInch("(?:Nexus 7|BNTV250|Kindle Fire|Silk|GT-P1000)");
+    static const QRegExp WindowsPhone("IEMobile");
+    static const QRegExp WindowsTablet("(?=.*\\bWindows\\b)(?=.*\\bARM\\b)");
+    QString ua = Tools::fromStd(const_cast<cppcms::http::request *>(&req)->http_user_agent());
+    IsMobile im;
+    im.apple.phone = ua.contains(ApplePhone);
+    im.apple.ipod = ua.contains(AppleIPod);
+    im.apple.tablet = !ua.contains(ApplePhone) && ua.contains(AppleTablet);
+    im.apple.device = ua.contains(ApplePhone) || ua.contains(AppleIPod) || ua.contains(AppleTablet);
+    im.amazon.phone = ua.contains(AmazonPhone);
+    im.amazon.tablet = !ua.contains(AmazonPhone) && ua.contains(AmazonTablet);
+    im.amazon.device = ua.contains(AmazonPhone) || ua.contains(AmazonTablet);
+
+    im.android.phone = ua.contains(AmazonPhone) || ua.contains(AndroidPhone);
+    im.android.tablet = !ua.contains(AmazonPhone) && !ua.contains(AndroidPhone)
+            && (ua.contains(AmazonTablet) || ua.contains(AndroidTablet));
+    im.android.device = ua.contains(AmazonPhone) || ua.contains(AmazonTablet) || ua.contains(AndroidPhone)
+            || ua.contains(AndroidTablet);
+    im.windows.phone = ua.contains(WindowsPhone);
+    im.windows.tablet = ua.contains(WindowsTablet);
+    im.windows.device = ua.contains(WindowsPhone) || ua.contains(WindowsTablet);
+    im.other.blackberry = ua.contains(OtherBlackberry);
+    im.other.blackberry10 = ua.contains(OtherBlackberry10);
+    im.other.opera = ua.contains(OtherOpera);
+    im.other.firefox = ua.contains(OtherFirefox);
+    im.other.device = ua.contains(OtherBlackberry) || ua.contains(OtherBlackberry10) || ua.contains(OtherOpera)
+            || ua.contains(OtherFirefox);
+    im.sevenInch = ua.contains(SevenInch);
+    im.any = im.apple.device || im.android.device || im.windows.device || im.other.device || im.sevenInch;
+    im.phone = im.apple.phone || im.android.phone || im.windows.phone;
+    im.tablet = im.apple.tablet || im.android.tablet || im.windows.tablet;
+    return im;
+}
+
 unsigned int ipNum(const QString &ip, bool *ok)
 {
     QStringList sl = ip.split('.');
@@ -580,6 +531,26 @@ bool isVideoType(const QString &mimeType)
     return types.contains(mimeType);
 }
 
+QString langName(const QString &id)
+{
+    typedef QMap<QString, QString> StringMap;
+    init_once(StringMap, map, StringMap()) {
+        QString fn = BDirTools::findResource("res/lang_name_map.txt");
+        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::KeepEmptyParts);
+        QSet<QString> supported = supportedCodeLanguages().toSet();
+        foreach (const QString &s, sl) {
+            QStringList sll = s.split(' ');
+            if (sll.size() < 1)
+                continue;
+            if (sll.first().isEmpty() || !supported.contains(sll.first()))
+                continue;
+            QString name = QStringList(sll.mid(1)).join(" ");
+            map.insert(sll.first(), name);
+        }
+    }
+    return map.value(id);
+}
+
 QDateTime localDateTime(const QDateTime &dt, int offsetMinutes)
 {
     static const int MaxMsecs = 24 * BeQt::Hour;
@@ -606,7 +577,7 @@ QLocale locale(const cppcms::http::request &req, const QLocale &defaultLocale)
 {
     QLocale l(cookieValue(req, "locale"));
     if (QLocale::c() == l)
-        l = QLocale(countryCode(req));
+        l = QLocale(Database::geolocationInfo(req).countryCode);
     return (QLocale::c() == l) ? defaultLocale : l;
 }
 
@@ -726,14 +697,18 @@ QStringList news(const QLocale &l)
     return *sl;
 }
 
-FileList postFiles(const cppcms::http::request &request)
+FileList postFiles(const cppcms::http::request &request, const PostParameters &params, const QString &boardName,
+                   bool *ok, QString *error, const QLocale &l)
 {
     FileList list;
     cppcms::http::request::files_type files = const_cast<cppcms::http::request *>(&request)->files();
+    TranslatorQt tq(l);
     foreach (int i, bRangeD(0, files.size() - 1)) {
         cppcms::http::file *f = files.at(i).get();
-        if (!f)
-            continue;
+        if (!f) {
+            return bRet(ok, false, error, tq.translate("Tools::postFiles", "Internal logic error", "error"),
+                        FileList());
+        }
         File file;
         std::istream &in = f->data();
         char *buff = new char[f->size()];
@@ -742,9 +717,52 @@ FileList postFiles(const cppcms::http::request &request)
         file.fileName = QFileInfo(fromStd(f->filename())).fileName();
         file.formFieldName = fromStd(f->name());
         file.mimeType = fromStd(f->mime());
+        file.rating = 0;
+        QString r = params.value(file.formFieldName + "_rating");
+        if ("R-15" == r)
+            file.rating = 15;
+        else if ("R-18" == r)
+            file.rating = 18;
+        else if ("R-18G" == r)
+            file.rating = 180;
         list << file;
     }
-    return list;
+    int maxSize = maxInfo(MaxFileSize, boardName);
+    foreach (const QString &key, params.keys()) {
+        if (!key.startsWith("file_url_"))
+            continue;
+        File file;
+        try {
+            curlpp::Cleanup curlppCleanup;
+            Q_UNUSED(curlppCleanup)
+            QString url = params.value(key);
+            curlpp::Easy request;
+            request.setOpt(curlpp::options::Url(Tools::toStd(url)));
+            request.setOpt(curlpp::options::MaxFileSize(maxSize));
+            std::ostringstream os;
+            os << request;
+            std::string s = os.str();
+            QByteArray data(s.data(), s.size());
+            file.data = data;
+        } catch (curlpp::RuntimeError &e) {
+            return bRet(ok, false, error, fromStd(e.what()), FileList());
+        } catch(curlpp::LogicError &e) {
+            return bRet(ok, false, error, fromStd(e.what()), FileList());
+        }
+        file.fileName = QFileInfo(key.split('/').last()).fileName();
+        file.formFieldName = key;
+        file.rating = 0;
+        QString id = key.mid(9);
+        QString r = params.value("file_" + id + "_rating");
+        if ("R-15" == r)
+            file.rating = 15;
+        else if ("R-18" == r)
+            file.rating = 18;
+        else if ("R-18G" == r)
+            file.rating = 180;
+        list << file;
+    }
+    return bRet(ok, true, error, QString(), list);
 }
 
 PostParameters postParameters(const cppcms::http::request &request)
@@ -881,30 +899,11 @@ QStringList supportedCodeLanguages()
 
 int timeZoneMinutesOffset(const cppcms::http::request &req, int defaultOffset)
 {
-    typedef QMap<QString, int> TimezoneMap;
-    QMutexLocker locker(&timezoneMutex);
-    init_once(TimezoneMap, timezones, TimezoneMap()) {
-        QString fn = BDirTools::findResource("res/city_name_timezone_map.txt");
-        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::SkipEmptyParts);
-        foreach (const QString &s, sl) {
-            QStringList sll = s.split(' ');
-            if (sll.size() < 2)
-                continue;
-            if (sll.last().isEmpty())
-                continue;
-            bool ok = false;
-            int offset = sll.last().toInt(&ok);
-            if (!ok || offset < -720 || offset > 840)
-                continue;
-            timezones.insert(QStringList(sll.mid(0, sll.size() - 1)).join(" "), offset);
-        }
-    }
     bool ok = false;
-    int offset = cookieValue(req, "time_zone_offset").toInt(&ok);
-    if (ok && offset >= -720 && offset <= 840)
-        return offset;
-    return SettingsLocker()->value("Board/guess_city_name", true).toBool()
-            ? timezones.value(cityName(req), defaultOffset) : defaultOffset;
+    int offset = cookieValue(req, "timeZoneOffset").toInt(&ok);
+    if (!ok || offset < -720 || offset > 840)
+        return defaultOffset;
+    return offset;
 }
 
 QByteArray toHashpass(const QString &s, bool *ok)
@@ -990,9 +989,10 @@ Post toPost(const PostParameters &params, const FileList &files)
     return p;
 }
 
-Post toPost(const cppcms::http::request &req)
+Post toPost(const cppcms::http::request &req, const QString &boardName)
 {
-    return toPost(postParameters(req), postFiles(req));
+    PostParameters params = postParameters(req);
+    return toPost(params, postFiles(req, params, boardName));
 }
 
 std::locale toStd(const QLocale &l)
