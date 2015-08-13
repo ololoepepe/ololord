@@ -463,6 +463,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.expandVideoText = ts.translate("initBaseBoard", "Expand video", "expandVideoText");
     c.fileExistsOnServerText = ts.translate("initBaseBoard", "This file exists on server. "
                                             "It will NOT be uploaded, but WILL be copied.", "fileExistsOnServerText");
+    c.fileTooLargeWarningText = ts.translate("initBaseBoard", "Selected file is too large", "fileTooLargeWarningText");
     c.findSourceWithGoogleText = ts.translate("initBaseBoard", "Find source with Google", "findSourceWithGoogleText");
     c.findSourceWithIqdbText = ts.translate("initBaseBoard", "Find source with Iqdb", "findSourceWithIqdbText");
     c.fixedText = ts.translate("initBaseBoard", "Fixed", "fixedText");
@@ -488,6 +489,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.markupUrl = ts.translate("initBaseBoard", "URL (external link)", "markupUrl");
     c.maxEmailLength = Tools::maxInfo(Tools::MaxEmailFieldLength, board->name());
     c.maxFileCount = Tools::maxInfo(Tools::MaxFileCount, board->name());
+    c.maxFileSize = Tools::maxInfo(Tools::MaxFileSize, board->name());
     c.maxNameLength = Tools::maxInfo(Tools::MaxNameFieldLength, board->name());
     c.maxSubjectLength = Tools::maxInfo(Tools::MaxSubjectFieldLength, board->name());
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());

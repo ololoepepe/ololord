@@ -1700,6 +1700,10 @@ lord.fileAddedCommon = function(div, file) {
     var inp = lord.queryOne("input", div);
     if (!inp)
         return;
+    if (file && +file.size > +lord.text("maxFileSize")) {
+        var txt = lord.text("fileTooLargeWarningText") + " (>" + lord.readableSize(+lord.text("maxFileSize")) + ")";
+        lord.showPopup(txt, {type: "warning"});
+    }
     var fileName = file ? file.name : div.fileUrl.split("/").pop();
     var txt = fileName;
     if (file)

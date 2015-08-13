@@ -877,6 +877,7 @@
     <input type="hidden" id="postingEnabled" value="false" />
 <% end %>
 <input type="hidden" id="maxFileCount" value="<%= maxFileCount %>" />
+<input type="hidden" id="maxFileSize" value="<%= maxFileSize %>" />
 <input type="hidden" id="currentBoardName" value="<%= currentBoard.name %>" />
 <input type="hidden" id="currentBoardTitle" value="<%= currentBoard.title %>" />
 <input type="hidden" id="editPostText" value="<%= editPostText %>" />
@@ -923,6 +924,7 @@
 <input type="hidden" id="linkLabelText" value="<%= linkLabelText %>" />
 <input type="hidden" id="moveThreadText" value="<%= moveThreadText %>" />
 <input type="hidden" id="moveThreadWarningText" value="<%= moveThreadWarningText %>" />
+<input type="hidden" id="fileTooLargeWarningText" value="<%= fileTooLargeWarningText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>

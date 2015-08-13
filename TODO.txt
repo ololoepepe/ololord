@@ -41,7 +41,7 @@
 [done] Fix /echo/ script
 [done] Fix ascetic mode actions/buttons
 [done] Reimplement post text parser
-* Check file size on the client side
+[done] Check file size on the client side
 
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

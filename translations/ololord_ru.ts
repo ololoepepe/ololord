@@ -3562,6 +3562,11 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <comment>postFormLabelMarkupMode</comment>
         <translation>Режим разметки:</translation>
     </message>
+    <message>
+        <source>Selected file is too large</source>
+        <comment>fileTooLargeWarningText</comment>
+        <translation>Выбранный файл слишком большой</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

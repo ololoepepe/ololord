@@ -153,6 +153,7 @@ public:
     std::string enterPasswordTitle;
     std::string expandVideoText;
     std::string fileExistsOnServerText;
+    std::string fileTooLargeWarningText;
     std::string findSourceWithGoogleText;
     std::string findSourceWithIqdbText;
     std::string fixedText;
@@ -179,6 +180,7 @@ public:
     std::string markupUrl;
     unsigned int maxEmailLength;
     unsigned int maxFileCount;
+    unsigned int maxFileSize;
     unsigned int maxNameLength;
     unsigned int maxSubjectLength;
     unsigned int maxPasswordLength;
