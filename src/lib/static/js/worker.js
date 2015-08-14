@@ -711,6 +711,8 @@ lord.applyYouTube = function(post, apiKey) {
             "videoTitle": info.title,
             "channelTitle": info.channelTitle
         };
+        if (info.thumbnails.medium)
+            videos[href].thumbnail = info.thumbnails.medium;
     });
     return videos;
 };

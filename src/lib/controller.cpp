@@ -538,7 +538,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
-    c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode", "postFormLabelTripcode");
+    c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode:", "postFormLabelTripcode");
     c.postFormTooltipDraft = ts.translate("initBaseBoard", "A post marked as a draft is only visible to yourself and "
                                           "moderators/admins. You may edit a draft as many times as you wish. "
                                           "Finally, when you remove the \"draft\" mark, your post will become visible "

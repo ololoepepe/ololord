@@ -3364,11 +3364,6 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <translation>Добавить тред в избранные</translation>
     </message>
     <message>
-        <source>Show tripcode</source>
-        <comment>postFormLabelTripcode</comment>
-        <translation>Показывать трипкод</translation>
-    </message>
-    <message>
         <source>Waiting for reply...</source>
         <comment>postFormButtonSubmitWaiting</comment>
         <translation>Ожидание ответа...</translation>
@@ -3586,6 +3581,11 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <source>Selected file is too large</source>
         <comment>fileTooLargeWarningText</comment>
         <translation>Выбранный файл слишком большой</translation>
+    </message>
+    <message>
+        <source>Show tripcode:</source>
+        <comment>postFormLabelTripcode</comment>
+        <translation>Показывать трипкод:</translation>
     </message>
 </context>
 <context>

@@ -904,6 +904,36 @@ lord.addYoutubeButton = function(post, youtube) {
         link.parentNode.insertBefore(lord.node("text", " "), link);
         link.replaceChild(lord.node("text", info.videoTitle), link.firstChild);
         link.title = info.channelTitle;
+        link.thumb = info.thumbnail;
+        link.onmouseover = function(e) {
+            if (this.img) {
+                this.img.style.display = "";
+                document.body.appendChild(this.img);
+                return;
+            }
+            if (!this.thumb)
+                return;
+            this.img = lord.node("img");
+            this.img.width = this.thumb.width;
+            this.img.height = this.thumb.height;
+            this.img.src = this.thumb.url;
+            lord.addClass(this.img, "movableImage");
+            this.img.style.left = (e.clientX + 30) + "px";
+            this.img.style.top = (e.clientY - 10) + "px";
+            document.body.appendChild(this.img);
+        };
+        link.onmousemove = function(e) {
+            if (!this.img)
+                return;
+            this.img.style.left = (e.clientX + 30) + "px";
+            this.img.style.top = (e.clientY - 10) + "px";
+        };
+        link.onmouseout = function(e) {
+            if (!this.img)
+                return;
+            document.body.removeChild(this.img);
+            this.img.style.display = "none";
+        };
         var a = lord.node("a");
         lord.addClass(a, "expandCollapse");
         a.lordExpanded = false;

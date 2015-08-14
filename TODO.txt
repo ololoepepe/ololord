@@ -4,6 +4,8 @@
 [done] Add ability to loop media files
 [done] Add ability to prevent playing media files immediately
 [done] Add ability to select action when posting in thread
+[done] Add YouTube videos preview
+* Add minimalistic post form mode
 
 * Make media files movable
 * Use D-Pointer approach for the lib
