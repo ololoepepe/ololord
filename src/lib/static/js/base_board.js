@@ -1701,16 +1701,35 @@ lord.fileAddedCommon = function(div, file) {
     var inp = lord.queryOne("input", div);
     if (!inp)
         return;
-    if (file && +file.size > +lord.text("maxFileSize")) {
+    var warn = function() {
         var txt = lord.text("fileTooLargeWarningText") + " (>" + lord.readableSize(+lord.text("maxFileSize")) + ")";
         lord.showPopup(txt, {type: "warning"});
-    }
+    };
     var fileName = file ? file.name : div.fileUrl.split("/").pop();
     var txt = fileName;
-    if (file)
+    if (file) {
         txt += " (" + lord.readableSize(file.size) + ")";
-    else
+        if (+file.size > +lord.text("maxFileSize"))
+            warn();
+    } else {
         txt += " [URL]";
+        /*var xhr = new XMLHttpRequest();
+        xhr.open("HEAD", div.fileUrl, true);
+        xhr.onreadystatechange = (function(div, fn) {
+            if (this.readyState != this.DONE)
+                return;
+            var sz = +this.getResponseHeader("Content-Length");
+            if (isNaN(sz))
+                return;
+            if (sz > +lord.text("maxFileSize"))
+                warn();
+            var txt = fn + " (" + lord.readableSize(sz) + ") [URL]";
+            var t = lord.queryOne(".postformFileText", div);
+            lord.removeChildren(t);
+            t.appendChild(lord.node("text", txt));
+        }).bind(xhr, div, fileName);
+        xhr.send();*/
+    }
     lord.queryOne(".postformFileText", div).appendChild(lord.node("text", txt));
     var uuid = lord.createUuid();
     lord.queryOne("input", div).name = "file_" + uuid;
