@@ -114,6 +114,7 @@ public:
     std::string loginMessageText;
     std::string loginPlaceholderText;
     std::string loginSystemDescriptionText;
+    std::string loopAudioVideoLabelText;
     int maxAllowedRating;
     std::string maxAllowedRatingLabelText;
     unsigned int maxSearchQueryLength;
@@ -124,6 +125,7 @@ public:
     std::string otherTabText;
     std::string pageTitle;
     std::string path;
+    std::string playAudioVideoImmediatelyLabelText;
     std::string postformTabText;
     std::string postsTabText;
     std::string quickReplyActionAppendPostText;
@@ -131,6 +133,7 @@ public:
     std::string quickReplyActionGotoThreadText;
     std::string quickReplyActionLabelText;
     std::string ratingTooltip;
+    std::string rememberAudioVideoVolumeLabelText;
     std::string removeFromFavoritesText;
     std::string removeFromHiddenPostListText;
     std::string scriptSettingsLegendText;

@@ -2975,6 +2975,21 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>timeZoneOffsetLabelText</comment>
         <translation>Коррекция:</translation>
     </message>
+    <message>
+        <source>Loop audio and video files:</source>
+        <comment>loopAudioVideoLabelText</comment>
+        <translation>Зацикливать аудио- и видеофайлы:</translation>
+    </message>
+    <message>
+        <source>Play audio and video files immediately:</source>
+        <comment>playAudioVideoImmediatelyLabelText</comment>
+        <translation>Проигрывать аудио- и видеофайлы сразу же:</translation>
+    </message>
+    <message>
+        <source>Remember volume:</source>
+        <comment>rememberAudioVideoVolumeLabelText</comment>
+        <translation>Запоминать громкость:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

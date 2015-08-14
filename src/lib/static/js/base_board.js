@@ -825,6 +825,7 @@ lord.getAdditionalCount = function(el) {
 lord.hideImage = function() {
     if (!!lord.img) {
         if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
+            lord.setLocalObject("audioVideoVolume", +lord.img.volume);
             lord.img.pause();
             lord.img.load();
         }
@@ -2114,9 +2115,13 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.img = lord.node("audio");
         lord.img.width = sizeHintX + "px";
         lord.img.controls = "controls";
+        if (lord.getLocalObject("loopAudioVideo", false))
+            lord.img.loop = true;
         if (lord.text("deviceType") == "mobile")
             lord.img.scale = 60;
-        lord.img.volume = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
+        var defVol = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
+        var remember = lord.getLocalObject("rememberAudioVideoVolume", false);
+        lord.img.volume = remember ? lord.getLocalObject("audioVideoVolume", defVol) : defVol;
         var src = lord.node("source");
         src.src = href;
         src.type = type;
@@ -2131,7 +2136,11 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     } else if (lord.isVideoType(type)) {
         lord.img = lord.node("video");
         lord.img.controls = "controls";
-        lord.img.volume = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
+        if (lord.getLocalObject("loopAudioVideo", false))
+            lord.img.loop = true;
+        var defVol = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
+        var remember = lord.getLocalObject("rememberAudioVideoVolume", false);
+        lord.img.volume = remember ? lord.getLocalObject("audioVideoVolume", defVol) : defVol;
         var src = lord.node("source");
         src.src = href;
         src.type = type;
@@ -2218,7 +2227,8 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     }
     document.body.appendChild(lord.img);
     lord.toCenter(lord.img, sizeHintX, sizeHintY, 3);
-    if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
+    if ((lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType))
+        && lord.getLocalObject("playAudioVideoImmediately", true)) {
         setTimeout(function() {
             lord.img.play();
         }, 500);

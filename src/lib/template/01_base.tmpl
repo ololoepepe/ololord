@@ -387,8 +387,26 @@
                         <td>
                             <%= defaultAudioVideoVolumeLabelText %>
                         </td>
-                        <td>
+                        <td class="nowrap">
                             <input type="number" min="0" max="100" name="defaultAudioVideoVolume" />
+                            <%= rememberAudioVideoVolumeLabelText %>
+                            <input type="checkbox" name="rememberAudioVideoVolume" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= playAudioVideoImmediatelyLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="playAudioVideoImmediately" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= loopAudioVideoLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="loopAudioVideo" />
                         </td>
                     </tr>
                 </tbody>

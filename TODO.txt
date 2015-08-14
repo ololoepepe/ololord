@@ -1,7 +1,8 @@
 [done] Fix thread sorting in catalog
 [done] Increase database timeout
-* Add ability to loop media files
-* Remember media volume
+[done] Remember media volume
+[done] Add ability to loop media files
+[done] Add ability to prevent playing media files immediately
 * Get size of files specified as URLs
 * Add ability to select action when posting in thread
 * Make media files movable

@@ -137,9 +137,15 @@ lord.showSettings = function() {
     var timeZoneOffset = lord.nameOne("timeZoneOffset", div);
     var date = new Date();
     timeZoneOffset.value = lord.getCookie("timeZoneOffset") || -date.getTimezoneOffset();    
-    var autoUpdateThreadsByDefault = lord.nameOne("autoUpdateThreadsByDefault", div);
     var defaultAudioVideoVolume = lord.nameOne("defaultAudioVideoVolume", div);
     defaultAudioVideoVolume.value = lord.getLocalObject("defaultAudioVideoVolume", 100);
+    var rememberAudioVideoVolume = lord.nameOne("rememberAudioVideoVolume", div);
+    rememberAudioVideoVolume.checked = lord.getLocalObject("rememberAudioVideoVolume", false);
+    var playAudioVideoImmediately = lord.nameOne("playAudioVideoImmediately", div);
+    playAudioVideoImmediately.checked = lord.getLocalObject("playAudioVideoImmediately", true);
+    var loopAudioVideo = lord.nameOne("loopAudioVideo", div);
+    loopAudioVideo.checked = lord.getLocalObject("loopAudioVideo", false);
+    var autoUpdateThreadsByDefault = lord.nameOne("autoUpdateThreadsByDefault", div);
     autoUpdateThreadsByDefault.checked = !!lord.getLocalObject("autoUpdateThreadsByDefault", false);
     var autoUpdateInterval = lord.nameOne("autoUpdateInterval", div);
     autoUpdateInterval.value = lord.getLocalObject("autoUpdateInterval", 15);
@@ -225,6 +231,9 @@ lord.showSettings = function() {
         lord.setLocalObject("leafThroughImagesOnly", !!leafThroughImagesOnly.checked);
         lord.setLocalObject("imageZoomSensitivity", +imageZoomSensitivity.value);
         lord.setLocalObject("defaultAudioVideoVolume", +defaultAudioVideoVolume.value);
+        lord.setLocalObject("rememberAudioVideoVolume", !!rememberAudioVideoVolume.checked);
+        lord.setLocalObject("playAudioVideoImmediately", !!playAudioVideoImmediately.checked);
+        lord.setLocalObject("loopAudioVideo", !!loopAudioVideo.checked);
         lord.setLocalObject("autoUpdateThreadsByDefault", !!autoUpdateThreadsByDefault.checked);
         lord.setLocalObject("autoUpdateInterval", +autoUpdateInterval.value);
         lord.setLocalObject("showAutoUpdateTimer", !!showAutoUpdateTimer.checked);

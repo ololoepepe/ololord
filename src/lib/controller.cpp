@@ -233,6 +233,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                 "Well, actually, the admin may register someone manually (if he is a "
                                                 "fag), but there is no way to register through the web.",
                                                 "loginSystemDescriptionText");
+    c.loopAudioVideoLabelText = ts.translate("initBase", "Loop audio and video files:", "loopAudioVideoLabelText");
     c.maxAllowedRating = 180;
     QString r = Tools::cookieValue(req, "maxAllowedRating");
     if (!r.compare("SFW", Qt::CaseInsensitive))
@@ -262,6 +263,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.otherTabText = ts.translate("initBase", "Other", "otherTabText");
     c.pageTitle = Tools::toStd(pageTitle);
     c.path = const_cast<cppcms::http::request *>(&req)->path_info();
+    c.playAudioVideoImmediatelyLabelText = ts.translate("initBase", "Play audio and video files immediately:",
+                                                        "playAudioVideoImmediatelyLabelText");
     c.postformTabText = ts.translate("initBase", "Postform and posting", "postformTabText");
     c.postsTabText = ts.translate("initBase", "Posts and threads", "postsTabText");
     c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
@@ -277,6 +280,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                    "religious/racist/nationalist content)\n"
                                    "R-18G - restricted for 18 years, guidance advised (shemale, death, guro, scat, "
                                    "defecation, urination, etc.)", "ratingTooltip");
+    c.rememberAudioVideoVolumeLabelText = ts.translate("initBase", "Remember volume:",
+                                                       "rememberAudioVideoVolumeLabelText");
     c.removeFromFavoritesText = ts.translate("initBase", "Remove from favorites", "removeFromFavoritesText");
     c.removeFromHiddenPostListText = ts.translate("initBase", "Remove from hidden post/thread list",
                                                   "removeFromHiddenPostListText");
