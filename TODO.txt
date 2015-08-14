@@ -3,8 +3,8 @@
 [done] Remember media volume
 [done] Add ability to loop media files
 [done] Add ability to prevent playing media files immediately
+[done] Add ability to select action when posting in thread
 * Get size of files specified as URLs
-* Add ability to select action when posting in thread
 * Make media files movable
 
 * Reload codecha instead of reloading a page

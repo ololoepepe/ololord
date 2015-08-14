@@ -2449,14 +2449,15 @@ lord.posted = function(response) {
             lord.resetPostForm();
             if (currentThreadNumber)
                 lord.updateThread(boardName, currentThreadNumber, true, (function(pn) {
-                    window.location.hash = "#" + postNumber;
+                    if (lord.getLocalObject("moveToPostOnReplyInThread", true))
+                        window.location.hash = "#" + postNumber;
                 }).bind(lord, postNumber));
             lord.removeQuickReply();
             lord.resetCaptcha();
         } else if (threadNumber) {
             var href = window.location.href.split("#").shift();
-            window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/" + threadNumber
-                + ".html";
+            window.location.href = href + (href.substring(href.length - 1) != "/" ? "/" : "") + "thread/"
+                + threadNumber + ".html";
         } else {
             resetButton();
             var errmsg = o.errorMessage;

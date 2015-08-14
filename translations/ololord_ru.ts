@@ -2990,6 +2990,11 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>rememberAudioVideoVolumeLabelText</comment>
         <translation>Запоминать громкость:</translation>
     </message>
+    <message>
+        <source>Move to post after replying in thread:</source>
+        <comment>moveToPostOnReplyInThreadLabelText</comment>
+        <translation>Перемещаться к посту после ответа в треде:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

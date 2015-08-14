@@ -114,6 +114,8 @@ lord.showSettings = function() {
     sel = lord.nameOne("ratingSelect", div);
     var rt = lord.getCookie("maxAllowedRating") || "R-18G";
     lord.queryOne("[value='" + rt + "']", sel).selected = true;
+    var moveToPostOnReplyInThread = lord.nameOne("moveToPostOnReplyInThread", div);
+    moveToPostOnReplyInThread.checked = lord.getLocalObject("moveToPostOnReplyInThread", true);
     var showNewPosts = lord.nameOne("showNewPosts", div);
     showNewPosts.checked = lord.getLocalObject("showNewPosts", true);
     var showYoutubeVideosTitles = lord.nameOne("showYoutubeVideosTitles", div);
@@ -221,6 +223,7 @@ lord.showSettings = function() {
         var act = sel.options[sel.selectedIndex].value;
         lord.setLocalObject("quickReplyAction", act);
         lord.setLocalObject("showNewPosts", !!showNewPosts.checked);
+        lord.setLocalObject("moveToPostOnReplyInThread", !!moveToPostOnReplyInThread.checked);
         lord.setLocalObject("showYoutubeVideosTitles", !!showYoutubeVideosTitles.checked);
         lord.setLocalObject("checkFileExistence", !!checkFileExistence.checked);
         lord.setLocalObject("showAttachedFilePreview", !!showAttachedFilePreview.checked);

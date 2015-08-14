@@ -121,6 +121,7 @@ public:
     Mode mode;
     std::string modeLabelText;
     std::list<Mode> modes;
+    std::string moveToPostOnReplyInThreadLabelText;
     std::string mumWatchingText;
     std::string otherTabText;
     std::string pageTitle;
