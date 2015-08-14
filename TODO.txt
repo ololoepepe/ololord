@@ -1,4 +1,5 @@
 [done] Fix thread sorting in catalog
+[done] Increase database timeout
 * Add ability to loop media files
 * Remember media volume
 * Get size of files specified as URLs
