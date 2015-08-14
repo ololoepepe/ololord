@@ -42,6 +42,8 @@ private:
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(thread_))
     Posts posts_;
     bool draft_;
+    PRAGMA_DB(not_null)
+    QDateTime creationDateTime_;
 public:
     explicit Thread(const QString &board, quint64 number, const QDateTime &dateTime);
 private:
@@ -51,6 +53,7 @@ public:
     QString board() const;
     quint64 number() const;
     QDateTime dateTime() const;
+    QDateTime creationDateTime() const;
     bool archived() const;
     bool fixed() const;
     bool postingEnabled() const;

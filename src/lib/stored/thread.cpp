@@ -19,6 +19,7 @@ Thread::Thread(const QString &board, quint64 number, const QDateTime &dateTime)
     board_ = board;
     number_ = number;
     dateTime_ = dateTime.toUTC();
+    creationDateTime_ = dateTime_;
     archived_ = false;
     fixed_ = false;
     postingEnabled_ = true;
@@ -48,6 +49,11 @@ quint64 Thread::number() const
 QDateTime Thread::dateTime() const
 {
     return QDateTime(dateTime_.date(), dateTime_.time(), Qt::UTC);
+}
+
+QDateTime Thread::creationDateTime() const
+{
+    return QDateTime(creationDateTime_.date(), creationDateTime_.time(), Qt::UTC);
 }
 
 bool Thread::archived() const

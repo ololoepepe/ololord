@@ -1,3 +1,10 @@
+[done] Fix thread sorting in catalog
+* Add ability to loop media files
+* Remember media volume
+* Get size of files specified as URLs
+* Add ability to select action when posting in thread
+* Make media files movable
+
 * Reload codecha instead of reloading a page
 * Implement proxy blocking
 * Use D-Pointer approach for the lib

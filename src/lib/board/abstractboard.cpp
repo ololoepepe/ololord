@@ -102,6 +102,11 @@ static bool threadLessThanByDate(const Thread &t1, const Thread &t2)
         return false;
 }
 
+static bool threadLessThanByCreationDate(const Thread &t1, const Thread &t2)
+{
+    return t1.creationDateTime().toUTC() > t2.creationDateTime().toUTC();
+}
+
 static bool threadGreaterThanByPosts(const Thread &t1, const Thread &t2)
 {
     return t1.posts().size() > t2.posts().size();
@@ -895,7 +900,7 @@ void AbstractBoard::handleCatalog(cppcms::application &app)
                 list.removeAt(i);
             }
         }
-        qSort(list.begin(), list.end(), sortByBumps ? &threadGreaterThanByPosts : &threadLessThanByDate);
+        qSort(list.begin(), list.end(), sortByBumps ? &threadGreaterThanByPosts : &threadLessThanByCreationDate);
         foreach (const Thread &tt, list) {
             Content::Catalog::Thread thread;
             const Thread::Posts &posts = tt.posts();
