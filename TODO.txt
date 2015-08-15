@@ -5,9 +5,9 @@
 [done] Add ability to prevent playing media files immediately
 [done] Add ability to select action when posting in thread
 [done] Add YouTube videos preview
+[done] Make video files movable
 * Add minimalistic post form mode
 
-* Make media files movable
 * Use D-Pointer approach for the lib
 * Reload codecha instead of reloading a page
 * Implement proxy blocking

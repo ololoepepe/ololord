@@ -739,6 +739,8 @@ span.newPostCount {
     position: fixed;
     z-index: 9905;
     border: 5px solid #777777;
+    padding: 0;
+    line-height: 0;
 }
 
 .postformFile {

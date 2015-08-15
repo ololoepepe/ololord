@@ -9,6 +9,7 @@ lord.lastPostPreview = null;
 lord.lastPostPreviewTimer = null;
 lord.images = {};
 lord.img = null;
+lord.imgWrapper = null;
 lord.postForm = {
     "visibility": {
         "Top": false,
@@ -829,7 +830,7 @@ lord.hideImage = function() {
             lord.img.pause();
             lord.img.load();
         }
-        lord.img.style.display = "none";
+        lord.imgWrapper.style.display = "none";
         lord.img = null;
         lord.query(".leafButton").forEach(function(a) {
             a.style.display = "none";
@@ -2143,10 +2144,18 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         return true;
     lord.img = lord.images[href];
     if (!!lord.img) {
-        lord.setInitialScale(lord.img, sizeHintX, sizeHintY);
-        lord.resetScale(lord.img);
-        lord.img.style.display = "";
-        lord.toCenter(lord.img, sizeHintX, sizeHintY, 3);
+        lord.removeChildren(lord.imgWrapper);
+        lord.imgWrapper.appendChild(lord.img);
+        if (lord.isAudioType(type)) {
+            if (lord.text("deviceType") == "mobile")
+                lord.imgWrapper.scale = 60;
+            else
+                lord.imgWrapper.scale = 100;
+        }
+        lord.setInitialScale(lord.imgWrapper, sizeHintX, sizeHintY);
+        lord.resetScale(lord.imgWrapper);
+        lord.imgWrapper.style.display = "";
+        lord.toCenter(lord.imgWrapper, sizeHintX, sizeHintY, 3);
         if (lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType)) {
             setTimeout(function() {
                 lord.img.play();
@@ -2159,6 +2168,14 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         }
         return false;
     }
+    var append = false;
+    if (!lord.imgWrapper) {
+        lord.imgWrapper = lord.node("div");
+        lord.addClass(lord.imgWrapper, "movableImage");
+        append = true;
+    } else {
+        lord.removeChildren(lord.imgWrapper);
+    }
     if (lord.isAudioType(type)) {
         sizeHintX = (lord.text("deviceType") == "mobile") ? 500 : 400;
         lord.img = lord.node("audio");
@@ -2167,7 +2184,9 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         if (lord.getLocalObject("loopAudioVideo", false))
             lord.img.loop = true;
         if (lord.text("deviceType") == "mobile")
-            lord.img.scale = 60;
+            lord.imgWrapper.scale = 60;
+        else
+            lord.imgWrapper.scale = 100;
         var defVol = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
         var remember = lord.getLocalObject("rememberAudioVideoVolume", false);
         lord.img.volume = remember ? lord.getLocalObject("audioVideoVolume", defVol) : defVol;
@@ -2196,8 +2215,9 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.img.appendChild(src);
     }
     lord.img.fileType = type;
-    lord.setInitialScale(lord.img, sizeHintX, sizeHintY);
-    lord.resetScale(lord.img);
+    lord.imgWrapper.appendChild(lord.img);
+    lord.setInitialScale(lord.imgWrapper, sizeHintX, sizeHintY);
+    lord.resetScale(lord.imgWrapper);
     lord.img.moving = false;
     lord.img.coord = {
         "x": 0,
@@ -2207,7 +2227,6 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         "x": 0,
         "y": 0
     };
-    lord.addClass(lord.img, "movableImage");
     var wheelHandler = function(e) {
         var e = window.event || e; //Old IE support
         e.preventDefault();
@@ -2216,27 +2235,27 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
             delta *= -1;
         var k = 1;
         if (delta < 0) {
-            while ((lord.img.scale + (delta / k)) <= 0)
+            while ((lord.imgWrapper.scale + (delta / k)) <= 0)
                 k *= 10;
         } else {
             //This is shitty, because floating point calculations are shitty
-            var s = parseFloat((lord.img.scale / (delta / k)).toString().substr(0, 5));
+            var s = parseFloat((lord.imgWrapper.scale / (delta / k)).toString().substr(0, 5));
             while (!lord.nearlyEqual(s - Math.floor(s), 0, 1 / 1000000)) {
                 k *= 10;
-                s = parseFloat((lord.img.scale / (delta / k)).toString().substr(0, 5));
+                s = parseFloat((lord.imgWrapper.scale / (delta / k)).toString().substr(0, 5));
             }
         }
-        lord.img.scale += (delta / k);
-        lord.resetScale(lord.img);
+        lord.imgWrapper.scale += (delta / k);
+        lord.resetScale(lord.imgWrapper);
     };
-    if (lord.img.addEventListener) {
-    	lord.img.addEventListener("mousewheel", wheelHandler, false); //IE9, Chrome, Safari, Opera
-	    lord.img.addEventListener("DOMMouseScroll", wheelHandler, false); //Firefox
+    if (lord.imgWrapper.addEventListener) {
+    	lord.imgWrapper.addEventListener("mousewheel", wheelHandler, false); //IE9, Chrome, Safari, Opera
+	    lord.imgWrapper.addEventListener("DOMMouseScroll", wheelHandler, false); //Firefox
     } else {
-        lord.img.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
+        lord.imgWrapper.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
     }
-    if (lord.isImageType(type)) {
-        lord.img.onmousedown = function(e) {
+    if (lord.isImageType(type) || lord.isVideoType(type)) {
+        lord.imgWrapper.onmousedown = function(e) {
             if (!!e.button)
                 return;
             e.preventDefault();
@@ -2246,7 +2265,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
             lord.img.initialCoord.x = e.clientX;
             lord.img.initialCoord.y = e.clientY;
         };
-        lord.img.onmouseup = function(e) {
+        lord.imgWrapper.onmouseup = function(e) {
             if (!!e.button)
                 return;
             e.preventDefault();
@@ -2256,26 +2275,29 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
                     lord.img.pause();
                     lord.img.currentTime = 0;
                 }
-                lord.img.style.display = "none";
+                lord.imgWrapper.style.display = "none";
                 lord.query(".leafButton").forEach(function(a) {
                     a.style.display = "none";
                 });
             }
         };
-        lord.img.onmousemove = function(e) {
+        lord.imgWrapper.onmousemove = function(e) {
             if (!lord.img.moving)
                 return;
             e.preventDefault();
             var dx = e.clientX - lord.img.coord.x;
             var dy = e.clientY - lord.img.coord.y;
-            lord.img.style.left = (lord.img.offsetLeft + dx) + "px";
-            lord.img.style.top = (lord.img.offsetTop + dy) + "px";
+            lord.imgWrapper.style.left = (lord.imgWrapper.offsetLeft + dx) + "px";
+            lord.imgWrapper.style.top = (lord.imgWrapper.offsetTop + dy) + "px";
             lord.img.coord.x = e.clientX;
             lord.img.coord.y = e.clientY;
         };
     }
-    document.body.appendChild(lord.img);
-    lord.toCenter(lord.img, sizeHintX, sizeHintY, 3);
+    if (append)
+        document.body.appendChild(lord.imgWrapper);
+    else
+        lord.imgWrapper.style.display = "";
+    lord.toCenter(lord.imgWrapper, sizeHintX, sizeHintY, 3);
     if ((lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType))
         && lord.getLocalObject("playAudioVideoImmediately", true)) {
         setTimeout(function() {
