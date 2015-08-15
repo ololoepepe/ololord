@@ -118,6 +118,8 @@ public:
     int maxAllowedRating;
     std::string maxAllowedRatingLabelText;
     unsigned int maxSearchQueryLength;
+    bool minimalisticPostform;
+    std::string minimalisticPostformLabelText;
     Mode mode;
     std::string modeLabelText;
     std::list<Mode> modes;

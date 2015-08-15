@@ -2995,6 +2995,11 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>moveToPostOnReplyInThreadLabelText</comment>
         <translation>Перемещаться к посту после ответа в треде:</translation>
     </message>
+    <message>
+        <source>Use minimalistic post form:</source>
+        <comment>minimalisticPostformLabelText</comment>
+        <translation>Использовать минималистичную форму ответа:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -3586,6 +3591,26 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <source>Show tripcode:</source>
         <comment>postFormLabelTripcode</comment>
         <translation>Показывать трипкод:</translation>
+    </message>
+    <message>
+        <source>E-mail</source>
+        <comment>postFormPlaceholderEmail</comment>
+        <translation>Эл. почта</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <comment>postFormPlaceholderName</comment>
+        <translation>Имя</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <comment>postFormPlaceholderPassword</comment>
+        <translation>Пароль</translation>
+    </message>
+    <message>
+        <source>Subject</source>
+        <comment>postFormPlaceholderSubject</comment>
+        <translation>Тема</translation>
     </message>
 </context>
 <context>

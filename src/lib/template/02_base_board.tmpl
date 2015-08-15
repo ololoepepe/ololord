@@ -607,51 +607,82 @@
         <tbody>
             <% include customPostFormField0() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelEmail %></b>
-                </td>
-                <td class="postformField">
-                    <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
-                    <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30"
+                               placeholder="<%= postFormPlaceholderEmail %>" />
+                        <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelEmail %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
+                        <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField1() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelName %></b>
-                </td>
-                <td class="postformField">
-                    <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <input type="text" maxlength="<%= maxNameLength %>" name="name" size="40"
+                               placeholder="<%= postFormPlaceholderName %>" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelName %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField2() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelSubject %></b>
-                </td>
-                <td class="postformField">
-                    <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="40"
+                               placeholder="<%= postFormPlaceholderSubject %>" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelSubject %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField3() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelText %></b>
-                </td>
-                <td class="postformField">
-                    <div class="symbolCounterContainer">
-                        <% if ( content.mode.name != "ascetic" ) %>
-                            <span class="symbolCounter"><span name="used">0</span>/<%= maxTextLength %></span>
-                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
-                        <% else %>
-                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
-                        <% end %>
-                    </div>
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <div class="symbolCounterContainer">
+                            <textarea name="text" rows="10" cols="41" placeholder="<%= postFormTextPlaceholder %>"
+                                      class="postFormTextarea"></textarea>
+                        </div>
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelText %></b>
+                    </td>
+                    <td class="postformField">
+                        <div class="symbolCounterContainer">
+                            <% if ( content.mode.name != "ascetic" ) %>
+                                <span class="symbolCounter"><span name="used">0</span>/<%= maxTextLength %></span>
+                                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                          class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                            <% else %>
+                                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                          class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                            <% end %>
+                        </div>
+                    </td>
+                <% end %>
             </tr>
-            <% if ( content.mode.name != "ascetic" ) %>
+            <% if ( content.mode.name != "ascetic" && content.deviceType != "mobile" && !content.minimalisticPostform ) %>
                 <tr>
                     <td>
                         <a class="hidePostformMarkupButton" />
@@ -693,10 +724,16 @@
             <% end %>
             <% include customPostFormField31() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelMarkupMode %></b>
-                </td>
-                <td class="postformField">
+                <% if ( content.deviceType != "mobile" && !content.minimalisticPostform ) %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelMarkupMode %></b>
+                    </td>
+                <% end %>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                <% else %>
+                    <td class="postformField">
+                <% end %>
                     <select name="markupMode" class="select">
                         <% foreach mode in markupModes %>
                             <% item %>
@@ -713,51 +750,86 @@
             <% include customPostFormField4() %>
             <% if ( content.moder >= 10 ) %>
                 <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelRaw %></b>
-                    </td>
-                    <td class="postformField">
-                        <input type="checkbox" name="raw" value="true" />
-                    </td>
+                    <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                        <td class="postformField" colspan="2">
+                            <b><%= postFormLabelRaw %></b>
+                            <input type="checkbox" name="raw" value="true" />
+                        </td>
+                    <% else %>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelRaw %></b>
+                        </td>
+                        <td class="postformField">
+                            <input type="checkbox" name="raw" value="true" />
+                        </td>
+                    <% end %>
                 </tr>
             <% end %>
             <% include customPostFormField41() %>
             <% if ( content.loggedIn ) %>
                 <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormLabelTripcode %></b>
-                    </td>
-                    <td class="postformField">
-                        <% if ( content.mode.name != "ascetic" ) %>
-                            <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
-                        <% else %>
-                            <input type="checkbox" name="tripcode" value="true" />
-                        <% end %>
-                    </td>
+                    <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                        <td class="postformField" colspan="2">
+                            <b><%= postFormLabelTripcode %></b>
+                            <% if ( content.mode.name != "ascetic" ) %>
+                                <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
+                            <% else %>
+                                <input type="checkbox" name="tripcode" value="true" />
+                            <% end %>
+                        </td>
+                    <% else %>
+                        <td class="postformLabel">
+                            <b><%= postFormLabelTripcode %></b>
+                        </td>
+                        <td class="postformField">
+                            <% if ( content.mode.name != "ascetic" ) %>
+                                <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
+                            <% else %>
+                                <input type="checkbox" name="tripcode" value="true" />
+                            <% end %>
+                        </td>
+                    <% end %>
                 </tr>
             <% end %>
             <% include customPostFormField42() %>
             <% if ( content.draftsEnabled && content.loggedIn ) %>
                 <tr>
-                    <td class="postformLabel" title="<%= postFormTooltipDraft %>">
-                        <b><%= postFormLabelDraft %></b>
-                    </td>
-                    <td class="postformField" title="<%= postFormTooltipDraft %>">
-                        <% if ( content.draftsByDefault ) %>
-                            <input type="checkbox" name="draft" value="true" checked="true" />
-                        <% else %>
-                            <input type="checkbox" name="draft" value="true" />
-                        <% end %>
-                    </td>
+                    <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                        <td class="postformField" title="<%= postFormTooltipDraft %>" colspan="2">
+                            <b><%= postFormLabelDraft %></b>
+                            <% if ( content.draftsByDefault ) %>
+                                <input type="checkbox" name="draft" value="true" checked="true" />
+                            <% else %>
+                                <input type="checkbox" name="draft" value="true" />
+                            <% end %>
+                        </td>
+                    <% else %>
+                        <td class="postformLabel" title="<%= postFormTooltipDraft %>">
+                            <b><%= postFormLabelDraft %></b>
+                        </td>
+                        <td class="postformField" title="<%= postFormTooltipDraft %>">
+                            <% if ( content.draftsByDefault ) %>
+                                <input type="checkbox" name="draft" value="true" checked="true" />
+                            <% else %>
+                                <input type="checkbox" name="draft" value="true" />
+                            <% end %>
+                        </td>
+                    <% end %>
                 </tr>
             <% end %>
             <% include customPostFormField5() %>
             <% if ( content.maxFileCount ) %>
                 <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormInputFile %></b>
-                    </td>
-                    <td class="postformField">
+                    <% if ( content.deviceType != "mobile" && !content.minimalisticPostform ) %>
+                        <td class="postformLabel">
+                            <b><%= postFormInputFile %></b>
+                        </td>
+                    <% end %>
+                    <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                        <td class="postformField" colspan="2">
+                    <% else %>
+                        <td class="postformField">
+                    <% end %>
                         <% if ( content.mode.name != "ascetic" ) %>
                             <div class="postformFile" onclick="lord.browseFile(event, this);"
                                  ondragover="return lord.fileDragOver(event, this);"
@@ -810,56 +882,80 @@
             <% end %>
             <% include customPostFormField6() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelPassword %></b>
-                </td>
-                <td class="postformField">
-                    <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="40"
+                               placeholder="<%= postFormPlaceholderPassword %>" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelPassword %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField7() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelCaptcha %></b>
-                </td>
-                <td id="captchaContainer" class="postformField">
-                    <% if ( content.captchaEnabled ) %>
-                        <% if ( content.captchaQuota > 0 ) %>
-                            <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
-                                <%= captchaQuota %></span>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td id="captchaContainer" class="postformField">
+                        <% if ( content.captchaEnabled ) %>
+                            <% if ( content.captchaQuota > 0 ) %>
+                                <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
+                                    <%= captchaQuota %></span>
+                            <% else %>
+                                <%= captchaWidgetHtml | raw %>
+                            <% end %>
                         <% else %>
-                            <%= captchaWidgetHtml | raw %>
+                            <span class="noCaptchaText"><%= noCaptchaText %></span>
                         <% end %>
-                    <% else %>
-                        <span class="noCaptchaText"><%= noCaptchaText %></span>
-                    <% end %>
-                </td>
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelCaptcha %></b>
+                    </td>
+                    <td id="captchaContainer" class="postformField">
+                        <% if ( content.captchaEnabled ) %>
+                            <% if ( content.captchaQuota > 0 ) %>
+                                <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
+                                    <%= captchaQuota %></span>
+                            <% else %>
+                                <%= captchaWidgetHtml | raw %>
+                            <% end %>
+                        <% else %>
+                            <span class="noCaptchaText"><%= noCaptchaText %></span>
+                        <% end %>
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField8() %>
-            <tr>
-                <td colspan="2" class="postformRules">
-                    <% if ( content.hidePostformRules ) %>
-                        <ul style="display: none;">
-                    <% else %>
-                        <ul>
-                    <% end %>
+            <% if ( content.deviceType != "mobile" && !content.minimalisticPostform ) %>
+                <tr>
+                    <td colspan="2" class="postformRules">
+                        <% if ( content.hidePostformRules ) %>
+                            <ul style="display: none;">
+                        <% else %>
+                            <ul>
+                        <% end %>
                         <% foreach rule in postformRules %>
-                            <% item %>
-                                <li><%= rule | raw %></li>
+                                <% item %>
+                                    <li><%= rule | raw %></li>
+                                <% end %>
+                            <% end %>
+                        </ul>
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            <% if ( content.hidePostformRules ) %>
+                                <a href="javascript:lord.setPostformRulesVisible(true);"
+                                   class="hidePostformRulesButton"><%= showPostformRulesText %></a>
+                            <% else %>
+                                <a href="javascript:lord.setPostformRulesVisible(false);"
+                                   class="hidePostformRulesButton"><%= hidePostformRulesText %></a>
                             <% end %>
                         <% end %>
-                    </ul>
-                    <% if ( content.mode.name != "ascetic" ) %>
-                        <% if ( content.hidePostformRules ) %>
-                            <a href="javascript:lord.setPostformRulesVisible(true);"
-                               class="hidePostformRulesButton"><%= showPostformRulesText %></a>
-                        <% else %>
-                            <a href="javascript:lord.setPostformRulesVisible(false);"
-                               class="hidePostformRulesButton"><%= hidePostformRulesText %></a>
-                        <% end %>
-                    <% end %>
-                </td>
-            </tr>
+                    </td>
+                </tr>
+            <% end %>
         </tbody>
     </table>
 </form>

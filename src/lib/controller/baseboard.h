@@ -210,6 +210,10 @@ public:
     std::string postFormLabelSubject;
     std::string postFormLabelText;
     std::string postFormLabelTripcode;
+    std::string postFormPlaceholderEmail;
+    std::string postFormPlaceholderName;
+    std::string postFormPlaceholderPassword;
+    std::string postFormPlaceholderSubject;
     std::list<std::string> postformRules;
     std::string postFormTextPlaceholder;
     std::string postFormTooltipDraft;

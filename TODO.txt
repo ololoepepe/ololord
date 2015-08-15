@@ -6,7 +6,7 @@
 [done] Add ability to select action when posting in thread
 [done] Add YouTube videos preview
 [done] Make video files movable
-* Add minimalistic post form mode
+[done] Add minimalistic post form mode
 
 * Use D-Pointer approach for the lib
 * Reload codecha instead of reloading a page

@@ -244,6 +244,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         c.maxAllowedRating = 18;
     c.maxAllowedRatingLabelText = ts.translate("initBase", "Maximum allowed rating:", "maxAllowedRatingLabelText");
     c.maxSearchQueryLength = 150;
+    c.minimalisticPostform = !Tools::cookieValue(req, "minimalisticPostform").compare("true", Qt::CaseInsensitive);
+    c.minimalisticPostformLabelText = ts.translate("initBase", "Use minimalistic post form:",
+                                                   "minimalisticPostformLabelText");
     c.mode.name = Tools::toStd(Tools::cookieValue(req, "mode"));
     if (c.mode.name.empty())
         c.mode.name = "normal";
@@ -539,6 +542,10 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
     c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode:", "postFormLabelTripcode");
+    c.postFormPlaceholderEmail = ts.translate("initBaseBoard", "E-mail", "postFormPlaceholderEmail");
+    c.postFormPlaceholderName = ts.translate("initBaseBoard", "Name", "postFormPlaceholderName");
+    c.postFormPlaceholderPassword = ts.translate("initBaseBoard", "Password", "postFormPlaceholderPassword");
+    c.postFormPlaceholderSubject = ts.translate("initBaseBoard", "Subject", "postFormPlaceholderSubject");
     c.postFormTooltipDraft = ts.translate("initBaseBoard", "A post marked as a draft is only visible to yourself and "
                                           "moderators/admins. You may edit a draft as many times as you wish. "
                                           "Finally, when you remove the \"draft\" mark, your post will become visible "

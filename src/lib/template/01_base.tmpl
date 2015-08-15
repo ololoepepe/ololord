@@ -284,6 +284,18 @@
                 </tr>
                 <tr>
                     <td>
+                        <%= minimalisticPostformLabelText %>
+                    </td>
+                    <td>
+                        <% if ( content.minimalisticPostform ) %>
+                            <input type="checkbox" name="minimalisticPostform" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="minimalisticPostform" value="true" />
+                        <% end %>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <%= hiddenBoardsLabelText %>
                     </td>
                     <td>

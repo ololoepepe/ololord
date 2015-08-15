@@ -211,6 +211,10 @@ lord.showSettings = function() {
         lord.setCookie("hidePostformRules", hr, {
             "expires": lord.Billion, "path": "/"
         });
+        var mp = !!lord.nameOne("minimalisticPostform", div).checked;
+        lord.setCookie("minimalisticPostform", mp, {
+            "expires": lord.Billion, "path": "/"
+        });
         var hiddenBoards = [];
         lord.query("input", lord.nameOne("hiddenBoards", div)).forEach(function(inp) {
             if (!!inp.checked)
