@@ -2263,55 +2263,56 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.imgWrapper.scale += (delta / k);
         lord.resetScale(lord.imgWrapper);
     };
-    if (lord.imgWrapper.addEventListener) {
-    	lord.imgWrapper.addEventListener("mousewheel", wheelHandler, false); //IE9, Chrome, Safari, Opera
-	    lord.imgWrapper.addEventListener("DOMMouseScroll", wheelHandler, false); //Firefox
-    } else {
-        lord.imgWrapper.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
-    }
-    if (lord.isImageType(type) || lord.isVideoType(type)) {
-        lord.imgWrapper.onmousedown = function(e) {
-            if (!!e.button)
-                return;
-            e.preventDefault();
-            lord.img.moving = true;
-            lord.img.coord.x = e.clientX;
-            lord.img.coord.y = e.clientY;
-            lord.img.initialCoord.x = e.clientX;
-            lord.img.initialCoord.y = e.clientY;
-        };
-        lord.imgWrapper.onmouseup = function(e) {
-            if (!!e.button)
-                return;
-            e.preventDefault();
-            lord.img.moving = false;
-            if (lord.img.initialCoord.x === e.clientX && lord.img.initialCoord.y === e.clientY) {
-                if (lord.isAudioType(type) || lord.isVideoType(type)) {
-                    lord.img.pause();
-                    lord.img.currentTime = 0;
+    if (append) {
+        if (lord.imgWrapper.addEventListener) {
+        	lord.imgWrapper.addEventListener("mousewheel", wheelHandler, false); //IE9, Chrome, Safari, Opera
+	        lord.imgWrapper.addEventListener("DOMMouseScroll", wheelHandler, false); //Firefox
+        } else {
+            lord.imgWrapper.attachEvent("onmousewheel", wheelHandler); //IE 6/7/8
+        }
+        if (lord.isImageType(type) || lord.isVideoType(type)) {
+            lord.imgWrapper.onmousedown = function(e) {
+                if (!!e.button)
+                    return;
+                e.preventDefault();
+                lord.img.moving = true;
+                lord.img.coord.x = e.clientX;
+                lord.img.coord.y = e.clientY;
+                lord.img.initialCoord.x = e.clientX;
+                lord.img.initialCoord.y = e.clientY;
+            };
+            lord.imgWrapper.onmouseup = function(e) {
+                if (!!e.button)
+                    return;
+                e.preventDefault();
+                lord.img.moving = false;
+                if (lord.img.initialCoord.x === e.clientX && lord.img.initialCoord.y === e.clientY) {
+                    if (lord.isAudioType(type) || lord.isVideoType(type)) {
+                        lord.img.pause();
+                        lord.img.currentTime = 0;
+                    }
+                    lord.imgWrapper.style.display = "none";
+                    lord.query(".leafButton").forEach(function(a) {
+                        a.style.display = "none";
+                    });
                 }
-                lord.imgWrapper.style.display = "none";
-                lord.query(".leafButton").forEach(function(a) {
-                    a.style.display = "none";
-                });
-            }
-        };
-        lord.imgWrapper.onmousemove = function(e) {
-            if (!lord.img.moving)
-                return;
-            e.preventDefault();
-            var dx = e.clientX - lord.img.coord.x;
-            var dy = e.clientY - lord.img.coord.y;
-            lord.imgWrapper.style.left = (lord.imgWrapper.offsetLeft + dx) + "px";
-            lord.imgWrapper.style.top = (lord.imgWrapper.offsetTop + dy) + "px";
-            lord.img.coord.x = e.clientX;
-            lord.img.coord.y = e.clientY;
-        };
-    }
-    if (append)
+            };
+            lord.imgWrapper.onmousemove = function(e) {
+                if (!lord.img.moving)
+                    return;
+                e.preventDefault();
+                var dx = e.clientX - lord.img.coord.x;
+                var dy = e.clientY - lord.img.coord.y;
+                lord.imgWrapper.style.left = (lord.imgWrapper.offsetLeft + dx) + "px";
+                lord.imgWrapper.style.top = (lord.imgWrapper.offsetTop + dy) + "px";
+                lord.img.coord.x = e.clientX;
+                lord.img.coord.y = e.clientY;
+            };
+        }
         document.body.appendChild(lord.imgWrapper);
-    else
+    } else {
         lord.imgWrapper.style.display = "";
+    }
     lord.toCenter(lord.imgWrapper, sizeHintX, sizeHintY, 3);
     if ((lord.isAudioType(lord.img.fileType) || lord.isVideoType(lord.img.fileType))
         && lord.getLocalObject("playAudioVideoImmediately", true)) {
