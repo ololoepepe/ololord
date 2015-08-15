@@ -7,6 +7,7 @@
 [done] Add YouTube videos preview
 [done] Make video files movable
 [done] Add minimalistic post form mode
+[done] Add sorting by last post date in catalog
 
 * Use D-Pointer approach for the lib
 * Reload codecha instead of reloading a page

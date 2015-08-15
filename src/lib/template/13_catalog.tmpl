@@ -134,14 +134,22 @@
                 <select name="catalogSortingModeSelect" class="select" onchange="lord.changeCatalogSortingMode();">
                     <% if ( content.sortingMode == "date" ) %>
                         <option value="date" selected="true"><%= sortingModeDateLabelText %></option>
+                        <option value="recent"><%= sortingModeRecentLabelText %></option>
+                        <option value="bumps"><%= sortingModeBumpsLabelText %></option>
+                    <% elif ( content.sortingMode == "recent" ) %>
+                        <option value="date"><%= sortingModeDateLabelText %></option>
+                        <option value="recent" selected="true"><%= sortingModeRecentLabelText %></option>
                         <option value="bumps"><%= sortingModeBumpsLabelText %></option>
                     <% else %>
                         <option value="date"><%= sortingModeDateLabelText %></option>
+                        <option value="recent"><%= sortingModeRecentLabelText %></option>
                         <option value="bumps" selected="true"><%= sortingModeBumpsLabelText %></option>
                     <% end %>
                 </select>
             <% else %>
                 <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/catalog.html?sort=date"><%= sortingModeDateLabelText %></a>
+                |
+                <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/catalog.html?sort=recent"><%= sortingModeRecentLabelText %></a>
                 |
                 <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/catalog.html?sort=bumps"><%= sortingModeBumpsLabelText %></a>
             <% end %>

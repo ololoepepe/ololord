@@ -526,6 +526,11 @@ By default, the date of first site launch is used.</source>
         <comment>postFormLabelMarkupMode</comment>
         <translation>Режим разметки:</translation>
     </message>
+    <message>
+        <source>Last post date</source>
+        <comment>sortingModeRecentLabelText</comment>
+        <translation>Дате последнего поста</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
