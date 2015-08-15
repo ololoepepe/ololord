@@ -160,6 +160,8 @@ public:
     std::string showNewPostsLabelText;
     std::string showPasswordText;
     std::string showYoutubeVideoTitleLabelText;
+    std::string signOpPostLinksLabelText;
+    std::string signOwnPostLinksLabelText;
     std::string siteDomain;
     std::string sitePathPrefix;
     std::string siteProtocol;

@@ -470,11 +470,17 @@ lord.createPostNode = function(res, permanent, boardName) {
         draftIndicator.style.display = "";
     else
         draftIndicator.parentNode.removeChild(draftIndicator);    
-    
+    var opSign = lord.nameOne("opSign", post);
+    if (!res["signAsOp"] || !res["opIp"])
+        opSign.parentNode.removeChild(opSign);
     var postSubject = lord.nameOne("postSubject", post);
     postSubject.appendChild(lord.node("text", res["subject"]));
     if (res["subject"].length < 1)
         lord.addClass(postSubject, "defaultPostSubject");
+    if (res["opIp"])
+        lord.addClass(post, "opIp");
+    if (res["ownIp"])
+        lord.addClass(post, "ownIp");
     var registered = lord.nameOne("registered", post);
     if (!!res["showRegistered"] && !!res["showTripcode"])
         registered.style.display = "";
@@ -1025,6 +1031,10 @@ lord.postNodeInserted = function(post) {
         return;
     if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
         lord.strikeOutHiddenPostLinks(post);
+    if (!!lord.getLocalObject("signOpPostLinks", true))
+        lord.signOpPostLinks(post);
+    if (!!lord.getLocalObject("signOwnPostLinks", true))
+        lord.signOwnPostLinks(post);
     var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
     lastPostNumbers[lord.text("currentBoardName")] = +post.id.replace("post", "");
     lord.setLocalObject("lastPostNumbers", lastPostNumbers);
@@ -2128,10 +2138,15 @@ lord.changeLastCodeLang = function() {
 };
 
 lord.setPostformMarkupVisible = function(visible) {
+    var span = lord.queryOne(".postformMarkup > span");
+    if (!span)
+        return false;
     var hide = !visible;
     lord.setLocalObject("hidePostformMarkup", hide);
-    lord.queryOne(".postformMarkup > span").style.display = hide ? "none" : "";
+    span.style.display = hide ? "none" : "";
     var a = lord.queryOne("a.hidePostformMarkupButton");
+    if (!a)
+        return false;
     lord.removeChildren(a);
     a.appendChild(lord.node("text", lord.text(hide ? "showPostformMarkupText" : "hidePostformMarkupText")));
     a.onclick = lord.setPostformMarkupVisible.bind(lord, hide);
@@ -2571,7 +2586,7 @@ lord.strikeOutHiddenPostLinks = function(parent) {
     var list = lord.getLocalObject("hiddenPosts", {});
     var cbn = lord.text("currentBoardName");
     lord.query("a", parent).forEach(function(a) {
-        var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+)$/);
+        var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
         if (!m || !m.length || m.length < 3)
             return;
         var bn = m[2] ? m[2] : cbn;
@@ -2580,6 +2595,60 @@ lord.strikeOutHiddenPostLinks = function(parent) {
             lord.addClass(a, "hiddenPostLink");
         else
             lord.removeClass(a, "hiddenPostLink");
+    });
+};
+
+lord.signOpPostLinks = function(parent) {
+    if (!parent)
+        parent = document;
+    var cbn = lord.text("currentBoardName");
+    lord.query("a", parent).forEach(function(a) {
+        var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
+        if (!m || !m.length || m.length < 3)
+            return;
+        var bn = m[2] ? m[2] : cbn;
+        var pn = m[m.length - 1];
+        var post = lord.id("post" + pn);
+        if (post) {
+            if (!lord.hasClass(post, "opPost"))
+                return;
+            a.appendChild(lord.node("text", " (OP)"));
+        } else {
+            (function(a, bn, pn) {
+                lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                    if (res["number"] != res["threadNumber"])
+                        return;
+                    a.appendChild(lord.node("text", " (OP)"));
+                });
+            })(a, bn, pn);
+        }
+    });
+};
+
+lord.signOwnPostLinks = function(parent) {
+    if (!parent)
+        parent = document;
+    var cbn = lord.text("currentBoardName");
+    lord.query("a", parent).forEach(function(a) {
+        var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
+        if (!m || !m.length || m.length < 3)
+            return;
+        var bn = m[2] ? m[2] : cbn;
+        var pn = m[m.length - 1];
+        var post = lord.id("post" + pn);
+        if (post) {
+            if (!lord.hasClass(post, "ownIp"))
+                return;
+            a.appendChild(lord.node("text", " (You)"));
+        } else {
+            (function(a, bn, pn) {
+                lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                    if (!res["ownIp"])
+                        return;
+                    a.appendChild(lord.node("text", " (You)"));
+                });
+            })(a, bn, pn);
+        }
     });
 };
 
@@ -2953,13 +3022,19 @@ lord.initializeOnLoadBaseBoard = function() {
     }
     var lastLang = lord.getLocalObject("lastCodeLang", "-");
     var sel = lord.queryOne(".postformMarkup > span > [name='langSelect']");
-    lord.arr(sel.options).forEach(function(opt) {
-        if (opt.value == lastLang)
-            opt.selected = true;
-    });
+    if (!!sel) {
+        lord.arr(sel.options).forEach(function(opt) {
+            if (opt.value == lastLang)
+                opt.selected = true;
+        });
+    }
     lord.setPostformMarkupVisible(!lord.getLocalObject("hidePostformMarkup", false));
     if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
         lord.strikeOutHiddenPostLinks();
+    if (!!lord.getLocalObject("signOpPostLinks", true))
+        lord.signOpPostLinks();
+    if (!!lord.getLocalObject("signOwnPostLinks", true))
+        lord.signOwnPostLinks();
     if (!lord.text("currentThreadNumber")) {
         var lastPostNumbers = lord.getLocalObject("lastPostNumbers", {});
         lastPostNumbers[lord.text("currentBoardName")] = +lord.text("lastPostNumber");

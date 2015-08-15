@@ -153,6 +153,10 @@ lord.showSettings = function() {
     autoUpdateInterval.value = lord.getLocalObject("autoUpdateInterval", 15);
     var showAutoUpdateTimer = lord.nameOne("showAutoUpdateTimer", div);
     showAutoUpdateTimer.checked = !!lord.getLocalObject("showAutoUpdateTimer", true);
+    var signOpPostLinks = lord.nameOne("signOpPostLinks", div);
+    signOpPostLinks.checked = !!lord.getLocalObject("signOpPostLinks", true);
+    var signOwnPostLinks = lord.nameOne("signOwnPostLinks", div);
+    signOwnPostLinks.checked = !!lord.getLocalObject("signOwnPostLinks", true);
     var showAutoUpdateDesktopNotifications = lord.nameOne("showAutoUpdateDesktopNotifications", div);
     showAutoUpdateDesktopNotifications.checked = !!lord.getLocalObject("showAutoUpdateDesktopNotifications", false);
     var hideTripcodes = lord.nameOne("hideTripcodes", div);
@@ -244,6 +248,8 @@ lord.showSettings = function() {
         lord.setLocalObject("autoUpdateThreadsByDefault", !!autoUpdateThreadsByDefault.checked);
         lord.setLocalObject("autoUpdateInterval", +autoUpdateInterval.value);
         lord.setLocalObject("showAutoUpdateTimer", !!showAutoUpdateTimer.checked);
+        lord.setLocalObject("signOpPostLinks", !!signOpPostLinks.checked);
+        lord.setLocalObject("signOwnPostLinks", !!signOwnPostLinks.checked);
         lord.setLocalObject("showAutoUpdateDesktopNotifications", !!showAutoUpdateDesktopNotifications.checked);
         lord.setLocalObject("hideTripcodes", !!hideTripcodes.checked);
         lord.setLocalObject("hideUserNames", !!hideUserNames.checked);

@@ -73,6 +73,7 @@ public:
     std::string name;
     std::string nameRaw;
     unsigned long long number;
+    bool opIp;
     bool ownHashpass;
     bool ownIp;
     std::string rawName;
@@ -83,6 +84,7 @@ public:
     std::list<Ref> refersTo;
     unsigned int sequenceNumber;
     bool showRegistered;
+    bool signAsOp;
     std::string subject;
     bool subjectIsRaw;
     std::string text;
@@ -207,6 +209,7 @@ public:
     std::string postFormLabelName;
     std::string postFormLabelPassword;
     std::string postFormLabelRaw;
+    std::string postFormLabelSignAsOp;
     std::string postFormLabelSubject;
     std::string postFormLabelText;
     std::string postFormLabelTripcode;

@@ -128,7 +128,7 @@ Post::Post()
 
 Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
            const QString &posterIp, const QString &countryCode, const QString &countryName, const QString &cityName,
-           const QByteArray &password, const QByteArray &hashpass)
+           const QByteArray &password, const QByteArray &hashpass, bool signAsOp)
 {
     id_ = 0L;
     board_ = board;
@@ -147,6 +147,7 @@ Post::Post(const QString &board, quint64 number, const QDateTime &dateTime, QSha
     draft_ = false;
     extendedWakabaMarkEnabled_ = true;
     bbCodeEnabled_ = true;
+    signAsOp_ = signAsOp;
     password_ = password;
 }
 
@@ -253,6 +254,11 @@ bool Post::extendedWakabaMarkEnabled() const
 bool Post::bbCodeEnabled() const
 {
     return bbCodeEnabled_;
+}
+
+bool Post::signAsOp() const
+{
+    return signAsOp_;
 }
 
 QString Post::rawText() const

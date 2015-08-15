@@ -318,6 +318,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showYoutubeVideoTitleLabelText = ts.translate("initBase", "Show titles of YouTube videos:",
                                                     "showYoutubeVideoTitleLabelText");
+    c.signOpPostLinksLabelText = ts.translate("initBase", "Mark OP post links:", "signOpPostLinksLabelText");
+    c.signOwnPostLinksLabelText = ts.translate("initBase", "Mark own post links:", "signOwnPostLinksLabelText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
@@ -546,6 +548,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
     c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
+    c.postFormLabelSignAsOp = ts.translate("initBaseBoard", "Sign as OP:", "postFormLabelSignAsOp");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
     c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode:", "postFormLabelTripcode");

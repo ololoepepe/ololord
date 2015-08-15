@@ -3005,6 +3005,16 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>minimalisticPostformLabelText</comment>
         <translation>Использовать минималистичную форму ответа:</translation>
     </message>
+    <message>
+        <source>Mark OP post links:</source>
+        <comment>signOpPostLinksLabelText</comment>
+        <translation>Помечать ссылки на ОП-посты:</translation>
+    </message>
+    <message>
+        <source>Mark own post links:</source>
+        <comment>signOwnPostLinksLabelText</comment>
+        <translation>Помечать ссылки на собственные посты:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -3616,6 +3626,11 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <source>Subject</source>
         <comment>postFormPlaceholderSubject</comment>
         <translation>Тема</translation>
+    </message>
+    <message>
+        <source>Sign as OP:</source>
+        <comment>postFormLabelSignAsOp</comment>
+        <translation>Подписаться как ОП:</translation>
     </message>
 </context>
 <context>

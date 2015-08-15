@@ -436,6 +436,10 @@ span.newPostCount {
     display: inline-block;
 }
 
+.opSign {
+    color: green;
+}
+
 /*
     Create action /pr/
 */

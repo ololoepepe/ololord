@@ -54,6 +54,9 @@
 <% template customPostFormField42() %>
 <% end template %>
 
+<% template customPostFormField43() %>
+<% end template %>
+
 <% template customPostFormField5() %>
 <% end template %>
 
@@ -236,9 +239,33 @@
 
 <% template post(Content::Post post, Content::Board::ThreadPointer thread) %>
 <% if ( post.number == post.threadNumber ) %>
-    <div id="post<%= post.number %>" class="opPost">
+    <% if ( post.ownIp ) %>
+        <% if ( post.opIp ) %>
+            <div id="post<%= post.number %>" class="opPost ownIp opIp">
+        <% else %>
+            <div id="post<%= post.number %>" class="opPost ownIp">
+        <% end %>
+    <% else %>
+        <% if ( post.opIp ) %>
+            <div id="post<%= post.number %>" class="opPost opIp">
+        <% else %>
+            <div id="post<%= post.number %>" class="opPost">
+        <% end %>
+    <% end %>
 <% else %>
-    <div id="post<%= post.number %>" class="post">
+    <% if ( post.ownIp ) %>
+        <% if ( post.opIp ) %>
+            <div id="post<%= post.number %>" class="post ownIp opIp">
+        <% else %>
+            <div id="post<%= post.number %>" class="post ownIp">
+        <% end %>
+    <% else %>
+        <% if ( post.opIp ) %>
+            <div id="post<%= post.number %>" class="post opIp">
+        <% else %>
+            <div id="post<%= post.number %>" class="post">
+        <% end %>
+    <% end %>
 <% end %>
     <a id="<%= post.number %>"></a>
     <% if ( post.rawHtml ) %>
@@ -293,6 +320,9 @@
                 <%= post.name | raw %>
             <% end %>
         </span>
+        <% if ( post.ownIp && post.signAsOp ) %>
+            <span class="opSign">[OP]</span>
+        <% end %>
         <% if ( !post.tripcode.empty() && post.showTripcode ) %>
             <span class="tripcode <%= deviceType %>"><%= post.tripcode %></span>
         <% end %>
@@ -766,6 +796,22 @@
                 </tr>
             <% end %>
             <% include customPostFormField41() %>
+            <tr>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <b><%= postFormLabelSignAsOp %></b>
+                        <input type="checkbox" name="signAsOp" value="true" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelSignAsOp %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="checkbox" name="signAsOp" value="true" />
+                    </td>
+                <% end %>
+            </tr>
+            <% include customPostFormField42() %>
             <% if ( content.loggedIn ) %>
                 <tr>
                     <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
@@ -791,7 +837,7 @@
                     <% end %>
                 </tr>
             <% end %>
-            <% include customPostFormField42() %>
+            <% include customPostFormField43() %>
             <% if ( content.draftsEnabled && content.loggedIn ) %>
                 <tr>
                     <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
@@ -1065,6 +1111,7 @@
         <img name="registered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
              style="display: none;">
         <span class="someName <%= deviceType %>" name="someName"><span name="userName"></span></span>
+        <span class="opSign" name="opSign">[OP]</span>
         <span name="tripcode" class="tripcode <%= deviceType %>" style="display: none;"></span>
         <img name="whois" src="/<%= sitePathPrefix %>img/flag/%flagName%" style="display: none;">
         <span name="dateTime" class="postDateTime <%= deviceType %>"></span>

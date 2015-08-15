@@ -10,6 +10,9 @@
 [done] Add sorting by last post date in catalog
 [done] Implement adding custom links to navbar
 [done] Add links to threads without images in catalog
+[done] Add "OP" and "You" marks to post links
+[done] Add ability to sign posts with "OP" mark
+* Fix moving video files
 
 * Use D-Pointer approach for the lib
 * Reload codecha instead of reloading a page

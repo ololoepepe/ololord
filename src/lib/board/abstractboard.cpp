@@ -1522,6 +1522,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             p->markupMode = "bbc_only";
         else
             p->markupMode = "none";
+        p->signAsOp = post.signAsOp();
         p->userData = post.userData();
         quint64 threadNumber = 0;
         try {
@@ -1593,6 +1594,7 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             p->closed = op && !thread->postingEnabled();
             p->bumpLimitReached = op && thread->posts().size() >= int(bumpLimit());
             p->postLimitReached = op && thread->posts().size() >= int(postLimit());
+            p->opIp = thread->posts().first().load()->posterIp() == Tools::userIp(req);
             typedef QLazySharedPointer<PostReference> PostReferenceSP;
             foreach (PostReferenceSP reference, post.referencedBy()) {
                 QSharedPointer<Post> rp = reference.load()->sourcePost().load();
@@ -1751,6 +1753,8 @@ cppcms::json::object AbstractBoard::toJson(const Content::Post &post, const cppc
     o["tripcode"] = post.tripcode;
     o["ownHashpass"] = post.ownHashpass;
     o["ownIp"] = post.ownIp;
+    o["opIp"] = post.opIp;
+    o["signAsOp"] = post.signAsOp;
     cppcms::json::array refs;
     typedef Content::Post::Ref Ref;
     for (std::list<Ref>::const_iterator i = post.referencedBy.begin(); i != post.referencedBy.end(); ++i) {

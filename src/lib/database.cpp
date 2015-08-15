@@ -622,7 +622,8 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         QString ip = Tools::userIp(p.request);
         GeolocationInfo gli = geolocationInfo(ip);
         QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, gli.countryCode,
-                                         gli.countryName, gli.cityName, post.password, hp));
+                                         gli.countryName, gli.cityName, post.password, hp,
+                                         !p.params.value("signAsOp").compare("true", Qt::CaseInsensitive)));
         ps->setEmail(post.email);
         ps->setName(post.name);
         ps->setSubject(post.subject);

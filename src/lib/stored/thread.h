@@ -123,6 +123,7 @@ private:
     bool rawHtml_;
     bool extendedWakabaMarkEnabled_;
     bool bbCodeEnabled_;
+    bool signAsOp_;
     QString rawText_;
     PRAGMA_DB(value_not_null value_type("INTEGER") inverse(targetPost_))
     PostReferences referencedBy_;
@@ -140,7 +141,8 @@ public:
     explicit Post();
     explicit Post(const QString &board, quint64 number, const QDateTime &dateTime, QSharedPointer<Thread> thread,
                   const QString &posterIp, const QString &countryCode, const QString &countryName,
-                  const QString &cityName, const QByteArray &password, const QByteArray &hashpass = QByteArray());
+                  const QString &cityName, const QByteArray &password, const QByteArray &hashpass = QByteArray(),
+                  bool signAsOp = false);
 public:
     quint64 id() const;
     QString board() const;
@@ -163,6 +165,7 @@ public:
     bool rawHtml() const;
     bool extendedWakabaMarkEnabled() const;
     bool bbCodeEnabled() const;
+    bool signAsOp() const;
     QString rawText() const;
     PostReferences referencedBy() const;
     PostReferences refersTo() const;
