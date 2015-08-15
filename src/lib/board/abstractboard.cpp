@@ -1328,7 +1328,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
             return false;
         Tools::AudioTags tags = Tools::audioTags(sfn);
         QVariantMap m;
-        if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
+        if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, 3 * BeQt::Second, 15 * BeQt::Second, &out)) {
             if (rxd.indexIn(out) >= 0) {
                 m.insert("duration", rxd.cap(1));
                 m.insert("bitrate", rxd.cap(2));
@@ -1348,7 +1348,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");
         ft.setThumbFile(path + "/" + dt + "s.png");
-        if (!BeQt::execProcess(path, ffmpeg, args, BeQt::Second, 5 * BeQt::Second)) {
+        if (!BeQt::execProcess(path, ffmpeg, args, 3 * BeQt::Second, 15 * BeQt::Second)) {
             if (!img.load(path + "/" + dt + "s.png"))
                 return false;
             scaleThumbnail(img, ft);
@@ -1361,7 +1361,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         if (!img.save(path + "/" + dt + "s.png", "png"))
             return false;
         QVariantMap m;
-        if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, BeQt::Second, 5 * BeQt::Second, &out)) {
+        if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, 3 * BeQt::Second, 15 * BeQt::Second, &out)) {
             if (rxd.indexIn(out) >= 0) {
                 m.insert("duration", rxd.cap(1));
                 m.insert("bitrate", rxd.cap(2));
@@ -1373,7 +1373,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         QStringList args = QStringList() << "-density" << "300" << (QDir::toNativeSeparators(sfn) + "[0]")
                                          << "-quality" << "100" << "+adjoin" << (dt + "s.png");
         ft.setThumbFile(path + "/" + dt + "s.png");
-        if (!BeQt::execProcess(path, convert, args, BeQt::Second, 5 * BeQt::Second)) {
+        if (!BeQt::execProcess(path, convert, args, 3 * BeQt::Second, 15 * BeQt::Second)) {
             if (!img.load(path + "/" + dt + "s.png"))
                 return false;
             scaleThumbnail(img, ft);
