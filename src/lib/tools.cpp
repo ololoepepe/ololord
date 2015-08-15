@@ -270,6 +270,40 @@ QString customContent(const QString &prefix, const QLocale &l)
     return *s;
 }
 
+QList<CustomLinkInfo> customLinks(const QLocale &l)
+{
+    QList<CustomLinkInfo> *list = Cache::customLinks(l);
+    if (!list) {
+        QString path = BDirTools::findResource("res", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return QList<CustomLinkInfo>();
+        QString fn = BDirTools::localeBasedFileName(path + "/custom_links.txt", l);
+        if (fn.isEmpty())
+            return QList<CustomLinkInfo>();
+        list = new QList<CustomLinkInfo>;
+        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::KeepEmptyParts);
+        foreach (const QString &s, sl) {
+            QStringList sll = BTextTools::splitCommand(s);
+            if (sll.size() < 2)
+                continue;
+            if (sll.first().isEmpty() || sll.at(1).isEmpty())
+                continue;
+            CustomLinkInfo info;
+            info.text = sll.first();
+            info.url = sll.at(1);
+            if (sll.size() > 2)
+                info.imgUrl = sll.at(2);
+            *list << info;
+        }
+        if (!Cache::cacheCustomLinks(l, list)) {
+            QList<CustomLinkInfo> llist = *list;
+            delete list;
+            return llist;
+        }
+    }
+    return *list;
+}
+
 QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
 {
     QString s = cookieValue(req, "time");

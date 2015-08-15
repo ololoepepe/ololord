@@ -25,6 +25,8 @@ namespace Cache
 
 static QCache<QString, QString> theCustomContent;
 static QReadWriteLock customContentLock(QReadWriteLock::Recursive);
+static QCache<QString, CustomLinkInfoList> theCustomLinks;
+static QReadWriteLock customLinksLock(QReadWriteLock::Recursive);
 static QCache<QString, File> dynamicFiles;
 static QReadWriteLock dynamicFilesLock(QReadWriteLock::Recursive);
 static QCache<QString, Tools::FriendList> theFriendList;
@@ -57,6 +59,7 @@ ClearCacheFunctionMap availableClearCacheFunctions()
 {
     init_once(ClearCacheFunctionMap, map, ClearCacheFunctionMap()) {
         map.insert("custom_content", &clearCustomContent);
+        map.insert("custom_links", &clearCustomLinks);
         map.insert("dynamic_files", &clearDynamicFilesCache);
         map.insert("friend_list", &clearFriendListCache);
         map.insert("ip_ban_info_list", &clearIpBanInfoListCache);
@@ -73,6 +76,7 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 {
     init_once(SetMaxCacheSizeFunctionMap, map, SetMaxCacheSizeFunctionMap()) {
         map.insert("custom_content", &setCustomContentMaxCacheSize);
+        map.insert("custom_links", &setCustomLinksMaxCacheSize);
         map.insert("dynamic_files", &setDynamicFilesMaxCacheSize);
         map.insert("friend_list", &setFriendListMaxCacheSize);
         map.insert("ip_ban_info_list", &setIpBanInfoListMaxCacheSize);
@@ -88,6 +92,8 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 QStringList availableCacheNames()
 {
     init_once(QStringList, names, QStringList()) {
+        names << "custom_content";
+        names << "custom_links";
         names << "home_page";
         names << "dynamic_files";
         names << "friend_list";
@@ -112,6 +118,20 @@ bool cacheCustomContent(const QString &prefix, const QLocale &l, QString *conten
     if (theCustomContent.maxCost() < sz)
         return false;
     theCustomContent.insert(prefix + "/" + l.name(), content, sz);
+    return true;
+}
+
+bool cacheCustomLinks(const QLocale &l, CustomLinkInfoList *list)
+{
+    if (!list)
+        return false;
+    QWriteLocker locker(&customLinksLock);
+    do_once(init)
+        initCache(theCustomLinks, "custom_links", defaultCustomLinksCacheSize);
+    int sz = list->size();
+    if (theCustomLinks.maxCost() < sz)
+        return false;
+    theCustomLinks.insert(l.name(), list, sz);
     return true;
 }
 
@@ -251,6 +271,12 @@ void clearCustomContent()
     theCustomContent.clear();
 }
 
+void clearCustomLinks()
+{
+    QWriteLocker locker(&customLinksLock);
+    theCustomLinks.clear();
+}
+
 void clearDynamicFilesCache()
 {
     QWriteLocker locker(&dynamicFilesLock);
@@ -307,11 +333,18 @@ QString *customContent(const QString &prefix, const QLocale &l)
     return theCustomContent.object(prefix + "/" + l.name());
 }
 
+CustomLinkInfoList *customLinks(const QLocale &l)
+{
+    QReadLocker locker(&customLinksLock);
+    return theCustomLinks.object(l.name());
+}
+
 int defaultCacheSize(const QString &name)
 {
     typedef QMap<QString, int> IntMap;
     init_once(IntMap, map, IntMap()) {
         map.insert("custom_content", defaultCustomContentCacheSize);
+        map.insert("custom_links", defaultCustomLinksCacheSize);
         map.insert("dynamic_files", defaultDynamicFilesCacheSize);
         map.insert("friend_list", defaultFriendListCacheSize);
         map.insert("ip_ban_info_list", defaultIpBanInfoListCacheSize);
@@ -379,6 +412,14 @@ void setCustomContentMaxCacheSize(int size)
         return;
     QWriteLocker locker(&customContentLock);
     theCustomContent.setMaxCost(size);
+}
+
+void setCustomLinksMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QWriteLocker locker(&customLinksLock);
+    theCustomLinks.setMaxCost(size);
 }
 
 void setDynamicFilesMaxCacheSize(int size)

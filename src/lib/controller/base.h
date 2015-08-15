@@ -20,6 +20,12 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
         std::string id;
         std::string title;
     };
+    struct CustomLinkInfo
+    {
+        std::string imgUrl;
+        std::string text;
+        std::string url;
+    };
     struct Locale
     {
         std::string country;
@@ -59,6 +65,7 @@ public:
     std::string currentTime;
     std::string customFooterContent;
     std::string customHeaderContent;
+    std::list<CustomLinkInfo> customLinks;
     std::string defaultAudioVideoVolumeLabelText;
     std::string deviceType;
     bool draftsByDefault;

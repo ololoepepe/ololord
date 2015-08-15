@@ -54,6 +54,13 @@ struct OLOLORD_EXPORT AudioTags
     QString year;
 };
 
+struct OLOLORD_EXPORT CustomLinkInfo
+{
+    QString imgUrl;
+    QString text;
+    QString url;
+};
+
 struct OLOLORD_EXPORT File
 {
     QByteArray data;
@@ -172,6 +179,7 @@ OLOLORD_EXPORT QString captchaQuotaFile();
 OLOLORD_EXPORT bool captchaEnabled(const QString &boardName);
 OLOLORD_EXPORT QString cookieValue(const cppcms::http::request &req, const QString &name);
 OLOLORD_EXPORT QString customContent(const QString &prefix, const QLocale &l);
+OLOLORD_EXPORT QList<CustomLinkInfo> customLinks(const QLocale &l);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
 OLOLORD_EXPORT QString externalLinkRegexpPattern();
 OLOLORD_EXPORT bool externalLinkRootZoneExists(const QString &zoneName);

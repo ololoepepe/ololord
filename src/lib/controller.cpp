@@ -142,6 +142,13 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                                                              deviceType));
     c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()).replace("%deviceType%",
                                                                                              deviceType));
+    foreach (const Tools::CustomLinkInfo &info, Tools::customLinks(ts.locale())) {
+        Content::Base::CustomLinkInfo inf;
+        inf.imgUrl = Tools::toStd(info.imgUrl);
+        inf.text = Tools::toStd(info.text);
+        inf.url = Tools::toStd(info.url);
+        c.customLinks.push_back(inf);
+    }
     c.defaultAudioVideoVolumeLabelText = ts.translate("initBase", "Default audio and video files volume:",
                                                       "defaultAudioVideoVolumeLabelText");
     c.deviceType = Tools::toStd(deviceType);
