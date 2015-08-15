@@ -9,6 +9,7 @@
 [done] Add minimalistic post form mode
 [done] Add sorting by last post date in catalog
 [done] Implement adding custom links to navbar
+[done] Add links to threads without images in catalog
 
 * Use D-Pointer approach for the lib
 * Reload codecha instead of reloading a page

@@ -34,6 +34,12 @@
                         <% include postFileImage(thread.opPost.files.front()) %>
                     </a>
                 </div>
+            <% else %>
+                <div>
+                    <a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread.opPost.number %>.html">
+                        &gt;&gt;/<%= currentBoard.name %>/<%= thread.opPost.number %>
+                    </a>
+                </div>
             <% end %>
             <div>
                 <span class="someName">
