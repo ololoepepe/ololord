@@ -12,6 +12,8 @@
 [done] Add links to threads without images in catalog
 [done] Add "OP" and "You" marks to post links
 [done] Add ability to sign posts with "OP" mark
+[done] Improve YouTube video link recognition
+* Implement F.A.Q. page
 * Fix moving video files
 
 * Use D-Pointer approach for the lib

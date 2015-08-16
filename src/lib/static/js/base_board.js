@@ -85,7 +85,8 @@ lord.getPostData = function(post, youtube) {
     if (youtube) {
         var videos = [];
         var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
-            + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com']";
+            + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com'], "
+            + "a[href^='http://m.youtube.com'], a[href^='https://m.youtube.com']";
         lord.query(q, post).forEach(function(video) {
             videos.push(video.href);
         });
