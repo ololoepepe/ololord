@@ -51,6 +51,7 @@ lord.popups = [];
 lord.unloading = false;
 lord.leftChain = [];
 lord.rightChain = [];
+lord._ajaxRequestQueue = [];
 
 /*Functions*/
 
@@ -234,6 +235,59 @@ lord.equal = function(x, y) {
         }
     }
     return true;
+};
+
+lord.gently = function(obj, f, delay, n, after) {
+    if (!obj || typeof f != "function")
+        return;
+    delay = +delay;
+    n = +n;
+    if (isNaN(delay) || delay < 1)
+        delay = 1;
+    if (isNaN(n) || n < 1)
+        n = 1;
+    if (Array.isArray(obj)) {
+        (function(arr, f, delay, n, after) {
+            var ind = 0;
+            var g = function() {
+                if (ind >= arr.length) {
+                    if (typeof after == "function")
+                        after();
+                    return;
+                }
+                for (var i = ind; i < Math.min(ind + n, arr.length); ++i)
+                    f(arr[i], i);
+                ind += n;
+                setTimeout(g, delay);
+            };
+            g();
+        })(obj, f, delay, n, after);
+    } else {
+        var arr = [];
+        for (var x in obj) {
+            if (obj.hasOwnProperty(x)) {
+                arr.push({
+                    "key": x,
+                    "value": obj[x]
+                });
+            }
+        }
+        (function(arr, f, delay, n, after) {
+            var ind = 0;
+            var g = function() {
+                if (ind >= arr.length) {
+                    if (typeof after == "function")
+                        after();
+                    return;
+                }
+                for (var i = ind; i < Math.min(ind + n, arr.length); ++i)
+                    f(arr[i].value, arr[i].key);
+                ind += n;
+                setTimeout(g, delay);
+            };
+            g();
+        })(arr, f, delay, n, after);
+    }
 };
 
 lord.regexp = function(s) {
@@ -471,47 +525,67 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
 };
 
 lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
-    var prefix = lord.text("sitePathPrefix");
-    xhr.open("post", "/" + prefix + "api");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    var request = {
+    var req = {
         "method": method,
         "params": params,
-        "id": id
+        "id": id,
+        "callback": callback,
+        "errorCallback": errorCallback
     };
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
-                var err = response.error;
-                if (!!err) {
-                    lord.showPopup(err, {type: "critical"});
-                    if (typeof errorCallback == "function")
-                        errorCallback(err);
-                    return;
-                }
-                if (typeof callback == "function")
-                    callback(response.result);
-            } else {
-                if (!lord.unloading) {
-                    var text = lord.text("ajaxErrorText") + " " + xhr.status;
-                    switch (+xhr.status) {
-                    case 413:
-                        text = lord.text("error" + xhr.status + "Text");
-                        break;
-                    default:
-                        break;
+    var f = function() {
+        if (lord._ajaxRequestQueue.length < 1)
+            return;
+        var req = lord._ajaxRequestQueue.shift();
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        var prefix = lord.text("sitePathPrefix");
+        xhr.open("post", "/" + prefix + "api");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var request = {
+            "method": req.method,
+            "params": req.params,
+            "id": req.id
+        };
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    var err = response.error;
+                    if (!!err) {
+                        lord.showPopup(err, {type: "critical"});
+                        f();
+                        if (typeof req.errorCallback == "function")
+                            req.errorCallback(err);
+                        return;
                     }
-                    lord.showPopup(text, {type: "critical"});
-                    if (typeof errorCallback == "function")
-                        errorCallback(text);
+                    f();
+                    if (typeof req.callback == "function")
+                        req.callback(response.result);
+                } else {
+                    if (!lord.unloading) {
+                        var text = lord.text("ajaxErrorText") + " " + xhr.status;
+                        switch (+xhr.status) {
+                        case 413:
+                            text = lord.text("error" + xhr.status + "Text");
+                            break;
+                        default:
+                            break;
+                        }
+                        lord.showPopup(text, {type: "critical"});
+                        f();
+                        if (typeof req.errorCallback == "function")
+                            req.errorCallback(text);
+                    }
                 }
             }
-        }
+        };
+        xhr.send(JSON.stringify(request));
     };
-    xhr.send(JSON.stringify(request));
+    lord._ajaxRequestQueue.push(req);
+    if (lord._ajaxRequestQueue.length > 2)
+        return;
+    f();
+    f();
 };
 
 lord.isHashpass = function(s) {

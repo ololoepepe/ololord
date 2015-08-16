@@ -97,13 +97,16 @@ lord.getPostData = function(post, youtube) {
 lord.processPosts = function(spells, youtube) {
     if (!spells && !youtube)
         return;
-    var hiddenPosts = lord.getLocalObject("hiddenPosts", {});
-    var ps = lord.query(".post:not(#postTemplate), .opPost");
-    var boardName = lord.text("currentBoardName");
-    var f = function(accumulator) { //NOTE: Using timeout to let UI update
-        if (!accumulator)
-            accumulator = [];
-        if (ps.length <= 0) {
+    (function(spells, youtube) {
+        var posts = lord.query(".post:not(#postTemplate), .opPost");
+        var boardName = lord.text("currentBoardName");
+        var accumulator = [];
+        lord.gently(posts, function(post) {
+            var p = lord.getPostData(post, youtube);
+            if (!p)
+                return;
+            accumulator.push(p);
+        }, 10, 10, function() {
             youtube = youtube ? { "apiKey": lord.text("youtubeApiKey") } : undefined;
             lord.worker.postMessage({
                 "type": "processPosts",
@@ -114,14 +117,8 @@ lord.processPosts = function(spells, youtube) {
                 }
             }); //No way to transfer an object with subobjects
             return;
-        }
-        var post = ps.shift();
-        var p = lord.getPostData(post, youtube);
-        if (p)
-            accumulator.push(p);
-        setTimeout(f.bind(lord, accumulator), 1);
-    };
-    f();
+        });
+    })(spells, youtube);
 };
 
 lord.resetScale = function(image) {
@@ -2584,73 +2581,79 @@ lord.globalOnmouseout = function(e) {
 lord.strikeOutHiddenPostLinks = function(parent) {
     if (!parent)
         parent = document;
-    var list = lord.getLocalObject("hiddenPosts", {});
-    var cbn = lord.text("currentBoardName");
-    lord.query("a", parent).forEach(function(a) {
-        var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
-        if (!m || !m.length || m.length < 3)
-            return;
-        var bn = m[2] ? m[2] : cbn;
-        var pn = m[m.length - 1];
-        if (list[bn + "/" + pn])
-            lord.addClass(a, "hiddenPostLink");
-        else
-            lord.removeClass(a, "hiddenPostLink");
+    (function() {
+        var list = lord.getLocalObject("hiddenPosts", {});
+        var cbn = lord.text("currentBoardName");
+        lord.gently(lord.query("a", parent), function(a) {
+            var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
+            if (!m || !m.length || m.length < 3)
+                return;
+            var bn = m[2] ? m[2] : cbn;
+            var pn = m[m.length - 1];
+            if (list[bn + "/" + pn])
+                lord.addClass(a, "hiddenPostLink");
+            else
+                lord.removeClass(a, "hiddenPostLink");
+        }, 10, 20);
     });
 };
 
 lord.signOpPostLinks = function(parent) {
     if (!parent)
         parent = document;
-    var cbn = lord.text("currentBoardName");
-    lord.query("a", parent).forEach(function(a) {
-        var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
-        if (!m || !m.length || m.length < 3)
-            return;
-        var bn = m[2] ? m[2] : cbn;
-        var pn = m[m.length - 1];
-        var post = lord.id("post" + pn);
-        if (post) {
-            if (!lord.hasClass(post, "opPost"))
+    (function() {
+        var cbn = lord.text("currentBoardName");
+        lord.gently(lord.query("a", parent), function(a) {
+            var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
+            if (!m || !m.length || m.length < 3)
                 return;
-            a.appendChild(lord.node("text", " (OP)"));
-        } else {
-            (function(a, bn, pn) {
-                lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
-                    if (res["number"] != res["threadNumber"])
-                        return;
-                    a.appendChild(lord.node("text", " (OP)"));
-                });
-            })(a, bn, pn);
-        }
-    });
+            var bn = m[2] ? m[2] : cbn;
+            var pn = m[m.length - 1];
+            var post = lord.id("post" + pn);
+            if (post) {
+                if (!lord.hasClass(post, "opPost"))
+                    return;
+                a.appendChild(lord.node("text", " (OP)"));
+            } else {
+                (function(a, bn, pn) {
+                    lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                        if (res["number"] != res["threadNumber"])
+                            return;
+                        a.appendChild(lord.node("text", " (OP)"));
+                    });
+                })(a, bn, pn);
+            }
+        }, 10, 20);
+    })();
 };
 
 lord.signOwnPostLinks = function(parent) {
     if (!parent)
         parent = document;
-    var cbn = lord.text("currentBoardName");
-    lord.query("a", parent).forEach(function(a) {
-        var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
-        if (!m || !m.length || m.length < 3)
-            return;
-        var bn = m[2] ? m[2] : cbn;
-        var pn = m[m.length - 1];
-        var post = lord.id("post" + pn);
-        if (post) {
-            if (!lord.hasClass(post, "ownIp"))
+    (function() {
+        var cbn = lord.text("currentBoardName");
+        lord.gently(lord.query("a", parent), function(a) {
+            var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
+            if (!m || !m.length || m.length < 3)
                 return;
-            a.appendChild(lord.node("text", " (You)"));
-        } else {
-            (function(a, bn, pn) {
-                lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
-                    if (!res["ownIp"])
-                        return;
-                    a.appendChild(lord.node("text", " (You)"));
-                });
-            })(a, bn, pn);
-        }
-    });
+            var bn = m[2] ? m[2] : cbn;
+            var pn = m[m.length - 1];
+            var post = lord.id("post" + pn);
+            if (post) {
+                if (!lord.hasClass(post, "ownIp"))
+                    return;
+                a.appendChild(lord.node("text", " (You)"));
+            } else {
+                (function(a, bn, pn) {
+                    lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                        if (!res["ownIp"])
+                            return;
+                        a.appendChild(lord.node("text", " (You)"));
+                    });
+                })(a, bn, pn);
+            }
+        }, 10, 20);
+    })();
 };
 
 lord.hotkey_previousPageImage = function() {
@@ -2830,11 +2833,8 @@ lord.hotkey_expandThread = function() {
             if (omitted)
                 omitted.parentNode.removeChild(omitted);
             div.parentNode.removeChild(div);
-            var ps = lord.arr(res);
-            var f = function() { //NOTE: Using timeout to let UI update
-                if (ps.length <= 0)
-                    return;
-                var newPost = lord.createPostNode(ps.shift(), true);
+            lord.gently(lord.arr(res), function(ps) {
+                var newPost = lord.createPostNode(ps, true);
                 if (!newPost)
                     return;
                 lord.removeClass(newPost, "newPost");
@@ -2842,9 +2842,7 @@ lord.hotkey_expandThread = function() {
                     lord.queryOne(".postSequenceNumber", newPost).appendChild(lord.node("text", ++seqNum));
                 posts.appendChild(newPost);
                 lord.postNodeInserted(newPost);
-                setTimeout(f, 1);
-            };
-            f();
+            }, 10, 10);
         });
     })(tn, posts);
     return false;
@@ -2989,15 +2987,7 @@ lord.initializeOnLoadBaseBoard = function() {
     } else if (lord.getLocalObject("showYoutubeVideosTitles", true)) {
         lord.processPosts(null, true);
     } else {
-        var ps = lord.query(".post:not(#postTemplate), .opPost");
-        var f = function() {
-            if (ps.length <= 0)
-                return;
-            var post = ps.shift();
-            lord.tryHidePost(post);
-            setTimeout(f, 1);
-        };
-        f();
+        lord.gently(lord.query(".post:not(#postTemplate), .opPost"), lord.tryHidePost(post), 10, 10);
     }
     lord.query(".opPost").forEach(function(opPost) {
         var threadNumber = +opPost.id.replace("post", "");
@@ -3093,33 +3083,29 @@ lord.message_postsProcessed = function(data) {
         lord.query(".post:not(#postTemplate), .opPost").forEach(function(post) {
             posts[+post.id.replace("post", "")] = post;
         });
-        var ps = data.posts;
-        var f = function() { //NOTE: Using timeout to let UI update
-            if (ps.length <= 0)
-                return;
-            var post = ps.shift();
-            var p = posts[post.number];
-            if (!p)
-                return;
-            if (post.youtube)
-                lord.addYoutubeButton(p, post.youtube);
-            if (post.modifications && post.modifications.length > 0) {
-                lord.forIn(post.modifications, function(value, key) {
-                    switch (key) {
-                    case "innerHTML":
-                        p.innerHTML = value;
-                        break;
-                    default:
-                        break;
-                    }
-                });
-            }
-            if (post.hidden)
-                lord.addPostToHidden(post.board, post.number);
-            lord.tryHidePost(p);
-            setTimeout(f, 1);
-        };
-        f();
+        (function(posts) {
+            lord.gently(data.posts, function(post) {
+                var p = posts[post.number];
+                if (!p)
+                    return;
+                if (post.youtube)
+                    lord.addYoutubeButton(p, post.youtube);
+                if (post.modifications && post.modifications.length > 0) {
+                    lord.forIn(post.modifications, function(value, key) {
+                        switch (key) {
+                        case "innerHTML":
+                            p.innerHTML = value;
+                            break;
+                        default:
+                            break;
+                        }
+                    });
+                }
+                if (post.hidden)
+                    lord.addPostToHidden(post.board, post.number);
+                lord.tryHidePost(p);
+            }, 10, 10);
+        })(posts);
     } else if (data.error) {
         var txt = lord.text(data.error.text);
         if (data.error.data)
