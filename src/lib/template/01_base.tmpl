@@ -124,6 +124,8 @@
                                  title="<%= toHomePageText %>"><img src="/<%= sitePathPrefix %>img/homepage.png"></a>]</span>
     <span class="navbarItem">[<a href="/<%= sitePathPrefix %>frame?path=<%= path %>" target="_top"
                                  title="<%= framedVersionText %>"><img src="/<%= sitePathPrefix %>img/frame.png"></a>]</span>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>"
+                                 title="<%= toFaqPageText %>"><img src="/<%= sitePathPrefix %>img/question.png"></a>]</span>
     <% foreach link in customLinks %>
         <% item %>
             <% if ( !link.imgUrl.empty() ) %>

@@ -177,6 +177,7 @@ public:
     std::string timeServerText;
     int timeZoneOffset;
     std::string timeZoneOffsetLabelText;
+    std::string toFaqPageText;
     std::string toHomePageText;
     std::string toPlaylistPageText;
     std::string toMarkupPageText;

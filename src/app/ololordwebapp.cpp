@@ -12,6 +12,7 @@
 #include <route/CatalogRoute>
 #include <route/EditAudioTagsRoute>
 #include <route/EditPostRoute>
+#include <route/FaqRoute>
 #include <route/FrameListRoute>
 #include <route/FrameRoute>
 #include <route/HomeRoute>
@@ -73,6 +74,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     r = new EditAudioTagsRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new EditPostRoute(*this);
+    routesMap.insert(r->regex(), r);
+    r = new FaqRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new FrameListRoute(*this);
     routesMap.insert(r->regex(), r);

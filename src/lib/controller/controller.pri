@@ -12,6 +12,7 @@ HEADERS += \
     $${PWD}/editaudiotags.h \
     $${PWD}/editpost.h \
     $${PWD}/error.h \
+    $${PWD}/faq.h \
     $${PWD}/frame.h \
     $${PWD}/framelist.h \
     $${PWD}/home.h \

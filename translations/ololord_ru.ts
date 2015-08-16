@@ -1028,6 +1028,14 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>FaqRoute</name>
+    <message>
+        <source>F.A.Q.</source>
+        <comment>pageTitle</comment>
+        <translation>F.A.Q.</translation>
+    </message>
+</context>
+<context>
     <name>FrameListRoute</name>
     <message>
         <source>Version without frame</source>
@@ -3014,6 +3022,11 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <source>Mark own post links:</source>
         <comment>signOwnPostLinksLabelText</comment>
         <translation>Помечать ссылки на собственные посты:</translation>
+    </message>
+    <message>
+        <source>F.A.Q.</source>
+        <comment>toFaqPageText</comment>
+        <translation>F.A.Q.</translation>
     </message>
 </context>
 <context>

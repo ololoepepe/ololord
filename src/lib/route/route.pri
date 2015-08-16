@@ -7,6 +7,7 @@ HEADERS += \
     $${PWD}/catalogroute.h \
     $${PWD}/editaudiotagsroute.h \
     $${PWD}/editpostroute.h \
+    $${PWD}/faqroute.h \
     $${PWD}/framelistroute.h \
     $${PWD}/frameroute.h \
     $${PWD}/homeroute.h \
@@ -28,6 +29,7 @@ SOURCES += \
     $${PWD}/catalogroute.cpp \
     $${PWD}/editaudiotagsroute.cpp \
     $${PWD}/editpostroute.cpp \
+    $${PWD}/faqroute.cpp \
     $${PWD}/framelistroute.cpp \
     $${PWD}/frameroute.cpp \
     $${PWD}/homeroute.cpp \
