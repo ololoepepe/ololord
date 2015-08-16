@@ -23,6 +23,7 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
     struct CustomLinkInfo
     {
         std::string imgUrl;
+        std::string target;
         std::string text;
         std::string url;
     };

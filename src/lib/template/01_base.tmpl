@@ -127,10 +127,11 @@
     <% foreach link in customLinks %>
         <% item %>
             <% if ( !link.imgUrl.empty() ) %>
-                <span class="navbarItem">[<a href="<%= link.url %>"
+                <span class="navbarItem">[<a href="<%= link.url %>" target="<%= link.target %>"
                                              title="<%= link.text %>"><img src="<%= link.imgUrl %>"></a>]</span>
             <% else %>
-                <span class="navbarItem">[<a href="<%= link.url %>"><%= link.text %></a>]</span>
+                <span class="navbarItem">[<a href="<%= link.url %>"
+                                             target="<%= link.target %>"><%= link.text %></a>]</span>
             <% end %>
         <% end %>
     <% end %>

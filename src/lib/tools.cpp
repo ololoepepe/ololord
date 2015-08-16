@@ -293,6 +293,8 @@ QList<CustomLinkInfo> customLinks(const QLocale &l)
             info.url = sll.at(1);
             if (sll.size() > 2)
                 info.imgUrl = sll.at(2);
+            if (sll.size() > 3)
+                info.target = sll.at(3);
             *list << info;
         }
         if (!Cache::cacheCustomLinks(l, list)) {

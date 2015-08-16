@@ -145,6 +145,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     foreach (const Tools::CustomLinkInfo &info, Tools::customLinks(ts.locale())) {
         Content::Base::CustomLinkInfo inf;
         inf.imgUrl = Tools::toStd(info.imgUrl);
+        inf.target = Tools::toStd(info.target);
         inf.text = Tools::toStd(info.text);
         inf.url = Tools::toStd(info.url);
         c.customLinks.push_back(inf);

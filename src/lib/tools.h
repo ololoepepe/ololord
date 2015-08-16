@@ -57,6 +57,7 @@ struct OLOLORD_EXPORT AudioTags
 struct OLOLORD_EXPORT CustomLinkInfo
 {
     QString imgUrl;
+    QString target;
     QString text;
     QString url;
 };
