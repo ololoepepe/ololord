@@ -5,29 +5,52 @@
 <% template customPostFormField4() %>
 <% if ( content.voteEnabled ) %>
     <tr>
-        <td class="postformLabel">
-            <b><%= postFormLabelVote %></b>
-        </td>
-        <td class="postformField">
-            <div><%= voteTextText %> <input type="text" name="voteText" size="36" /></div>
-            <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
-            <% if ( content.mode.name != "ascetic" ) %>
-                <div name="voteVariants"></div>
-                <a href="javascript:lord.addVoteVariant();">
-                    <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
-                <input type="hidden" name="voteVariantCount" value="0" />
-            <% else %>
-                <div name="voteVariants">
-                    <% c++ for (int i = 0; i < 10; ++i) { %>
-                        <% c++ out() << "<input type=\"text\" name=\"voteVariant" << (i + 1) << "\" size=\"43\" />"; %>
-                        <% c++ if (i < 9) {%>
-                            <br />
+        <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+            <td class="postformField" colspan="2">
+                <div><%= voteTextText %> <input type="text" name="voteText" size="36" /></div>
+                <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <div name="voteVariants"></div>
+                    <a href="javascript:lord.addVoteVariant();">
+                        <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
+                    <input type="hidden" name="voteVariantCount" value="0" />
+                <% else %>
+                    <div name="voteVariants">
+                        <% c++ for (int i = 0; i < 10; ++i) { %>
+                            <% c++ out() << "<input type=\"text\" name=\"voteVariant" << (i + 1) << "\" size=\"43\" />"; %>
+                            <% c++ if (i < 9) {%>
+                                <br />
+                            <% c++ } %>
                         <% c++ } %>
-                    <% c++ } %>
-                </div>
-                <input type="hidden" name="voteVariantCount" value="10" />
-            <% end %>
-        </td>
+                    </div>
+                    <input type="hidden" name="voteVariantCount" value="10" />
+                <% end %>
+            </td>
+        <% else %>
+            <td class="postformLabel">
+                <b><%= postFormLabelVote %></b>
+            </td>
+            <td class="postformField">
+                <div><%= voteTextText %> <input type="text" name="voteText" size="36" /></div>
+                <div><%= multipleVoteVariantsText %> <input type="checkbox" name="multipleVoteVariants" value="true" /></div>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <div name="voteVariants"></div>
+                    <a href="javascript:lord.addVoteVariant();">
+                        <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addVoteVariantText %>"></a>
+                    <input type="hidden" name="voteVariantCount" value="0" />
+                <% else %>
+                    <div name="voteVariants">
+                        <% c++ for (int i = 0; i < 10; ++i) { %>
+                            <% c++ out() << "<input type=\"text\" name=\"voteVariant" << (i + 1) << "\" size=\"43\" />"; %>
+                            <% c++ if (i < 9) {%>
+                                <br />
+                            <% c++ } %>
+                        <% c++ } %>
+                    </div>
+                    <input type="hidden" name="voteVariantCount" value="10" />
+                <% end %>
+            </td>
+        <% end %>
     </tr>
 <% end %>
 <% end template %>

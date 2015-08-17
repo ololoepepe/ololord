@@ -2,5 +2,6 @@
     <qresource prefix="/">
         <file>static/css/photon.css</file>
         <file>static/css/futaba.css</file>
+        <file>static/css/neutron.css</file>
     </qresource>
 </RCC>

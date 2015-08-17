@@ -90,6 +90,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     typedef QMap<QString, BTranslation> TranslationMap;
     init_once(TranslationMap, styles, TranslationMap()) {
         styles.insert("photon", BTranslation::translate("initBase", "Photon", "style title"));
+        styles.insert("neutron", BTranslation::translate("initBase", "Neutron", "style title"));
         styles.insert("futaba", BTranslation::translate("initBase", "Futaba", "style title"));
     }
     init_once(TranslationMap, modes, TranslationMap()) {

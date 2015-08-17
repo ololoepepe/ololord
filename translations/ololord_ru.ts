@@ -3028,6 +3028,11 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>toFaqPageText</comment>
         <translation>F.A.Q.</translation>
     </message>
+    <message>
+        <source>Neutron</source>
+        <comment>style title</comment>
+        <translation>Neutron</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

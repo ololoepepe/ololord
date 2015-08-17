@@ -15,6 +15,7 @@
 [done] Improve YouTube video link recognition
 [done] Implement F.A.Q. page
 [done] Add "Bump limit reached/post limit reached" marks dynamically
+[done] Add Neutron style
 * Fix moving video files
 
 * Use D-Pointer approach for the lib
