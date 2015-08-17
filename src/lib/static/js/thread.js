@@ -164,6 +164,42 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
             document.body.insertBefore(post, before);
             lord.postNodeInserted(post);
         }
+        var bumpLimitReached = seqNum >= +lord.text("bumpLimit");
+        var postLimitReached = seqNum >= +lord.text("postLimit");
+        if (postLimitReached) {
+            var pl = lord.nameOne("insteadOfPostLimitReached");
+            if (pl) {
+                var div = lord.node("div");
+                div.className = "theMessage";
+                var h2 = lord.node("h2");
+                h2.className = "postLimitReached";
+                h2.appendChild(lord.node("text", lord.text("postLimitReachedText")));
+                div.appendChild(h2);
+                pl.parentNode.replaceChild(div, pl);
+            }
+            var bl = lord.nameOne("insteadOfBumpLimitReached");
+            if (bl)
+                bl.parentNode.removeChild(bl);
+            bl = lord.nameOne("bumpLimitReached");
+            if (bl)
+                bl.parentNode.removeChild(bl);
+            lord.query(".createAction").forEach(function(act) {
+                act.parentNode.removeChild(act);
+            });
+        }
+        if (!postLimitReached && bumpLimitReached) {
+            var bl = lord.nameOne("insteadOfBumpLimitReached");
+            if (bl) {
+                var div = lord.node("div");
+                div.className = "theMessage";
+                div.setAttribute("name", "bumpLimitReached");
+                var h3 = lord.node("h3");
+                h3.className = "bumpLimitReached";
+                h3.appendChild(lord.node("text", lord.text("bumpLimitReachedText")));
+                div.appendChild(h3);
+                bl.parentNode.replaceChild(div, bl);
+            }
+        }
         if ("hidden" == lord.pageVisible) {
             if (!lord.blinkTimer) {
                 lord.blinkTimer = setInterval(lord.blinkFaviconNewMessage, 500);

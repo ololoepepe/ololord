@@ -417,6 +417,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.banUserText = ts.translate("initBaseBoard", "Ban user", "banUserText");
     c.boardLabelText = ts.translate("initBaseBoard", "Board:", "boardLabelText");
     c.bytesText = ts.translate("initBaseBoard", "Byte(s)", "bytesText");
+    c.bumpLimit = board->bumpLimit();
     c.bumpLimitReachedText = ts.translate("initBaseBoard", "Bump limit reached", "bumpLimitReachedText");
     QString ip = Tools::userIp(req);
     c.captchaEnabled = Tools::captchaEnabled(board->name());
@@ -610,6 +611,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             }
         }
     }
+    c.postLimit = board->postLimit();
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
     foreach (QString r, board->postformRules(tq.locale()))
         c.postformRules.push_back(Tools::toStd(r.replace("%currentBoard.name%", board->name())));

@@ -127,6 +127,7 @@ public:
     std::string banReasonLabelText;
     std::string banUserText;
     std::string boardLabelText;
+    unsigned int bumpLimit;
     std::string bumpLimitReachedText;
     std::string bytesText;
     bool captchaEnabled;
@@ -224,6 +225,7 @@ public:
     bool postingEnabled;
     std::string postingSpeed;
     std::string postingSpeedText;
+    unsigned int postLimit;
     std::string postLimitReachedText;
     std::string previousFileText;
     std::string quickReplyText;
