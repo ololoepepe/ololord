@@ -534,6 +534,7 @@ span.newPostCount {
 */
 
 .post {
+    background: url("../favicon.ico") right bottom no-repeat;
     background-color: #2C2C2C;
     border: 1px solid #575757;
     margin-top: 4px;
@@ -542,7 +543,6 @@ span.newPostCount {
     padding-left: 10px;
     width: 100%
     overflow-x: auto;
-    background: url("../favicon.ico") right bottom no-repeat;
 }
 
 .opPost {
