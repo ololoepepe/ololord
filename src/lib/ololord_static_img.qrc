@@ -302,5 +302,6 @@
         <file>static/img/catalog.png</file>
         <file>static/img/rss.png</file>
         <file>static/img/move.png</file>
+        <file>static/img/neutron_line.png</file>
     </qresource>
 </RCC>

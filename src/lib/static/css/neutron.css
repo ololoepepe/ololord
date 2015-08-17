@@ -39,11 +39,17 @@ audio {
 }
 
 hr {
-    color: #808080; /*IE*/
-    background-color: #808080; /*Firefox, Opera, Safari*/
+    /*color: #808080; /*IE*/
+    /*background-color: #808080; /*Firefox, Opera, Safari*/
+    /*background-image: url(../img/neutron-line.png);
     border: 0px none;
     height: 1px;
-    clear: both;
+    clear: both;*/
+    height: 3px;
+    border-width: 0px;
+    background: url("../img/neutron_line.png") center no-repeat;
+    background-size: 100% 100%;
+    -moz-background-size: 100% 100%;
 }
 
 .select {
@@ -173,7 +179,7 @@ input {
 */
 
 .ban {
-    background-color: #DDEDAA;
+    background-color: #2C2C2C;
     margin-left: 80px;
     margin-right: 80px;
 }
@@ -452,7 +458,7 @@ span.newPostCount {
 */
 
 .error {
-    background-color: #DDEDAA;
+    background-color: #2C2C2C;
     color: #698CC0;
     margin-left: 80px;
     margin-right: 80px;
@@ -464,7 +470,7 @@ span.newPostCount {
 */
 
 .rules {
-    background-color: #DDEDAA;
+    background-color: #2C2C2C;
     margin-left: 5%;
     margin-right: 5%;
     padding-top: 10px;
@@ -472,7 +478,7 @@ span.newPostCount {
 }
 
 .news {
-    background-color: #DDEDAA;
+    background-color: #2C2C2C;
     margin-left: 5%;
     margin-right: 5%;
 }
@@ -529,12 +535,14 @@ span.newPostCount {
 
 .post {
     background-color: #2C2C2C;
+    border: 1px solid #575757;
     margin-top: 4px;
     margin-bottom: 4px;
     padding-top: 10px;
     padding-left: 10px;
     width: 100%
     overflow-x: auto;
+    background: url("../favicon.ico") right bottom no-repeat;
 }
 
 .opPost {
@@ -542,7 +550,7 @@ span.newPostCount {
 }
 
 .newPost {
-    background-color: #CCCCCC;
+    background-color: #3C3C3C;
 }
 
 .hiddenPost > .threadPost {
@@ -554,7 +562,7 @@ span.newPostCount {
 }
 
 .selectedPost {
-    background-color: #AAFF99;
+    background-color: #004A58;
 }
 
 .omittedPosts.hiddenPosts {
