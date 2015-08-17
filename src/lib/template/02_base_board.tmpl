@@ -373,7 +373,7 @@
             [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>"
                 name="quickReply">&gt;&gt;</a>]
         <% end %>
-        <% if ( content.mode.name != "ascetic" ) %>
+        <% if ( content.mode.name != "ascetic" || content.loggedIn ) %>
             <span class="<%= deviceType %> postActions">
                 <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
                 <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
