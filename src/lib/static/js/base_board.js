@@ -639,20 +639,23 @@ lord.createPostNode = function(res, permanent, boardName) {
         lord.addClass(post, "opPost");
     }
     perm.style.display = "";
-    var anumber = lord.node("a");
-    number.parentNode.insertBefore(anumber, number);
-    number.parentNode.removeChild(number);
-    anumber.title = number.title;
-    anumber.appendChild(number);
-    anumber.href = "#" + res["number"];
-    (function(pn) {
-        if (postingEnabled) {
-            anumber.onclick = function() {
-                lord.insertPostNumber(pn);
-                return false;
-            };
-        }
-    })(res["number"]);
+    if (+lord.text("currentThreadNumber") > 0) {
+        var anumber = lord.node("a");
+        number.parentNode.insertBefore(anumber, number);
+        number.parentNode.removeChild(number);
+        anumber.title = number.title;
+        anumber.appendChild(number.firstChild);
+        anumber.href = "#" + res["number"];
+        (function(pn) {
+            if (postingEnabled) {
+                anumber.onclick = function(e) {
+                    e.preventDefault();
+                    lord.insertPostNumber(pn);
+                    return false;
+                };
+            }
+        })(res["number"]);
+    }
     var deleteButton = lord.nameOne("deleteButton", post);
     deleteButton.href = deleteButton.href.replace("%postNumber%", res["number"]);
     var hideButton = lord.nameOne("hideButton", post);

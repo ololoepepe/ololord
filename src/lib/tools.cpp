@@ -218,7 +218,8 @@ AudioTags audioTags(const QString &fileName)
         if (tag->year() > 0)
             a.year = QString::number(tag->year());
     }
-    if (!QFileInfo(fileName).suffix().compare("mp3", Qt::CaseInsensitive)) {
+    QString suff = QFileInfo(fileName).suffix();
+    if (!suff.compare("mp3", Qt::CaseInsensitive) || !suff.compare("mpeg", Qt::CaseInsensitive)) {
         TagLib::MPEG::File audioFile(toStd(fileName).data());
         TagLib::ID3v2::Tag *tag = audioFile.ID3v2Tag();
         if (tag) {

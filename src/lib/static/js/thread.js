@@ -319,7 +319,7 @@ lord.initializeOnLoadThread = function() {
     var hash = lord.hash();
     if (hash.substring(0, 1) === "i") {
         hash = hash.substring(1);
-        if (isNaN(+post))
+        if (isNaN(+hash))
             return;
         lord.showHidePostForm("Top");
         lord.insertPostNumber(hash);
