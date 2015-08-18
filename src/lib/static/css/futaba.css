@@ -16,7 +16,7 @@ body.mobile {
 }
 
 a {
-    color: #0000EE;
+    color: #0000EE;e
 }
 
 a.expandCollapse {
@@ -903,6 +903,11 @@ a.progressBlocking {
     top: 200px;
     right: 0px;
     z-index: 9920;
+}
+
+.externalThreadFrame.mobile {
+    width: 120px;
+    height: 240px;
 }
 
 .externalThreadFrame:hover {

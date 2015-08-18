@@ -923,6 +923,11 @@ a.progressBlocking {
     z-index: 9920;
 }
 
+.externalThreadFrame.mobile {
+    width: 120px;
+    height: 240px;
+}
+
 .externalThreadFrame:hover {
     width: 90%;
     height: 100%;

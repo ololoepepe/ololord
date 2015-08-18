@@ -44,7 +44,7 @@ The following libraries are also required:
  * boost (Regex) (http://www.boost.org)
  * GNU Source-Highlight (https://www.gnu.org/software/src-highlite)
  * libmagic (http://www.darwinsys.com/file/)
- * libid3 (http://id3lib.sourceforge.net/)
+ * TagLib (https://taglib.github.io/)
 
 ImageMagick is used for creating PDF thumbnails. It may be downloaded here:
 http://www.imagemagick.org/script/binary-releases.php
@@ -73,7 +73,7 @@ the following commands:
  * "qmake [BEQT_PREFIX=<path>] [CPPCMS_PREFIX=<path>] [ODB_PREFIX=<path>]
    [ODB_QT_PREFIX=<path>] [LIBCURL_PREFIX=<path>] [CURLPP_PREFIX=<path>]
    [BOOST_PREFIX=<path>] [SRCHILITE_PREFIX=<path>] [LIBMAGIC_PREFIX=<path>]
-   [LIBID3_PREFIX=<path>]"
+   [TAGLIB_PREFIX=<path>]"
    Here, the paths to BeQt, CppCMS, ODB, ODB-Qt, libcurl, curlpp, boost and
    GNU Source-Highlight may be specified
 
@@ -151,8 +151,8 @@ When building ololord, you may pass some parameters to qmake:
    to a custom location and must be used anyway on Windows.
    Note: The recommended implementation is http://www.darwinsys.com/file/
 
- * "LIBID3_PREFIX=<path>"
-   Set path to libid3 library. Must be used if the library was installed
+ * "TAGLIB_PREFIX=<path>"
+   Set path to TagLib library. Must be used if the library was installed
    to a custom location and must be used anyway on Windows.
 
  * "SQLITE_PREFIX=<path>"

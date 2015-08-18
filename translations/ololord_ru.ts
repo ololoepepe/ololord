@@ -590,9 +590,9 @@ Apperas in the HTML pages.</source>
         <translation>Отсутствует движок для этого типа капчи</translation>
     </message>
     <message>
-        <source>Internal error</source>
+        <source>Yandex captcha service error</source>
         <comment>error</comment>
-        <translation>Внутренняя ошибка</translation>
+        <translation>Ошибка сервиса Yandex-капчи</translation>
     </message>
 </context>
 <context>

@@ -47,8 +47,8 @@ AbstractYandexCaptchaEngine::CaptchaInfo AbstractYandexCaptchaEngine::getCaptcha
         QRegExp rxc("<captcha>.+</captcha>");
         QRegExp rxu("<url>.+</url>");
         if (rxc.indexIn(result) < 0 || rxu.indexIn(result) < 0) {
-            return bRet(ok, false, error, tq.translate("AbstractYandexCaptchaEngine", "Internal error", "error"),
-                        CaptchaInfo());
+            return bRet(ok, false, error, tq.translate("AbstractYandexCaptchaEngine", "Yandex captcha service error",
+                                                       "error"), CaptchaInfo());
         }
         QString challenge = rxc.cap().remove("<captcha>").remove("</captcha>");
         QString iurl = rxu.cap().remove("<url>").remove("</url>");

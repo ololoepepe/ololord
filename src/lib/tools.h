@@ -32,6 +32,7 @@ class locale;
 #include <QByteArray>
 #include <QChar>
 #include <QDateTime>
+#include <QImage>
 #include <QList>
 #include <QMap>
 #include <QString>
@@ -50,6 +51,7 @@ struct OLOLORD_EXPORT AudioTags
 {
     QString album;
     QString artist;
+    QImage cover;
     QString title;
     QString year;
 };

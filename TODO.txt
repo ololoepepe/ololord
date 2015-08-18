@@ -18,8 +18,11 @@
 [done] Add Neutron style
 [done] Process post links of post previews
 [done] Process dynamically added post links
-* Use TagLib
-* Use album art for audio thumbnails
+[done] Fix post board identification
+[done] Improve /echo/ board CSS for mobile devices
+[done] Use TagLib instead of libid3
+[done] Use album art for audio thumbnails
+[done] Update README
 * Fix moving video files
 
 * Use D-Pointer approach for the lib

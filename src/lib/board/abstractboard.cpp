@@ -1319,13 +1319,6 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
     QString out;
     if (Tools::isAudioType(mimeType)) {
         ft.setMainFileSize(0, 0);
-        ft.setThumbFile(path + "/" + dt + "s.png");
-        ft.setThumbFileSize(200, 200);
-        img = generateRandomImage(hash, mimeType);
-        if (img.isNull())
-            return false;
-        if (!img.save(path + "/" + dt + "s.png", "png"))
-            return false;
         Tools::AudioTags tags = Tools::audioTags(sfn);
         QVariantMap m;
         if (!BeQt::execProcess(path, ffprobe, ffprobeArgs, 3 * BeQt::Second, 15 * BeQt::Second, &out)) {
@@ -1344,6 +1337,18 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
             m.insert("year", tags.year);
         if (!m.isEmpty())
             ft.setMetaData(m);
+        ft.setThumbFile(path + "/" + dt + "s.png");
+        if (!tags.cover.isNull()) {
+            img = tags.cover;
+            scaleThumbnail(img, ft);
+        } else {
+            ft.setThumbFileSize(200, 200);
+            img = generateRandomImage(hash, mimeType);
+        }
+        if (img.isNull())
+            return false;
+        if (!img.save(path + "/" + dt + "s.png", "png"))
+            return false;
     } else if (Tools::isVideoType(mimeType)) {
         QStringList args = QStringList() << "-i" << QDir::toNativeSeparators(sfn) << "-vframes" << "1"
                                          << (dt + "s.png");

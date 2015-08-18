@@ -53,7 +53,12 @@
 
 #include <magic.h>
 
-#include <id3/tag.h>
+#include <taglib/attachedpictureframe.h>
+#include <taglib/fileref.h>
+#include <taglib/id3v2tag.h>
+#include <taglib/mpegfile.h>
+#include <taglib/tag.h>
+#include <taglib/tpropertymap.h>
 
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
@@ -193,24 +198,6 @@ static QTime time(int msecs)
     return QTime(h, m, s, msecs % BeQt::Second);
 }
 
-static QString audioTag(const ID3_Tag &tag, ID3_FrameID id)
-{
-    ID3_Frame *frame = tag.Find(id);
-    if (!frame)
-        return "";
-    ID3_Field *text = frame->GetField(ID3FN_TEXT);
-    if (!text)
-        return "";
-    QString s = QString::fromUtf16(text->GetRawUnicodeText(), text->Size() / 2);
-    if (!s.isEmpty())
-        return s;
-    QByteArray ba(text->GetRawText());
-    QTextCodec *codec = BTextTools::guessTextCodec(ba);
-    if (!codec)
-        codec = QTextCodec::codecForName("UTF-8");
-    return codec->toUnicode(ba);
-}
-
 QStringList acceptedExternalBoards()
 {
     QString fn = BDirTools::findResource("res/echo.txt", BDirTools::UserOnly);
@@ -221,12 +208,29 @@ AudioTags audioTags(const QString &fileName)
 {
     if (fileName.isEmpty())
         return AudioTags();
-    ID3_Tag tag(toStd(fileName).data());
     AudioTags a;
-    a.album = audioTag(tag, ID3FID_ALBUM);
-    a.artist = audioTag(tag, ID3FID_LEADARTIST);
-    a.title = audioTag(tag, ID3FID_TITLE);
-    a.year = audioTag(tag, ID3FID_YEAR);
+    TagLib::FileRef f(toStd(fileName).data());
+    if(!f.isNull() && f.tag()) {
+        TagLib::Tag *tag = f.tag();
+        a.album = TStringToQString(tag->album());
+        a.artist = TStringToQString(tag->artist());
+        a.title = TStringToQString(tag->title());
+        if (tag->year() > 0)
+            a.year = QString::number(tag->year());
+    }
+    if (!QFileInfo(fileName).suffix().compare("mp3", Qt::CaseInsensitive)) {
+        TagLib::MPEG::File audioFile(toStd(fileName).data());
+        TagLib::ID3v2::Tag *tag = audioFile.ID3v2Tag();
+        if (tag) {
+            TagLib::ID3v2::FrameList list = tag->frameListMap()["APIC"];
+            if (!list.isEmpty()) {
+                TagLib::ID3v2::AttachedPictureFrame *pic =
+                        dynamic_cast<TagLib::ID3v2::AttachedPictureFrame *>(list.front());
+                if (pic)
+                    a.cover.loadFromData((const uchar *) pic->picture().data(), pic->picture().size());
+            }
+        }
+    }
     return a;
 }
 

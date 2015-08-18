@@ -4,8 +4,8 @@
 
 <% template body() %>
 <%include thread::body() %>
-<iframe src="<%= threadLink | raw %>" name="externalThreadFrame" scrolling="auto" class="externalThreadFrame"
-        frameborder="yes"></iframe>
+<iframe src="<%= threadLink | raw %>" name="externalThreadFrame" scrolling="auto"
+        class="externalThreadFrame <%= deviceType %>" frameborder="yes"></iframe>
 <% end template %>
 
 <% template customPostFormFieldEdit3() %>
