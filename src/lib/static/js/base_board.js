@@ -186,6 +186,12 @@ lord.addReferences = function(postNumber, referencedPosts) {
         a.href = "/" + prefix + bn + "/thread/" + tn + ".html#" + postNumber;
         referencedBy.appendChild(lord.node("text", " "));
         a.appendChild(lord.node("text", ">>" + postNumber));
+        if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
+            lord.strikeOutHiddenPostLink(a);
+        if (!!lord.getLocalObject("signOpPostLinks", true))
+            lord.signOpPostLink(a);
+        if (!!lord.getLocalObject("signOwnPostLinks", true))
+            lord.signOwnPostLink(a);
         referencedBy.appendChild(a);
     }
 };
@@ -1652,6 +1658,12 @@ lord.viewPost = function(link, boardName, postNumber) {
             post = lord.createPostNode(res, false, boardName);
             if (!post)
                 return;
+            if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
+                lord.strikeOutHiddenPostLinks(post);
+            if (!!lord.getLocalObject("signOpPostLinks", true))
+                lord.signOpPostLinks(post);
+            if (!!lord.getLocalObject("signOwnPostLinks", true))
+                lord.signOwnPostLinks(post);
             lord.viewPostStage2(link, boardName, postNumber, post);
         });
     } else {
@@ -2579,6 +2591,76 @@ lord.globalOnmouseout = function(e) {
     lord.noViewPost();
 };
 
+lord.strikeOutHiddenPostLink = function(a, list, cbn) {
+    if (!a)
+        return;
+    if (!list)
+        list = lord.getLocalObject("hiddenPosts", {});
+    if (!cbn)
+        cbn = lord.text("currentBoardName");
+    var m = a.href.match(/^.*\/(.+)\/thread\/\d+\.html#(\d+)$/);
+    if (!m || !m.length || m.length < 3)
+        return;
+    var bn = m[1];
+    var pn = m[2];
+    if (list[bn + "/" + pn])
+        lord.addClass(a, "hiddenPostLink");
+    else
+        lord.removeClass(a, "hiddenPostLink");
+};
+
+lord.signOpPostLink = function(a, cbn) {
+    if (!a)
+        return;
+    if (!cbn)
+        cbn = lord.text("currentBoardName");
+    var m = a.href.match(/^.*\/(.+)\/thread\/\d+\.html#(\d+)$/);
+    if (!m || !m.length || m.length < 3)
+        return;
+    var bn = m[1];
+    var pn = m[2];
+    var post = lord.id("post" + pn);
+    if (post) {
+        if (!lord.hasClass(post, "opPost"))
+            return;
+        a.appendChild(lord.node("text", " (OP)"));
+    } else {
+        (function(a, bn, pn) {
+            lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                if (res["number"] != res["threadNumber"])
+                    return;
+                a.appendChild(lord.node("text", " (OP)"));
+            });
+        })(a, bn, pn);
+    }
+};
+
+lord.signOwnPostLink = function(a, cbn) {
+    if (!a)
+        return;
+    if (!cbn)
+        cbn = lord.text("currentBoardName");
+    var m = a.href.match(/^.*\/(.+)\/thread\/\d+\.html#(\d+)$/);
+    if (!m || !m.length || m.length < 3)
+        return;
+    var bn = m[1];
+    var pn = m[2];
+    var post = lord.id("post" + pn);
+    if (post) {
+        if (!lord.hasClass(post, "ownIp"))
+            return;
+        a.appendChild(lord.node("text", " (You)"));
+    } else {
+        (function(a, bn, pn) {
+            lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
+                if (!res["ownIp"])
+                    return;
+                a.appendChild(lord.node("text", " (You)"));
+            });
+        })(a, bn, pn);
+    }
+};
+
 lord.strikeOutHiddenPostLinks = function(parent) {
     if (!parent)
         parent = document;
@@ -2586,15 +2668,7 @@ lord.strikeOutHiddenPostLinks = function(parent) {
         var list = lord.getLocalObject("hiddenPosts", {});
         var cbn = lord.text("currentBoardName");
         lord.gently(lord.query("a", parent), function(a) {
-            var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
-            if (!m || !m.length || m.length < 3)
-                return;
-            var bn = m[2] ? m[2] : cbn;
-            var pn = m[m.length - 1];
-            if (list[bn + "/" + pn])
-                lord.addClass(a, "hiddenPostLink");
-            else
-                lord.removeClass(a, "hiddenPostLink");
+            lord.strikeOutHiddenPostLink(a, list, cbn);
         }, 10, 20);
     });
 };
@@ -2605,25 +2679,7 @@ lord.signOpPostLinks = function(parent) {
     (function() {
         var cbn = lord.text("currentBoardName");
         lord.gently(lord.query("a", parent), function(a) {
-            var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
-            if (!m || !m.length || m.length < 3)
-                return;
-            var bn = m[2] ? m[2] : cbn;
-            var pn = m[m.length - 1];
-            var post = lord.id("post" + pn);
-            if (post) {
-                if (!lord.hasClass(post, "opPost"))
-                    return;
-                a.appendChild(lord.node("text", " (OP)"));
-            } else {
-                (function(a, bn, pn) {
-                    lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
-                        if (res["number"] != res["threadNumber"])
-                            return;
-                        a.appendChild(lord.node("text", " (OP)"));
-                    });
-                })(a, bn, pn);
-            }
+            lord.signOpPostLink(a, cbn);
         }, 10, 20);
     })();
 };
@@ -2634,25 +2690,7 @@ lord.signOwnPostLinks = function(parent) {
     (function() {
         var cbn = lord.text("currentBoardName");
         lord.gently(lord.query("a", parent), function(a) {
-            var m = lord.getPlainText(a).match(/^>>(\/(.+)\/)?(\d+).*/);
-            if (!m || !m.length || m.length < 3)
-                return;
-            var bn = m[2] ? m[2] : cbn;
-            var pn = m[m.length - 1];
-            var post = lord.id("post" + pn);
-            if (post) {
-                if (!lord.hasClass(post, "ownIp"))
-                    return;
-                a.appendChild(lord.node("text", " (You)"));
-            } else {
-                (function(a, bn, pn) {
-                    lord.ajaxRequest("get_post", [bn, +pn], lord.RpcGetPostId, function(res) {
-                        if (!res["ownIp"])
-                            return;
-                        a.appendChild(lord.node("text", " (You)"));
-                    });
-                })(a, bn, pn);
-            }
+            lord.signOwnPostLink(a, cbn);
         }, 10, 20);
     })();
 };
