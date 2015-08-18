@@ -179,11 +179,21 @@ lord.addReferences = function(postNumber, referencedPosts) {
         var post = lord.id("post" + pn);
         if (!post)
             continue;
-        var referencedByTr = lord.nameOne("referencedByTr", post);
-        referencedByTr.style.display = "";
         var referencedBy = lord.nameOne("referencedBy", post);
         var a = lord.node("a");
         a.href = "/" + prefix + bn + "/thread/" + tn + ".html#" + postNumber;
+        var list = lord.query("a", referencedBy);
+        var cont = false;
+        for (var i = 0; i < list.length; ++i) {
+            if (a.href == list[i].href) {
+                cont = true;
+                break;
+            }
+        }
+        if (cont)
+            continue;
+        var referencedByTr = lord.nameOne("referencedByTr", post);
+        referencedByTr.style.display = "";
         referencedBy.appendChild(lord.node("text", " "));
         a.appendChild(lord.node("text", ">>" + postNumber));
         if (!!lord.getLocalObject("strikeOutHiddenPostLinks", true))
@@ -2621,7 +2631,7 @@ lord.signOpPostLink = function(a, cbn) {
     var pn = m[2];
     var post = lord.id("post" + pn);
     if (post) {
-        if (!lord.hasClass(post, "opPost"))
+        if (!lord.hasClass(post, "opPost") || a.textContent.indexOf("(OP)") >= 0)
             return;
         a.appendChild(lord.node("text", " (OP)"));
     } else {
@@ -2647,7 +2657,7 @@ lord.signOwnPostLink = function(a, cbn) {
     var pn = m[2];
     var post = lord.id("post" + pn);
     if (post) {
-        if (!lord.hasClass(post, "ownIp"))
+        if (!lord.hasClass(post, "ownIp") || a.textContent.indexOf("(You)") >= 0)
             return;
         a.appendChild(lord.node("text", " (You)"));
     } else {

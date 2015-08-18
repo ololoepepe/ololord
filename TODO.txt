@@ -23,6 +23,7 @@
 [done] Use TagLib instead of libid3
 [done] Use album art for audio thumbnails
 [done] Update README
+[done] Fix double post link adding
 * Fix moving video files
 
 * Use D-Pointer approach for the lib

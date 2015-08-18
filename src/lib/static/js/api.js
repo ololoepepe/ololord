@@ -52,6 +52,7 @@ lord.unloading = false;
 lord.leftChain = [];
 lord.rightChain = [];
 lord._ajaxRequestQueue = [];
+lord._ajaxRequestActive = 0;
 
 /*Functions*/
 
@@ -535,6 +536,7 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
     var f = function() {
         if (lord._ajaxRequestQueue.length < 1)
             return;
+        ++lord._ajaxRequestActive;
         var req = lord._ajaxRequestQueue.shift();
         var xhr = new XMLHttpRequest();
         xhr.withCredentials = true;
@@ -553,11 +555,13 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                     var err = response.error;
                     if (!!err) {
                         lord.showPopup(err, {type: "critical"});
+                        --lord._ajaxRequestActive;
                         f();
                         if (typeof req.errorCallback == "function")
                             req.errorCallback(err);
                         return;
                     }
+                    --lord._ajaxRequestActive;
                     f();
                     if (typeof req.callback == "function")
                         req.callback(response.result);
@@ -572,6 +576,7 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                             break;
                         }
                         lord.showPopup(text, {type: "critical"});
+                        --lord._ajaxRequestActive;
                         f();
                         if (typeof req.errorCallback == "function")
                             req.errorCallback(text);
@@ -582,10 +587,10 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
         xhr.send(JSON.stringify(request));
     };
     lord._ajaxRequestQueue.push(req);
-    if (lord._ajaxRequestQueue.length > 2)
-        return;
-    f();
-    f();
+    if (lord._ajaxRequestActive < 2)
+        f();
+    if (lord._ajaxRequestActive < 2)
+        f();
 };
 
 lord.isHashpass = function(s) {
