@@ -2149,6 +2149,7 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
             return bRet(error, tq.translate("registerUser", "Internal database error", "error"), false);
         RegisteredUser user(hashpass, QDateTime::currentDateTimeUtc(), level, boards);
         t->persist(user);
+        t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);

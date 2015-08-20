@@ -227,7 +227,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
             } else if (lvl >= RegisteredUser::ModerLevel) {
                 c.loginIconName = "moder.png";
                 c.loginMessageText += " (" + ts.translate("initBase", "moder", "loginMessageText") + ")";
-            } else if (lvl >= RegisteredUser::ModerLevel) {
+            } else if (lvl >= RegisteredUser::UserLevel) {
                 c.loginIconName = "user_registered.png";
                 c.loginMessageText += " (" + ts.translate("initBase", "user", "loginMessageText") + ")";
             }
