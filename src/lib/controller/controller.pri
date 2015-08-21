@@ -17,6 +17,7 @@ HEADERS += \
     $${PWD}/framelist.h \
     $${PWD}/home.h \
     $${PWD}/ipban.h \
+    $${PWD}/manage.h \
     $${PWD}/markup.h \
     $${PWD}/mlpboard.h \
     $${PWD}/movethread.h \

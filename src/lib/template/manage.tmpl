@@ -1,0 +1,29 @@
+<% c++ #include "controller/manage.h" %>
+<% skin my_skin %>
+<% view manage uses Content::Manage extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+    </head>
+    <body class="<%= deviceType %>">
+        <% include baseTexts() %>
+        <% include customHeader() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <h1><%= pageTitle %></h1>
+        </div>
+        <!-- TODO -->
+        <% include customHeader() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

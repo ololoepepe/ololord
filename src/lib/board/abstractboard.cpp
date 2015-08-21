@@ -382,7 +382,7 @@ void AbstractBoard::reloadBoards()
         nnn->setDescription(BTranslation::translate("AbstractBoard",
                                                     "Determines if captcha is enabled on this board.\n"
                                                     "The default is true."));
-        nnn = new BSettingsNode(QVariant::Bool, "supported_captcha_engines", nn);
+        nnn = new BSettingsNode(QVariant::String, "supported_captcha_engines", nn);
         nnn->setDescription(BTranslation::translate("AbstractBoard", "Identifiers of captcha engines supported on "
                                                     "this board.\n"
                                                     "Identifers must be separated by commas.\n"

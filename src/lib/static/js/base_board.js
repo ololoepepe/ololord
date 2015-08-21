@@ -2496,6 +2496,10 @@ lord.resetPostForm = function() {
     var divs = lord.query(".postformFile", postForm);
     for (var i = divs.length - 1; i >= 0; --i)
     lord.removeFile(lord.queryOne("a", divs[i]));
+    lord.nameOne("tripcode", postForm).checked = !!lord.getLocalObject("showTripcode", false);
+    var dr = lord.nameOne("draft", postForm);
+    if (dr)
+        dr.checked = (lord.getCookie("draftsByDefault") === "true");
     if (lord.customResetForm)
         lord.customResetForm(postForm);
 };
@@ -3142,15 +3146,10 @@ lord.message_postsProcessed = function(data) {
                     return;
                 if (post.youtube)
                     lord.addYoutubeButton(p, post.youtube);
-                if (post.modifications && post.modifications.length > 0) {
-                    lord.forIn(post.modifications, function(value, key) {
-                        switch (key) {
-                        case "innerHTML":
-                            p.innerHTML = value;
-                            break;
-                        default:
-                            break;
-                        }
+                if (post.replacements && post.replacements.length > 0) {
+                    lord.forIn(post.replacements, function(value) {
+                        if (value.innerHTML)
+                            p.innerHTML = value.innerHTML;
                     });
                 }
                 if (post.hidden)

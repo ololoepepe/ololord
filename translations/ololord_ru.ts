@@ -1098,6 +1098,57 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>ManageRoute</name>
+    <message>
+        <source>Board management</source>
+        <comment>pageTitle</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Expires:</source>
+        <comment>banExpiresLabelText</comment>
+        <translation type="unfinished">Истекает:</translation>
+    </message>
+    <message>
+        <source>Level:</source>
+        <comment>banLevelLabelText</comment>
+        <translation type="unfinished">Уровень:</translation>
+    </message>
+    <message>
+        <source>Not banned</source>
+        <comment>banLevelDesctiption</comment>
+        <translation type="unfinished">Не забанен</translation>
+    </message>
+    <message>
+        <source>Posting prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation type="unfinished">Запрещен постинг</translation>
+    </message>
+    <message>
+        <source>Posting and reading prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation type="unfinished">Запрещены постинг и чтение</translation>
+    </message>
+    <message>
+        <source>Reason:</source>
+        <comment>banReasonLabelText</comment>
+        <translation type="unfinished">Причина:</translation>
+    </message>
+    <message>
+        <source>Board:</source>
+        <comment>boardLabelText</comment>
+        <translation type="unfinished">Доска:</translation>
+    </message>
+</context>
+<context>
+    <name>ManagerRoute</name>
+    <message>
+        <source>All boards</source>
+        <comment>boardName</comment>
+        <translation type="unfinished">Все доски</translation>
+    </message>
+</context>
+<context>
     <name>MarkupRoute</name>
     <message>
         <source>Markup</source>

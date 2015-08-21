@@ -24,6 +24,9 @@
 [done] Use album art for audio thumbnails
 [done] Update README
 [done] Fix double post link adding
+[done] Fix JS
+[done] Fix geolocation info retrieving
+* Implement user management page
 * Fix moving video files
 
 * Use D-Pointer approach for the lib

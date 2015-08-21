@@ -11,6 +11,7 @@ HEADERS += \
     $${PWD}/framelistroute.h \
     $${PWD}/frameroute.h \
     $${PWD}/homeroute.h \
+    $${PWD}/manageroute.h \
     $${PWD}/markuproute.h \
     $${PWD}/movethreadroute.h \
     $${PWD}/playlistroute.h \
@@ -33,6 +34,7 @@ SOURCES += \
     $${PWD}/framelistroute.cpp \
     $${PWD}/frameroute.cpp \
     $${PWD}/homeroute.cpp \
+    $${PWD}/manageroute.cpp \
     $${PWD}/markuproute.cpp \
     $${PWD}/movethreadroute.cpp \
     $${PWD}/playlistroute.cpp \

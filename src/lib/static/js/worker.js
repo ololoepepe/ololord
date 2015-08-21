@@ -751,7 +751,7 @@ lord.processPosts = function(posts, spells, youtube) {
             var result = lord.applySpells(post, spells, npost.youtube);
             if (result) {
                 npost.hidden = result.hidden;
-                npost.modifications = result.modifications;
+                npost.replacements = result.replacements;
             }
         }
         processed.push(npost);

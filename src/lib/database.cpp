@@ -1572,9 +1572,11 @@ GeolocationInfo geolocationInfo(const QString &ip)
     db.setDatabaseName(BDirTools::findResource("geolocation/ip2location.sqlite"));
     if (!db.open())
         return info;
-    static const QStringList Fields = QStringList() << "country_code" << "country_name" << "city_name";
+    static const QStringList Fields = QStringList() << "ip_from" << "country_code" << "country_name" << "city_name";
     BSqlResult r = db.select("ip2location", Fields, BSqlWhere("ip_to >= :ip LIMIT 1", ":ip", n));
     if (!r)
+        return info;
+    if (r.value("ip_from").toUInt() < n)
         return info;
     info.cityName = r.value("city_name").toString();
     info.countryCode = r.value("country_code").toString();
@@ -1902,7 +1904,7 @@ bool moderOnBoard(const QByteArray &hashpass, const QString &board1, const QStri
     if (lvl >= RegisteredUser::AdminLevel)
         return true;
     QStringList boards = registeredUserBoards(hashpass);
-    return (boards.contains("*") && boards.contains(board1) && (board2.isEmpty() || boards.contains(board2)));
+    return (boards.contains("*") || (boards.contains(board1) && (board2.isEmpty() || boards.contains(board2))));
 }
 
 quint64 moveThread(const cppcms::http::request &req, const QString &sourceBoard, quint64 threadNumber,

@@ -770,7 +770,7 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Determines if captcha is enabled.\n"
                                                "If false, captcha will be disabled on all boards.\n"
                                                "The default is true."));
-    nn = new BSettingsNode(QVariant::Bool, "supported_captcha_engines", n);
+    nn = new BSettingsNode(QVariant::String, "supported_captcha_engines", n);
     nn->setDescription(BTranslation::translate("initSettings", "Identifiers of supported captcha engines.\n"
                                                "Identifers must be separated by commas.\n"
                                                "Example: google-recaptcha,codecha\n"
