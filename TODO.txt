@@ -27,6 +27,7 @@
 [done] Fix JS
 [done] Fix geolocation info retrieving
 [done] Add ability to use proxy for files attached as links
+[done] Add "Show user IP" button
 * Implement user management page
 * Fix moving video files
 

@@ -466,6 +466,41 @@ void ActionAjaxHandler::getThreadNumbers(std::string boardName)
     }
 }
 
+void ActionAjaxHandler::getUserBanInfo(std::string userIp)
+{
+    try {
+        QString ip = Tools::fromStd(userIp);
+        QString logTarget = ip;
+        Tools::log(server, "ajax_get_user_ban_info", "begin", logTarget);
+        bool ok = false;
+        QString err;
+
+        QMap<QString, Database::BanInfo> map = Database::userBanInfo(ip, &ok, &err, Tools::locale(server.request()));
+        if (!ok) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_get_user_ban_info", "fail:" + err, logTarget);
+            return;
+        }
+        cppcms::json::object o;
+        foreach (const Database::BanInfo &inf, map.values()) {
+            cppcms::json::object oo;
+            oo["boardName"] = Tools::toStd(inf.boardName);
+            oo["dateTime"] = Tools::toStd(Tools::dateTime(inf.dateTime,
+                                                          server.request()).toString("dd.MM.yyyy:hh:mm:ss"));
+            oo["expires"] = Tools::toStd(Tools::dateTime(inf.expires, server.request()).toString("dd.MM.yyyy:hh"));
+            oo["level"] = inf.level;
+            oo["reason"] = Tools::toStd(inf.reason);
+            o[Tools::toStd(inf.boardName)] = oo;
+        }
+        server.return_result(o);
+        Tools::log(server, "ajax_get_user_ban_info", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_user_ban_info", "fail:" + err);
+    }
+}
+
 void ActionAjaxHandler::getYandexCaptchaImage(std::string type)
 {
     try {
@@ -523,6 +558,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("get_new_posts", cppcms::rpc::json_method(&ActionAjaxHandler::getNewPosts, self), method_role);
     list << Handler("get_post", cppcms::rpc::json_method(&ActionAjaxHandler::getPost, self), method_role);
     list << Handler("get_thread_numbers", cppcms::rpc::json_method(&ActionAjaxHandler::getThreadNumbers, self),
+                    method_role);
+    list << Handler("get_user_ban_info", cppcms::rpc::json_method(&ActionAjaxHandler::getUserBanInfo, self),
                     method_role);
     list << Handler("get_yandex_captcha_image",
                     cppcms::rpc::json_method(&ActionAjaxHandler::getYandexCaptchaImage, self), method_role);

@@ -238,6 +238,7 @@ public:
     std::string showPostformMarkupText;
     std::string showPostformRulesText;
     std::string showPostFormText;
+    std::string showUserIpText;
     bool showWhois;
     std::string supportedFileTypes;
     std::string toBottomText;

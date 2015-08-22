@@ -3715,6 +3715,11 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <comment>postFormLabelSignAsOp</comment>
         <translation>Подписаться как ОП:</translation>
     </message>
+    <message>
+        <source>Show user IP</source>
+        <comment>showUserIpText</comment>
+        <translation>Показать IP-адрес пользователя</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

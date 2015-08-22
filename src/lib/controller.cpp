@@ -628,6 +628,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
     c.showHidePostText = ts.translate("initBaseBoard", "Hide/show", "showHidePostText");
+    c.showUserIpText = ts.translate("initBaseBoard", "Show user IP", "showUserIpText");
     c.showWhois = board->showWhois();
     c.supportedFileTypes = Tools::toStd(board->supportedFileTypes());
     c.toBottomText = ts.translate("initBaseBoard", "Scroll to the bottom", "toBottomText");

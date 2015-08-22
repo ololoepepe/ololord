@@ -42,6 +42,7 @@ public:
     void getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber);
     void getPost(std::string boardName, long long postNumber);
     void getThreadNumbers(std::string boardName);
+    void getUserBanInfo(std::string userIp);
     void getYandexCaptchaImage(std::string type);
     QList<Handler> handlers() const;
     void moveThread(std::string sourceBoardName, long long threadNumber, std::string targetBoardName);

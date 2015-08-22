@@ -669,6 +669,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     var closeButton = lord.nameOne("closeButton", post);
     var moveButton = lord.nameOne("moveButton", post);
     var banButton = lord.nameOne("banButton", post);
+    var ipButton = lord.nameOne("ipButton", post);
     var downloadButton = lord.nameOne("downloadButton", post);
     var favButton = lord.nameOne("addToFavoritesButton", post);
     var rawText = lord.nameOne("rawText", post);
@@ -712,6 +713,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         openButton.parentNode.removeChild(openButton);
         closeButton.parentNode.removeChild(closeButton);
         moveButton.parentNode.removeChild(moveButton);
+        ipButton.parentNode.removeChild(ipButton);
         banButton.parentNode.removeChild(banButton);
         return post;
     }
@@ -752,6 +754,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         moveButton.parentNode.removeChild(moveButton);
         toThread.parentNode.removeChild(toThread);
     }
+    ipButton.href = ipButton.href.replace("%postIp%", res["ip"]);
     banButton.href = banButton.href.replace("%postNumber%", res["number"]);
     return post;
 };
