@@ -659,8 +659,8 @@ void renderBanAjax(cppcms::application &app, const Database::BanInfo &info)
     cppcms::json::object o;
     o["errorMessage"] = ts.translate("renderBanAjax", "You are banned", "errorMessage");
     std::string desc = ts.translate("renderBanAjax", "Board:", "errorDescription") + " ";
-    desc += ("*" != info.boardName) ? Tools::toStd(info.boardName)
-                                    : ts.translate("renderBanAjax", "all boards", "errorDescription") + ". ";
+    desc += (("*" != info.boardName) ? Tools::toStd(info.boardName)
+                                     : ts.translate("renderBanAjax", "all boards", "errorDescription")) + ". ";
     desc += ts.translate("renderBanAjax", "Date:", "errorDescription") + " ";
     desc += Tools::toStd(ts.locale().toString(Tools::dateTime(info.dateTime, app.request()),
                                               "dd.MM.yyyy ddd hh:mm:ss")) + ". ";

@@ -657,7 +657,10 @@ lord.spell_rep = function(post, args) {
     if (!m)
         return null;
     var s = lord.last(m) || "";
-    return { "replacements": [ { "innerHTML": post.innerHTML.replace(new RegExp(m[1], m[3]), s) } ] };
+    var nih = post.innerHTML.replace(new RegExp(m[1], m[3]), s);
+    if (post.innerHTML == nih)
+        return null;
+    return { "replacements": [ { "innerHTML": nih } ] };
 };
 
 lord.applySpell = function(post, spell, youtube) {
