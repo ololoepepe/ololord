@@ -894,11 +894,14 @@ bool testBanAjax(cppcms::application &app, UserActionType proposedAction, const 
     TranslatorQt tq(app.request());
     bool ok = false;
     QString err;
-    Database::BanInfo inf = Database::userBanInfo(ip, board, &ok, &err, tq.locale());
+    QMap<QString, Database::BanInfo> map = Database::userBanInfo(ip, &ok, &err, tq.locale());
     if (!ok) {
         renderErrorAjax(app, tq.translate("testBanAjax", "Internal error", "error"), err);
         return false;
     }
+    if (!map.contains(board))
+        return true;
+    Database::BanInfo inf = map.value(board);
     if (inf.level >= proposedAction) {
         renderBanAjax(app, inf);
         return false;
@@ -917,11 +920,12 @@ bool testBanNonAjax(cppcms::application &app, UserActionType proposedAction, con
     TranslatorQt tq(app.request());
     bool ok = false;
     QString err;
-    Database::BanInfo inf = Database::userBanInfo(ip, board, &ok, &err, tq.locale());
+    QMap<QString, Database::BanInfo> map = Database::userBanInfo(ip, &ok, &err, tq.locale());
     if (!ok) {
         renderError(app, tq.translate("testBan", "Internal error", "error"), err);
         return false;
     }
+    Database::BanInfo inf = map.value(board);
     if (inf.level >= proposedAction) {
         renderBan(app, inf);
         return false;

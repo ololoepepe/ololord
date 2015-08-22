@@ -100,6 +100,11 @@ bool RefKey::operator <(const RefKey &other) const
     return boardName < other.boardName || (boardName == other.boardName && postNumber < other.postNumber);
 }
 
+bool BanInfo::isExpired() const
+{
+    return expires.isValid() && expires <= QDateTime::currentDateTimeUtc();
+}
+
 CreatePostParameters::CreatePostParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
                                            const QList<Tools::File> &fs, const QLocale &l) :
     files(fs), locale(l), params(ps), request(req)
@@ -495,13 +500,10 @@ static bool testCaptcha(const cppcms::http::request &req, const Tools::PostParam
     return bRet(error, QString(), description, QString(), true);
 }
 
-static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, const QString &board, int level,
-                            const QString &reason, const QDateTime &expires, QString *error, const QLocale &l,
-                            QString ip = QString())
+static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, const QList<BanInfo> &bans, QString *error,
+                            const QLocale &l, QString ip = QString())
 {
     TranslatorQt tq(l);
-    if (board.isEmpty() || (!AbstractBoard::boardNames().contains(board) && "*" != board))
-        return bRet(error, tq.translate("banUserInternal", "Invalid board name", "error"), false);
     try {
         Transaction t;
         if (!t)
@@ -517,41 +519,51 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             postId = post->id();
             if (ip.isEmpty())
                 ip = post->posterIp();
-            post->setBannedFor(level > 0);
+            bool banned = false;
+            foreach (const BanInfo &inf, bans) {
+                if (sourceBoard == inf.boardName) {
+                    banned = (inf.level > 0 && !inf.isExpired());
+                    break;
+                }
+            }
+            post->setBannedFor(banned);
             update(post);
         }
         if (ip.isEmpty())
             return bRet(error, tq.translate("banUserInternal", "Invalid IP address", "error"), false);
-        Result<BannedUser> user = queryOne<BannedUser, BannedUser>(odb::query<BannedUser>::board == board
-                                                                   && odb::query<BannedUser>::ip == ip);
+        Result<BannedUser> user = queryOne<BannedUser, BannedUser>(odb::query<BannedUser>::ip == ip);
         if (user.error)
             return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
         QDateTime dt = QDateTime::currentDateTimeUtc();
-        if (!user) {
-            if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
-                t.commit();
-                return bRet(error, QString(), true);
-            }
-            user = new BannedUser(board, ip, dt, postId);
-            user->setExpirationDateTime(expires);
-            user->setLevel(level);
-            user->setReason(reason);
-            persist(user);
-        } else {
-            if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
-                t->erase(*user);
-                t.commit();
-                Cache::removePost(board, postNumber);
-                return bRet(error, QString(), true);
-            }
-            user->setDateTime(dt);
-            user->setExpirationDateTime(expires);
-            user->setLevel(level);
-            user->setReason(reason);
+        if (user) {
+            typedef QLazyWeakPointer<Ban> LazyBan;
+            foreach (LazyBan lban, user->bans())
+                t->erase(*lban.load());
+            user->bans().clear();
             update(user);
+        } else {
+            user = new BannedUser(ip);
+            persist(user);
         }
+        QStringList boardNames = AbstractBoard::boardNames();
+        bool count = 0;
+        foreach (const BanInfo &inf, bans) {
+            if (!boardNames.contains(inf.boardName))
+                return bRet(error, tq.translate("banUserInternal", "Invalid board name", "error"), false);
+            if (inf.level <= 0 || inf.isExpired())
+                continue;
+            QSharedPointer<Ban> ban(new Ban(user.data, inf.boardName, dt,
+                                            (sourceBoard == inf.boardName) ? postId : 0L));
+            ban->setExpirationDateTime(inf.expires);
+            ban->setLevel(inf.level);
+            ban->setReason(inf.reason);
+            t->persist(*ban);
+            ++count;
+        }
+        if (count < 1)
+            t->erase(*user);
         t.commit();
-        Cache::removePost(board, postNumber);
+        Cache::removePost(sourceBoard, postNumber);
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -907,25 +919,21 @@ int addPostsToIndex(QString *error, const QLocale &l)
     }
 }
 
-bool banUser(const QString &ip, const QString &board, int level, const QString &reason, const QDateTime &expires,
-             QString *error, const QLocale &l)
+bool banUser(const QString &ip, const QList<BanInfo> &bans, QString *error, const QLocale &l)
 {
-    return banUserInternal("", 0, board, level, reason, expires, error, l, ip);
+    return banUserInternal("", 0, bans, error, l, ip);
 }
 
-bool banUser(const QString &sourceBoard, quint64 postNumber, const QString &board, int level, const QString &reason,
-             const QDateTime &expires, QString *error, const QLocale &l)
+bool banUser(const QString &sourceBoard, quint64 postNumber, const QList<BanInfo> &bans, QString *error,
+             const QLocale &l)
 {
-    return banUserInternal(sourceBoard, postNumber, board, level, reason, expires, error, l);
+    return banUserInternal(sourceBoard, postNumber, bans, error, l);
 }
 
-bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber, const QString &board,
-             int level, const QString &reason, const QDateTime &expires, QString *error)
+bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber,
+             const QList<BanInfo> &bans, QString *error)
 {
     TranslatorQt tq(req);
-    QStringList boardNames = AbstractBoard::boardNames();
-    if (board != "*" && (!boardNames.contains(board) || !boardNames.contains(sourceBoard)))
-        return bRet(error, tq.translate("banUser", "Invalid board name", "error"), false);
     if (!postNumber)
         return bRet(error, tq.translate("banUser", "Invalid post number", "error"), false);
     QByteArray hashpass = Tools::hashpass(req);
@@ -944,9 +952,11 @@ bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint
         if (hashpass == post->hashpass())
             return bRet(error, tq.translate("banUser", "You can't ban youself, baka", "error"), false);
         int lvl = registeredUserLevel(req);
-        if (!moderOnBoard(req, board, sourceBoard) || registeredUserLevel(post->hashpass()) >= lvl)
-            return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
-        if (!banUser(sourceBoard, postNumber, board, level, reason, expires, error, tq.locale()))
+        foreach (const BanInfo &inf, bans) {
+            if (!moderOnBoard(req, sourceBoard, inf.boardName) || registeredUserLevel(post->hashpass()) >= lvl)
+                return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+        }
+        if (!banUser(sourceBoard, postNumber, bans, error, tq.locale()))
             return false;
         t.commit();
         return bRet(error, QString(), true);
@@ -961,22 +971,29 @@ void checkOutdatedEntries()
         Transaction t;
         if (!t)
             return;
-        QDateTime dt = QDateTime::currentDateTimeUtc();
         QList<BannedUser> list = queryAll<BannedUser>();
         foreach (const BannedUser &u, list) {
-            QDateTime exp = u.expirationDateTime();
-            if (exp.isValid() && exp <= dt) {
-                quint64 postId = u.postId();
-                t.db()->erase_query<BannedUser>(odb::query<BannedUser>::id == u.id());
-                if (postId) {
-                    Result<Post> post = queryOne<Post, Post>(odb::query<Post>::id == postId);
-                    if (post.error || !post)
-                        continue;
-                    post->setBannedFor(false);
-                    update(post);
-                    Cache::removePost(post->board(), post->number());
+            typedef QLazyWeakPointer<Ban> LazyBan;
+            int expired = 0;
+            foreach (LazyBan lban, u.bans()) {
+                QSharedPointer<Ban> ban = lban.load();
+                QDateTime exp = ban->expirationDateTime();
+                if (exp.isValid() && exp <= QDateTime::currentDateTimeUtc()) {
+                    quint64 postId = ban->postId();
+                    t->erase(*ban);
+                    ++expired;
+                    if (postId) {
+                        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::id == postId);
+                        if (post.error || !post)
+                            continue;
+                        post->setBannedFor(false);
+                        update(post);
+                        Cache::removePost(post->board(), post->number());
+                    }
                 }
             }
+            if (expired >= u.bans().size())
+                t->erase(u);
         }
         t.commit();
     } catch (const odb::exception &e) {
@@ -2462,49 +2479,43 @@ bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error
     }
 }
 
-BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QString *error, const QLocale &l)
+QMap<QString, BanInfo> userBanInfo(const QString &ip, bool *ok, QString *error, const QLocale &l)
 {
-    BanInfo inf;
-    inf.level = 0;
+    QMap<QString, BanInfo> map;
     TranslatorQt tq(l);
     if (ip.isEmpty())
-        return bRet(ok, false, error, tq.translate("userBanInfo", "Internal logic error", "description"), inf);
+        return bRet(ok, false, error, tq.translate("userBanInfo", "Internal logic error", "error"), map);
     try {
         Transaction t;
         if (!t)
-            return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "description"), inf);
-        QList<BannedUser> list = query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
-                                                               && odb::query<BannedUser>::ip == ip);
-        foreach (const BannedUser &u, list) {
-            QDateTime expires = u.expirationDateTime().toUTC();
-            if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                inf.level = u.level();
-                inf.boardName = u.board();
-                inf.dateTime = u.dateTime();
-                inf.reason = u.reason();
-                inf.expires = expires;
-                break;
-            }
+            return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "error"), map);
+        Result<BannedUser> user = queryOne<BannedUser, BannedUser>(odb::query<BannedUser>::ip == ip);
+        if (user.error)
+            return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "error"), map);
+        if (!user)
+            return bRet(ok, true, error, QString(), map);
+        typedef QLazyWeakPointer<Ban> LazyBan;
+        foreach (const LazyBan &lban, user->bans()) {
+            QSharedPointer<Ban> ban = lban.load();
+            BanInfo inf;
+            inf.boardName = ban->board();
+            inf.dateTime = ban->dateTime();
+            inf.expires = ban->expirationDateTime();
+            inf.level = ban->level();
+            inf.reason = ban->reason();
+            if (!inf.isExpired())
+                map.insert(inf.boardName, inf);
         }
-        if (inf.level <= 0 && !boardName.isEmpty()) {
-            list = query<BannedUser, BannedUser>(odb::query<BannedUser>::board == boardName
-                                                 && odb::query<BannedUser>::ip == ip);
-            foreach (const BannedUser &u, list) {
-                QDateTime expires = u.expirationDateTime().toUTC();
-                if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                    inf.level = u.level();
-                    inf.boardName = u.board();
-                    inf.dateTime = u.dateTime();
-                    inf.reason = u.reason();
-                    inf.expires = expires;
-                    break;
-                }
-            }
-        }
-        return bRet(ok, true, error, QString(), inf);
+        return bRet(ok, true, error, QString(), map);
     }  catch (const odb::exception &e) {
-        return bRet(ok, false, error, Tools::fromStd(e.what()), inf);
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QMap<QString, BanInfo>());
     }
+}
+
+QMap<QString, BanInfo> userBanInfo(const QString &boardName, quint64 postNumber, bool *ok, QString *error,
+                                   const QLocale &l)
+{
+    return userBanInfo(posterIp(boardName, postNumber), ok, error, l);
 }
 
 bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::request &req, QString *error)

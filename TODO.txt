@@ -26,6 +26,7 @@
 [done] Fix double post link adding
 [done] Fix JS
 [done] Fix geolocation info retrieving
+[done] Add ability to use proxy for files attached as links
 * Implement user management page
 * Fix moving video files
 

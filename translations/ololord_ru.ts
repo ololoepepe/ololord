@@ -636,11 +636,6 @@ Apperas in the HTML pages.</source>
         <translation>Нет такой доски</translation>
     </message>
     <message>
-        <source>Failed to ban user</source>
-        <comment>error</comment>
-        <translation>Не удалось забанить пользователя</translation>
-    </message>
-    <message>
         <source>Failed to delete file</source>
         <comment>error</comment>
         <translation>Не удалось удалить файл</translation>
@@ -1538,11 +1533,6 @@ text</source>
 <context>
     <name>banUser</name>
     <message>
-        <source>Invalid board name</source>
-        <comment>error</comment>
-        <translation>Неверное имя доски</translation>
-    </message>
-    <message>
         <source>Invalid post number</source>
         <comment>error</comment>
         <translation>Неверный номер поста</translation>
@@ -2199,8 +2189,20 @@ text</source>
         <translation>ОК</translation>
     </message>
     <message>
-        <source>Invalid date. User will be banned forever. Continue?</source>
-        <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
+        <source>Invalid date</source>
+        <translation>Неверная дата</translation>
+    </message>
+    <message>
+        <source>No date specified. User will be banned forever. Continue?</source>
+        <translation>Дата не указана. Пользователь будет забанен навсегда. Продолжить?</translation>
+    </message>
+    <message>
+        <source>Canceled</source>
+        <translation>Отменено</translation>
+    </message>
+    <message>
+        <source>No board specified. User will be banned/unbanned on all boards. Continue?</source>
+        <translation>Не указана доска. Пользователь будет забанен/разбанен на всех досках. Продолжить?</translation>
     </message>
 </context>
 <context>
@@ -2214,8 +2216,20 @@ text</source>
         <translation>ОК</translation>
     </message>
     <message>
-        <source>Invalid date. User will be banned forever. Continue?</source>
-        <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
+        <source>Invalid date</source>
+        <translation>Неверная дата</translation>
+    </message>
+    <message>
+        <source>No date specified. User will be banned forever. Continue?</source>
+        <translation>Дата не указана. Пользователь будет забанен навсегда. Продолжить?</translation>
+    </message>
+    <message>
+        <source>Canceled</source>
+        <translation>Отменено</translation>
+    </message>
+    <message>
+        <source>No board specified. User will be banned/unbanned on all boards. Continue?</source>
+        <translation>Не указана доска. Пользователь будет забанен/разбанен на всех досках. Продолжить?</translation>
     </message>
 </context>
 <context>
@@ -4119,6 +4133,29 @@ The default is convert (UNIX) or convert.exe (Windows).</source>
         <translation>Команда вызова утилиты convert из пакета ImageMagick (возможно, полный путь).
 По умолчанию convert (UNIX) или convert.exe (Windows).</translation>
     </message>
+    <message>
+        <source>Username/password for proxy used to download files attached as links.
+May be useful when your server is under a firewall.
+See CURLOPT_PROXYUSERPWD for detals.
+Example: user:passw0rd</source>
+        <translation>Имя пользователя/пароль для прокси, используемого для загрузки файлов, прикрепленных в виде ссылок.
+Может быть полезно, если ваш сервер находится за фаерволом.
+См. CURLOPT_PROXY для дополнительной информации.
+Пример: user:passw0rd</translation>
+    </message>
+    <message>
+        <source>Proxy used to download files attached as links.
+May be useful when your server is under a firewall.
+If no protocol is specified, it defaults to http.
+If port is not specified, it defaults to 8080.
+See CURLOPT_PROXY for detals.
+Example: 123.234.56.78:8080</source>
+        <translation>Прокси, используемый для загрузки файлов, прикрепленных в виде ссылок.
+Может быть полезно, если ваш сервер находится за фаерволом.
+Если протокол не указан, по умолчанию будет использован http.
+См. CURLOPT_PROXY для дополнительной информации.
+Пример: 123.234.56.78:8080</translation>
+    </message>
 </context>
 <context>
     <name>lastPostNumber</name>
@@ -4910,12 +4947,12 @@ The default is convert (UNIX) or convert.exe (Windows).</source>
     <name>userBanInfo</name>
     <message>
         <source>Internal logic error</source>
-        <comment>description</comment>
+        <comment>error</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal database error</source>
-        <comment>description</comment>
+        <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>

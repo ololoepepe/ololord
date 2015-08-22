@@ -769,6 +769,8 @@ FileList postFiles(const cppcms::http::request &request, const PostParameters &p
         list << file;
     }
     int maxSize = maxInfo(MaxFileSize, boardName);
+    std::string proxy = toStd(SettingsLocker()->value("Site/file_link_dl_proxy").toString());
+    std::string proxyUserpwd = toStd(SettingsLocker()->value("Site/file_link_dl_proxy_userpwd").toString());
     foreach (const QString &key, params.keys()) {
         if (!key.startsWith("file_url_"))
             continue;
@@ -780,6 +782,11 @@ FileList postFiles(const cppcms::http::request &request, const PostParameters &p
             curlpp::Easy request;
             request.setOpt(curlpp::options::Url(Tools::toStd(url)));
             request.setOpt(curlpp::options::MaxFileSize(maxSize));
+            if (!proxy.empty()) {
+                request.setOpt(curlpp::options::Proxy(proxy));
+                if (!proxyUserpwd.empty())
+                    request.setOpt(curlpp::options::ProxyUserPwd(proxyUserpwd));
+            }
             std::ostringstream os;
             os << request;
             std::string s = os.str();

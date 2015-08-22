@@ -198,6 +198,8 @@ struct OLOLORD_EXPORT BanInfo
     QString reason;
     QDateTime expires;
     int level;
+public:
+    bool isExpired() const;
 };
 
 struct OLOLORD_EXPORT GeolocationInfo
@@ -284,15 +286,12 @@ public:
 OLOLORD_EXPORT bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &params,
                             const QList<Tools::File> &files, QString *error = 0, QString *description = 0);
 OLOLORD_EXPORT int addPostsToIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool banUser(const QString &ip, const QString &board = "*", int level = 1,
-                            const QString &reason = QString(), const QDateTime &expires = QDateTime(),
-                            QString *error = 0, const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool banUser(const QString &sourceBoard, quint64 postNumber, const QString &board = "*", int level = 1,
-                            const QString &reason = QString(), const QDateTime &expires = QDateTime(),
+OLOLORD_EXPORT bool banUser(const QString &ip, const QList<BanInfo> &bans, QString *error = 0,
+                            const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT bool banUser(const QString &sourceBoard, quint64 postNumber, const QList<BanInfo> &bans,
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber,
-                            const QString &board, int level, const QString &reason, const QDateTime &expires,
-                            QString *error = 0);
+                            const QList<BanInfo> &bans, QString *error = 0);
 OLOLORD_EXPORT void checkOutdatedEntries();
 OLOLORD_EXPORT bool createPost(CreatePostParameters &p, quint64 *postNumber = 0);
 OLOLORD_EXPORT void createSchema();
@@ -366,8 +365,10 @@ OLOLORD_EXPORT bool setThreadOpened(const QString &boardName, quint64 threadNumb
 OLOLORD_EXPORT bool setVoteOpened(quint64 postNumber, bool opened, const QByteArray &password,
                                   const cppcms::http::request &req, QString *error = 0);
 OLOLORD_EXPORT bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error = 0);
-OLOLORD_EXPORT BanInfo userBanInfo(const QString &ip, const QString &boardName = QString(), bool *ok = 0,
-                                   QString *error = 0, const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT QMap<QString, BanInfo> userBanInfo(const QString &ip, bool *ok = 0, QString *error = 0,
+                                                  const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT QMap<QString, BanInfo> userBanInfo(const QString &boardName, quint64 postNumber, bool *ok = 0,
+                                                  QString *error = 0, const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::request &req,
                          QString *error = 0);
 

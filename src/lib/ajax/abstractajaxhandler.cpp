@@ -28,11 +28,14 @@ bool AbstractAjaxHandler::testBan(const QString &boardName, bool readonly)
     QString ip = Tools::userIp(server.request());
     bool ok = false;
     QString err;
-    Database::BanInfo inf = Database::userBanInfo(ip, boardName, &ok, &err, ts.locale());
+    QMap<QString, Database::BanInfo> map = Database::userBanInfo(ip, &ok, &err, ts.locale());
     if (!ok) {
         server.return_error(Tools::toStd(err));
         return false;
     }
+    if (!map.contains(boardName))
+        return true;
+    Database::BanInfo inf = map.value(boardName);
     if ((readonly && inf.level >= 10) || (!readonly && inf.level >= 1)) {
         server.return_error(ts.translate("AbstractAjaxHandler", "You are banned", "error"));
         return false;

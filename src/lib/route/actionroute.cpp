@@ -123,7 +123,11 @@ void ActionRoute::handleBanUser(const QString &action, const Tools::PostParamete
     quint64 postNumber = params.value("postNumber").toULongLong();
     QString board = params.value("board");
     QString logTarget = sourceBoard + "/" + QString::number(postNumber);
-    if (!Controller::testBanNonAjax(application, Controller::WriteAction, sourceBoard)
+    //TMP
+    Controller::renderErrorNonAjax(application, QString("FAIL"), QString("This feature is being reimplemented"));
+    Tools::log(application, "action/" + action, "fail:This feature is being reimplemented", logTarget);
+    //TMP
+    /*if (!Controller::testBanNonAjax(application, Controller::WriteAction, sourceBoard)
             || !Controller::testBanNonAjax(application, Controller::WriteAction, board)) {
         return Tools::log(application, "action/" + action, "fail:ban", logTarget);
     }
@@ -138,7 +142,7 @@ void ActionRoute::handleBanUser(const QString &action, const Tools::PostParamete
     }
     redirect(sourceBoard + "/thread/" + QString::number(Database::postThreadNumber(sourceBoard, postNumber)) + ".html#"
              + QString::number(postNumber));
-    Tools::log(application, "action/" + action, "success", logTarget);
+    Tools::log(application, "action/" + action, "success", logTarget);*/
 }
 
 void ActionRoute::handleChangeLocale(const QString &action, const Tools::PostParameters &params, const Translator::Qt &)

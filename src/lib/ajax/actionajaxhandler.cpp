@@ -49,13 +49,17 @@ void ActionAjaxHandler::banUser(const cppcms::json::object &params)
         int level = (int) params.at("level").number();
         QDateTime expires = QDateTime::fromString(Tools::fromStd(params.at("expires").str()), "dd.MM.yyyy:hh");
         QString err;
-        if (!Database::banUser(server.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
+        //TMP
+        server.return_error("This feature is being reimplemented");
+        Tools::log(server, "ajax_ban_user", "fail:This feature is being reimplemented", logTarget);
+        //TMP
+        /*if (!Database::banUser(server.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
             server.return_error(Tools::toStd(err));
             Tools::log(server, "ajax_ban_user", "fail:" + err, logTarget);
             return;
         }
         server.return_result(true);
-        Tools::log(server, "ajax_ban_user", "success", logTarget);
+        Tools::log(server, "ajax_ban_user", "success", logTarget);*/
     } catch (const cppcms::json::bad_value_cast &e) {
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
