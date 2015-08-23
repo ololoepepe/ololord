@@ -233,6 +233,7 @@ public:
     std::string referencedByText;
     std::string registeredText;
     std::string removeFileText;
+    std::string selectAllText;
     std::string selectFileText;
     std::string showHidePostText;
     std::string showPostformMarkupText;
@@ -246,6 +247,7 @@ public:
     std::string toTopText;
     std::string unexpectedEndOfTokenListErrorText;
     std::string unfixThreadText;
+    std::string unselectAllText;
     std::string youtubeApiKey;
 public:
     static bool isAudioType(const std::string &mimeType)

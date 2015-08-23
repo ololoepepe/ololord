@@ -1235,46 +1235,116 @@ lord.moveThread = function(boardName, threadNumber) {
 lord.banUser = function(boardName, postNumber) {
     if (!boardName || isNaN(+postNumber))
         return;
-    var title = lord.text("banUserText");
-    var div = lord.node("div");
-    var div1 = lord.node("div");
-    div1.appendChild(lord.node("text", lord.text("boardLabelText")));
-    var selBoard = lord.id("availableBoardsSelect").cloneNode(true);
-    selBoard.style.display = "block";
-    div1.appendChild(selBoard);
-    div.appendChild(div1);
-    var div2 = lord.node("div");
-    div2.appendChild(lord.node("text", lord.text("banLevelLabelText")));
-    var selLevel = lord.id("banLevelsSelect").cloneNode(true);
-    selLevel.style.display = "block";
-    div2.appendChild(selLevel);
-    div.appendChild(div2);
-    var div3 = lord.node("div");
-    div3.appendChild(lord.node("text", lord.text("banReasonLabelText")));
-    var inputReason = lord.node("input");
-    inputReason.type = "text";
-    lord.addClass(inputReason, "input");
-    div3.appendChild(inputReason);
-    div.appendChild(div3);
-    var div4 = lord.node("div");
-    div4.appendChild(lord.node("text", lord.text("banExpiresLabelText")));
-    var inputExpires = lord.node("input");
-    inputExpires.type = "text";
-    inputExpires.placeholder = "dd.MM.yyyy:hh";
-    lord.addClass(inputExpires, "input");
-    div4.appendChild(inputExpires);
-    div.appendChild(div4);
-    lord.showDialog(title, null, div, function() {
-        var params = {
-            "boardName": boardName,
-            "postNumber": +postNumber,
-            "board": selBoard.options[selBoard.selectedIndex].value,
-            "level": +selLevel.options[selLevel.selectedIndex].value,
-            "reason": inputReason.value,
-            "expires": inputExpires.value
+    var post = lord.id("post" + postNumber);
+    if (!post)
+        return;
+    var ip = lord.nameOne("number", post);
+    if (!ip)
+        return;
+    ip = ip.title;
+    if (!ip)
+        return;
+    lord.ajaxRequest("get_user_ban_info", [ip], lord.RpcGetUserBanInfoId, function(res) {
+        if (!res)
+            return;
+        var title = lord.text("banUserText");
+        var div = lord.node("div");
+        var div1 = lord.node("div");
+        lord.forIn(lord.availableBoards(), function(bt, bn) {
+            var div2 = lord.node("div");
+            var binp = lord.node("input");
+            binp.type = "hidden";
+            binp.setAttribute("name", "boardName");
+            binp.value = bn;
+            div2.appendChild(binp);
+            div2.appendChild(lord.node("text", "[" + bn + "] " + bt + " "));
+            var selLevel = lord.id("banLevelsSelect").cloneNode(true);
+            selLevel.style.display = "";
+            selLevel.setAttribute("name", "level");
+            if (res[bn]) {
+                for (var i = 0; i < selLevel.options.length; ++i) {
+                    if (+selLevel.options[i] == res[bn].level) {
+                        selLevel.selectedIndex = i;
+                        break;
+                    }
+                }
+            } else {
+                selLevel.selectedIndex = 0;
+            }
+            div2.appendChild(selLevel);
+            div2.appendChild(lord.node("text", " "));
+            var expires = lord.node("input");
+            expires.type = "text";
+            expires.setAttribute("name", "expires");
+            expires.placeholder = lord.text("banExpiresLabelText") + " <dd.MM.yyyy:hh>";
+            if (res[bn])
+                expires.value = res[bn].expires;
+            div2.appendChild(expires);
+            div2.appendChild(lord.node("text", " "));
+            var reason = lord.node("input");
+            reason.type = "text";
+            reason.placeholder = lord.text("banReasonLabelText") + " [...]";
+            reason.setAttribute("name", "reason");
+            if (res[bn])
+                reason.value = res[bn].reason;
+            div2.appendChild(reason);
+            div1.appendChild(div2);
+        });
+        div.appendChild(div1);
+        div.appendChild(lord.node("br"));
+        var div2 = lord.node("div");
+        var btnUnsel = lord.node("button");
+        var btnSel = lord.node("button");
+        btnSel.appendChild(lord.node("text", lord.text("selectAllText")));
+        btnSel.onclick = function() {
+            var levelInd = lord.nameOne("level", div2).selectedIndex;
+            var expires = lord.nameOne("expires", div2).value;
+            var reason = lord.nameOne("reason", div2).value;
+            lord.query("div", div1).forEach(function(d) {
+                lord.nameOne("level", d).selectedIndex = levelInd;
+                lord.nameOne("expires", d).value = expires;
+                lord.nameOne("reason", d).value = reason;
+            });
         };
-        lord.ajaxRequest("ban_user", [params], lord.RpcBanUserId, function(res) {
-            lord.reloadPage();
+        div2.appendChild(btnSel);
+        div2.appendChild(lord.node("text", " "));
+        var selLevel = lord.id("banLevelsSelect").cloneNode(true);
+        selLevel.style.display = "";
+        selLevel.setAttribute("name", "level");
+        selLevel.selectedIndex = 0;
+        div2.appendChild(selLevel);
+        div2.appendChild(lord.node("text", " "));
+        var expires = lord.node("input");
+        expires.type = "text";
+        expires.setAttribute("name", "expires");
+        expires.placeholder = lord.text("banExpiresLabelText") + " <dd.MM.yyyy:hh>";
+        div2.appendChild(expires);
+        div2.appendChild(lord.node("text", " "));
+        var reason = lord.node("input");
+        reason.type = "text";
+        reason.placeholder = lord.text("banReasonLabelText") + " [...]";
+        reason.setAttribute("name", "reason");
+        div2.appendChild(reason);
+        div.appendChild(div2);
+        lord.showDialog(title, null, div, function() {
+            var bans = [];
+            lord.query("div", div1).forEach(function(d) {
+                var selLevel = lord.nameOne("level", d);
+                bans.push({
+                    "boardName": lord.nameOne("boardName", d).value,
+                    "level": +selLevel.options[selLevel.selectedIndex].value,
+                    "expires": lord.nameOne("expires", d).value,
+                    "reason": lord.nameOne("reason", d).value
+                });
+            });
+            var params = {
+                "boardName": boardName,
+                "postNumber": +postNumber,
+                "bans": bans
+            };
+            lord.ajaxRequest("ban_poster", [params], lord.RpcBanPosterId, function(res) {
+                lord.reloadPage();
+            });
         });
     });
 };
@@ -2499,7 +2569,9 @@ lord.resetPostForm = function() {
     var divs = lord.query(".postformFile", postForm);
     for (var i = divs.length - 1; i >= 0; --i)
     lord.removeFile(lord.queryOne("a", divs[i]));
-    lord.nameOne("tripcode", postForm).checked = !!lord.getLocalObject("showTripcode", false);
+    var trip = lord.nameOne("tripcode", postForm);
+    if (trip)
+        trip.checked = !!lord.getLocalObject("showTripcode", false);
     var dr = lord.nameOne("draft", postForm);
     if (dr)
         dr.checked = (lord.getCookie("draftsByDefault") === "true");

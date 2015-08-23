@@ -53,6 +53,7 @@ public:
     std::string allBoardsText;
     std::string autoUpdateIntervalLabelText;
     std::string autoUpdateThreadsByDefaultLabelText;
+    std::string availableBoardsString;
     AbstractBoard::BoardInfoList boards;
     std::string cancelButtonText;
     std::list<CaptchaEngine> captchaEngines;

@@ -42,6 +42,16 @@ lord._defineHotkey("markupCode", "Alt+C");
 
 /*Functions*/
 
+lord.availableBoards = function() {
+    if (lord.availableBoards._boards)
+        return lord.availableBoards._boards;
+    lord.availableBoards._boards = {};
+    lord.arr(lord.text("availableBoards").split(";")).forEach(function(brd) {
+        lord.availableBoards._boards[brd.split("|").shift()] = brd.split("|").pop();
+    });
+    return lord.availableBoards._boards;
+};
+
 lord.changeLocale = function() {
     var sel = lord.id("localeChangeSelect");
     var ln = sel.options[sel.selectedIndex].value;

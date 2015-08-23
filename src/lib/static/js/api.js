@@ -23,7 +23,8 @@ lord._defineEnum = function(constName, value) {
     }
 };
 
-lord._defineEnum("RpcBanUserId", 1);
+lord._defineEnum("RpcBanPosterId", 1);
+lord._defineEnum("RpcBanUserId");
 lord._defineEnum("RpcDeleteFileId");
 lord._defineEnum("RpcDeletePostId");
 lord._defineEnum("RpcEditAudioTagsId");
@@ -37,6 +38,7 @@ lord._defineEnum("RpcGetNewPostCountExId");
 lord._defineEnum("RpcGetNewPostsId");
 lord._defineEnum("RpcGetPostId");
 lord._defineEnum("RpcGetThreadNumbersId");
+lord._defineEnum("RpcGetUserBanInfoId");
 lord._defineEnum("RpcGetYandexCaptchaImageId");
 lord._defineEnum("RpcMoveThreadId");
 lord._defineEnum("RpcSetThreadFixedId");

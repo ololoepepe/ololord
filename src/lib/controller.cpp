@@ -106,6 +106,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                  "autoUpdateIntervalLabelText");
     c.autoUpdateThreadsByDefaultLabelText = ts.translate("initBase", "Auto update threads by default:",
                                                          "autoUpdateThreadsByDefaultLabelText");
+    QStringList userBoards = Database::registeredUserBoards(req);
+    if (userBoards.size() == 1 && userBoards.first() == "*") {
+        userBoards.clear();
+        userBoards << AbstractBoard::boardNames();
+    }
+    foreach (int i, bRangeD(0, userBoards.size() - 1))
+        userBoards[i] += "|" + AbstractBoard::board(userBoards.at(i))->title(ts.locale());
+    c.availableBoardsString = Tools::toStd(userBoards.join(";"));
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
     c.captchaLabelText = ts.translate("initBase", "Captcha:", "captchaLabelText");
     c.captchaLabelWarningText = ts.translate("initBase", "This option may be ignored on some boards",
@@ -622,6 +630,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
+    c.selectAllText = ts.translate("initBaseBoard", "Select all", "selectAllText");
     c.selectFileText = ts.translate("initBaseBoard", "Select file", "selectFileText");
     c.showPostformMarkupText = ts.translate("initBaseBoard", "Show markup", "showPostformMarkupText");
     c.showPostformRulesText = ts.translate("initBaseBoard", "Show rules", "showPostformRulesText");
@@ -637,6 +646,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.unexpectedEndOfTokenListErrorText = ts.translate("initBaseBoard", "Unexpected end of spell list",
                                                        "unexpectedEndOfTokenListErrorText");
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
+    c.unselectAllText = ts.translate("initBaseBoard", "Unselect all", "unselectAllText");
     c.youtubeApiKey = Tools::toStd(s->value("Site/youtube_api_key").toString());
     return true;
 }
@@ -666,9 +676,9 @@ void renderBanAjax(cppcms::application &app, const Database::BanInfo &info)
     desc += Tools::toStd(ts.locale().toString(Tools::dateTime(info.dateTime, app.request()),
                                               "dd.MM.yyyy ddd hh:mm:ss")) + ". ";
     desc += ts.translate("renderBanAjax", "Expires:", "errorDescription") + " ";
-    desc += info.expires.isValid() ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
+    desc += (info.expires.isValid() ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
                                                                        "dd.MM.yyyy ddd hh:mm:ss"))
-                                   : ts.translate("renderBanAjax", "never", "errorDescription") + ". ";
+                                    : ts.translate("renderBanAjax", "never", "errorDescription")) + ". ";
     desc += ts.translate("renderBanAjax", "Restricted actions:", "errorDescription") + " ";
     if (info.level >= 10)
         desc += ts.translate("renderBanAjax", "reading and posting are restricted", "errorDescription");

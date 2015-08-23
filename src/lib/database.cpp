@@ -930,12 +930,11 @@ bool banUser(const QString &sourceBoard, quint64 postNumber, const QList<BanInfo
     return banUserInternal(sourceBoard, postNumber, bans, error, l);
 }
 
-bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber,
-             const QList<BanInfo> &bans, QString *error)
+bool banUser(const cppcms::http::request &req, const QString &ip, const QList<BanInfo> &bans, QString *error)
 {
     TranslatorQt tq(req);
-    if (!postNumber)
-        return bRet(error, tq.translate("banUser", "Invalid post number", "error"), false);
+    if (ip.isEmpty() || !Tools::ipNum(ip))
+        return bRet(error, tq.translate("banUser", "Invalid ip", "error"), false);
     QByteArray hashpass = Tools::hashpass(req);
     if (hashpass.isEmpty())
         return bRet(error, tq.translate("banUser", "Not logged in", "error"), false);
@@ -943,18 +942,50 @@ bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
-        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == sourceBoard
-                                                 && odb::query<Post>::number == postNumber);
-        if (post.error)
-            return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
-        if (!post)
-            return bRet(error, tq.translate("banUser", "No such post", "error"), false);
-        if (hashpass == post->hashpass())
+        QList<Post> posts = query<Post, Post>((odb::query<Post>::posterIp == ip) + " ORDER BY dateTime DESC LIMIT 1");
+        if (!posts.isEmpty() && hashpass == posts.first().hashpass())
             return bRet(error, tq.translate("banUser", "You can't ban youself, baka", "error"), false);
         int lvl = registeredUserLevel(req);
         foreach (const BanInfo &inf, bans) {
-            if (!moderOnBoard(req, sourceBoard, inf.boardName) || registeredUserLevel(post->hashpass()) >= lvl)
+            if (!moderOnBoard(req, inf.boardName)
+                    || (posts.isEmpty() || registeredUserLevel(posts.first().hashpass()) >= lvl)) {
                 return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+            }
+        }
+        if (!banUser(ip, bans, error, tq.locale()))
+            return false;
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
+bool banPoster(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber,
+               const QList<BanInfo> &bans, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!postNumber)
+        return bRet(error, tq.translate("banPoster", "Invalid post number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("banPoster", "Not logged in", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("banPoster", "Internal database error", "error"), false);
+        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == sourceBoard
+                                                 && odb::query<Post>::number == postNumber);
+        if (post.error)
+            return bRet(error, tq.translate("banPoster", "Internal database error", "error"), false);
+        if (!post)
+            return bRet(error, tq.translate("banPoster", "No such post", "error"), false);
+        if (hashpass == post->hashpass())
+            return bRet(error, tq.translate("banPoster", "You can't ban youself, baka", "error"), false);
+        int lvl = registeredUserLevel(req);
+        foreach (const BanInfo &inf, bans) {
+            if (!moderOnBoard(req, sourceBoard, inf.boardName) || registeredUserLevel(post->hashpass()) >= lvl)
+                return bRet(error, tq.translate("banPoster", "Not enough rights", "error"), false);
         }
         if (!banUser(sourceBoard, postNumber, bans, error, tq.locale()))
             return false;

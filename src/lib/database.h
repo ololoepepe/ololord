@@ -290,8 +290,10 @@ OLOLORD_EXPORT bool banUser(const QString &ip, const QList<BanInfo> &bans, QStri
                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool banUser(const QString &sourceBoard, quint64 postNumber, const QList<BanInfo> &bans,
                             QString *error = 0, const QLocale &l = BCoreApplication::locale());
-OLOLORD_EXPORT bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber,
-                            const QList<BanInfo> &bans, QString *error = 0);
+OLOLORD_EXPORT bool banUser(const cppcms::http::request &req, const QString &ip, const QList<BanInfo> &bans,
+                            QString *error = 0);
+OLOLORD_EXPORT bool banPoster(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber,
+                              const QList<BanInfo> &bans, QString *error = 0);
 OLOLORD_EXPORT void checkOutdatedEntries();
 OLOLORD_EXPORT bool createPost(CreatePostParameters &p, quint64 *postNumber = 0);
 OLOLORD_EXPORT void createSchema();

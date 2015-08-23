@@ -27,6 +27,7 @@ class OLOLORD_EXPORT ActionAjaxHandler : public AbstractAjaxHandler
 public:
     explicit ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv);
 public:
+    void banPoster(const cppcms::json::object &params);
     void banUser(const cppcms::json::object &params);
     void deleteFile(std::string boardName, std::string fileName, std::string password);
     void deletePost(std::string boardName, long long postNumber, std::string password);

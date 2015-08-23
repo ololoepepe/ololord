@@ -339,16 +339,17 @@
             <% if ( thread ) %>
                 <% if ( content.moder ) %>
                     #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#i<%= post.number %>"
-                        title="<%= post.ip %>"><%= post.number %></a>
+                        name="number" title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
+                    #<a name="number"
+                        href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
                 <% end %>
             <% else %>
                 <% if ( content.moder ) %>
                     #<a href="#<%= post.number %>" onclick="lord.insertPostNumber(<%= post.number %>); return false;"
-                        title="<%= post.ip %>"><%= post.number %></a>
+                        name="number" title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="#<%= post.number %>"
+                    #<a href="#<%= post.number %>" name="number"
                         onclick="lord.insertPostNumber(<%= post.number %>); return false;"><%= post.number %></a>
                 <% end %>
             <% end %>
@@ -356,15 +357,16 @@
             <% if ( thread ) %>
                 <% if ( content.moder ) %>
                     #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#<%= post.number %>"
-                        title="<%= post.ip %>"><%= post.number %></a>
+                        name="number" title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
+                    #<a name="number"
+                        href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
                 <% end %>
             <% else %>
                 <% if ( content.moder ) %>
-                    #<a href="#<%= post.number %>" title="<%= post.ip %>"><%= post.number %></a>
+                    #<a name="number" href="#<%= post.number %>" title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="#<%= post.number %>"><%= post.number %></a>
+                    #<a name="number" href="#<%= post.number %>"><%= post.number %></a>
                 <% end %>
             <% end %>
         <% end %>
@@ -1074,6 +1076,8 @@
 <input type="hidden" id="postLimit" value="<%= postLimit %>" />
 <input type="hidden" id="bumpLimitReachedText" value="<%= bumpLimitReachedText %>" />
 <input type="hidden" id="postLimitReachedText" value="<%= postLimitReachedText %>" />
+<input type="hidden" id="selectAllText" value="<%= selectAllText %>" />
+<input type="hidden" id="unselectAllText" value="<%= unselectAllText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>

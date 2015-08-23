@@ -88,6 +88,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
 {
     init_once(HandleActionMap, map, HandleActionMap()) {
         map.insert("add_file", &ActionRoute::handleAddFile);
+        map.insert("ban_poster", &ActionRoute::handleBanPoster);
         map.insert("ban_user", &ActionRoute::handleBanUser);
         map.insert("change_locale", &ActionRoute::handleChangeLocale);
         map.insert("change_settings", &ActionRoute::handleChangeSettings);
@@ -117,7 +118,7 @@ void ActionRoute::handleAddFile(const QString &action, const Tools::PostParamete
     board->addFile(application);
 }
 
-void ActionRoute::handleBanUser(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
+void ActionRoute::handleBanPoster(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
 {
     QString sourceBoard = params.value("boardName");
     quint64 postNumber = params.value("postNumber").toULongLong();
@@ -135,7 +136,7 @@ void ActionRoute::handleBanUser(const QString &action, const Tools::PostParamete
     int level = params.value("level").toInt();
     QDateTime expires = QDateTime::fromString(params.value("expires"), "dd.MM.yyyy:hh");
     QString err;
-    if (!Database::banUser(application.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
+    if (!Database::banPoster(application.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
         Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to ban user", "error"), err);
         Tools::log(application, "action/" + action, "fail:" + err, logTarget);
         return;
@@ -143,6 +144,11 @@ void ActionRoute::handleBanUser(const QString &action, const Tools::PostParamete
     redirect(sourceBoard + "/thread/" + QString::number(Database::postThreadNumber(sourceBoard, postNumber)) + ".html#"
              + QString::number(postNumber));
     Tools::log(application, "action/" + action, "success", logTarget);*/
+}
+
+void ActionRoute::handleBanUser(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
+{
+    //by ip not post number
 }
 
 void ActionRoute::handleChangeLocale(const QString &action, const Tools::PostParameters &params, const Translator::Qt &)

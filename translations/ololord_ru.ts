@@ -1531,7 +1531,7 @@ text</source>
     </message>
 </context>
 <context>
-    <name>banUser</name>
+    <name>banPoster</name>
     <message>
         <source>Invalid post number</source>
         <comment>error</comment>
@@ -1553,6 +1553,29 @@ text</source>
         <translation>Нет такого поста</translation>
     </message>
     <message>
+        <source>You can&apos;t ban youself, baka</source>
+        <comment>error</comment>
+        <translation>Нельзя забанить самого себя, бака</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+</context>
+<context>
+    <name>banUser</name>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
         <source>Not enough rights</source>
         <comment>error</comment>
         <translation>Недостаточно прав</translation>
@@ -1561,6 +1584,11 @@ text</source>
         <source>You can&apos;t ban youself, baka</source>
         <comment>error</comment>
         <translation>Нельзя забанить самого себя, бака</translation>
+    </message>
+    <message>
+        <source>Invalid ip</source>
+        <comment>error</comment>
+        <translation>Неверный IP-адрес</translation>
     </message>
 </context>
 <context>
@@ -3719,6 +3747,16 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <source>Show user IP</source>
         <comment>showUserIpText</comment>
         <translation>Показать IP-адрес пользователя</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <comment>selectAllText</comment>
+        <translation>Выбрать все</translation>
+    </message>
+    <message>
+        <source>Unselect all</source>
+        <comment>unselectAllText</comment>
+        <translation>Отменить выбор всех</translation>
     </message>
 </context>
 <context>

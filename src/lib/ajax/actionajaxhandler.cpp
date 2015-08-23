@@ -34,32 +34,73 @@ ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
     //
 }
 
-void ActionAjaxHandler::banUser(const cppcms::json::object &params)
+void ActionAjaxHandler::banPoster(const cppcms::json::object &params)
 {
     try {
         QString sourceBoard = Tools::fromStd(params.at("boardName").str());
         long long pn = (long long) params.at("postNumber").number();
         quint64 postNumber = pn > 0 ? quint64(pn) : 0;
-        QString board = Tools::fromStd(params.at("board").str());
         QString logTarget = sourceBoard + "/" + QString::number(postNumber);
-        Tools::log(server, "ajax_ban_user", "begin", logTarget);
-        if (!testBan(sourceBoard) || !testBan(board))
-            return Tools::log(server, "ajax_ban_user", "fail:ban", logTarget);
-        QString reason = Tools::fromStd(params.at("reason").str());
-        int level = (int) params.at("level").number();
-        QDateTime expires = QDateTime::fromString(Tools::fromStd(params.at("expires").str()), "dd.MM.yyyy:hh");
+        Tools::log(server, "ajax_ban_poster", "begin", logTarget);
+        if (!testBan(sourceBoard))
+            return Tools::log(server, "ajax_ban_poster", "fail:ban", logTarget);
+        QList<Database::BanInfo> bans;
+        foreach (const cppcms::json::value &v, params.at("bans").array()) {
+            cppcms::json::object o = v.object();
+            Database::BanInfo inf;
+            inf.boardName = Tools::fromStd(o.at("boardName").str());
+            inf.expires = QDateTime::fromString(Tools::fromStd(o.at("expires").str()), "dd.MM.yyyy:hh");
+            inf.level = int(o.at("level").number());
+            inf.reason = Tools::fromStd(o.at("reason").str());
+            bans << inf;
+        }
         QString err;
-        //TMP
-        server.return_error("This feature is being reimplemented");
-        Tools::log(server, "ajax_ban_user", "fail:This feature is being reimplemented", logTarget);
-        //TMP
-        /*if (!Database::banUser(server.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
+        if (!Database::banPoster(server.request(), sourceBoard, postNumber, bans, &err)) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_ban_poster", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(true);
+        Tools::log(server, "ajax_ban_poster", "success", logTarget);
+    } catch (const cppcms::json::bad_value_cast &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_ban_poster", "fail:" + err);
+    } catch (const std::out_of_range &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_ban_poster", "fail:" + err);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_ban_poster", "fail:" + err);
+    }
+}
+
+void ActionAjaxHandler::banUser(const cppcms::json::object &params)
+{
+    try {
+        QString ip = Tools::fromStd(params.at("ip").str());
+        QString logTarget = ip;
+        Tools::log(server, "ajax_ban_user", "begin", logTarget);
+        QList<Database::BanInfo> bans;
+        foreach (const cppcms::json::value &v, params.at("bans").array()) {
+            cppcms::json::object o = v.object();
+            Database::BanInfo inf;
+            inf.boardName = Tools::fromStd(o.at("boardName").str());
+            inf.expires = QDateTime::fromString(Tools::fromStd(o.at("expires").str()), "dd.MM.yyyy:hh");
+            inf.level = int(o.at("level").number());
+            inf.reason = Tools::fromStd(o.at("reason").str());
+            bans << inf;
+        }
+        QString err;
+        if (!Database::banUser(server.request(), ip, bans, &err)) {
             server.return_error(Tools::toStd(err));
             Tools::log(server, "ajax_ban_user", "fail:" + err, logTarget);
             return;
         }
         server.return_result(true);
-        Tools::log(server, "ajax_ban_user", "success", logTarget);*/
+        Tools::log(server, "ajax_ban_user", "success", logTarget);
     } catch (const cppcms::json::bad_value_cast &e) {
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
@@ -539,6 +580,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
 {
     QList<ActionAjaxHandler::Handler> list;
     ActionAjaxHandler *self = const_cast<ActionAjaxHandler *>(this);
+    list << Handler("ban_poster", cppcms::rpc::json_method(&ActionAjaxHandler::banPoster, self), method_role);
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
     list << Handler("delete_file", cppcms::rpc::json_method(&ActionAjaxHandler::deleteFile, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
