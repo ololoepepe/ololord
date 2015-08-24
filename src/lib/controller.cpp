@@ -479,6 +479,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
         mmc = "ewm_and_bbc";
     c.currentMarkupMode = mmmap.value(mmc);
     c.currentThread = currentThread;
+    c.delallButtonText = ts.translate("initBaseBoard", "Delete all user posts on selected board", "delallButtonText");
     c.deleteFileText = ts.translate("initBaseBoard", "Delete file", "deleteFileText");
     c.deletePostText = ts.translate("initBaseBoard", "Delete post", "deletePostText");
     c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "deleteThreadText");

@@ -116,6 +116,36 @@ void ActionAjaxHandler::banUser(const cppcms::json::object &params)
     }
 }
 
+void ActionAjaxHandler::delall(std::string userIp, std::string boardName)
+{
+    try {
+        QString ip = Tools::fromStd(userIp);
+        QString board = Tools::fromStd(boardName);
+        QString logTarget = ip + "/" + board;
+        Tools::log(server, "ajax_delall", "begin", logTarget);
+        QString err;
+        if (!Database::delall(server.request(), ip, board, &err)) {
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_delall", "fail:" + err, logTarget);
+            return;
+        }
+        server.return_result(true);
+        Tools::log(server, "ajax_delall", "success", logTarget);
+    } catch (const cppcms::json::bad_value_cast &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_delall", "fail:" + err);
+    } catch (const std::out_of_range &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_delall", "fail:" + err);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_delall", "fail:" + err);
+    }
+}
+
 void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, std::string password)
 {
     try {
@@ -582,6 +612,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     ActionAjaxHandler *self = const_cast<ActionAjaxHandler *>(this);
     list << Handler("ban_poster", cppcms::rpc::json_method(&ActionAjaxHandler::banPoster, self), method_role);
     list << Handler("ban_user", cppcms::rpc::json_method(&ActionAjaxHandler::banUser, self), method_role);
+    list << Handler("delall", cppcms::rpc::json_method(&ActionAjaxHandler::delall, self), method_role);
     list << Handler("delete_file", cppcms::rpc::json_method(&ActionAjaxHandler::deleteFile, self), method_role);
     list << Handler("delete_post", cppcms::rpc::json_method(&ActionAjaxHandler::deletePost, self), method_role);
     list << Handler("edit_audio_tags", cppcms::rpc::json_method(&ActionAjaxHandler::editAudioTags, self), method_role);

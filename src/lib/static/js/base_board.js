@@ -1326,6 +1326,22 @@ lord.banUser = function(boardName, postNumber) {
         reason.setAttribute("name", "reason");
         div2.appendChild(reason);
         div.appendChild(div2);
+        div.appendChild(lord.node("br"));
+        var div3 = lord.node("div");
+        var selBoards = lord.id("availableBoardsSelect").cloneNode(true);
+        selBoards.style.display = "";
+        div3.appendChild(selBoards);
+        div3.appendChild(lord.node("text", " "));
+        var btnDel = lord.node("button");
+        btnDel.appendChild(lord.node("text", lord.text("delallButtonText")));
+        btnDel.onclick = function() {
+            var bn = selBoards.options[selBoards.selectedIndex].value;
+            lord.ajaxRequest("delall", [ip, bn], lord.RpcBanPosterId, function(res) {
+                lord.reloadPage();
+            });
+        };
+        div3.appendChild(btnDel);
+        div.appendChild(div3);
         lord.showDialog(title, null, div, function() {
             var bans = [];
             lord.query("div", div1).forEach(function(d) {

@@ -117,6 +117,7 @@ private:
     PRAGMA_DB(not_null)
     QByteArray password_;
     QString posterIp_;
+    PRAGMA_DB(index("board_posterIp_index") members(board_, posterIp_))
     QString countryCode_;
     QString countryName_;
     QString cityName_;

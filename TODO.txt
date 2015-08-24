@@ -28,6 +28,7 @@
 [done] Fix geolocation info retrieving
 [done] Add ability to use proxy for files attached as links
 [done] Add "Show user IP" button
+[done] Add ability to delete all posts by IP
 * Implement user management page
 * Fix moving video files
 

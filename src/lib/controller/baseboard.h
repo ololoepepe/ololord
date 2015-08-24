@@ -144,6 +144,7 @@ public:
     AbstractBoard::BoardInfo currentBoard;
     MarkupMode currentMarkupMode;
     unsigned long long currentThread;
+    std::string delallButtonText;
     std::string deleteFileText;
     std::string deletePostText;
     std::string deleteThreadText;

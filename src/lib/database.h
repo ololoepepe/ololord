@@ -298,6 +298,8 @@ OLOLORD_EXPORT void checkOutdatedEntries();
 OLOLORD_EXPORT bool createPost(CreatePostParameters &p, quint64 *postNumber = 0);
 OLOLORD_EXPORT void createSchema();
 OLOLORD_EXPORT quint64 createThread(CreateThreadParameters &p);
+OLOLORD_EXPORT bool delall(const cppcms::http::request &req, const QString &ip, const QString &boardName = "*",
+                           QString *error = 0);
 OLOLORD_EXPORT bool deleteFile(const QString &boardName, const QString &fileName, const cppcms::http::request &req,
                                const QByteArray &password, QString *error = 0);
 OLOLORD_EXPORT bool deletePost(const QString &boardName, quint64 postNumber, QString *error = 0,

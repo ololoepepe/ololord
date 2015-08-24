@@ -841,6 +841,39 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>Database::delall</name>
+    <message>
+        <source>Invalid ip</source>
+        <comment>error</comment>
+        <translation>Неверный IP-адрес</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>You can&apos;t delall yourself, baka</source>
+        <comment>error</comment>
+        <translation>Нельзя сделать делолл самому себе, бака</translation>
+    </message>
+</context>
+<context>
     <name>Database::generateRss</name>
     <message>
         <source>Feed</source>
@@ -1553,14 +1586,14 @@ text</source>
         <translation>Нет такого поста</translation>
     </message>
     <message>
-        <source>You can&apos;t ban youself, baka</source>
-        <comment>error</comment>
-        <translation>Нельзя забанить самого себя, бака</translation>
-    </message>
-    <message>
         <source>Not enough rights</source>
         <comment>error</comment>
         <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>You can&apos;t ban yourself, baka</source>
+        <comment>error</comment>
+        <translation>Нельзя забанить самого себя, бака</translation>
     </message>
 </context>
 <context>
@@ -1581,14 +1614,14 @@ text</source>
         <translation>Недостаточно прав</translation>
     </message>
     <message>
-        <source>You can&apos;t ban youself, baka</source>
-        <comment>error</comment>
-        <translation>Нельзя забанить самого себя, бака</translation>
-    </message>
-    <message>
         <source>Invalid ip</source>
         <comment>error</comment>
         <translation>Неверный IP-адрес</translation>
+    </message>
+    <message>
+        <source>You can&apos;t ban yourself, baka</source>
+        <comment>error</comment>
+        <translation>Нельзя забанить самого себя, бака</translation>
     </message>
 </context>
 <context>
@@ -3757,6 +3790,11 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <source>Unselect all</source>
         <comment>unselectAllText</comment>
         <translation>Отменить выбор всех</translation>
+    </message>
+    <message>
+        <source>Delete all user posts on selected board</source>
+        <comment>delallButtonText</comment>
+        <translation>Удалить все посты пользователя на выбранной доске</translation>
     </message>
 </context>
 <context>

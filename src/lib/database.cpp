@@ -938,18 +938,23 @@ bool banUser(const cppcms::http::request &req, const QString &ip, const QList<Ba
     QByteArray hashpass = Tools::hashpass(req);
     if (hashpass.isEmpty())
         return bRet(error, tq.translate("banUser", "Not logged in", "error"), false);
+    QString selfIp = Tools::userIp(req);
     try {
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
         QList<Post> posts = query<Post, Post>((odb::query<Post>::posterIp == ip) + " ORDER BY dateTime DESC LIMIT 1");
-        if (!posts.isEmpty() && hashpass == posts.first().hashpass())
-            return bRet(error, tq.translate("banUser", "You can't ban youself, baka", "error"), false);
+        foreach (const Post &post, posts) {
+            if (hashpass == post.hashpass() || selfIp == post.posterIp())
+                return bRet(error, tq.translate("banUser", "You can't ban yourself, baka", "error"), false);
+        }
         int lvl = registeredUserLevel(req);
         foreach (const BanInfo &inf, bans) {
-            if (!moderOnBoard(req, inf.boardName)
-                    || (posts.isEmpty() || registeredUserLevel(posts.first().hashpass()) >= lvl)) {
+            if (!moderOnBoard(req, inf.boardName))
                 return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+            foreach (const Post &post, posts) {
+                if (registeredUserLevel(post.hashpass()) >= lvl)
+                    return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
             }
         }
         if (!banUser(ip, bans, error, tq.locale()))
@@ -980,8 +985,8 @@ bool banPoster(const cppcms::http::request &req, const QString &sourceBoard, qui
             return bRet(error, tq.translate("banPoster", "Internal database error", "error"), false);
         if (!post)
             return bRet(error, tq.translate("banPoster", "No such post", "error"), false);
-        if (hashpass == post->hashpass())
-            return bRet(error, tq.translate("banPoster", "You can't ban youself, baka", "error"), false);
+        if (hashpass == post->hashpass() || Tools::userIp(req) == post->posterIp())
+            return bRet(error, tq.translate("banPoster", "You can't ban yourself, baka", "error"), false);
         int lvl = registeredUserLevel(req);
         foreach (const BanInfo &inf, bans) {
             if (!moderOnBoard(req, sourceBoard, inf.boardName) || registeredUserLevel(post->hashpass()) >= lvl)
@@ -1155,6 +1160,55 @@ quint64 createThread(CreateThreadParameters &p)
         return bRet(p.error, tq.translate("createThread", "Internal error", "error"), p.description,
                     Tools::fromStd(e.what()), 0L);
     }
+}
+
+bool delall(const cppcms::http::request &req, const QString &ip, const QString &boardName, QString *error)
+{
+    TranslatorQt tq(req);
+    if (ip.isEmpty() || !Tools::ipNum(ip))
+        return bRet(error, tq.translate("Database::delall", "Invalid ip", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("Database::delall", "Not logged in", "error"), false);
+    QStringList allBoards = AbstractBoard::boardNames();
+    if ("*" != boardName && !allBoards.contains(boardName))
+        return bRet(error, tq.translate("Database::delall", "Invalid board name", "error"), false);
+    QStringList boards = ("*" == boardName) ? registeredUserBoards(req) : (QStringList() << boardName);
+    if (boards.size() == 1 && boards.first() == "*")
+        boards = allBoards;
+    int lvl = registeredUserLevel(req);
+    QList<Post> posts;
+    QString selfIp = Tools::userIp(req);
+    foreach (const QString &bn, boards) {
+        try {
+            Transaction t;
+            if (!t)
+                return bRet(error, tq.translate("Database::delall", "Internal database error", "error"), false);
+            posts << query<Post, Post>(odb::query<Post>::board == bn && odb::query<Post>::posterIp == ip);
+            foreach (const Post &post, posts) {
+                if (hashpass == post.hashpass() || selfIp == post.posterIp()) {
+                    return bRet(error, tq.translate("Database::delall",
+                                                    "You can't delall yourself, baka", "error"), false);
+                }
+            }
+            if (!moderOnBoard(req, bn))
+                return bRet(error, tq.translate("Database::delall", "Not enough rights", "error"), false);
+            foreach (const Post &post, posts) {
+                if (registeredUserLevel(post.hashpass()) >= lvl)
+                    return bRet(error, tq.translate("Database::delall", "Not enough rights", "error"), false);
+            }
+            t.commit();
+        } catch (const odb::exception &e) {
+            return bRet(error, Tools::fromStd(e.what()), false);
+        }
+    }
+    foreach (const Post &post, posts) {
+        QStringList list;
+        if (!deletePostInternal(post.board(), post.number(), error, tq.locale(), list))
+            return false;
+        deleteFiles(post.board(), list);
+    }
+    return bRet(error, QString(), true);
 }
 
 bool deleteFile(const QString &boardName, const QString &fileName,  const cppcms::http::request &req,

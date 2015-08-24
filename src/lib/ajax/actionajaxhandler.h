@@ -29,6 +29,7 @@ public:
 public:
     void banPoster(const cppcms::json::object &params);
     void banUser(const cppcms::json::object &params);
+    void delall(std::string userIp, std::string boardName);
     void deleteFile(std::string boardName, std::string fileName, std::string password);
     void deletePost(std::string boardName, long long postNumber, std::string password);
     void editAudioTags(std::string boardName, std::string fileName, std::string password,
