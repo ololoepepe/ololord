@@ -476,7 +476,7 @@
                 <% if ( content.moder ) %>
                     <% if ( content.mode.name != "ascetic" ) %>
                         <a name="ipButton"
-                           href="javascript:prompt('IP:', '<%= post.ip %>');">
+                           href="javascript:void(prompt('IP:', '<%= post.ip %>'));">
                             <img src="/<%= sitePathPrefix %>img/ip.png" title="<%= showUserIpText %>" /></a>
                         <a name="banButton"
                            href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
@@ -1152,7 +1152,7 @@
                     <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
                 <a name="moveButton" href="javascript:lord.moveThread('<%= currentBoard.name %>', '%postNumber%');">
                     <img src="/<%= sitePathPrefix %>img/move.png" title="<%= moveThreadText %>" /></a>
-                <a name="ipButton" href="javascript:prompt('IP:', '%postIp%');">
+                <a name="ipButton" href="javascript:void(prompt('IP:', '%postIp%'));">
                     <img src="/<%= sitePathPrefix %>img/ip.png" title="<%= showUserIpText %>" /></a>
                 <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '%postNumber%');">
                     <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
