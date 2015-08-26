@@ -3214,6 +3214,11 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>toManagePageText</comment>
         <translation>Управление пользователями</translation>
     </message>
+    <message>
+        <source>Maximum simultaneous AJAX requests:</source>
+        <comment>maxSimultaneousAjaxLabelText</comment>
+        <translation>Максимум одновременных AJAX-запросов:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

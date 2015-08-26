@@ -101,24 +101,20 @@ lord.processPosts = function(spells, youtube) {
     (function(spells, youtube) {
         var posts = lord.query(".post:not(#postTemplate), .opPost");
         var boardName = lord.text("currentBoardName");
-        var accumulator = [];
         lord.gently(posts, function(post) {
             var p = lord.getPostData(post, youtube);
             if (!p)
                 return;
-            accumulator.push(p);
-        }, 10, 10, function() {
             youtube = youtube ? { "apiKey": lord.text("youtubeApiKey") } : undefined;
             lord.worker.postMessage({
                 "type": "processPosts",
                 "data": {
                     "youtube": youtube,
-                    "posts": accumulator,
+                    "posts": [p],
                     "spells": spells
                 }
             }); //No way to transfer an object with subobjects
-            return;
-        });
+        }, 10, 10);
     })(spells, youtube);
 };
 

@@ -260,6 +260,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     else if (!r.compare("R-18", Qt::CaseInsensitive))
         c.maxAllowedRating = 18;
     c.maxAllowedRatingLabelText = ts.translate("initBase", "Maximum allowed rating:", "maxAllowedRatingLabelText");
+    c.maxSimultaneousAjaxLabelText = ts.translate("initBase", "Maximum simultaneous AJAX requests:",
+                                                  "maxSimultaneousAjaxLabelText");
     c.maxSearchQueryLength = 150;
     c.minimalisticPostform = !Tools::cookieValue(req, "minimalisticPostform").compare("true", Qt::CaseInsensitive);
     c.minimalisticPostformLabelText = ts.translate("initBase", "Use minimalistic post form:",

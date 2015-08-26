@@ -30,6 +30,7 @@
 [done] Add "Show user IP" button
 [done] Add ability to delete all posts by IP
 [done] Implement user management page
+[done] Add ability to set maximum simultaneous AJAX requests
 * Fix moving video files
 
 * Use D-Pointer approach for the lib

@@ -589,9 +589,12 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
         xhr.send(JSON.stringify(request));
     };
     lord._ajaxRequestQueue.push(req);
-    if (lord._ajaxRequestActive < 2)
+    var ms = lord.getLocalObject("maxSimultaneousAjax", 2);
+    if (isNaN(ms) || ms <= 0)
+        ms = 2;
+    if (lord._ajaxRequestActive < ms)
         f();
-    if (lord._ajaxRequestActive < 2)
+    if (lord._ajaxRequestActive < ms)
         f();
 };
 

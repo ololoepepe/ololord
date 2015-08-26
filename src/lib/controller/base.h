@@ -126,6 +126,7 @@ public:
     std::string loopAudioVideoLabelText;
     int maxAllowedRating;
     std::string maxAllowedRatingLabelText;
+    std::string maxSimultaneousAjaxLabelText;
     unsigned int maxSearchQueryLength;
     bool minimalisticPostform;
     std::string minimalisticPostformLabelText;

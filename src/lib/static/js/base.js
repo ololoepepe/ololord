@@ -175,6 +175,8 @@ lord.showSettings = function() {
     hideUserNames.checked = !!lord.getLocalObject("hideUserNames", false);
     var strikeOutHiddenPostLinks = lord.nameOne("strikeOutHiddenPostLinks", div);
     strikeOutHiddenPostLinks.checked = !!lord.getLocalObject("strikeOutHiddenPostLinks", true);
+    var maxSimultaneousAjax = lord.nameOne("maxSimultaneousAjax", div);
+    maxSimultaneousAjax.value = lord.getLocalObject("maxSimultaneousAjax", 2);
     var spellsEnabled = lord.nameOne("spellsEnabled", div);
     spellsEnabled.checked = !!lord.getLocalObject("spellsEnabled", true);
     var hotkeysEnabled = lord.nameOne("hotkeysEnabled", div);
@@ -264,6 +266,7 @@ lord.showSettings = function() {
         lord.setLocalObject("hideTripcodes", !!hideTripcodes.checked);
         lord.setLocalObject("hideUserNames", !!hideUserNames.checked);
         lord.setLocalObject("strikeOutHiddenPostLinks", !!strikeOutHiddenPostLinks.checked);
+        lord.setLocalObject("maxSimultaneousAjax", +maxSimultaneousAjax.value);
         lord.setLocalObject("spellsEnabled", !!spellsEnabled.checked);
         lord.setLocalObject("hotkeysEnabled", !!hotkeysEnabled.checked);
         lord.setLocalObject("userCssEnabled", !!userCssEnabled.checked);
