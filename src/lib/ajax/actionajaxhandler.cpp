@@ -545,7 +545,6 @@ void ActionAjaxHandler::getUserBanInfo(std::string userIp)
         Tools::log(server, "ajax_get_user_ban_info", "begin", logTarget);
         bool ok = false;
         QString err;
-
         QMap<QString, Database::BanInfo> map = Database::userBanInfo(ip, &ok, &err, Tools::locale(server.request()));
         if (!ok) {
             server.return_error(Tools::toStd(err));

@@ -279,6 +279,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                t.disambiguation().toUtf8().constData());
         c.modes.push_back(m);
     }
+    c.moder = Database::registeredUserLevel(req) / 10;
     c.moveToPostOnReplyInThreadLabelText = ts.translate("initBase", "Move to post after replying in thread:",
                                                         "moveToPostOnReplyInThreadLabelText");
     c.mumWatchingText = ts.translate("initBase", "Mum is watching me!", "mumWatchingText");
@@ -362,6 +363,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.timeZoneOffsetLabelText = ts.translate("initBase", "Offset:", "timeZoneOffsetLabelText");
     c.toFaqPageText = ts.translate("initBase", "F.A.Q.", "toFaqPageText");
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
+    c.toManagePageText = ts.translate("initBase", "User management", "toManagePageText");
     c.toPlaylistPageText = ts.translate("initBase", "Playlist", "toPlaylistPageText");
     c.toMarkupPageText = ts.translate("initBase", "Markup", "toMarkupPageText");
     c.userCssLabelText = ts.translate("initBase", "User CSS:", "userCssLabelText");
@@ -527,7 +529,6 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
     c.maxTextLength = Tools::maxInfo(Tools::MaxTextFieldLength, board->name());
     c.megabytesText = ts.translate("initBaseBoard", "MB", "megabytesText");
-    c.moder = Database::registeredUserLevel(req) / 10;
     if (c.moder > 0) {
         QStringList boards = Database::registeredUserBoards(req);
         if (!boards.contains("*") && !boards.contains(board->name()))

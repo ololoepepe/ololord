@@ -919,6 +919,38 @@ int addPostsToIndex(QString *error, const QLocale &l)
     }
 }
 
+QMap< QString, QMap<QString, BanInfo> > banInfos(bool *ok, QString *error, const QLocale &l)
+{
+    QMap< QString, QMap<QString, BanInfo> > map;
+    TranslatorQt tq(l);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(ok, false, error, tq.translate("banInfos", "Internal database error", "error"), map);
+        QList<BannedUser> users = queryAll<BannedUser>();
+        foreach (const BannedUser &user, users) {
+            QMap<QString, BanInfo> list;
+            typedef QLazyWeakPointer<Ban> LazyBan;
+            foreach (const LazyBan &lban, user.bans()) {
+                QSharedPointer<Ban> ban = lban.load();
+                BanInfo inf;
+                inf.boardName = ban->board();
+                inf.dateTime = ban->dateTime();
+                inf.expires = ban->expirationDateTime();
+                inf.level = ban->level();
+                inf.reason = ban->reason();
+                if (!inf.isExpired())
+                    list.insert(inf.boardName, inf);
+            }
+            if (!list.isEmpty())
+                map.insert(user.ip(), list);
+        }
+        return bRet(ok, true, error, QString(), map);
+    }  catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QMap< QString, QMap<QString, BanInfo> >());
+    }
+}
+
 bool banUser(const QString &ip, const QList<BanInfo> &bans, QString *error, const QLocale &l)
 {
     return banUserInternal("", 0, bans, error, l, ip);

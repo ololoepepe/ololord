@@ -13,5 +13,6 @@
         <file>static/js/playlist.js</file>
         <file>static/js/api.js</file>
         <file>static/js/worker.js</file>
+        <file>static/js/manage.js</file>
     </qresource>
 </RCC>

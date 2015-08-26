@@ -195,9 +195,9 @@ struct OLOLORD_EXPORT BanInfo
 {
     QString boardName;
     QDateTime dateTime;
-    QString reason;
     QDateTime expires;
     int level;
+    QString reason;
 public:
     bool isExpired() const;
 };
@@ -286,6 +286,8 @@ public:
 OLOLORD_EXPORT bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &params,
                             const QList<Tools::File> &files, QString *error = 0, QString *description = 0);
 OLOLORD_EXPORT int addPostsToIndex(QString *error = 0, const QLocale &l = BCoreApplication::locale());
+OLOLORD_EXPORT QMap< QString, QMap<QString, BanInfo> > banInfos(bool *ok = 0, QString *error = 0,
+                                                                const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool banUser(const QString &ip, const QList<BanInfo> &bans, QString *error = 0,
                             const QLocale &l = BCoreApplication::locale());
 OLOLORD_EXPORT bool banUser(const QString &sourceBoard, quint64 postNumber, const QList<BanInfo> &bans,

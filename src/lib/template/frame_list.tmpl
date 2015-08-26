@@ -49,6 +49,11 @@
                 <span class="navbarItem">
                     <img src="/<%= sitePathPrefix %>img/question.png">
                     <a href="/<%= sitePathPrefix %>faq" target="page"><%= toFaqPageText %></a></span>
+                <% if ( content.moder >= 1 ) %>
+                    <span class="navbarItem">
+                        <img src="/<%= sitePathPrefix %>img/manage.png">
+                        <a href="/<%= sitePathPrefix %>manage" target="page"><%= toManagePageText %></a></span>
+                <% end %>
                 <% foreach link in customLinks %>
                     <% item %>
                         <span class="navbarItem">

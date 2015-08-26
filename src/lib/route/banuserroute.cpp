@@ -88,7 +88,44 @@ void BanUserRoute::handle()
     c.banReasonLabelText = ts.translate("BanUserRoute", "Reason:", "banReasonLabelText");
     c.boardLabelText = ts.translate("BanUserRoute", "Board:", "boardLabelText");
     c.currentBoardName = Tools::toStd(boardName);
+    c.delallButtonText = ts.translate("BanUserRoute", "Delete all user posts on selected board", "delallButtonText");
     c.postNumber = postNumber;
+    c.userIp = Tools::toStd(Database::posterIp(boardName, postNumber));
+    bool ok = false;
+    QMap<QString, Database::BanInfo> bans = Database::userBanInfo(boardName, postNumber, &ok, &err, tq.locale());
+    if (!ok) {
+        Controller::renderErrorNonAjax(application, err);
+        Tools::log(application, "ban_user", "fail:" + err, logTarget);
+        return;
+    }
+    foreach (const QString &bn, userBoards) {
+        if ("*" == bn)
+            continue;
+        Content::BanUser::BanInfo info;
+        AbstractBoard::LockingWrapper b = AbstractBoard::board(bn);
+        if (b.isNull()) {
+            QString err = tq.translate("BanUserRoute", "Internal error", "error");
+            Controller::renderErrorNonAjax(application, err);
+            Tools::log(application, "ban_user", "fail:" + err, logTarget);
+            return;
+        }
+        info.boardName = Tools::toStd(bn);
+        info.boardTitle = Tools::toStd(b->title(tq.locale()));
+        if (bans.contains(bn)) {
+            Database::BanInfo inf = bans.value(bn);
+            info.dateTime = Tools::toStd(Tools::dateTime(inf.dateTime,
+                                                         application.request()).toString("dd.MM.yyyy-hh:mm:ss"));
+            info.expires = Tools::toStd(Tools::dateTime(inf.expires, application.request()).toString("dd.MM.yyyy:hh"));
+            info.level = inf.level;
+            info.reason = Tools::toStd(inf.reason);
+        } else {
+            info.dateTime.clear();
+            info.expires.clear();
+            info.level = 0;
+            info.reason.clear();
+        }
+        c.bans.push_back(info);
+    }
     Tools::render(application, "ban_user", c);
     Tools::log(application, "ban_user", "success", logTarget);
 }

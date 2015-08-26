@@ -28,16 +28,16 @@ void ManageRoute::handle()
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
         return Tools::log(application, "manage", "fail:" + err);
     TranslatorQt tq(application.request());
-    /*if (!Database::moderOnBoard(application.request(), boardName)) {
-        QString err = tq.translate("BanUserRoute", "Access error", "error");
+    if (Database::registeredUserLevel(application.request()) < RegisteredUser::ModerLevel) {
+        QString err = tq.translate("ManageRoute", "Access error", "error");
         Controller::renderErrorNonAjax(application, err,
-                                       tq.translate("BanUserRoute", "Not enough rights", "description"));
-        Tools::log(application, "ban_user", "fail:" + err, logTarget);
+                                       tq.translate("ManageRoute", "Not enough rights", "description"));
+        Tools::log(application, "manage", "fail:" + err);
         return;
-    }*/
+    }
     Content::Manage c;
     TranslatorStd ts(application.request());
-    Controller::initBase(c, application.request(), tq.translate("ManageRoute", "Board management", "pageTitle"));
+    Controller::initBase(c, application.request(), tq.translate("ManageRoute", "User management", "pageTitle"));
     QStringList userBoards = Database::registeredUserBoards(application.request());
     if (userBoards.size() == 1 && userBoards.first() == "*")
         userBoards << AbstractBoard::boardNames();
@@ -45,7 +45,7 @@ void ManageRoute::handle()
         AbstractBoard::BoardInfo inf;
         inf.name = Tools::toStd(s);
         AbstractBoard::LockingWrapper b = AbstractBoard::board(s);
-        inf.title = Tools::toStd(b ? b->title(tq.locale()) : tq.translate("ManagerRoute", "All boards", "boardName"));
+        inf.title = Tools::toStd(b ? b->title(tq.locale()) : tq.translate("ManageRoute", "All boards", "boardName"));
         c.availableBoards.push_back(inf);
     }
     c.banExpiresLabelText = ts.translate("ManageRoute", "Expires:", "banExpiresLabelText");
@@ -62,6 +62,50 @@ void ManageRoute::handle()
     c.banLevels.push_back(bl);
     c.banReasonLabelText = ts.translate("ManageRoute", "Reason:", "banReasonLabelText");
     c.boardLabelText = ts.translate("ManageRoute", "Board:", "boardLabelText");
+    c.delallButtonText = ts.translate("ManageRoute", "Delete all user posts on selected board", "delallButtonText");
+    c.selectAllText = ts.translate("ManageRoute", "Select all", "selectAllText");
+    bool ok = false;
+    QMap< QString, QMap<QString, Database::BanInfo> > banInfos = Database::banInfos(&ok, &err, tq.locale());
+    if (!ok) {
+        Controller::renderErrorNonAjax(application, err);
+        Tools::log(application, "manage", "fail:" + err);
+        return;
+    }
+    foreach (const QString &ip, banInfos.keys()) {
+        Content::Manage::BannedUser user;
+        user.ip = Tools::toStd(ip);
+        foreach (const QString &bn, userBoards) {
+            if ("*" == bn)
+                continue;
+            Content::Manage::BanInfo info;
+            AbstractBoard::LockingWrapper b = AbstractBoard::board(bn);
+            if (b.isNull()) {
+                QString err = tq.translate("ManageRoute", "Internal error", "error");
+                Controller::renderErrorNonAjax(application, err);
+                Tools::log(application, "manage", "fail:" + err);
+                return;
+            }
+            info.boardName = Tools::toStd(bn);
+            info.boardTitle = Tools::toStd(b->title(tq.locale()));
+            QMap<QString, Database::BanInfo> bans = banInfos.value(ip);
+            if (bans.contains(bn)) {
+                Database::BanInfo inf = bans.value(bn);
+                info.dateTime = Tools::toStd(Tools::dateTime(inf.dateTime,
+                                                             application.request()).toString("dd.MM.yyyy-hh:mm:ss"));
+                info.expires = Tools::toStd(Tools::dateTime(inf.expires,
+                                                            application.request()).toString("dd.MM.yyyy:hh"));
+                info.level = inf.level;
+                info.reason = Tools::toStd(inf.reason);
+            } else {
+                info.dateTime.clear();
+                info.expires.clear();
+                info.level = 0;
+                info.reason.clear();
+            }
+            user.bans.push_back(info);
+        }
+        c.bannedUsers.push_back(user);
+    }
     Tools::render(application, "manage", c);
     Tools::log(application, "manage", "success");
 }

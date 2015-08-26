@@ -190,7 +190,6 @@ public:
     unsigned int maxPasswordLength;
     unsigned int maxTextLength;
     std::string megabytesText;
-    int moder;
     std::string modificationDateTimeText;
     std::string moveThreadText;
     std::string moveThreadWarningText;

@@ -1293,7 +1293,6 @@ lord.banUser = function(boardName, postNumber) {
         div.appendChild(div1);
         div.appendChild(lord.node("br"));
         var div2 = lord.node("div");
-        var btnUnsel = lord.node("button");
         var btnSel = lord.node("button");
         btnSel.appendChild(lord.node("text", lord.text("selectAllText")));
         btnSel.onclick = function() {

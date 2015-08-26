@@ -94,6 +94,7 @@ ActionRoute::HandleActionMap ActionRoute::actionMap()
         map.insert("change_settings", &ActionRoute::handleChangeSettings);
         map.insert("create_post", &ActionRoute::handleCreatePost);
         map.insert("create_thread", &ActionRoute::handleCreateThread);
+        map.insert("delall", &ActionRoute::handleDelall);
         map.insert("delete_file", &ActionRoute::handleDeleteFile);
         map.insert("delete_post", &ActionRoute::handleDeletePost);
         map.insert("edit_audio_tags", &ActionRoute::handleEditAudioTags);
@@ -122,33 +123,53 @@ void ActionRoute::handleBanPoster(const QString &action, const Tools::PostParame
 {
     QString sourceBoard = params.value("boardName");
     quint64 postNumber = params.value("postNumber").toULongLong();
-    QString board = params.value("board");
     QString logTarget = sourceBoard + "/" + QString::number(postNumber);
-    //TMP
-    Controller::renderErrorNonAjax(application, QString("FAIL"), QString("This feature is being reimplemented"));
-    Tools::log(application, "action/" + action, "fail:This feature is being reimplemented", logTarget);
-    //TMP
-    /*if (!Controller::testBanNonAjax(application, Controller::WriteAction, sourceBoard)
-            || !Controller::testBanNonAjax(application, Controller::WriteAction, board)) {
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, sourceBoard))
         return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QList<Database::BanInfo> bans;
+    foreach (const QString &key, params.keys()) {
+        if (!key.startsWith("ban_board_", Qt::CaseInsensitive))
+            continue;
+        Database::BanInfo inf;
+        inf.boardName = params.value(key);
+        inf.expires = QDateTime::fromString(params.value("ban_expires" + inf.boardName), "dd.MM.yyyy:hh");
+        inf.level = params.value("ban_level_" + inf.boardName).toInt();
+        inf.reason = params.value("ban_reason_" + inf.boardName);
+        bans << inf;
     }
-    QString reason = params.value("reason");
-    int level = params.value("level").toInt();
-    QDateTime expires = QDateTime::fromString(params.value("expires"), "dd.MM.yyyy:hh");
     QString err;
-    if (!Database::banPoster(application.request(), sourceBoard, postNumber, board, level, reason, expires, &err)) {
+    if (!Database::banPoster(application.request(), sourceBoard, postNumber, bans, &err)) {
         Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to ban user", "error"), err);
         Tools::log(application, "action/" + action, "fail:" + err, logTarget);
         return;
     }
-    redirect(sourceBoard + "/thread/" + QString::number(Database::postThreadNumber(sourceBoard, postNumber)) + ".html#"
-             + QString::number(postNumber));
-    Tools::log(application, "action/" + action, "success", logTarget);*/
+    redirect();
+    Tools::log(application, "action/" + action, "success", logTarget);
 }
 
 void ActionRoute::handleBanUser(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
 {
-    //by ip not post number
+    QString ip = params.value("userIp");
+    QString logTarget = ip;
+    QList<Database::BanInfo> bans;
+    foreach (const QString &key, params.keys()) {
+        if (!key.startsWith("ban_board_", Qt::CaseInsensitive))
+            continue;
+        Database::BanInfo inf;
+        inf.boardName = params.value(key);
+        inf.expires = QDateTime::fromString(params.value("ban_expires" + inf.boardName), "dd.MM.yyyy:hh");
+        inf.level = params.value("ban_level_" + inf.boardName).toInt();
+        inf.reason = params.value("ban_reason_" + inf.boardName);
+        bans << inf;
+    }
+    QString err;
+    if (!Database::banUser(application.request(), ip, bans, &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to ban user", "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect();
+    Tools::log(application, "action/" + action, "success", logTarget);
 }
 
 void ActionRoute::handleChangeLocale(const QString &action, const Tools::PostParameters &params, const Translator::Qt &)
@@ -200,6 +221,25 @@ void ActionRoute::handleCreateThread(const QString &action, const Tools::PostPar
         return;
     board->createThread(application);
     setCookie("markupMode", "markupMode", params);
+}
+
+void ActionRoute::handleDelall(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq)
+{
+    QString ip = params.value("userIp");
+    QString board = params.value("board");
+    QString logTarget = ip + "/" + board;
+    Tools::log(application, "action/" + action, "begin", logTarget);
+    if (!Controller::testBanNonAjax(application, Controller::WriteAction, board))
+        return Tools::log(application, "action/" + action, "fail:ban", logTarget);
+    QString err;
+    if (!Database::delall(application.request(), ip, board, &err)) {
+        Controller::renderErrorNonAjax(application, tq.translate("ActionRoute", "Failed to perform delall",
+                                                                 "error"), err);
+        Tools::log(application, "action/" + action, "fail:" + err, logTarget);
+        return;
+    }
+    redirect();
+    Tools::log(application, "action/" + action, "success", logTarget);
 }
 
 void ActionRoute::handleDeleteFile(const QString &action, const Tools::PostParameters &params,

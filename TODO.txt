@@ -29,7 +29,7 @@
 [done] Add ability to use proxy for files attached as links
 [done] Add "Show user IP" button
 [done] Add ability to delete all posts by IP
-* Implement user management page
+[done] Implement user management page
 * Fix moving video files
 
 * Use D-Pointer approach for the lib

@@ -131,6 +131,7 @@ public:
     std::string minimalisticPostformLabelText;
     Mode mode;
     std::string modeLabelText;
+    int moder;
     std::list<Mode> modes;
     std::string moveToPostOnReplyInThreadLabelText;
     std::string mumWatchingText;
@@ -180,6 +181,7 @@ public:
     std::string timeZoneOffsetLabelText;
     std::string toFaqPageText;
     std::string toHomePageText;
+    std::string toManagePageText;
     std::string toPlaylistPageText;
     std::string toMarkupPageText;
     std::string userCssLabelText;

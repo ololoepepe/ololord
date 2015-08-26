@@ -685,6 +685,16 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Не удалось перенести тред</translation>
     </message>
+    <message>
+        <source>Failed to ban user</source>
+        <comment>error</comment>
+        <translation>Не удалось забанить пользователя</translation>
+    </message>
+    <message>
+        <source>Failed to perform delall</source>
+        <comment>error</comment>
+        <translation>Ну удалось выполнить делолл</translation>
+    </message>
 </context>
 <context>
     <name>AddFileRoute</name>
@@ -820,6 +830,16 @@ Apperas in the HTML pages.</source>
         <source>Not enough rights</source>
         <comment>description</comment>
         <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Delete all user posts on selected board</source>
+        <comment>delallButtonText</comment>
+        <translation>Удалить все посты пользователя на выбранной доске</translation>
     </message>
 </context>
 <context>
@@ -1128,52 +1148,74 @@ Apperas in the HTML pages.</source>
 <context>
     <name>ManageRoute</name>
     <message>
-        <source>Board management</source>
-        <comment>pageTitle</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Expires:</source>
         <comment>banExpiresLabelText</comment>
-        <translation type="unfinished">Истекает:</translation>
+        <translation>Истекает:</translation>
     </message>
     <message>
         <source>Level:</source>
         <comment>banLevelLabelText</comment>
-        <translation type="unfinished">Уровень:</translation>
+        <translation>Уровень:</translation>
     </message>
     <message>
         <source>Not banned</source>
         <comment>banLevelDesctiption</comment>
-        <translation type="unfinished">Не забанен</translation>
+        <translation>Не забанен</translation>
     </message>
     <message>
         <source>Posting prohibited</source>
         <comment>banLevelDesctiption</comment>
-        <translation type="unfinished">Запрещен постинг</translation>
+        <translation>Запрещен постинг</translation>
     </message>
     <message>
         <source>Posting and reading prohibited</source>
         <comment>banLevelDesctiption</comment>
-        <translation type="unfinished">Запрещены постинг и чтение</translation>
+        <translation>Запрещены постинг и чтение</translation>
     </message>
     <message>
         <source>Reason:</source>
         <comment>banReasonLabelText</comment>
-        <translation type="unfinished">Причина:</translation>
+        <translation>Причина:</translation>
     </message>
     <message>
         <source>Board:</source>
         <comment>boardLabelText</comment>
-        <translation type="unfinished">Доска:</translation>
+        <translation>Доска:</translation>
     </message>
-</context>
-<context>
-    <name>ManagerRoute</name>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>User management</source>
+        <comment>pageTitle</comment>
+        <translation>Управление пользователями</translation>
+    </message>
     <message>
         <source>All boards</source>
         <comment>boardName</comment>
-        <translation type="unfinished">Все доски</translation>
+        <translation>Все доски</translation>
+    </message>
+    <message>
+        <source>Delete all user posts on selected board</source>
+        <comment>delallButtonText</comment>
+        <translation>Удалить все посты пользователя на выбранной доске</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <comment>selectAllText</comment>
+        <translation>Выбрать все</translation>
     </message>
 </context>
 <context>
@@ -1561,6 +1603,14 @@ text</source>
         <source>There is no such post</source>
         <comment>description</comment>
         <translation>Нет такого поста</translation>
+    </message>
+</context>
+<context>
+    <name>banInfos</name>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>
 <context>
@@ -3158,6 +3208,11 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <source>Neutron</source>
         <comment>style title</comment>
         <translation>Neutron</translation>
+    </message>
+    <message>
+        <source>User management</source>
+        <comment>toManagePageText</comment>
+        <translation>Управление пользователями</translation>
     </message>
 </context>
 <context>
