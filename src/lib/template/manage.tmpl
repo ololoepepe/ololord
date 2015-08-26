@@ -58,7 +58,7 @@
                             <br />
                             <% foreach ban in user.bans %>
                                 <% item %>
-                                    <div>
+                                    <div class="nowrap">
                                         <input type="hidden" name="ban_board_<%= ban.boardName %>" value="<%= ban.boardName %>" />
                                         [<%= ban.boardName %>] <%= ban.boardTitle %>
                                         <select name="ban_level_<%= ban.boardName %>" class="select">
@@ -73,9 +73,9 @@
                                                 <% end %>
                                             <% end %>
                                         </select>
-                                        <input type="text" name="ban_reason_<%= ban.boardName %>" size="43"
+                                        <input type="text" name="ban_reason_<%= ban.boardName %>" size="33"
                                                placeholder="<%= banReasonLabelText %> [...]" />
-                                        <input type="text" name="ban_expires_<%= ban.boardName %>"
+                                        <input type="text" name="ban_expires_<%= ban.boardName %>" size="23"
                                                placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
                                     </div>
                                 <% end %>
@@ -96,10 +96,10 @@
                                         <% end %>
                                     <% end %>
                                 </select>
-                                <input type="text" name="expires"
-                                       placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
-                                <input type="text" name="reason" size="43"
+                                <input type="text" name="reason" size="33"
                                        placeholder="<%= banReasonLabelText %> [...]" />
+                                <input type="text" name="expires" size="23"
+                                       placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
                                 <br />
                             <% end %>
                             <br />
@@ -163,7 +163,7 @@
                 <% foreach board in availableBoards %>
                     <% item %>
                         <% if ( board.name != "*" ) %>
-                            <div>
+                            <div class="nowrap">
                                 <input type="hidden" name="ban_board_<%= board.name %>" value="<%= board.name %>" />
                                 [<%= board.name %>] <%= board.title %>
                                 <select name="ban_level_<%= board.name %>" class="select">
@@ -178,9 +178,9 @@
                                         <% end %>
                                     <% end %>
                                 </select>
-                                <input type="text" name="ban_reason_<%= board.name %>" size="43"
+                                <input type="text" name="ban_reason_<%= board.name %>" size="33"
                                        placeholder="<%= banReasonLabelText %> [...]" />
-                                <input type="text" name="ban_expires_<%= board.name %>"
+                                <input type="text" name="ban_expires_<%= board.name %>" size="23"
                                        placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
                             </div>
                         <% end %>
@@ -201,8 +201,9 @@
                             <% end %>
                         <% end %>
                     </select>
-                    <input type="text" name="expires" placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
-                    <input type="text" name="reason" size="43" placeholder="<%= banReasonLabelText %> [...]" />
+                    <input type="text" name="expires" size="23"
+                           placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
+                    <input type="text" name="reason" size="33" placeholder="<%= banReasonLabelText %> [...]" />
                     <br />
                 <% end %>
                 <br />

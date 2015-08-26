@@ -52,6 +52,7 @@ lord.banUser = function(btn) {
                 div1.appendChild(lord.node("br"));
                 lord.forIn(lord.availableBoards(), function(bt, bn) {
                     var div2 = lord.node("div");
+                    lord.addClass(div2, "nowrap");
                     var binp = lord.node("input");
                     binp.type = "hidden";
                     binp.setAttribute("name", "ban_board_" + bn);
@@ -77,7 +78,7 @@ lord.banUser = function(btn) {
                     reason.type = "text";
                     reason.placeholder = lord.text("banReasonLabelText") + " [...]";
                     reason.setAttribute("name", "ban_reason_" + bn);
-                    reason.size = "43";
+                    reason.size = "33";
                     if (res[bn])
                         reason.value = res[bn].reason;
                     div2.appendChild(reason);
@@ -86,6 +87,7 @@ lord.banUser = function(btn) {
                     expires.type = "text";
                     expires.setAttribute("name", "ban_expires_" + bn);
                     expires.placeholder = lord.text("banExpiresLabelText") + " <dd.MM.yyyy:hh>";
+                    expires.size = "23";
                     if (res[bn])
                         expires.value = res[bn].expires;
                     div2.appendChild(expires);
@@ -103,18 +105,19 @@ lord.banUser = function(btn) {
                 selLevel.selectedIndex = 0;
                 div1.appendChild(selLevel);
                 div1.appendChild(lord.node("text", " "));
-                var expires = lord.node("input");
-                expires.type = "text";
-                expires.setAttribute("name", "expires");
-                expires.placeholder = lord.text("banExpiresLabelText") + " <dd.MM.yyyy:hh>";
-                div1.appendChild(expires);
-                div1.appendChild(lord.node("text", " "));
                 var reason = lord.node("input");
                 reason.type = "text";
                 reason.placeholder = lord.text("banReasonLabelText") + " [...]";
                 reason.setAttribute("name", "reason");
-                reason.size = "43";
+                reason.size = "33";
                 div1.appendChild(reason);
+                div1.appendChild(lord.node("text", " "));
+                var expires = lord.node("input");
+                expires.type = "text";
+                expires.setAttribute("name", "expires");
+                expires.placeholder = lord.text("banExpiresLabelText") + " <dd.MM.yyyy:hh>";
+                expires.size = "23";
+                div1.appendChild(expires);
                 div1.appendChild(lord.node("br"));
                 div1.appendChild(lord.node("br"));
                 var btn = lord.node("input");
