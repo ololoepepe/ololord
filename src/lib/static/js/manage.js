@@ -105,19 +105,19 @@ lord.banUser = function(btn) {
                 selLevel.selectedIndex = 0;
                 div1.appendChild(selLevel);
                 div1.appendChild(lord.node("text", " "));
-                var reason = lord.node("input");
-                reason.type = "text";
-                reason.placeholder = lord.text("banReasonLabelText") + " [...]";
-                reason.setAttribute("name", "reason");
-                reason.size = "33";
-                div1.appendChild(reason);
-                div1.appendChild(lord.node("text", " "));
                 var expires = lord.node("input");
                 expires.type = "text";
                 expires.setAttribute("name", "expires");
                 expires.placeholder = lord.text("banExpiresLabelText") + " <dd.MM.yyyy:hh>";
                 expires.size = "23";
                 div1.appendChild(expires);
+                div1.appendChild(lord.node("text", " "));
+                var reason = lord.node("input");
+                reason.type = "text";
+                reason.placeholder = lord.text("banReasonLabelText") + " [...]";
+                reason.setAttribute("name", "reason");
+                reason.size = "33";
+                div1.appendChild(reason);
                 div1.appendChild(lord.node("br"));
                 div1.appendChild(lord.node("br"));
                 var btn = lord.node("input");
@@ -141,7 +141,7 @@ lord.banUser = function(btn) {
                 }).bind(lord, ip, selBoards);
                 div3.appendChild(btnDel);
                 div.appendChild(div3);
-                div.append(lord.node("br"));
+                div.appendChild(lord.node("br"));
                 if (userDiv)
                     userDiv.parentNode.replaceChild(div, userDiv);
                 else
