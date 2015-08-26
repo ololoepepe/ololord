@@ -54,8 +54,9 @@ void StaticFilesRoute::handle(std::string p)
     GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
     SetCacheFunction setCache = (StaticFilesMode == mode) ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
     Cache::File *file = getCache(path);
+    QString ct = path.endsWith(".css") ? "text/css" : "";
     if (file) {
-        write(file->data, file->msecsSinceEpoch);
+        write(file->data, ct, file->msecsSinceEpoch);
         Tools::log(application, logAction, "success:cache", logTarget);
         return;
     }
@@ -70,9 +71,9 @@ void StaticFilesRoute::handle(std::string p)
     }
     file = setCache(path, ba);
     if (file)
-        write(file->data, file->msecsSinceEpoch);
+        write(file->data, ct, file->msecsSinceEpoch);
     else
-        write(ba);
+        write(ba, ct);
     Tools::log(application, logAction, "success", logTarget);
 }
 
@@ -107,7 +108,7 @@ std::string StaticFilesRoute::url() const
     return (StaticFilesMode == mode) ? "/{1}" : "/{1}/{2}";
 }
 
-void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
+void StaticFilesRoute::write(const QByteArray &data, const QString &contentType, qint64 msecsSinceEpoch)
 {
     typedef QPair<uint, uint> Range;
     cppcms::http::response &r = application.response();
@@ -130,7 +131,7 @@ void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
         if (dt.isValid() && dt.toLocalTime() >= QDateTime::fromMSecsSinceEpoch(msecsSinceEpoch))
             return r.status(304);
     }
-    r.content_type("");
+    r.content_type(Tools::toStd(contentType));
     r.accept_ranges("bytes");
     if (msecsSinceEpoch > 0)
         r.last_modified(QDateTime::fromMSecsSinceEpoch(msecsSinceEpoch).toTime_t());
@@ -182,4 +183,9 @@ void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
     r.content_length(ba.size());
     r.out().write(ba, ba.size());
     r.out().flush();
+}
+
+void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
+{
+    write(data, "", msecsSinceEpoch);
 }

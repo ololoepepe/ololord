@@ -38,6 +38,7 @@ public:
     std::string regex() const;
     std::string url() const;
 private:
+    void write(const QByteArray &data, const QString &contentType, qint64 msecsSinceEpoch = 0);
     void write(const QByteArray &data, qint64 msecsSinceEpoch = 0);
 };
 
