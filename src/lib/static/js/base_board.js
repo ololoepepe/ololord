@@ -640,6 +640,7 @@ lord.createPostNode = function(res, permanent, boardName) {
         number.parentNode.insertBefore(anumber, number);
         number.parentNode.removeChild(number);
         anumber.title = number.title;
+        anumber.setAttribute("name", "number");
         anumber.appendChild(number.firstChild);
         anumber.href = "#" + res["number"];
         (function(pn) {
