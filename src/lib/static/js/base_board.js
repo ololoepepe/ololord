@@ -1274,15 +1274,6 @@ lord.banUser = function(boardName, postNumber) {
             }
             div2.appendChild(selLevel);
             div2.appendChild(lord.node("text", " "));
-            var reason = lord.node("input");
-            reason.type = "text";
-            reason.placeholder = lord.text("banReasonLabelText") + " [...]";
-            reason.setAttribute("name", "reason");
-            reason.size = "33";
-            if (res[bn])
-                reason.value = res[bn].reason;
-            div2.appendChild(reason);
-            div2.appendChild(lord.node("text", " "));
             var expires = lord.node("input");
             expires.type = "text";
             expires.setAttribute("name", "expires");
@@ -1291,6 +1282,15 @@ lord.banUser = function(boardName, postNumber) {
             if (res[bn])
                 expires.value = res[bn].expires;
             div2.appendChild(expires);
+            div2.appendChild(lord.node("text", " "));
+            var reason = lord.node("input");
+            reason.type = "text";
+            reason.placeholder = lord.text("banReasonLabelText") + " [...]";
+            reason.setAttribute("name", "reason");
+            reason.size = "33";
+            if (res[bn])
+                reason.value = res[bn].reason;
+            div2.appendChild(reason);
             div1.appendChild(div2);
         });
         div.appendChild(div1);
