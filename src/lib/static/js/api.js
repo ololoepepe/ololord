@@ -2,6 +2,97 @@
 
 var lord = lord || {};
 
+/*Classes*/
+
+/*constructor*/ lord.PopupMessage = function(text, options) {
+    this.hideTimer = null;
+    this.text = text;
+    this.timeout = (options && !isNaN(+options.timeout)) ? +options.timeout : 5 * 1000;
+    this.classNames = (options && typeof options.classNames == "string") ? options.classNames : "";
+    if (options && typeof options.type == "string" && lord.in(["critical", "warning"], options.type.toLowerCase()))
+        this.classNames += options.type.toLowerCase() + (("" != this.classNames) ? " " : "");
+    this.html = (options && typeof options.type == "string" && options.type.toLowerCase() == "html");
+    this.node = (options && typeof options.type == "string" && options.type.toLowerCase() == "node");
+    this.msg = lord.node("div");
+    lord.addClass(this.msg, "popup");
+    lord.addClass(this.msg, this.classNames);
+    if (lord.popups.length > 0) {
+        var prev = lord.popups[lord.popups.length - 1];
+        this.msg.style.top = (prev.msg.offsetTop + prev.msg.offsetHeight + 5) + "px";
+    }
+    if (this.html)
+        this.msg.innerHTML = text;
+    else if (this.node)
+        this.msg.appendChild(text);
+    else
+        this.msg.appendChild(lord.node("text", text));
+};
+
+/*public*/ lord.PopupMessage.prototype.show = function() {
+    if (this.hideTimer)
+        return;
+    document.body.appendChild(this.msg);
+    lord.popups.push(this);
+    this.hideTimer = setTimeout(this.hide.bind(this), this.timeout);
+};
+
+/*public*/ lord.PopupMessage.prototype.hide = function() {
+    if (!this.hideTimer)
+        return;
+    clearTimeout(this.hideTimer);
+    this.hideTimer = null;
+    var offsH = this.msg.offsetHeight + 5;
+    document.body.removeChild(this.msg);
+    var ind = lord.popups.indexOf(this);
+    if (ind < 0)
+        return;
+    lord.popups.splice(ind, 1);
+    for (var i = ind; i < lord.popups.length; ++i) {
+        var top = +lord.popups[i].msg.style.top.replace("px", "");
+        top -= offsH;
+        lord.popups[i].msg.style.top = top + "px";
+    }
+};
+
+/*public*/ lord.PopupMessage.prototype.resetTimeout = function(timeout) {
+    if (!this.hideTimer)
+        return;
+    clearTimeout(this.hideTimer);
+    this.timeout = (!isNaN(+timeout)) ? +timeout : 5 * 1000;
+    this.hideTimer = setTimeout(this.hide.bind(this), this.timeout);
+};
+
+/*public*/ lord.PopupMessage.prototype.resetText = function(text, options) {
+    var offsH = this.msg.offsetHeight;
+    this.text = text;
+    this.classNames = (options && typeof options.classNames == "string") ? options.classNames : "";
+    if (options && typeof options.type == "string" && lord.in(["critical", "warning"], options.type.toLowerCase()))
+        this.classNames += options.type.toLowerCase() + (("" != this.classNames) ? " " : "");
+    this.html = (options && typeof options.type == "string" && options.type.toLowerCase() == "html");
+    this.node = (options && typeof options.type == "string" && options.type.toLowerCase() == "node");
+    this.msg.className = "";
+    lord.addClass(this.msg, "popup");
+    lord.addClass(this.msg, this.classNames);
+    lord.removeChildren(this.msg);
+    if (this.html)
+        this.msg.innerHTML = text;
+    else if (this.node)
+        this.msg.appendChild(text);
+    else
+        this.msg.appendChild(lord.node("text", text));
+    if (!this.hideTimer)
+        return;
+    var ind = lord.popups.indexOf(this);
+    if (ind < 0)
+        return;
+    offsH = this.msg.offsetHeight - offsH;
+    for (var i = ind + 1; i < lord.popups.length; ++i) {
+        var top = +lord.popups[i].msg.style.top.replace("px", "");
+        top += offsH;
+        lord.popups[i].msg.style.top = top + "px";
+    }
+};
+
 /*Constants*/
 
 lord.Second = 1000;
@@ -425,35 +516,9 @@ lord.reloadPage = function() {
 };
 
 lord.showPopup = function(text, options) {
-    if (!text)
-        return;
-    var timeout = (options && !isNaN(+options.timeout)) ? +options.timeout : 5 * 1000;
-    var classNames = (options && typeof options.classNames == "string") ? options.classNames : "";
-    if (options && typeof options.type == "string" && lord.in(["critical", "warning"], options.type.toLowerCase()))
-        classNames += options.type.toLowerCase() + (("" != classNames) ? " " : "");
-    var msg = lord.node("div");
-    lord.addClass(msg, "popup");
-    lord.addClass(msg, classNames);
-    if (lord.popups.length > 0) {
-        var prev = lord.popups[lord.popups.length - 1];
-        msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
-    }
-    msg.appendChild(lord.node("text", text));
-    document.body.appendChild(msg);
-    lord.popups.push(msg);
-    setTimeout(function() {
-        var offsH = msg.offsetHeight + 5;
-        document.body.removeChild(msg);
-        var ind = lord.popups.indexOf(msg);
-        if (ind < 0)
-            return;
-        lord.popups.splice(ind, 1);
-        for (var i = 0; i < lord.popups.length; ++i) {
-            var top = +lord.popups[i].style.top.replace("px", "");
-            top -= offsH;
-            lord.popups[i].style.top = top + "px";
-        }
-    }, timeout);
+    var popup = new lord.PopupMessage(text, options);
+    popup.show();
+    return popup;
 };
 
 lord.showNotification = function(title, body, icon) {
@@ -556,7 +621,15 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                     var response = JSON.parse(xhr.responseText);
                     var err = response.error;
                     if (!!err) {
-                        lord.showPopup(err, {type: "critical"});
+                        var show = true;
+                        for (var i = 0; i < lord.popups.length; ++i) {
+                            if (lord.popups[i].text == err) {
+                                show = false;
+                                break;
+                            }
+                        }
+                        if (show)
+                            lord.showPopup(err, {type: "critical"});
                         --lord._ajaxRequestActive;
                         f();
                         if (typeof req.errorCallback == "function")
@@ -577,7 +650,15 @@ lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
                         default:
                             break;
                         }
-                        lord.showPopup(text, {type: "critical"});
+                        var show = true;
+                        for (var i = 0; i < lord.popups.length; ++i) {
+                            if (lord.popups[i].text == text) {
+                                show = false;
+                                break;
+                            }
+                        }
+                        if (show)
+                            lord.showPopup(text, {type: "critical"});
                         --lord._ajaxRequestActive;
                         f();
                         if (typeof req.errorCallback == "function")

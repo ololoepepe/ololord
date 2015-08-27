@@ -305,5 +305,6 @@
         <file>static/img/neutron_line.png</file>
         <file>static/img/ip.png</file>
         <file>static/img/manage.png</file>
+        <file>static/img/loading.gif</file>
     </qresource>
 </RCC>

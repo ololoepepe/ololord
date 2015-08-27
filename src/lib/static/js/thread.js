@@ -140,85 +140,105 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
     var lastPost = posts[posts.length - 1];
     var lastPostN = lastPost.id.replace("post", "");
     var seqNum = +lord.queryOne(".postSequenceNumber", lastPost).textContent;
-    lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], lord.RpcGetNewPostsId, function(res) {
-        if (!res)
-            return;
-        var txt = lord.text((res.length >= 1) ? "newPostsText" : "noNewPostsText");
-        if (res.length >= 1)
-            txt += " " + res.length;
-        if (!autoUpdate)
-            lord.showPopup(txt, {classNames: "noNewPostsPopup"});
-        if (res.length < 1)
-            return;
-        var before = lord.id("afterAllPosts");
-        if (!before)
-            return;
-        for (var i = 0; i < res.length; ++i) {
-            var post = lord.createPostNode(res[i], true);
-            if (!post)
-                continue;
-            if (lord.id(post.id))
-                continue;
-            if (!isNaN(seqNum))
-                lord.queryOne(".postSequenceNumber", post).appendChild(lord.node("text", ++seqNum));
-            document.body.insertBefore(post, before);
-            lord.postNodeInserted(post);
-        }
-        var bumpLimitReached = seqNum >= +lord.text("bumpLimit");
-        var postLimitReached = seqNum >= +lord.text("postLimit");
-        if (postLimitReached) {
-            var pl = lord.nameOne("insteadOfPostLimitReached");
-            if (pl) {
-                var div = lord.node("div");
-                div.className = "theMessage";
-                var h2 = lord.node("h2");
-                h2.className = "postLimitReached";
-                h2.appendChild(lord.node("text", lord.text("postLimitReachedText")));
-                div.appendChild(h2);
-                pl.parentNode.replaceChild(div, pl);
+    (function() {
+        var span = lord.node("span");
+        var img = lord.node("img");
+        img.src = "/" + lord.text("sitePathPrefix") + "img/loading.gif";
+        span.appendChild(img);
+        span.appendChild(lord.node("text", " " + lord.text("loadingPostsText")));
+        var popup = !autoUpdate ? lord.showPopup(span, {
+            "type": "node",
+            "classNames": "noNewPostsPopup",
+            "timeout": lord.Billion
+        }) : 0;
+        lord.ajaxRequest("get_new_posts", [boardName, +threadNumber, +lastPostN], lord.RpcGetNewPostsId, function(res) {
+            if (!res) {
+                if (popup)
+                    popup.hide();
+                return;
             }
-            var bl = lord.nameOne("insteadOfBumpLimitReached");
-            if (bl)
-                bl.parentNode.removeChild(bl);
-            bl = lord.nameOne("bumpLimitReached");
-            if (bl)
-                bl.parentNode.removeChild(bl);
-            lord.query(".createAction").forEach(function(act) {
-                act.parentNode.removeChild(act);
-            });
-        }
-        if (!postLimitReached && bumpLimitReached) {
-            var bl = lord.nameOne("insteadOfBumpLimitReached");
-            if (bl) {
-                var div = lord.node("div");
-                div.className = "theMessage";
-                div.setAttribute("name", "bumpLimitReached");
-                var h3 = lord.node("h3");
-                h3.className = "bumpLimitReached";
-                h3.appendChild(lord.node("text", lord.text("bumpLimitReachedText")));
-                div.appendChild(h3);
-                bl.parentNode.replaceChild(div, bl);
+            var txt = lord.text((res.length >= 1) ? "newPostsText" : "noNewPostsText");
+            if (res.length >= 1)
+                txt += " " + res.length;
+            if (popup) {
+                popup.resetText(txt, {"classNames": "noNewPostsPopup"});
+                popup.resetTimeout();
             }
-        }
-        if ("hidden" == lord.pageVisible) {
-            if (!lord.blinkTimer) {
-                lord.blinkTimer = setInterval(lord.blinkFaviconNewMessage, 500);
-                document.title = "* " + document.title;
+            if (res.length < 1)
+                return;
+            var before = lord.id("afterAllPosts");
+            if (!before)
+                return;
+            for (var i = 0; i < res.length; ++i) {
+                var post = lord.createPostNode(res[i], true);
+                if (!post)
+                    continue;
+                if (lord.id(post.id))
+                    continue;
+                if (!isNaN(seqNum))
+                    lord.queryOne(".postSequenceNumber", post).appendChild(lord.node("text", ++seqNum));
+                document.body.insertBefore(post, before);
+                lord.postNodeInserted(post);
             }
-            if (lord.notificationsEnabled()) {
-                var subject = lord.queryOne(".theTitle > h1").textContent;
-                var title = "[" + subject + "] " + lord.text("newPostsText") + " " + res.length;
-                var sitePathPrefix = lord.text("sitePathPrefix");
-                var icon = "/" + sitePathPrefix + "favicon.ico";
-                var p = res[0];
-                if (p.files && p.files.length > 0)
-                    icon = "/" + sitePathPrefix + lord.text("currentBoardName") + "/" + p.files[0].thumbName;
-                lord.showNotification(title, p.rawPostText.substr(0, 300), icon);
+            var bumpLimitReached = seqNum >= +lord.text("bumpLimit");
+            var postLimitReached = seqNum >= +lord.text("postLimit");
+            if (postLimitReached) {
+                var pl = lord.nameOne("insteadOfPostLimitReached");
+                if (pl) {
+                    var div = lord.node("div");
+                    div.className = "theMessage";
+                    var h2 = lord.node("h2");
+                    h2.className = "postLimitReached";
+                    h2.appendChild(lord.node("text", lord.text("postLimitReachedText")));
+                    div.appendChild(h2);
+                    pl.parentNode.replaceChild(div, pl);
+                }
+                var bl = lord.nameOne("insteadOfBumpLimitReached");
+                if (bl)
+                    bl.parentNode.removeChild(bl);
+                bl = lord.nameOne("bumpLimitReached");
+                if (bl)
+                    bl.parentNode.removeChild(bl);
+                lord.query(".createAction").forEach(function(act) {
+                    act.parentNode.removeChild(act);
+                });
             }
-        }
-        if (!!extraCallback)
-            extraCallback();
-    });
+            if (!postLimitReached && bumpLimitReached) {
+                var bl = lord.nameOne("insteadOfBumpLimitReached");
+                if (bl) {
+                    var div = lord.node("div");
+                    div.className = "theMessage";
+                    div.setAttribute("name", "bumpLimitReached");
+                    var h3 = lord.node("h3");
+                    h3.className = "bumpLimitReached";
+                    h3.appendChild(lord.node("text", lord.text("bumpLimitReachedText")));
+                    div.appendChild(h3);
+                    bl.parentNode.replaceChild(div, bl);
+                }
+            }
+            if ("hidden" == lord.pageVisible) {
+                if (!lord.blinkTimer) {
+                    lord.blinkTimer = setInterval(lord.blinkFaviconNewMessage, 500);
+                    document.title = "* " + document.title;
+                }
+                if (lord.notificationsEnabled()) {
+                    var subject = lord.queryOne(".theTitle > h1").textContent;
+                    var title = "[" + subject + "] " + lord.text("newPostsText") + " " + res.length;
+                    var sitePathPrefix = lord.text("sitePathPrefix");
+                    var icon = "/" + sitePathPrefix + "favicon.ico";
+                    var p = res[0];
+                    if (p.files && p.files.length > 0)
+                        icon = "/" + sitePathPrefix + lord.text("currentBoardName") + "/" + p.files[0].thumbName;
+                    lord.showNotification(title, p.rawPostText.substr(0, 300), icon);
+                }
+            }
+            if (!!extraCallback)
+                extraCallback();
+        }, function() {
+            if (popup)
+                popup.hide();
+        });
+    })();
 };
 
 lord.setAutoUpdateEnabled = function(cbox) {
