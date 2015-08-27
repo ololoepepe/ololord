@@ -236,6 +236,8 @@ lord.setInitialScale = function(image, sizeHintX, sizeHintY, border) {
 lord.reloadCaptchaFunction = function() {
     if (!!grecaptcha)
         grecaptcha.reset();
+    else if (lord.id("nocaptcha"))
+        ;
 };
 
 lord.resetCaptcha = function() {
