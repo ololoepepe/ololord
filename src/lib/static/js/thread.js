@@ -69,6 +69,7 @@ lord.autoUpdateTimer = null;
 lord.blinkTimer = null;
 lord.pageVisible = "visible";
 lord.isDownloading = false;
+lord.loadingImage = null;
 
 /*Functions*/
 
@@ -142,9 +143,11 @@ lord.updateThread = function(boardName, threadNumber, autoUpdate, extraCallback)
     var seqNum = +lord.queryOne(".postSequenceNumber", lastPost).textContent;
     (function() {
         var span = lord.node("span");
-        var img = lord.node("img");
-        img.src = "/" + lord.text("sitePathPrefix") + "img/loading.gif";
-        span.appendChild(img);
+        if (!lord.loadingImage) {
+            lord.loadingImage = lord.node("img");
+            lord.loadingImage.src = "/" + lord.text("sitePathPrefix") + "img/loading.gif";
+        }
+        span.appendChild(lord.loadingImage.cloneNode(true));
         span.appendChild(lord.node("text", " " + lord.text("loadingPostsText")));
         var popup = !autoUpdate ? lord.showPopup(span, {
             "type": "node",
