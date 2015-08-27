@@ -33,6 +33,7 @@
 [done] Add ability to set maximum simultaneous AJAX requests
 [done] Specify MIME-type for CSS files
 [done] Improve popup displaying
+[done] Add mail.ru nocaptcha
 * Fix moving video files
 
 * Use D-Pointer approach for the lib

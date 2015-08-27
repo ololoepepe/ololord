@@ -3,6 +3,7 @@
 #include "abstractyandexcaptchaengine.h"
 #include "codechacaptchaengine.h"
 #include "googlerecaptchacaptchaengine.h"
+#include "mailrunocaptchaengine.h"
 #include "plugin/global/captchaenginefactoryplugininterface.h"
 #include "settingslocker.h"
 
@@ -122,6 +123,8 @@ void AbstractCaptchaEngine::reloadEngines()
     AbstractCaptchaEngine *e = new GoogleRecaptchaCaptchaEngine;
     engines.insert(e->id(), e);
     e = new CodechaCaptchaEngine;
+    engines.insert(e->id(), e);
+    e = new MailruNocaptchaEngine;
     engines.insert(e->id(), e);
     e = new YandexCaptchaElatmEngine;
     engines.insert(e->id(), e);

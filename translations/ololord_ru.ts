@@ -1146,6 +1146,34 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>MailruNocaptchaEngine</name>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+    <message>
+        <source>NOCAPTCHA@MAIL.RU</source>
+        <comment>title</comment>
+        <translation>НЕКАПЧА@MAIL.RU</translation>
+    </message>
+    <message>
+        <source>Captcha ID is empty</source>
+        <comment>error</comment>
+        <translation>ID капчи пуст</translation>
+    </message>
+    <message>
+        <source>Captcha value is empty</source>
+        <comment>error</comment>
+        <translation>Значение капчи пусто</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+</context>
+<context>
     <name>ManageRoute</name>
     <message>
         <source>Expires:</source>
