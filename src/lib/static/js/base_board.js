@@ -152,7 +152,7 @@ lord.removeReferences = function(postNumber) {
             continue;
         for (var j = 0; j < as.length; ++j) {
             var a = as[j];
-            if (a.innerHTML == ("&gt;&gt;" + postNumber)) {
+            if (a.innerHTML.replace("&gt;&gt;" + postNumber, "") != a.innerHTML) {
                 a.parentNode.removeChild(a);
                 if (as.length < 2)
                     referencedByTr.style.display = "none";

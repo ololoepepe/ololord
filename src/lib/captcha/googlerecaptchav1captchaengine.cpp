@@ -41,7 +41,7 @@ bool GoogleRecaptchaV1CaptchaEngine::checkCaptcha(
         curlpp::Cleanup curlppCleanup;
         Q_UNUSED(curlppCleanup)
         QString url = "https://www.google.com/recaptcha/api/verify?privatekey=%1&remoteip=%2&challenge=%3&response=%4";
-        url = url.arg(privateKey()).arg(Tools::userIp(req)).arg(challenge).arg(captcha);
+        url = url.arg(privateKey()).arg(Tools::userIp(req)).arg(challenge).arg(captcha.replace(" ", "%20"));
         curlpp::Easy request;
         request.setOpt(curlpp::options::Url(Tools::toStd(url)));
         std::ostringstream os;

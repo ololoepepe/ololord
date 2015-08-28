@@ -92,6 +92,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
         styles.insert("photon", BTranslation::translate("initBase", "Photon", "style title"));
         styles.insert("neutron", BTranslation::translate("initBase", "Neutron", "style title"));
         styles.insert("futaba", BTranslation::translate("initBase", "Futaba", "style title"));
+        styles.insert("burichan", BTranslation::translate("initBase", "Burichan", "style title"));
     }
     init_once(TranslationMap, modes, TranslationMap()) {
         modes.insert("normal", BTranslation::translate("initBase", "Normal", "mode title"));

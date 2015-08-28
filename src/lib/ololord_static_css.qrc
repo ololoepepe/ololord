@@ -3,5 +3,6 @@
         <file>static/css/photon.css</file>
         <file>static/css/futaba.css</file>
         <file>static/css/neutron.css</file>
+        <file>static/css/burichan.css</file>
     </qresource>
 </RCC>

@@ -3237,6 +3237,11 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>maxSimultaneousAjaxLabelText</comment>
         <translation>Максимум одновременных AJAX-запросов:</translation>
     </message>
+    <message>
+        <source>Burichan</source>
+        <comment>style title</comment>
+        <translation>Burichan</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
