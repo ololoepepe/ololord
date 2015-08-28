@@ -33,6 +33,7 @@
 [done] Add ability to set maximum simultaneous AJAX requests
 [done] Specify MIME-type for CSS files
 [done] Improve popup displaying
+[done] Add Google reCAPTCHA v1
 * Implement COUB video embedding
 * Implement Vimeo and Vocaroo embedding
 * Fix moving video files

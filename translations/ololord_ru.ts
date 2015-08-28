@@ -1118,6 +1118,24 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>GoogleRecaptchaV1CaptchaEngine</name>
+    <message>
+        <source>Captcha challenge is empty</source>
+        <comment>error</comment>
+        <translation>Задание капчи пусто</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+    <message>
+        <source>Captcha response is empty</source>
+        <comment>error</comment>
+        <translation>Решение капчи пусто</translation>
+    </message>
+</context>
+<context>
     <name>HomeRoute</name>
     <message>
         <source>Welcome. Again.</source>

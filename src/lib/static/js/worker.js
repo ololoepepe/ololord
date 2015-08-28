@@ -92,8 +92,9 @@ lord.getCoubVideoInfo = function(href) {
     var videoId = href.match(/^http:\/\/coub\.com\/view\/([^\/\?]+)?/)[1];
     if (!videoId)
         return null;
-    /*var xhr = new XMLHttpRequest();
-    var url = "https://www.coub.com/api/oembed.json?url=" + href.replace(":", "%3A");
+    var xhr = new XMLHttpRequest();
+    //var url = "http://coub.com/api/oembed.json?url=coub.com/view/" + videoId;
+    var url = "https://coub.com/api/oembed.json?url=" + href.replace(":", "%3A");
     xhr.open("get", url, false);
     xhr.send(null);
     console.log(url, xhr.status, xhr.statusText);
@@ -104,7 +105,7 @@ lord.getCoubVideoInfo = function(href) {
         response = JSON.parse(xhr.responseText);
     } catch (ex) {
         return null;
-    }*/
+    }
     var info = {
         "id": videoId/*,
         "videoTitle": response.title,

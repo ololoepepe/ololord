@@ -240,10 +240,10 @@ lord.setInitialScale = function(image, sizeHintX, sizeHintY, border) {
 };
 
 lord.reloadCaptchaFunction = function() {
-    if (!!grecaptcha)
+    if (window.grecaptcha)
         grecaptcha.reset();
-    else if (lord.id("nocaptcha"))
-        ;
+    else if (window.Recaptcha)
+        Recaptcha.reload();
 };
 
 lord.resetCaptcha = function() {
@@ -1020,6 +1020,8 @@ lord.addCoubButton = function(post, coub) {
         var img = lord.node("img");
         img.src = "https://coub.com/favicon.ico";
         img.title = "COUB";
+        img.width = 16;
+        img.height = 16;
         link.parentNode.insertBefore(img, link);
         link.parentNode.insertBefore(lord.node("text", " "), link);
         /*link.replaceChild(lord.node("text", info.videoTitle), link.firstChild);
