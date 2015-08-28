@@ -83,14 +83,20 @@ lord.getPostData = function(post, youtube) {
         p.files = ((files.length > 0) ? files : undefined);
     }
     if (youtube) {
-        var videos = [];
+        var ytvideos = [];
         var q = "a[href^='http://youtube.com'], a[href^='https://youtube.com'], "
             + "a[href^='http://www.youtube.com'], a[href^='https://www.youtube.com'], "
             + "a[href^='http://m.youtube.com'], a[href^='https://m.youtube.com']";
         lord.query(q, post).forEach(function(video) {
-            videos.push(video.href);
+            ytvideos.push(video.href);
         });
-        p.youtube = ((videos.length > 0) ? videos: undefined);
+        p.youtube = ((ytvideos.length > 0) ? ytvideos : undefined);
+        var cvideos = [];
+        var q = "a[href^='http://coub.com'], a[href^='https://coub.com']";
+        lord.query(q, post).forEach(function(video) {
+            cvideos.push(video.href);
+        });
+        p.coub = ((cvideos.length > 0) ? cvideos : undefined);
     }
     return p;
 };
@@ -977,6 +983,95 @@ lord.addYoutubeButton = function(post, youtube) {
                 iframe.frameborder = "0px";
                 iframe.height = "360";
                 iframe.width = "640";
+                iframe.display = "block";
+                var parent = this.parentNode;
+                var el = this.nextSibling;
+                if (el) {
+                    parent.insertBefore(lord.node("br"), el);
+                    parent.insertBefore(iframe, el);
+                } else {
+                    parent.appendChild(lord.node("br"));
+                    parent.appendChild(iframe);
+                }
+                this.replaceChild(lord.node("text", "[" + lord.text("collapseVideoText") + "]"), this.childNodes[0]);
+            }
+            this.lordExpanded = !this.lordExpanded;
+        }).bind(a, info.id);
+        a.appendChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"));
+        var el = link.nextSibling;
+        var parent = link.parentNode;
+        if (el) {
+            parent.insertBefore(lord.node("text", " "), el);
+            parent.insertBefore(a, el);
+        } else {
+            parent.appendChild(lord.node("text", " "));
+            parent.appendChild(a);
+        }
+    });
+};
+
+lord.addCoubButton = function(post, coub) {
+    if (!post || !coub)
+        return;
+    lord.forIn(coub, function(info, href) {
+        var link = lord.queryOne("a[href='" + href + "']", post);
+        if (!link)
+            return;
+        var img = lord.node("img");
+        img.src = "https://coub.com/favicon.ico";
+        img.title = "COUB";
+        link.parentNode.insertBefore(img, link);
+        link.parentNode.insertBefore(lord.node("text", " "), link);
+        /*link.replaceChild(lord.node("text", info.videoTitle), link.firstChild);
+        link.title = info.authorName;
+        link.thumb = info.thumbnail;
+        link.onmouseover = function(e) {
+            if (this.img) {
+                this.img.style.display = "";
+                document.body.appendChild(this.img);
+                return;
+            }
+            if (!this.thumb)
+                return;
+            this.img = lord.node("img");
+            this.img.width = this.thumb.width;
+            this.img.height = this.thumb.height;
+            this.img.src = this.thumb.url;
+            lord.addClass(this.img, "movableImage");
+            this.img.style.left = (e.clientX + 30) + "px";
+            this.img.style.top = (e.clientY - 10) + "px";
+            document.body.appendChild(this.img);
+        };
+        link.onmousemove = function(e) {
+            if (!this.img)
+                return;
+            this.img.style.left = (e.clientX + 30) + "px";
+            this.img.style.top = (e.clientY - 10) + "px";
+        };
+        link.onmouseout = function(e) {
+            if (!this.img)
+                return;
+            document.body.removeChild(this.img);
+            this.img.style.display = "none";
+        };*/
+        var a = lord.node("a");
+        lord.addClass(a, "expandCollapse");
+        a.lordExpanded = false;
+        a.onclick = (function(videoId) {
+            if (this.lordExpanded) {
+                this.parentNode.removeChild(this.nextSibling);
+                this.parentNode.removeChild(this.nextSibling);
+                this.replaceChild(lord.node("text", "[" + lord.text("expandVideoText") + "]"), this.childNodes[0]);
+                lord.removeClass(this.parentNode, "expand");
+            } else {
+                lord.addClass(this.parentNode, "expand");
+                var iframe = lord.node("iframe");
+                iframe.src = "https://coub.com/embed/" + videoId
+                    + "?muted=false&autostart=false&originalSize=false&hideTopBar=false&startWithHD=false";
+                iframe.allowfullscreen = true;
+                iframe.frameborder = "0px";
+                iframe.height = "360";
+                iframe.width = "480";
                 iframe.display = "block";
                 var parent = this.parentNode;
                 var el = this.nextSibling;
@@ -3240,6 +3335,8 @@ lord.message_postsProcessed = function(data) {
                     return;
                 if (post.youtube)
                     lord.addYoutubeButton(p, post.youtube);
+                if (post.coub)
+                    lord.addCoubButton(p, post.coub);
                 if (post.replacements && post.replacements.length > 0) {
                     lord.forIn(post.replacements, function(value) {
                         if (value.innerHTML)
