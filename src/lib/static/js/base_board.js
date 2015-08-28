@@ -2369,6 +2369,10 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
     lord.hideImage();
     if (!href || !type)
         return true;
+    if (lord.isAudioType(type)) {
+        sizeHintX = 0;
+        sizeHintY = 0;
+    }
     lord.img = lord.images[href];
     if (!!lord.img) {
         lord.removeChildren(lord.imgWrapper);

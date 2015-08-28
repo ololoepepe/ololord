@@ -1341,6 +1341,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
         if (!tags.cover.isNull()) {
             img = tags.cover;
             scaleThumbnail(img, ft);
+            ft.setMainFileSize(0, 0);
         } else {
             ft.setThumbFileSize(200, 200);
             img = generateRandomImage(hash, mimeType);
