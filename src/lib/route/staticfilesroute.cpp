@@ -54,7 +54,7 @@ void StaticFilesRoute::handle(std::string p)
     GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
     SetCacheFunction setCache = (StaticFilesMode == mode) ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
     Cache::File *file = getCache(path);
-    QString ct = path.endsWith(".css", Qt::CaseInsensitive) ? "text/css" : "";
+    QString ct; // = path.endsWith(".css", Qt::CaseInsensitive) ? "text/css" : ""; //TODO: This causes page to freeze
     if (file) {
         write(file->data, ct, file->msecsSinceEpoch);
         Tools::log(application, logAction, "success:cache", logTarget);
