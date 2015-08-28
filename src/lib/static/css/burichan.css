@@ -197,7 +197,7 @@ blockquote.expand {
 
 span.spoiler, span.spoiler a {
     background: #9AD2F6;
-    color: #BBBBBB;
+    color: #9AD2F6;
 }
 
 span.spoiler:hover {
@@ -205,7 +205,7 @@ span.spoiler:hover {
 }
 
 span.spoiler:hover a {
-    color: #FF6600;
+    color: #000000;
 }
 
 span.tooltip {
