@@ -25,7 +25,12 @@
 #include <cppcms/json.h>
 #include <cppcms/rpc_json.h>
 
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+
 #include <climits>
+#include <sstream>
 #include <string>
 
 ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
@@ -317,6 +322,52 @@ void ActionAjaxHandler::getCaptchaQuota(std::string boardName)
         QString err = Tools::fromStd(e.what());
         server.return_error(Tools::toStd(err));
         Tools::log(server, "ajax_get_captcha_quota", "fail:" + err);
+    }
+}
+
+void ActionAjaxHandler::getCoubVideoInfo(std::string videoId)
+{
+    try {
+        QString id = Tools::fromStd(videoId);
+        QString logTarget = id;
+        Tools::log(server, "ajax_get_coub_video_info", "begin", logTarget);
+        std::string result;
+        try {
+            curlpp::Cleanup curlppCleanup;
+            Q_UNUSED(curlppCleanup)
+            QString url = "https://coub.com/api/oembed.json?url=coub.com/view/" + id;
+            curlpp::Easy request;
+            request.setOpt(curlpp::options::Url(Tools::toStd(url)));
+            std::ostringstream os;
+            os << request;
+            result = os.str();
+        } catch (curlpp::RuntimeError &e) {
+            QString err = Tools::fromStd(e.what());
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_get_coub_video_info", "fail:" + err);
+            return;
+        } catch(curlpp::LogicError &e) {
+            QString err = Tools::fromStd(e.what());
+            server.return_error(Tools::toStd(err));
+            Tools::log(server, "ajax_get_coub_video_info", "fail:" + err);
+            return;
+        }
+        std::istringstream is(result);
+        TranslatorStd ts(server.request());
+        cppcms::json::value v;
+        if (!v.load(is, true)) {
+            std::string err = ts.translate("ActionAjaxHandler", "Internal error", "error");
+            server.return_error(err);
+            Tools::log(server, "ajax_get_coub_video_info", "fail:" + Tools::fromStd(err), logTarget);
+            return;
+        }
+        cppcms::json::object o = v.object();
+        server.return_result(o);
+        Tools::log(server, "ajax_get_coub_video_info", "success", logTarget);
+    } catch (const std::exception &e) {
+        QString err = Tools::fromStd(e.what());
+        server.return_error(Tools::toStd(err));
+        Tools::log(server, "ajax_get_coub_video_info", "fail:" + err);
     }
 }
 
@@ -618,6 +669,8 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
     list << Handler("edit_post", cppcms::rpc::json_method(&ActionAjaxHandler::editPost, self), method_role);
     list << Handler("get_boards", cppcms::rpc::json_method(&ActionAjaxHandler::getBoards, self), method_role);
     list << Handler("get_captcha_quota", cppcms::rpc::json_method(&ActionAjaxHandler::getCaptchaQuota, self),
+                    method_role);
+    list << Handler("get_coub_video_info", cppcms::rpc::json_method(&ActionAjaxHandler::getCoubVideoInfo, self),
                     method_role);
     list << Handler("get_file_existence", cppcms::rpc::json_method(&ActionAjaxHandler::getFileExistence, self),
                     method_role);

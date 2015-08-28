@@ -93,11 +93,15 @@ lord.getCoubVideoInfo = function(href) {
     if (!videoId)
         return null;
     var xhr = new XMLHttpRequest();
-    //var url = "http://coub.com/api/oembed.json?url=coub.com/view/" + videoId;
-    var url = "https://coub.com/api/oembed.json?url=" + href.replace(":", "%3A");
-    xhr.open("get", url, false);
-    xhr.send(null);
-    console.log(url, xhr.status, xhr.statusText);
+    xhr.withCredentials = true;
+    xhr.open("post", "../api", false);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    var request = {
+        "method": "get_coub_video_info",
+        "params": [videoId],
+        "id": lord.RpcGetCoubVideoInfoId
+    };
+    xhr.send(JSON.stringify(request));
     if (xhr.status != 200)
         return null;
     var response = null;
@@ -106,16 +110,19 @@ lord.getCoubVideoInfo = function(href) {
     } catch (ex) {
         return null;
     }
+    if (!response.result)
+        return null;
+    response = response.result;
     var info = {
-        "id": videoId/*,
         "videoTitle": response.title,
         "authorName": response.author_name,
         "thumbnail": response.thumbnail_url ? {
             "url": response.thumbnail_url,
             "width": response.thumbnail_width,
             "height": response.thumbnail_height
-        } : null*/
+        } : null
     };
+    info["id"] = videoId;
     return info;
 };
 
@@ -765,7 +772,7 @@ lord.applyCoub = function(post) {
             videos = {};
         videos[href] = {
             "id": info.id,
-            "videoTitle": info.title,
+            "videoTitle": info.videoTitle,
             "authorName": info.authorName
         };
         if (info.thumbnail)

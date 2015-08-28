@@ -37,6 +37,7 @@ public:
     void editPost(const cppcms::json::object &params);
     void getBoards();
     void getCaptchaQuota(std::string boardName);
+    void getCoubVideoInfo(std::string videoId);
     void getFileExistence(std::string boardName, std::string hash);
     void getFileMetaData(std::string boardName, std::string fileName);
     void getNewPostCount(std::string boardName, long long lastPostNumber);

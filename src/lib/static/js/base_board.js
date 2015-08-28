@@ -1024,7 +1024,7 @@ lord.addCoubButton = function(post, coub) {
         img.height = 16;
         link.parentNode.insertBefore(img, link);
         link.parentNode.insertBefore(lord.node("text", " "), link);
-        /*link.replaceChild(lord.node("text", info.videoTitle), link.firstChild);
+        link.replaceChild(lord.node("text", info.videoTitle), link.firstChild);
         link.title = info.authorName;
         link.thumb = info.thumbnail;
         link.onmouseover = function(e) {
@@ -1055,7 +1055,7 @@ lord.addCoubButton = function(post, coub) {
                 return;
             document.body.removeChild(this.img);
             this.img.style.display = "none";
-        };*/
+        };
         var a = lord.node("a");
         lord.addClass(a, "expandCollapse");
         a.lordExpanded = false;

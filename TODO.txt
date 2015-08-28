@@ -35,7 +35,7 @@
 [done] Improve popup displaying
 [done] Add Google reCAPTCHA v1
 [done] Add Burichan style
-* Implement COUB video embedding
+[done] Implement COUB video embedding
 * Implement Vimeo and Vocaroo embedding
 * Fix moving video files
 

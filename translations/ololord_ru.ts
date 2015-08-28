@@ -612,6 +612,11 @@ Apperas in the HTML pages.</source>
         <comment>error</comment>
         <translation>Недействительный тип капчи</translation>
     </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
 </context>
 <context>
     <name>ActionRoute</name>

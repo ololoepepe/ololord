@@ -122,6 +122,7 @@ lord._defineEnum("RpcEditAudioTagsId");
 lord._defineEnum("RpcEditPostId");
 lord._defineEnum("RpcGetBoardsId");
 lord._defineEnum("RpcGetCaptchaQuotaId");
+lord._defineEnum("RpcGetCoubVideoInfoId");
 lord._defineEnum("RpcGetFileExistenceId");
 lord._defineEnum("RpcGetFileMetaDataId");
 lord._defineEnum("RpcGetNewPostCountId");
