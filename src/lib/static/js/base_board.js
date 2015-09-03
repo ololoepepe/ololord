@@ -3284,6 +3284,10 @@ lord.initializeOnLoadBaseBoard = function() {
     }
     lord.initFiles();
     lord.hashChangedHandler(lord.hash());
+    if (window.scrollY <= 0) {
+        lord.queryOne(".navigationButtonTop").style.display = "none";
+        lord.queryOne(".navigationButtonBottom").style.display = "";
+    } 
 };
 
 lord.hashChangedHandler = function(hash) {
@@ -3299,6 +3303,20 @@ lord.hashChangedHandler = function(hash) {
     lord.addClass(post, "selectedPost");
 };
 
+lord.scrollHandler = function(e) {
+    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+        lord.queryOne(".navigationButtonTop").style.display = "";
+        lord.queryOne(".navigationButtonBottom").style.display = "none";
+    } else if (window.scrollY <= 0) {
+        lord.queryOne(".navigationButtonTop").style.display = "none";
+        lord.queryOne(".navigationButtonBottom").style.display = "";
+    } else {
+        lord.queryOne(".navigationButtonTop").style.display = "";
+        lord.queryOne(".navigationButtonBottom").style.display = "";
+    }
+    console.log(window.innerHeight, window.scrollY, document.body.offsetHeight);
+};
+
 window.addEventListener("load", function load() {
     window.removeEventListener("load", load, false);
     lord.initializeOnLoadBaseBoard();
@@ -3307,6 +3325,8 @@ window.addEventListener("load", function load() {
 window.addEventListener("hashchange", function(e) {
     lord.hashChangedHandler(lord.hash());
 }, false);
+
+window.addEventListener("scroll", lord.scrollHandler, false);
 
 lord.message_spellsParsed = function(data) {
     if (!data)

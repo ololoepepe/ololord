@@ -620,11 +620,11 @@ span.newPostCount {
     opacity: 1;
 }
 
-.navigationButtonTop {
+.navigationButtonBottom {
     bottom: 30px;
 }
 
-.navigationButtonBottom {
+.navigationButtonTop {
     top: 30px;
 }
 

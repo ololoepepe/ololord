@@ -12,10 +12,10 @@
 
 <% template navigationButton(std::string target) %>
 <% if ( "top" == target ) %>
-    <a class="navigationButton navigationButtonBottom" title="<%= toTopText %>"
+    <a class="navigationButton navigationButtonTop" title="<%= toTopText %>"
        href="#top"><img src="/<%= sitePathPrefix %>img/up.png"></a>
 <% elif ( "bottom" == target ) %>
-    <a class="navigationButton navigationButtonTop" title="<%= toBottomText %>"
+    <a class="navigationButton navigationButtonBottom" title="<%= toBottomText %>"
        href="#bottom"><img src="/<%= sitePathPrefix %>img/down.png"></a>
 <% end %>
 <% end template %>

@@ -714,11 +714,11 @@ span.newPostCount {
     /*filter: alpha(opacity=100);*/
 }
 
-.navigationButtonTop {
+.navigationButtonBottom {
     bottom: 30px;
 }
 
-.navigationButtonBottom {
+.navigationButtonTop {
     top: 30px;
 }
 

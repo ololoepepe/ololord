@@ -36,6 +36,7 @@
 [done] Add Google reCAPTCHA v1
 [done] Add Burichan style
 [done] Implement COUB video embedding
+[done] Hide navigation buttons
 * Implement Vimeo and Vocaroo embedding
 * Fix moving video files
 
