@@ -487,6 +487,10 @@ span.newPostCount {
     background-color: #B0B0FF;
 }
 
+.post.temporary {
+    border: 1px solid #000000;
+}
+
 .omittedPosts.hiddenPosts {
     display: none;
 }
