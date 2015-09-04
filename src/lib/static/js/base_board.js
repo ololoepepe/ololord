@@ -3284,10 +3284,7 @@ lord.initializeOnLoadBaseBoard = function() {
     }
     lord.initFiles();
     lord.hashChangedHandler(lord.hash());
-    if (window.scrollY <= 0) {
-        lord.queryOne(".navigationButtonTop").style.display = "none";
-        lord.queryOne(".navigationButtonBottom").style.display = "";
-    } 
+    lord.scrollHandler();
 };
 
 lord.hashChangedHandler = function(hash) {
@@ -3304,18 +3301,11 @@ lord.hashChangedHandler = function(hash) {
 };
 
 lord.scrollHandler = function(e) {
-    var k = 300;
-    if ((window.innerHeight + window.scrollY + k) >= document.body.offsetHeight) {
-        lord.queryOne(".navigationButtonTop").style.display = "";
-        lord.queryOne(".navigationButtonBottom").style.display = "none";
-    } else if (window.scrollY <= k) {
-        lord.queryOne(".navigationButtonTop").style.display = "none";
-        lord.queryOne(".navigationButtonBottom").style.display = "";
-    } else {
-        lord.queryOne(".navigationButtonTop").style.display = "";
-        lord.queryOne(".navigationButtonBottom").style.display = "";
-    }
-    console.log(window.innerHeight, window.scrollY, document.body.offsetHeight);
+    var k = 1300;
+    var top = ((window.innerHeight + window.scrollY + k) >= document.body.offsetHeight);
+    var bottom = (window.scrollY <= k);
+    lord.queryOne(".navigationButtonTop").style.display = bottom ? "none" : "";
+    lord.queryOne(".navigationButtonBottom").style.display = top ? "none" : "";
 };
 
 window.addEventListener("load", function load() {

@@ -37,6 +37,7 @@
 [done] Add Burichan style
 [done] Implement COUB video embedding
 [done] Hide navigation buttons
+* Implement striking out words with ^W
 * Implement Vimeo and Vocaroo embedding
 * Fix moving video files
 
