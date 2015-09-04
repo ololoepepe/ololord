@@ -3304,10 +3304,11 @@ lord.hashChangedHandler = function(hash) {
 };
 
 lord.scrollHandler = function(e) {
-    if ((window.innerHeight + window.scrollY) >= document.body.offsetHeight) {
+    var k = 300;
+    if ((window.innerHeight + window.scrollY + k) >= document.body.offsetHeight) {
         lord.queryOne(".navigationButtonTop").style.display = "";
         lord.queryOne(".navigationButtonBottom").style.display = "none";
-    } else if (window.scrollY <= 0) {
+    } else if (window.scrollY <= k) {
         lord.queryOne(".navigationButtonTop").style.display = "none";
         lord.queryOne(".navigationButtonBottom").style.display = "";
     } else {
