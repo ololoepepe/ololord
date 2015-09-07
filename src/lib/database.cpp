@@ -678,6 +678,8 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         t.commit();
         p.fileTransaction.commit();
         Search::addToIndex(boardName, postNumber, post.text);
+        Cache::clearBoards();
+        Cache::clearThreads();
         return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description,
