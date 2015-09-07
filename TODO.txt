@@ -37,7 +37,10 @@
 [done] Add Burichan style
 [done] Implement COUB video embedding
 [done] Hide navigation buttons
+[done] Cache board pages and threads
 * Implement striking out words with ^W
+* Do not show some markup buttons on some boards
+* Add post shrinking settings option
 * Implement Vimeo and Vocaroo embedding
 * Fix moving video files
 

@@ -750,6 +750,12 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         return Tools::log(app, "board", "fail:ban", logTarget);
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
+    QString *content = Cache::board(name(), tq.locale(), page);
+    if (content) {
+        app.response().out() << Tools::toStd(*content);
+        Tools::log(app, "board", "success:cache", logTarget);
+        return;
+    }
     QString viewName;
     QScopedPointer<Content::Board> cc(createBoardController(app.request(), viewName));
     if (cc.isNull()) {
@@ -855,7 +861,9 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     c.toNextPageText = ts.translate("AbstractBoard", "Next page", "toNextPageText");
     c.toPreviousPageText = ts.translate("AbstractBoard", "Previous page", "toPreviousPageText");
     beforeRenderBoard(app.request(), cc.data());
-    Tools::render(app, viewName, c);
+    QString cont = Tools::renderTo(app, viewName, c);
+    Cache::cacheBoard(name(), tq.locale(), page, new QString(cont));
+    app.response().out() << Tools::toStd(cont);
     Tools::log(app, "board", "success", logTarget);
 }
 
@@ -1060,6 +1068,12 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         return Tools::log(app, "thread", "fail:ban", logTarget);
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
+    QString *content = Cache::thread(name(), tq.locale(), threadNumber);
+    if (content) {
+        app.response().out() << Tools::toStd(*content);
+        Tools::log(app, "thread", "success:cache", logTarget);
+        return;
+    }
     QString viewName;
     QScopedPointer<Content::Thread> cc(createThreadController(app.request(), viewName));
     if (cc.isNull()) {
@@ -1172,7 +1186,9 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     c.postLimit = postLimit();
     c.updateThreadText = ts.translate("AbstractBoard", "Update thread", "updateThreadText");
     beforeRenderThread(app.request(), cc.data());
-    Tools::render(app, viewName, c);
+    QString cont = Tools::renderTo(app, viewName, c);
+    Cache::cacheThread(name(), tq.locale(), threadNumber, new QString(cont));
+    app.response().out() << Tools::toStd(cont);
     Tools::log(app, "thread", "success", logTarget);
 }
 

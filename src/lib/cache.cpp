@@ -23,6 +23,8 @@
 namespace Cache
 {
 
+static QCache<QString, QString> boards;
+static QReadWriteLock boardsLock(QReadWriteLock::Recursive);
 static QCache<QString, QString> theCustomContent;
 static QReadWriteLock customContentLock(QReadWriteLock::Recursive);
 static QCache<QString, CustomLinkInfoList> theCustomLinks;
@@ -41,6 +43,8 @@ static QCache<QString, QStringList> theRules;
 static QReadWriteLock rulesLock(QReadWriteLock::Recursive);
 static QCache<QString, File> staticFiles;
 static QReadWriteLock staticFilesLock(QReadWriteLock::Recursive);
+static QCache<QString, QString> threads;
+static QReadWriteLock threadsLock(QReadWriteLock::Recursive);
 static QCache<QString, BTranslator> translators;
 static QReadWriteLock translatorsLock(QReadWriteLock::Recursive);
 
@@ -58,6 +62,7 @@ void initCache(T &cache, const QString &name, int defaultSize)
 ClearCacheFunctionMap availableClearCacheFunctions()
 {
     init_once(ClearCacheFunctionMap, map, ClearCacheFunctionMap()) {
+        map.insert("boards", &clearBoards);
         map.insert("custom_content", &clearCustomContent);
         map.insert("custom_links", &clearCustomLinks);
         map.insert("dynamic_files", &clearDynamicFilesCache);
@@ -67,6 +72,7 @@ ClearCacheFunctionMap availableClearCacheFunctions()
         map.insert("posts", &clearPostsCache);
         map.insert("rules", &clearRulesCache);
         map.insert("static_files", &clearStaticFilesCache);
+        map.insert("threads", &clearThreads);
         map.insert("translators", &clearTranslatorsCache);
     }
     return map;
@@ -75,6 +81,7 @@ ClearCacheFunctionMap availableClearCacheFunctions()
 SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 {
     init_once(SetMaxCacheSizeFunctionMap, map, SetMaxCacheSizeFunctionMap()) {
+        map.insert("boards", &setBoardsMaxCacheSize);
         map.insert("custom_content", &setCustomContentMaxCacheSize);
         map.insert("custom_links", &setCustomLinksMaxCacheSize);
         map.insert("dynamic_files", &setDynamicFilesMaxCacheSize);
@@ -84,6 +91,7 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
         map.insert("posts", &setPostsMaxCacheSize);
         map.insert("rules", &setRulesMaxCacheSize);
         map.insert("static_files", &setStaticFilesMaxCacheSize);
+        map.insert("threads", &setThreadsMaxCacheSize);
         map.insert("translators", &setTranslatorsMaxCacheSize);
     }
     return map;
@@ -92,6 +100,7 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 QStringList availableCacheNames()
 {
     init_once(QStringList, names, QStringList()) {
+        names << "boards";
         names << "custom_content";
         names << "custom_links";
         names << "home_page";
@@ -102,9 +111,32 @@ QStringList availableCacheNames()
         names << "posts";
         names << "rules";
         names << "static_files";
+        names << "threads";
         names << "translators";
     }
     return names;
+}
+
+QString *board(const QString &boardName, const QLocale &l, unsigned int page)
+{
+    if (boardName.isEmpty())
+        return 0;
+    QReadLocker locker(&boardsLock);
+    return boards.object(boardName + "/" + l.name() + "/" + QString::number(page));
+}
+
+bool cacheBoard(const QString &boardName, const QLocale &l, unsigned int page, QString *content)
+{
+    if (boardName.isEmpty() || !content)
+        return false;
+    QWriteLocker locker(&boardsLock);
+    do_once(init)
+        initCache(boards, "boards", defaultBoardsCacheSize);
+    int sz = content->length() * 2;
+    if (boards.maxCost() < sz)
+        return false;
+    boards.insert(boardName + "/" + l.name() + "/" + QString::number(page), content, sz);
+    return true;
 }
 
 bool cacheCustomContent(const QString &prefix, const QLocale &l, QString *content)
@@ -242,6 +274,20 @@ File *cacheStaticFile(const QString &path, const QByteArray &file)
     return f;
 }
 
+bool cacheThread(const QString &boardName, const QLocale &l, quint64 number, QString *content)
+{
+    if (boardName.isEmpty() || !number || !content)
+        return false;
+    QWriteLocker locker(&threadsLock);
+    do_once(init)
+        initCache(boards, "threads", defaultThreadsCacheSize);
+    int sz = content->length() * 2;
+    if (threads.maxCost() < sz)
+        return false;
+    threads.insert(boardName + "/" + l.name() + "/" + QString::number(number), content, sz);
+    return true;
+}
+
 bool cacheTranslator(const QString &name, const QLocale &locale, BTranslator *t)
 {
     if (name.isEmpty() || !t)
@@ -253,6 +299,12 @@ bool cacheTranslator(const QString &name, const QLocale &locale, BTranslator *t)
         return false;
     translators.insert(name + "_" + locale.name(), t, 1);
     return true;
+}
+
+void clearBoards()
+{
+    QWriteLocker locker(&boardsLock);
+    boards.clear();
 }
 
 bool clearCache(const QString &name, QString *err, const QLocale &l)
@@ -317,6 +369,12 @@ void clearStaticFilesCache()
 {
     QWriteLocker locker(&staticFilesLock);
     staticFiles.clear();
+}
+
+void clearThreads()
+{
+    QWriteLocker locker(&threadsLock);
+    threads.clear();
 }
 
 void clearTranslatorsCache()
@@ -406,6 +464,14 @@ QStringList *rules(const QLocale &locale, const QString &prefix)
     return theRules.object(prefix + "/" + locale.name());
 }
 
+void setBoardsMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QWriteLocker locker(&boardsLock);
+    boards.setMaxCost(size);
+}
+
 void setCustomContentMaxCacheSize(int size)
 {
     if (size < 0)
@@ -491,6 +557,14 @@ void setStaticFilesMaxCacheSize(int size)
     staticFiles.setMaxCost(size);
 }
 
+void setThreadsMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QWriteLocker locker(&threadsLock);
+    threads.setMaxCost(size);
+}
+
 void setTranslatorsMaxCacheSize(int size)
 {
     if (size < 0)
@@ -505,6 +579,14 @@ File *staticFile(const QString &path)
         return 0;
     QReadLocker locker(&staticFilesLock);
     return staticFiles.object(path);
+}
+
+QString *thread(const QString &boardName, const QLocale &l, quint64 number)
+{
+    if (boardName.isEmpty() || !number)
+        return 0;
+    QReadLocker locker(&threadsLock);
+    return threads.object(boardName + "/" + l.name() + "/" + QString::number(number));
 }
 
 BTranslator *translator(const QString &name, const QLocale &locale)

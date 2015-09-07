@@ -848,7 +848,14 @@ void redirect(cppcms::application &app, const QString &path)
 
 void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
 {
-    return app.render(toStd(templateName), content);
+    app.render(toStd(templateName), content);
+}
+
+QString renderTo(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
+{
+    std::ostringstream os;
+    app.render(toStd(templateName), os, content);
+    return fromStd(os.str());
 }
 
 void resetLoggingSkipIps()

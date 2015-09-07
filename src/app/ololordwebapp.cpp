@@ -94,8 +94,8 @@ OlolordWebApp::OlolordWebApp(cppcms::service &service) :
     routesMap.insert(r->regex(), r);
     r = new RssRoute(*this);
     routesMap.insert(r->regex(), r);
-    r = new SearchRoute(*this);
-    routesMap.insert(r->regex(), r);
+    //r = new SearchRoute(*this);
+    //routesMap.insert(r->regex(), r);
     r = new SettingsRoute(*this);
     routesMap.insert(r->regex(), r);
     r = new StaticFilesRoute(*this, StaticFilesRoute::StaticFilesMode);

@@ -270,6 +270,8 @@ static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &refere
                 QSharedPointer<PostReference> nref(new PostReference(post, p.data));
                 t->persist(nref);
                 Cache::removePost(key.boardName, key.postNumber);
+                Cache::clearBoards();
+                Cache::clearThreads();
             }
         }
         t.commit();
@@ -297,6 +299,8 @@ static bool removeFromReferencedPosts(quint64 postId, QString *error = 0,
         foreach (const PostReference &p, posts) {
             QSharedPointer<Post> sp = p.targetPost().load();
             Cache::removePost(sp->board(), sp->number());
+            Cache::clearBoards();
+            Cache::clearThreads();
         }
         t->erase_query<PostReference>(odb::query<PostReference>::sourcePost == postId);
         t.commit();
@@ -564,6 +568,8 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             t->erase(*user);
         t.commit();
         Cache::removePost(sourceBoard, postNumber);
+        Cache::clearBoards();
+        Cache::clearThreads();
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -763,6 +769,8 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                 t->erase_query<PostReference>(odb::query<PostReference>::sourcePost == p.id());
                 t->erase_query<PostReference>(odb::query<PostReference>::targetPost == p.id());
                 Cache::removePost(p.board(), p.number());
+                Cache::clearBoards();
+                Cache::clearThreads();
             }
             t->erase_query<Post>(odb::query<Post>::thread == thread->id());
         } else {
@@ -779,11 +787,15 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
                 continue;
             p.setText(postIds.value(p.id()).text);
             Cache::removePost(p.board(), p.number());
+            Cache::clearBoards();
+            Cache::clearThreads();
             t->update(p);
         }
         if (thread)
             t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
         Cache::removePost(boardName, postNumber);
+        Cache::clearBoards();
+        Cache::clearThreads();
         Search::removeFromIndex(boardName, postNumber, post->text());
         t.commit();
         return bRet(error, QString(), true);
@@ -812,6 +824,8 @@ static bool setThreadFixedInternal(const QString &board, quint64 threadNumber, b
         update(thread);
         t.commit();
         Cache::removePost(board, threadNumber);
+        Cache::clearBoards();
+        Cache::clearThreads();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -838,6 +852,8 @@ static bool setThreadOpenedInternal(const QString &board, quint64 threadNumber, 
         update(thread);
         t.commit();
         Cache::removePost(board, threadNumber);
+        Cache::clearBoards();
+        Cache::clearThreads();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -896,6 +912,8 @@ bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &par
         t.commit();
         ft.commit();
         Cache::removePost(post->board(), post->number());
+        Cache::clearBoards();
+        Cache::clearThreads();
         return bRet(error, QString(), description, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, tq.translate("addFile", "Internal error", "error"), description, Tools::fromStd(e.what()),
@@ -1057,6 +1075,8 @@ void checkOutdatedEntries()
                         post->setBannedFor(false);
                         update(post);
                         Cache::removePost(post->board(), post->number());
+                        Cache::clearBoards();
+                        Cache::clearThreads();
                     }
                 }
             }
@@ -1278,6 +1298,8 @@ bool deleteFile(const QString &boardName, const QString &fileName,  const cppcms
         erase(fileInfo);
         t.commit();
         Cache::removePost(boardName, post->number());
+        Cache::clearBoards();
+        Cache::clearThreads();
         deleteFiles(boardName, QStringList() << fileInfo->name() << fileInfo->thumbName());
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
@@ -1382,6 +1404,8 @@ bool editAudioTags(const QString &boardName, const QString &fileName, const cppc
         update(fileInfo);
         t.commit();
         Cache::removePost(boardName, post->number());
+        Cache::clearBoards();
+        Cache::clearThreads();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -1475,6 +1499,8 @@ bool editPost(EditPostParameters &p)
         update(post);
         t.commit();
         Cache::removePost(p.boardName, p.postNumber);
+        Cache::clearBoards();
+        Cache::clearThreads();
         Search::removeFromIndex(p.boardName, p.postNumber, previousText);
         Search::addToIndex(p.boardName, p.postNumber, p.text);
         return bRet(p.error, QString(), true);
@@ -2110,6 +2136,8 @@ quint64 moveThread(const cppcms::http::request &req, const QString &sourceBoard,
                 sourcePost->setText(text);
                 t->update(sourcePost);
                 Cache::removePost(sourcePost->board(), sourcePost->number());
+                Cache::clearBoards();
+                Cache::clearThreads();
             }
             QList<FileInfo> fileInfos = query<FileInfo, FileInfo>(odb::query<FileInfo>::post == post.id());
             foreach (int j, bRangeD(0, fileInfos.size() - 1)) {
@@ -2120,6 +2148,8 @@ quint64 moveThread(const cppcms::http::request &req, const QString &sourceBoard,
                     return bRet(error, tq.translate("Database::moveThread", "Internal file system error", "error"), 0);
             }
             Cache::removePost(post.board(), post.number());
+            Cache::clearBoards();
+            Cache::clearThreads();
             oldPostNumbers.insert(newPostNumber, post.number());
             post.setNumber(newPostNumber);
             --newPostNumber;
@@ -2413,6 +2443,8 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                     return -1;
                 t->update(post);
                 Cache::removePost(post.board(), post.number());
+                Cache::clearBoards();
+                Cache::clearThreads();
             }
             t.commit();
             count += posts.size();
@@ -2534,6 +2566,8 @@ bool setVoteOpened(quint64 postNumber, bool opened, const QByteArray &password, 
         update(post);
         t.commit();
         Cache::removePost("rpg", postNumber);
+        Cache::clearBoards();
+        Cache::clearThreads();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -2589,6 +2623,8 @@ bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error
         post->setUserData(m);
         update(post);
         Cache::removePost("rpg", postNumber);
+        Cache::clearBoards();
+        Cache::clearThreads();
         t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
@@ -2691,6 +2727,8 @@ bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::requ
         post->setUserData(m);
         update(post);
         Cache::removePost("rpg", postNumber);
+        Cache::clearBoards();
+        Cache::clearThreads();
         t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
