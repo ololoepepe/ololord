@@ -10,6 +10,7 @@
 #include <QByteArray>
 #include <QCache>
 #include <QDateTime>
+#include <QDebug>
 #include <QLocale>
 #include <QMap>
 #include <QReadLocker>
@@ -280,7 +281,7 @@ bool cacheThread(const QString &boardName, const QLocale &l, quint64 number, QSt
         return false;
     QWriteLocker locker(&threadsLock);
     do_once(init)
-        initCache(boards, "threads", defaultThreadsCacheSize);
+        initCache(threads, "threads", defaultThreadsCacheSize);
     int sz = content->length() * 2;
     if (threads.maxCost() < sz)
         return false;
