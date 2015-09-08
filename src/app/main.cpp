@@ -124,6 +124,8 @@ int main(int argc, char **argv)
         owt.wait(10 * BeQt::Second);
         BDirTools::writeFile(Tools::captchaQuotaFile(), AbstractBoard::saveCaptchaQuota());
         BDirTools::writeFile(Tools::searchIndexFile(), Search::saveIndex());
+        foreach (const QString &name, Cache::availableCacheNames())
+            Cache::clearCache(name);
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
@@ -970,6 +972,10 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
                                                "IP's are represented as ranges and are separated by commas.\n"
                                                "Example: 127.0.0.1,192.168.0.1-192.168.0.255"));
+    nn = new BSettingsNode(QVariant::UInt, "max_render_threads", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines how many threads may be used "
+                                               "simultaneously to render pages.\n"
+                                               "The default is QThread::idealThreadCount()"));
     nn = new BSettingsNode("Proxy", n);
     BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
     nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"

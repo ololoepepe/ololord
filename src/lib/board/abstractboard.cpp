@@ -750,12 +750,6 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         return Tools::log(app, "board", "fail:ban", logTarget);
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    QString *content = Cache::board(name(), tq.locale(), page);
-    if (content) {
-        app.response().out() << Tools::toStd(*content);
-        Tools::log(app, "board", "success:cache", logTarget);
-        return;
-    }
     QString viewName;
     QScopedPointer<Content::Board> cc(createBoardController(app.request(), viewName));
     if (cc.isNull()) {
@@ -783,10 +777,20 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
         QList<Thread> list = Database::query<Thread, Thread>(q);
         int lvl = Database::registeredUserLevel(app.request());
         foreach (int i, bRangeR(list.size() - 1, 0)) {
-            Post opPost = *list.at(i).posts().first().load();
-            if (opPost.draft() && opPost.hashpass() != hashpass
-                    && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
-                list.removeAt(i);
+            const Thread &tt = list.at(i);
+            Post *opPostP = Cache::opPost(tt.board(), tt.number());
+            if (opPostP) {
+                if (opPostP->draft() && opPostP->hashpass() != hashpass
+                        && (!modOnBoard || Database::registeredUserLevel(opPostP->hashpass()) >= lvl)) {
+                    list.removeAt(i);
+                }
+            } else {
+                Post opPost = *tt.posts().first().load();
+                Cache::cacheOpPost(tt.board(), tt.number(), new Post(opPost));
+                if (opPost.draft() && opPost.hashpass() != hashpass
+                        && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
+                    list.removeAt(i);
+                }
             }
         }
         qSort(list.begin(), list.end(), &threadLessThanByDate);
@@ -809,32 +813,62 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
             thread.postingEnabled = postingEn && tt.postingEnabled();
             bool ok = false;
             QString err;
-            thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+            Post *opPostP = Cache::opPost(tt.board(), tt.number());
+            if (opPostP)
+                thread.opPost = toController(*opPostP, app.request(), &ok, &err);
+            else
+                thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
             thread.opPost.sequenceNumber = 1;
             if (!ok) {
                 Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
                 Tools::log(app, "board", "fail:" + err, logTarget);
                 return;
             }
+            Cache::PostList *lastNPosts = Cache::lastNPosts(name(), tt.number());
             unsigned int maxPosts = Tools::maxInfo(Tools::MaxLastPosts, name());
             unsigned int i = posts.size();
-            foreach (int j, bRangeR(posts.size() - 1, 1)) {
-                Post post = *posts.at(j).load();
-                if (post.draft() && hashpass != post.hashpass()
-                        && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
-                    continue;
+            if (!lastNPosts) {
+                Cache::PostList *postList = new Cache::PostList;
+                foreach (int j, bRangeR(posts.size() - 1, 1)) {
+                    Post post = *posts.at(j).load();
+                    *postList << post;
+                    if (post.draft() && hashpass != post.hashpass()
+                            && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
+                        continue;
+                    }
+                    Content::Post p = toController(post, app.request(), &ok, &err);
+                    p.sequenceNumber = i;
+                    --i;
+                    thread.lastPosts.push_front(p);
+                    if (!ok) {
+                        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"),
+                                                       err);
+                        Tools::log(app, "board", "fail:" + err, logTarget);
+                        return;
+                    }
+                    if (thread.lastPosts.size() >= maxPosts)
+                        break;
                 }
-                Content::Post p = toController(post, app.request(), &ok, &err);
-                p.sequenceNumber = i;
-                --i;
-                thread.lastPosts.push_front(p);
-                if (!ok) {
-                    Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
-                    Tools::log(app, "board", "fail:" + err, logTarget);
-                    return;
+                Cache::cacheLastNPosts(name(), tt.number(), postList);
+            } else {
+                foreach (const Post &post, *lastNPosts) {
+                    if (post.draft() && hashpass != post.hashpass()
+                            && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
+                        continue;
+                    }
+                    Content::Post p = toController(post, app.request(), &ok, &err);
+                    p.sequenceNumber = i;
+                    --i;
+                    thread.lastPosts.push_front(p);
+                    if (!ok) {
+                        Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"),
+                                                       err);
+                        Tools::log(app, "board", "fail:" + err, logTarget);
+                        return;
+                    }
+                    if (thread.lastPosts.size() >= maxPosts)
+                        break;
                 }
-                if (thread.lastPosts.size() >= maxPosts)
-                    break;
             }
             c.threads.push_back(thread);
         }
@@ -861,9 +895,7 @@ void AbstractBoard::handleBoard(cppcms::application &app, unsigned int page)
     c.toNextPageText = ts.translate("AbstractBoard", "Next page", "toNextPageText");
     c.toPreviousPageText = ts.translate("AbstractBoard", "Previous page", "toPreviousPageText");
     beforeRenderBoard(app.request(), cc.data());
-    QString cont = Tools::renderTo(app, viewName, c);
-    Cache::cacheBoard(name(), tq.locale(), page, new QString(cont));
-    app.response().out() << Tools::toStd(cont);
+    Tools::render(app, viewName, c);
     Tools::log(app, "board", "success", logTarget);
 }
 
@@ -903,10 +935,20 @@ void AbstractBoard::handleCatalog(cppcms::application &app)
         QList<Thread> list = Database::query<Thread, Thread>(q);
         int lvl = Database::registeredUserLevel(app.request());
         foreach (int i, bRangeR(list.size() - 1, 0)) {
-            Post opPost = *list.at(i).posts().first().load();
-            if (opPost.draft() && opPost.hashpass() != hashpass
-                    && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
-                list.removeAt(i);
+            const Thread &tt = list.at(i);
+            Post *opPostP = Cache::opPost(tt.board(), tt.number());
+            if (opPostP) {
+                if (opPostP->draft() && opPostP->hashpass() != hashpass
+                        && (!modOnBoard || Database::registeredUserLevel(opPostP->hashpass()) >= lvl)) {
+                    list.removeAt(i);
+                }
+            } else {
+                Post opPost = *list.at(i).posts().first().load();
+                Cache::cacheOpPost(tt.board(), tt.number(), new Post(opPost));
+                if (opPost.draft() && opPost.hashpass() != hashpass
+                        && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
+                    list.removeAt(i);
+                }
             }
         }
         qSort(list.begin(), list.end(), sortByBumps
@@ -917,7 +959,11 @@ void AbstractBoard::handleCatalog(cppcms::application &app)
             thread.replyCount = posts.size() - 1;
             bool ok = false;
             QString err;
-            thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+            Post *opPostP = Cache::opPost(tt.board(), tt.number());
+            if (opPostP)
+                thread.opPost = toController(*opPostP, app.request(), &ok, &err);
+            else
+                thread.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
             thread.opPost.sequenceNumber = 1;
             if (!ok) {
                 Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
@@ -1068,12 +1114,6 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         return Tools::log(app, "thread", "fail:ban", logTarget);
     TranslatorQt tq(app.request());
     TranslatorStd ts(app.request());
-    QString *content = Cache::thread(name(), tq.locale(), threadNumber);
-    if (content) {
-        app.response().out() << Tools::toStd(*content);
-        Tools::log(app, "thread", "success:cache", logTarget);
-        return;
-    }
     QString viewName;
     QScopedPointer<Content::Thread> cc(createThreadController(app.request(), viewName));
     if (cc.isNull()) {
@@ -1122,17 +1162,34 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         c.fixed = thread->fixed();
         c.id = thread->id();
         c.number = thread->number();
-        Post opPost = *posts.first().load();
         int lvl = Database::registeredUserLevel(app.request());
-        if (opPost.draft() && hashpass != opPost.hashpass()
-                && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
-            Controller::renderNotFoundNonAjax(app);
-            Tools::log(app, "thread", "fail:not_found", logTarget);
-            return;
+        Post *opPostP = Cache::opPost(thread->board(), thread->number());
+        QString subject;
+        QString text;
+        if (opPostP) {
+            subject = opPostP->subject();
+            text = opPostP->text();
+            if (opPostP->draft() && hashpass != opPostP->hashpass()
+                    && (!modOnBoard || Database::registeredUserLevel(opPostP->hashpass()) >= lvl)) {
+                Controller::renderNotFoundNonAjax(app);
+                Tools::log(app, "thread", "fail:not_found", logTarget);
+                return;
+            }
+        } else {
+            Post opPost = *posts.first().load();
+            subject = opPost.subject();
+            text = opPost.text();
+            Cache::cacheOpPost(thread->board(), thread->number(), new Post(opPost));
+            if (opPost.draft() && hashpass != opPost.hashpass()
+                    && (!modOnBoard || Database::registeredUserLevel(opPost.hashpass()) >= lvl)) {
+                Controller::renderNotFoundNonAjax(app);
+                Tools::log(app, "thread", "fail:not_found", logTarget);
+                return;
+            }
         }
-        pageTitle = opPost.subject();
+        pageTitle = subject;
         if (pageTitle.isEmpty()) {
-            pageTitle = opPost.text().replace(QRegExp("\\r?\\n+"), " ").replace(QRegExp("<[^<>]+>"), " ");
+            pageTitle = text.replace(QRegExp("\\r?\\n+"), " ").replace(QRegExp("<[^<>]+>"), " ");
             pageTitle.replace(QRegExp(" +"), " ");
             pageTitle.replace("&amp;", "&");
             pageTitle.replace("&lt;", "<");
@@ -1145,26 +1202,52 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
         postingEn = postingEn && thread->postingEnabled();
         bool ok = false;
         QString err;
-        c.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
+        if (opPostP)
+            c.opPost = toController(*opPostP, app.request(), &ok, &err);
+        else
+            c.opPost = toController(*posts.first().load(), app.request(), &ok, &err);
         c.opPost.sequenceNumber = 1;
         if (!ok)
             return Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
         unsigned int i = 2;
-        foreach (int j, bRangeD(1, posts.size() - 1)) {
-            Post post = *posts.at(j).load();
-            if (post.draft() && hashpass != post.hashpass()
-                    && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
-                continue;
+        Cache::PostList *threadPosts = Cache::threadPosts(thread->board(), thread->number());
+        if (threadPosts) {
+            foreach (int j, bRangeD(1, threadPosts->size() - 1)) {
+                const Post &post = threadPosts->at(j);
+                if (post.draft() && hashpass != post.hashpass()
+                        && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
+                    continue;
+                }
+                Content::Post p = toController(post, app.request(), &ok, &err);
+                p.sequenceNumber = i;
+                ++i;
+                c.posts.push_back(p);
+                if (!ok) {
+                    Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+                    Tools::log(app, "thread", "fail:" + err, logTarget);
+                    return;
+                }
             }
-            Content::Post p = toController(post, app.request(), &ok, &err);
-            p.sequenceNumber = i;
-            ++i;
-            c.posts.push_back(p);
-            if (!ok) {
-                Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
-                Tools::log(app, "thread", "fail:" + err, logTarget);
-                return;
+        } else {
+            threadPosts = new Cache::PostList;
+            foreach (int j, bRangeD(1, posts.size() - 1)) {
+                Post post = *posts.at(j).load();
+                *threadPosts << post;
+                if (post.draft() && hashpass != post.hashpass()
+                        && (!modOnBoard || Database::registeredUserLevel(post.hashpass()) >= lvl)) {
+                    continue;
+                }
+                Content::Post p = toController(post, app.request(), &ok, &err);
+                p.sequenceNumber = i;
+                ++i;
+                c.posts.push_back(p);
+                if (!ok) {
+                    Controller::renderErrorNonAjax(app, tq.translate("AbstractBoard", "Internal error", "error"), err);
+                    Tools::log(app, "thread", "fail:" + err, logTarget);
+                    return;
+                }
             }
+            Cache::cacheThreadPosts(thread->board(), thread->number(), threadPosts);
         }
     }  catch (const odb::exception &e) {
         QString err = Tools::fromStd(e.what());
@@ -1186,9 +1269,7 @@ void AbstractBoard::handleThread(cppcms::application &app, quint64 threadNumber)
     c.postLimit = postLimit();
     c.updateThreadText = ts.translate("AbstractBoard", "Update thread", "updateThreadText");
     beforeRenderThread(app.request(), cc.data());
-    QString cont = Tools::renderTo(app, viewName, c);
-    Cache::cacheThread(name(), tq.locale(), threadNumber, new QString(cont));
-    app.response().out() << Tools::toStd(cont);
+    Tools::render(app, viewName, c);
     Tools::log(app, "thread", "success", logTarget);
 }
 
@@ -1518,11 +1599,6 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
 {
     static const QString DateTimeFormat = "dd/MM/yyyy ddd hh:mm:ss";
     TranslatorQt tq(req);
-    QString storagePath = Tools::storagePath();
-    if (storagePath.isEmpty()) {
-        return bRet(ok, false, error, tq.translate("AbstractBoard", "Internal file system error", "error"),
-                    Content::Post());
-    }
     Content::Post *p = Cache::post(name(), post.number());
     bool inCache = p;
     if (!p) {
@@ -1553,30 +1629,30 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                 return bRet(ok, false, error, tq.translate("AbstractBoard", "Internal database error", "error"),
                             Content::Post());
             }
-            typedef QLazyWeakPointer< ::FileInfo > FileInfoWP;
-            foreach (FileInfoWP fi, post.fileInfos()) {
+            QList< ::FileInfo > fileInfos =
+                    Database::query< ::FileInfo, ::FileInfo >(odb::query< ::FileInfo >::post == post.id());
+            foreach (const ::FileInfo &fi, fileInfos) {
                 Content::File f;
-                QSharedPointer< ::FileInfo > fis = fi.load();
-                f.type = Tools::toStd(fis->mimeType());
-                f.sourceName = Tools::toStd(fis->name());
-                f.sizeKB = Tools::toStd(QString::number(double(fis->size()) / double(BeQt::Kilobyte)));
-                QString sz = QString::number(double(fis->size()) / double(BeQt::Kilobyte), 'f', 2) + "KB";
-                f.sizeX = fis->width();
-                f.sizeY = fis->height();
-                f.thumbSizeX = fis->thumbWidth();
-                f.thumbSizeY = fis->thumbHeight();
-                f.rating = fis->rating();
-                if (fis->mimeType().startsWith("image/") || fis->mimeType().startsWith("video/")) {
+                f.type = Tools::toStd(fi.mimeType());
+                f.sourceName = Tools::toStd(fi.name());
+                f.sizeKB = Tools::toStd(QString::number(double(fi.size()) / double(BeQt::Kilobyte)));
+                QString sz = QString::number(double(fi.size()) / double(BeQt::Kilobyte), 'f', 2) + "KB";
+                f.sizeX = fi.width();
+                f.sizeY = fi.height();
+                f.thumbSizeX = fi.thumbWidth();
+                f.thumbSizeY = fi.thumbHeight();
+                f.rating = fi.rating();
+                if (fi.mimeType().startsWith("image/") || fi.mimeType().startsWith("video/")) {
                     if (f.sizeX > 0 && f.sizeY > 0)
                         sz += ", " + QString::number(f.sizeX) + "x" + QString::number(f.sizeY);
                 }
                 QString szt;
-                if (fis->mimeType().startsWith("audio/") || fis->mimeType().startsWith("video/")) {
-                    QVariantMap m = fis->metaData().toMap();
+                if (fi.mimeType().startsWith("audio/") || fi.mimeType().startsWith("video/")) {
+                    QVariantMap m = fi.metaData().toMap();
                     QString duration = m.value("duration").toString();
                     QString bitrate = m.value("bitrate").toString();
                     QString szz = duration;
-                    if (fis->mimeType().startsWith("audio/")) {
+                    if (fi.mimeType().startsWith("audio/")) {
                         if (!szz.isEmpty())
                             szz += ", ";
                         szz += bitrate;
@@ -1598,13 +1674,13 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
                         szt += "]";
                         if (!year.isEmpty())
                             szt += " (" + year + ")";
-                    } else if (fis->mimeType().startsWith("video/")) {
+                    } else if (fi.mimeType().startsWith("video/")) {
                         szt = m.value("bitrate").toString() + "kbps";
                     }
                     if (!szz.isEmpty())
                         sz += ", " + szz;
                 }
-                f.thumbName = Tools::toStd(fis->thumbName());
+                f.thumbName = Tools::toStd(fi.thumbName());
                 f.size = Tools::toStd(sz);
                 f.sizeTooltip = Tools::toStd(szt);
                 p->files.push_back(f);
@@ -1617,17 +1693,20 @@ Content::Post AbstractBoard::toController(const Post &post, const cppcms::http::
             p->bumpLimitReached = op && thread->posts().size() >= int(bumpLimit());
             p->postLimitReached = op && thread->posts().size() >= int(postLimit());
             p->opIp = thread->posts().first().load()->posterIp() == Tools::userIp(req);
-            typedef QLazySharedPointer<PostReference> PostReferenceSP;
-            foreach (PostReferenceSP reference, post.referencedBy()) {
-                QSharedPointer<Post> rp = reference.load()->sourcePost().load();
+            QList<PostReference> referencedBy =
+                    Database::query<PostReference, PostReference>(odb::query<PostReference>::targetPost == post.id());
+            foreach (const PostReference &reference, referencedBy) {
+                QSharedPointer<Post> rp = reference.sourcePost().load();
                 Content::Post::Ref ref;
                 ref.boardName = Tools::toStd(rp->board());
                 ref.postNumber = rp->number();
                 ref.threadNumber = rp->thread().load()->number();
                 p->referencedBy.push_back(ref);
             }
-            foreach (PostReferenceSP reference, post.refersTo()) {
-                QSharedPointer<Post> rp = reference.load()->targetPost().load();
+            QList<PostReference> refersTo =
+                    Database::query<PostReference, PostReference>(odb::query<PostReference>::sourcePost == post.id());
+            foreach (const PostReference &reference, refersTo) {
+                QSharedPointer<Post> rp = reference.targetPost().load();
                 Content::Post::Ref ref;
                 ref.boardName = Tools::toStd(rp->board());
                 ref.postNumber = rp->number();

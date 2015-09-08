@@ -35,6 +35,7 @@
 #include <QStringList>
 #include <QTemporaryFile>
 #include <QTextCodec>
+#include <QThread>
 #include <QTime>
 #include <QUrl>
 #include <QVariant>
@@ -185,6 +186,10 @@ static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
 static QList<IpRange> loggingSkipIps;
 static QMutex loggingSkipIpsMutex(QMutex::Recursive);
+static QMap<QString, int> renderIpAttempts;
+static QMutex renderIpMutex;
+static unsigned int renderThreads = 0;
+static QMutex renderThreadsMutex;
 static QMutex storagePathMutex(QMutex::Recursive);
 static QMutex timezoneMutex(QMutex::Recursive);
 
@@ -848,14 +853,21 @@ void redirect(cppcms::application &app, const QString &path)
 
 void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
 {
+    forever {
+        renderThreadsMutex.lock();
+        bool b = (renderThreads < SettingsLocker()->value("System/max_render_threads",
+                                                          QThread::idealThreadCount()).toUInt());
+        if (b)
+            ++renderThreads;
+        renderThreadsMutex.unlock();
+        if (b)
+            break;
+        BeQt::msleep(1);
+    }
     app.render(toStd(templateName), content);
-}
-
-QString renderTo(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
-{
-    std::ostringstream os;
-    app.render(toStd(templateName), os, content);
-    return fromStd(os.str());
+    renderThreadsMutex.lock();
+    --renderThreads;
+    renderThreadsMutex.unlock();
 }
 
 void resetLoggingSkipIps()

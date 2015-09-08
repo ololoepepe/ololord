@@ -237,7 +237,7 @@ The default is %1.</source>
     <message>
         <source>Internal file system error</source>
         <comment>error</comment>
-        <translation>Внутренняя ошибка файловой системы</translation>
+        <translation type="obsolete">Внутренняя ошибка файловой системы</translation>
     </message>
     <message>
         <source>Internal database error</source>
@@ -4324,6 +4324,12 @@ Example: 123.234.56.78:8080</source>
 Если протокол не указан, по умолчанию будет использован http.
 См. CURLOPT_PROXY для дополнительной информации.
 Пример: 123.234.56.78:8080</translation>
+    </message>
+    <message>
+        <source>Determines how many threads may be used simultaneously to render pages.
+The default is QThread::idealThreadCount()</source>
+        <translation>Определяет, сколько тредов может использоваться одновременно для рендеринга страниц.
+По умолчанию QThread::idealThreadCount()</translation>
     </message>
 </context>
 <context>
