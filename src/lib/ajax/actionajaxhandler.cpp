@@ -528,6 +528,7 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
 
 void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
 {
+    DDOS_S
     try {
         QString bn = Tools::fromStd(boardName);
         quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;

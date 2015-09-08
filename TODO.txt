@@ -38,6 +38,7 @@
 [done] Implement COUB video embedding
 [done] Hide navigation buttons
 [done] Cache board pages and threads
+[done] Implement basic DoS protection
 * Implement striking out words with ^W
 * Do not show some markup buttons on some boards
 * Add post shrinking settings option

@@ -25,6 +25,7 @@ bool BoardRoute::duplicateWithSlashAppended() const
 
 void BoardRoute::handle(std::string boardName)
 {
+    DDOS_A
     QString bn = Tools::fromStd(boardName);
     QString logTarget = bn;
     QString err;
@@ -56,6 +57,7 @@ void BoardRoute::handle(std::string boardName)
 
 void BoardRoute::handle(std::string boardName, std::string page)
 {
+    DDOS_A
     QString bn = Tools::fromStd(boardName);
     QString p = Tools::fromStd(page);
     QString logTarget = bn + "/" + p;

@@ -44,6 +44,12 @@ class locale;
 #include <list>
 #include <string>
 
+#define DDOS_A if (!Tools::ddosTest(application, 100)) \
+    return;
+
+#define DDOS_S if (!Tools::ddosTest(server, 1)) \
+    return;
+
 namespace Tools
 {
 
@@ -184,6 +190,7 @@ OLOLORD_EXPORT QString cookieValue(const cppcms::http::request &req, const QStri
 OLOLORD_EXPORT QString customContent(const QString &prefix, const QLocale &l);
 OLOLORD_EXPORT QList<CustomLinkInfo> customLinks(const QLocale &l);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
+OLOLORD_EXPORT bool ddosTest(const cppcms::application &app, int weight = 1);
 OLOLORD_EXPORT QString externalLinkRegexpPattern();
 OLOLORD_EXPORT bool externalLinkRootZoneExists(const QString &zoneName);
 OLOLORD_EXPORT QString flagName(const QString &countryCode);

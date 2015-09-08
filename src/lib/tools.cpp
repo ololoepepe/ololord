@@ -21,6 +21,7 @@
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QImage>
 #include <QList>
@@ -184,10 +185,16 @@ bool IpBanInfo::isValid() const
 static QMutex cityNameMutex(QMutex::Recursive);
 static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
+static QMap<QString, int> ddos;
+static QMutex ddosMutex;
+static QElapsedTimer ddosTimer;
+static bool ddosTimerStarted = false;
+static QMap<QString, QElapsedTimer *> ddosWait;
+static QMutex ddosWaitMutex;
+static QElapsedTimer ddosWaitTimer;
+static bool ddosWaitTimerStarted = false;
 static QList<IpRange> loggingSkipIps;
 static QMutex loggingSkipIpsMutex(QMutex::Recursive);
-static QMap<QString, int> renderIpAttempts;
-static QMutex renderIpMutex;
 static unsigned int renderThreads = 0;
 static QMutex renderThreadsMutex;
 static QMutex storagePathMutex(QMutex::Recursive);
@@ -323,6 +330,54 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     if (s.isEmpty() || s.compare("local", Qt::CaseInsensitive))
         return localDateTime(dt, def);
     return localDateTime(dt, timeZoneMinutesOffset(req, def));
+}
+
+bool ddosTest(const cppcms::application &app, int weight)
+{
+    if (weight <= 0)
+        return true;
+    QString ip = userIp(const_cast<cppcms::application *>(&app)->request());
+    if (ip.isEmpty())
+        return true;
+    bool b = false;
+    ddosWaitMutex.lock();
+    if (!ddosWaitTimerStarted) {
+        ddosWaitTimerStarted = true;
+        ddosWaitTimer.start();
+    }
+    if (ddosWaitTimer.elapsed() >= BeQt::Hour) {
+        ddosWaitTimer.restart();
+        foreach (const QString &key, ddosWait.keys())
+            delete ddosWait.take(key);
+    }
+    QElapsedTimer *etmr = ddosWait.value(ip);
+    if (etmr) {
+        if (etmr->elapsed() >= BeQt::Minute)
+            delete ddosWait.take(ip);
+        else
+            b = true;
+    }
+    ddosWaitMutex.unlock();
+    QMutexLocker lock(&ddosMutex);
+    if (!ddosTimerStarted) {
+        ddosTimerStarted = true;
+        ddosTimer.start();
+    }
+    if (ddosTimer.elapsed() >= (10 * BeQt::Second)) {
+        ddosTimer.restart();
+        ddos.clear();
+    }
+    int &x = ddos[ip];
+    x += weight;
+    if (!b && x >= 2000) {
+        ddosWaitMutex.lock();
+        QElapsedTimer *etmr = new QElapsedTimer;
+        etmr->start();
+        ddosWait.insert(ip, etmr);
+        ddosWaitMutex.unlock();
+    }
+    b = b || (x >= 2000);
+    return !b;
 }
 
 QString externalLinkRegexpPattern()
