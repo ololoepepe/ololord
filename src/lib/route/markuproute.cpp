@@ -22,6 +22,7 @@ MarkupRoute::MarkupRoute(cppcms::application &app) :
 
 void MarkupRoute::handle()
 {
+    DDOS_A(100)
     Tools::log(application, "markup", "begin");
     QString err;
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))

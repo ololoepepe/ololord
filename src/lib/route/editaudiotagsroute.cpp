@@ -25,6 +25,7 @@ EditAudioTagsRoute::EditAudioTagsRoute(cppcms::application &app) :
 
 void EditAudioTagsRoute::handle()
 {
+    DDOS_A(100)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString boardName = params.value("board");
     quint64 postNumber = params.value("post").toULongLong();

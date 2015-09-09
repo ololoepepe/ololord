@@ -44,10 +44,10 @@ class locale;
 #include <list>
 #include <string>
 
-#define DDOS_A if (!Tools::ddosTest(application, 100)) \
+#define DDOS_A(weight) if (!Tools::ddosTest(application, (weight))) \
     return;
 
-#define DDOS_S if (!Tools::ddosTest(server, 1)) \
+#define DDOS_S(weight) if (!Tools::ddosTest(server, (weight))) \
     return;
 
 namespace Tools

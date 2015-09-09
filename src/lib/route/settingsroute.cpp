@@ -29,6 +29,7 @@ SettingsRoute::SettingsRoute(cppcms::application &app) :
 
 void SettingsRoute::handle()
 {
+    DDOS_A(100)
     Tools::log(application, "settings", "begin");
     QString err;
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))

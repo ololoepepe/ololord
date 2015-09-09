@@ -20,6 +20,7 @@ ThreadRoute::ThreadRoute(cppcms::application &app) :
 
 void ThreadRoute::handle(std::string boardName, std::string thread)
 {
+    DDOS_A(100)
     QString bn = Tools::fromStd(boardName);
     QString t = Tools::fromStd(thread);
     QString logTarget = bn + "/" + t;

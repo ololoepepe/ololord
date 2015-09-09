@@ -21,6 +21,7 @@ HomeRoute::HomeRoute(cppcms::application &app) :
 
 void HomeRoute::handle()
 {
+    DDOS_A(100)
     Tools::log(application, "home", "begin");
     QString err;
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))

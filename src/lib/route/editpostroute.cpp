@@ -24,6 +24,7 @@ EditPostRoute::EditPostRoute(cppcms::application &app) :
 
 void EditPostRoute::handle()
 {
+    DDOS_A(100)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString boardName = params.value("board");
     quint64 postNumber = params.value("post").toULongLong();

@@ -30,6 +30,7 @@ SearchRoute::SearchRoute(cppcms::application &app) :
 
 void SearchRoute::handle()
 {
+    DDOS_A(200)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString query = params.value("query");
     QString boardName = params.value("board");

@@ -20,6 +20,7 @@ CatalogRoute::CatalogRoute(cppcms::application &app) :
 
 void CatalogRoute::handle(std::string boardName)
 {
+    DDOS_A(100)
     QString bn = Tools::fromStd(boardName);
     QString logTarget = bn;
     Tools::log(application, "catalog", "begin", logTarget);

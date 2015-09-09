@@ -39,6 +39,7 @@ QStringList ActionRoute::availableActions()
 
 void ActionRoute::handle(std::string action)
 {
+    DDOS_A(100)
     QString a = Tools::fromStd(action);
     Tools::PostParameters params = Tools::postParameters(application.request());
     QString logTarget = params.value("board");

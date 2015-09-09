@@ -41,6 +41,7 @@ ActionAjaxHandler::ActionAjaxHandler(cppcms::rpc::json_rpc_server &srv) :
 
 void ActionAjaxHandler::banPoster(const cppcms::json::object &params)
 {
+    DDOS_S(10)
     try {
         QString sourceBoard = Tools::fromStd(params.at("boardName").str());
         long long pn = (long long) params.at("postNumber").number();
@@ -84,6 +85,7 @@ void ActionAjaxHandler::banPoster(const cppcms::json::object &params)
 
 void ActionAjaxHandler::banUser(const cppcms::json::object &params)
 {
+    DDOS_S(10)
     try {
         QString ip = Tools::fromStd(params.at("ip").str());
         QString logTarget = ip;
@@ -123,6 +125,7 @@ void ActionAjaxHandler::banUser(const cppcms::json::object &params)
 
 void ActionAjaxHandler::delall(std::string userIp, std::string boardName)
 {
+    DDOS_S(100)
     try {
         QString ip = Tools::fromStd(userIp);
         QString board = Tools::fromStd(boardName);
@@ -153,6 +156,7 @@ void ActionAjaxHandler::delall(std::string userIp, std::string boardName)
 
 void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, std::string password)
 {
+    DDOS_S(10)
     try {
         QString bn = Tools::fromStd(boardName);
         QString fn = Tools::fromStd(fileName);
@@ -177,6 +181,7 @@ void ActionAjaxHandler::deleteFile(std::string boardName, std::string fileName, 
 
 void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, std::string password)
 {
+    DDOS_S(20)
     try {
         QString bn = Tools::fromStd(boardName);
         quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
@@ -202,6 +207,7 @@ void ActionAjaxHandler::deletePost(std::string boardName, long long postNumber, 
 void ActionAjaxHandler::editAudioTags(std::string boardName, std::string fileName, std::string password,
                                       const cppcms::json::object &tags)
 {
+    DDOS_S(1)
     try {
         QString bn = Tools::fromStd(boardName);
         QString fn = Tools::fromStd(fileName);
@@ -228,6 +234,7 @@ void ActionAjaxHandler::editAudioTags(std::string boardName, std::string fileNam
 
 void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 {
+    DDOS_S(10)
     try {
         QString boardName = Tools::fromStd(params.at("boardName").str());
         long long pn = (long long) params.at("postNumber").number();
@@ -281,6 +288,7 @@ void ActionAjaxHandler::editPost(const cppcms::json::object &params)
 
 void ActionAjaxHandler::getBoards()
 {
+    DDOS_S(1)
     try {
         Tools::log(server, "ajax_get_boards", "begin");
         AbstractBoard::BoardInfoList list = AbstractBoard::boardInfos(Tools::locale(server.request()), false);
@@ -302,6 +310,7 @@ void ActionAjaxHandler::getBoards()
 
 void ActionAjaxHandler::getCaptchaQuota(std::string boardName)
 {
+    DDOS_S(1)
     try {
         QString bn = Tools::fromStd(boardName);
         QString logTarget = bn;
@@ -327,6 +336,7 @@ void ActionAjaxHandler::getCaptchaQuota(std::string boardName)
 
 void ActionAjaxHandler::getCoubVideoInfo(std::string videoId)
 {
+    DDOS_S(1)
     try {
         QString id = Tools::fromStd(videoId);
         QString logTarget = id;
@@ -373,6 +383,7 @@ void ActionAjaxHandler::getCoubVideoInfo(std::string videoId)
 
 void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash)
 {
+    DDOS_S(1)
     try {
         QString bn = Tools::fromStd(boardName);
         QString h = Tools::fromStd(hash);
@@ -400,6 +411,7 @@ void ActionAjaxHandler::getFileExistence(std::string boardName, std::string hash
 
 void ActionAjaxHandler::getFileMetaData(std::string boardName, std::string fileName)
 {
+    DDOS_S(1)
     try {
         QString bn = Tools::fromStd(boardName);
         QString fn = Tools::fromStd(fileName);
@@ -428,6 +440,7 @@ void ActionAjaxHandler::getFileMetaData(std::string boardName, std::string fileN
 
 void ActionAjaxHandler::getNewPostCount(std::string boardName, long long lastPostNumber)
 {
+    DDOS_S(1)
     try {
         QString bn = Tools::fromStd(boardName);
         quint64 lpn = lastPostNumber > 0 ? quint64(lastPostNumber) : 0;
@@ -461,6 +474,7 @@ void ActionAjaxHandler::getNewPostCount(std::string boardName, long long lastPos
 
 void ActionAjaxHandler::getNewPostCountEx(const cppcms::json::object &numbers)
 {
+    DDOS_S(10)
     try {
         Tools::log(server, "ajax_get_new_post_count_ex", "begin");
         QVariantMap m;
@@ -490,6 +504,7 @@ void ActionAjaxHandler::getNewPostCountEx(const cppcms::json::object &numbers)
 
 void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumber, long long lastPostNumber)
 {
+    DDOS_S(100)
     try {
         QString bn = Tools::fromStd(boardName);
         quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
@@ -528,7 +543,7 @@ void ActionAjaxHandler::getNewPosts(std::string boardName, long long threadNumbe
 
 void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
 {
-    DDOS_S
+    DDOS_S(1)
     try {
         QString bn = Tools::fromStd(boardName);
         quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
@@ -563,6 +578,7 @@ void ActionAjaxHandler::getPost(std::string boardName, long long postNumber)
 
 void ActionAjaxHandler::getThreadNumbers(std::string boardName)
 {
+    DDOS_S(1)
     try {
         QString bn = Tools::fromStd(boardName);
         QString logTarget = bn;
@@ -591,6 +607,7 @@ void ActionAjaxHandler::getThreadNumbers(std::string boardName)
 
 void ActionAjaxHandler::getUserBanInfo(std::string userIp)
 {
+    DDOS_S(1)
     try {
         QString ip = Tools::fromStd(userIp);
         QString logTarget = ip;
@@ -625,6 +642,7 @@ void ActionAjaxHandler::getUserBanInfo(std::string userIp)
 
 void ActionAjaxHandler::getYandexCaptchaImage(std::string type)
 {
+    DDOS_S(1)
     try {
         QString t = Tools::fromStd(type);
         QString logTarget = t;
@@ -702,6 +720,7 @@ QList<ActionAjaxHandler::Handler> ActionAjaxHandler::handlers() const
 
 void ActionAjaxHandler::moveThread(std::string sourceBoardName, long long threadNumber, std::string targetBoardName)
 {
+    DDOS_S(100)
     try {
         QString sbn = Tools::fromStd(sourceBoardName);
         quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
@@ -728,6 +747,7 @@ void ActionAjaxHandler::moveThread(std::string sourceBoardName, long long thread
 
 void ActionAjaxHandler::setThreadFixed(std::string boardName, long long threadNumber, bool fixed)
 {
+    DDOS_S(5)
     try {
         QString bn = Tools::fromStd(boardName);
         quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
@@ -752,6 +772,7 @@ void ActionAjaxHandler::setThreadFixed(std::string boardName, long long threadNu
 
 void ActionAjaxHandler::setThreadOpened(std::string boardName, long long threadNumber, bool opened)
 {
+    DDOS_S(5)
     try {
         QString bn = Tools::fromStd(boardName);
         quint64 tn = threadNumber > 0 ? quint64(threadNumber) : 0;
@@ -776,6 +797,7 @@ void ActionAjaxHandler::setThreadOpened(std::string boardName, long long threadN
 
 void ActionAjaxHandler::setVoteOpened(long long postNumber, bool opened, std::string password)
 {
+    DDOS_S(5)
     try {
         quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
         QString logTarget = QString::number(pn) + "/" + QString(opened ? "true" : "false");
@@ -800,6 +822,7 @@ void ActionAjaxHandler::setVoteOpened(long long postNumber, bool opened, std::st
 
 void ActionAjaxHandler::unvote(long long postNumber)
 {
+    DDOS_S(5)
     try {
         quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
         QString logTarget = QString::number(pn);
@@ -823,6 +846,7 @@ void ActionAjaxHandler::unvote(long long postNumber)
 
 void ActionAjaxHandler::vote(long long postNumber, const cppcms::json::array &votes)
 {
+    DDOS_S(5)
     try {
         quint64 pn = postNumber > 0 ? quint64(postNumber) : 0;
         QString logTarget = QString::number(pn);

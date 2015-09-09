@@ -23,6 +23,7 @@ MoveThreadRoute::MoveThreadRoute(cppcms::application &app) :
 
 void MoveThreadRoute::handle()
 {
+    DDOS_A(100)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString boardName = params.value("board");
     quint64 threadNumber = params.value("thread").toULongLong();

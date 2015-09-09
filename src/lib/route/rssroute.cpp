@@ -21,6 +21,7 @@ RssRoute::RssRoute(cppcms::application &app) :
 
 void RssRoute::handle(std::string boardName)
 {
+    DDOS_A(100)
     QString bn = Tools::fromStd(boardName);
     QString logTarget = bn;
     Tools::log(application, "rss", "begin", logTarget);

@@ -21,6 +21,7 @@ FaqRoute::FaqRoute(cppcms::application &app) :
 
 void FaqRoute::handle()
 {
+    DDOS_A(100)
     Tools::log(application, "faq", "begin");
     QString err;
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))

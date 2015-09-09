@@ -37,6 +37,7 @@ StaticFilesRoute::StaticFilesRoute(cppcms::application &app, Mode m) :
 
 void StaticFilesRoute::handle(std::string p)
 {
+    //DDOS_A(1)
     QString path = Tools::fromStd(p);
     QString logAction = QString(StaticFilesMode == mode ? "static" : "dynamic") + "_file";
     QString logTarget = path;

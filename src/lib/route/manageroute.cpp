@@ -23,6 +23,7 @@ ManageRoute::ManageRoute(cppcms::application &app) :
 
 void ManageRoute::handle()
 {
+    DDOS_A(100)
     Tools::log(application, "manage", "begin");
     QString err;
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))

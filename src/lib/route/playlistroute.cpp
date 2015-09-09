@@ -22,6 +22,7 @@ PlaylistRoute::PlaylistRoute(cppcms::application &app) :
 
 void PlaylistRoute::handle()
 {
+    DDOS_A(100)
     Tools::log(application, "playlist", "begin");
     QString err;
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))

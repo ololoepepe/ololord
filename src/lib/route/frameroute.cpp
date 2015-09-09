@@ -22,6 +22,7 @@ FrameRoute::FrameRoute(cppcms::application &app) :
 
 void FrameRoute::handle()
 {
+    DDOS_A(100)
     QString path = Tools::getParameters(application.request()).value("path");
     QString logTarget = path;
     Tools::log(application, "frame", "begin", logTarget);

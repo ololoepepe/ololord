@@ -22,6 +22,7 @@ FrameListRoute::FrameListRoute(cppcms::application &app) :
 
 void FrameListRoute::handle()
 {
+    DDOS_A(100)
     Tools::log(application, "frame_list", "begin");
     QString err;
     if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
