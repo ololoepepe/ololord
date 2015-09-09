@@ -347,8 +347,9 @@ bool ddosTest(const cppcms::application &app, int weight)
     }
     if (ddosWaitTimer.elapsed() >= BeQt::Hour) {
         ddosWaitTimer.restart();
-        foreach (const QString &key, ddosWait.keys())
-            delete ddosWait.take(key);
+        foreach (QElapsedTimer *etmr, ddosWait)
+            delete etmr;
+        ddosWait.clear();
     }
     QElapsedTimer *etmr = ddosWait.value(ip);
     if (etmr) {

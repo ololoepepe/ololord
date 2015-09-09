@@ -673,7 +673,7 @@ void initCommands()
         BTerminal::setCommandHelp(s, ch);
     foreach (const QString &s, BTerminal::commands(BTerminal::SetCommand)) {
         BTerminal::installHandler(s, &handleSet);
-        BTerminal::setCommandHelp(s, BTerminal::commandHelp(BTerminal::SetCommand));
+        BTerminal::setCommandHelp(s, BTerminal::commandHelpList(BTerminal::SetCommand));
     }
     //
     BTerminal::installHandler("ban-user", &handleBanUser);
