@@ -195,7 +195,7 @@ blockquote.expand {
     max-height: none;
 }
 
-span.spoiler, span.spoiler a {
+span.spoiler, span.spoiler a, span.spoiler .cspoilerTitle {
     background: #9AD2F6;
     color: #9AD2F6;
 }
@@ -206,6 +206,10 @@ span.spoiler:hover {
 
 span.spoiler:hover a {
     color: #000000;
+}
+
+span.spoiler:hover .cspoilerTitle {
+    color: #304070;
 }
 
 span.tooltip {
