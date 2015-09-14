@@ -915,7 +915,7 @@
                             </div>
                         <% else %>
                             <% c++ for (int i = 0; i < int(content.maxFileCount); ++i) { %>
-                                <% c++ out() << "<input type=\"file_" << i << "\" name=\"file\" accept=\"content.supportedFileTypes\" />"; %>
+                                <% c++ out() << "<input type=\"file\"" << "\" name=\"file_\" << i << accept=\"content.supportedFileTypes\" />"; %>
                                 <% c++ out() << "<select name=\"file_" << i << "_rating\">"; %>
                                     <option value="SFW" selected="true">SFW</option>
                                     <option value="R-15">R-15</option>

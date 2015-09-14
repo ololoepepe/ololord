@@ -59,6 +59,11 @@ bool GoogleRecaptchaV1CaptchaEngine::checkCaptcha(
     }
 }
 
+QString GoogleRecaptchaV1CaptchaEngine::headerHtml(bool /*asceticMode*/) const
+{
+    return "<script type=\"text/javascript\">var RecaptchaOptions = { theme : 'clean'};</script>";
+}
+
 QString GoogleRecaptchaV1CaptchaEngine::id() const
 {
     return "google-recaptcha-v1";

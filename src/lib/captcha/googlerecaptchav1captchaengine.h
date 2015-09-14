@@ -24,6 +24,7 @@ public:
     explicit GoogleRecaptchaV1CaptchaEngine();
 public:
     bool checkCaptcha(const cppcms::http::request &req, const Tools::PostParameters &params, QString &error) const;
+    QString headerHtml(bool asceticMode) const;
     QString id() const;
     QString title(const QLocale &l) const;
     QString widgetHtml(const cppcms::http::request &req, bool asceticMode = false) const;

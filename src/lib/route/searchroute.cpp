@@ -30,7 +30,7 @@ SearchRoute::SearchRoute(cppcms::application &app) :
 
 void SearchRoute::handle()
 {
-    DDOS_A(200)
+    DDOS_A(50)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString query = params.value("query");
     QString boardName = params.value("board");
@@ -39,8 +39,11 @@ void SearchRoute::handle()
     QString logTarget = boardName + "/" + query;
     Tools::log(application, "search", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "search", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "search", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     Content::Search c;
     TranslatorQt tq(application.request());
     TranslatorStd ts(application.request());
@@ -56,6 +59,7 @@ void SearchRoute::handle()
         c.errorDescription = Tools::toStd(err);
         Tools::render(application, "search", c);
         Tools::log(application, "search", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     try {
@@ -67,6 +71,7 @@ void SearchRoute::handle()
             c.errorDescription = Tools::toStd(err);
             Tools::render(application, "search", c);
             Tools::log(application, "search", "fail:" + err, logTarget);
+            DDOS_POST_A
             return;
         }
         if ("*" == boardName)
@@ -106,6 +111,7 @@ void SearchRoute::handle()
         c.errorDescription = Tools::toStd(err);
         Tools::render(application, "search", c);
         Tools::log(application, "search", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     c.error = !ok;
@@ -115,6 +121,7 @@ void SearchRoute::handle()
     c.nothingFoundMessage = ts.translate("SearchRoute", "Nothing found", "nothingFoundMessage");
     Tools::render(application, "search", c);
     Tools::log(application, "search", "success", logTarget);
+    DDOS_POST_A
 }
 
 unsigned int SearchRoute::handlerArgumentCount() const

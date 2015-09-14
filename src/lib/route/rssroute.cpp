@@ -21,20 +21,25 @@ RssRoute::RssRoute(cppcms::application &app) :
 
 void RssRoute::handle(std::string boardName)
 {
-    DDOS_A(100)
+    DDOS_A(18)
     QString bn = Tools::fromStd(boardName);
     QString logTarget = bn;
     Tools::log(application, "rss", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "rss", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "rss", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     QString rss = Database::rss(bn);
     if (rss.isEmpty()) {
         Controller::renderNotFoundNonAjax(application);
         Tools::log(application, "rss", "fail:not_found", logTarget);
+        DDOS_POST_A
         return;
     }
     application.response().out() << Tools::toStd(rss);
+    DDOS_POST_A
 }
 
 unsigned int RssRoute::handlerArgumentCount() const

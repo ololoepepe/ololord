@@ -37,7 +37,7 @@ StaticFilesRoute::StaticFilesRoute(cppcms::application &app, Mode m) :
 
 void StaticFilesRoute::handle(std::string p)
 {
-    //DDOS_A(1)
+    DDOS_A(0.35)
     QString path = Tools::fromStd(p);
     QString logAction = QString(StaticFilesMode == mode ? "static" : "dynamic") + "_file";
     QString logTarget = path;
@@ -45,11 +45,15 @@ void StaticFilesRoute::handle(std::string p)
     typedef Cache::File *(*GetCacheFunction)(const QString &path);
     typedef Cache::File *(*SetCacheFunction)(const QString &path, const QByteArray &file);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, logAction, "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, logAction, "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     if (path.contains("../") || path.contains("/..")) { //NOTE: Are you trying to cheat me?
         Controller::renderNotFoundNonAjax(application);
         Tools::log(application, logAction, "fail:cheating", logTarget);
+        DDOS_POST_A
         return;
     }
     GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
@@ -59,6 +63,7 @@ void StaticFilesRoute::handle(std::string p)
     if (file) {
         write(file->data, ct, file->msecsSinceEpoch);
         Tools::log(application, logAction, "success:cache", logTarget);
+        DDOS_POST_A
         return;
     }
     QString fn = BDirTools::findResource(Prefix + "/" + path, BDirTools::AllResources);
@@ -68,6 +73,7 @@ void StaticFilesRoute::handle(std::string p)
     if (!ok) {
         Controller::renderNotFoundNonAjax(application);
         Tools::log(application, logAction, "fail:not_found", logTarget);
+        DDOS_POST_A
         return;
     }
     file = setCache(path, ba);
@@ -76,6 +82,7 @@ void StaticFilesRoute::handle(std::string p)
     else
         write(ba, ct);
     Tools::log(application, logAction, "success", logTarget);
+    DDOS_POST_A
 }
 
 void StaticFilesRoute::handle(std::string boardName, std::string path)

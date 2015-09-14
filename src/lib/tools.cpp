@@ -185,8 +185,12 @@ bool IpBanInfo::isValid() const
 static QMutex cityNameMutex(QMutex::Recursive);
 static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
-static QMap<QString, int> ddos;
+static QMap<QString, double> ddos;
+static const qint64 DdosBanPeriod = BeQt::Minute;
+static const qint64 DdosClearPeriod = BeQt::Hour;
+static const double DdosLimit = 5001.0;
 static QMutex ddosMutex;
+static const qint64 DdosPeriod = 10 * BeQt::Second;
 static QElapsedTimer ddosTimer;
 static bool ddosTimerStarted = false;
 static QMap<QString, QElapsedTimer *> ddosWait;
@@ -332,9 +336,9 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     return localDateTime(dt, timeZoneMinutesOffset(req, def));
 }
 
-bool ddosTest(const cppcms::application &app, int weight)
+bool ddosTest(const cppcms::application &app, double weight, double previousWeight)
 {
-    if (weight <= 0)
+    if (weight <= 0.0)
         return true;
     QString ip = userIp(const_cast<cppcms::application *>(&app)->request());
     if (ip.isEmpty())
@@ -345,7 +349,7 @@ bool ddosTest(const cppcms::application &app, int weight)
         ddosWaitTimerStarted = true;
         ddosWaitTimer.start();
     }
-    if (ddosWaitTimer.elapsed() >= BeQt::Hour) {
+    if (ddosWaitTimer.elapsed() >= DdosClearPeriod) {
         ddosWaitTimer.restart();
         foreach (QElapsedTimer *etmr, ddosWait)
             delete etmr;
@@ -353,7 +357,7 @@ bool ddosTest(const cppcms::application &app, int weight)
     }
     QElapsedTimer *etmr = ddosWait.value(ip);
     if (etmr) {
-        if (etmr->elapsed() >= BeQt::Minute)
+        if (etmr->elapsed() >= DdosBanPeriod)
             delete ddosWait.take(ip);
         else
             b = true;
@@ -364,20 +368,22 @@ bool ddosTest(const cppcms::application &app, int weight)
         ddosTimerStarted = true;
         ddosTimer.start();
     }
-    if (ddosTimer.elapsed() >= (10 * BeQt::Second)) {
+    if (ddosTimer.elapsed() >= (DdosPeriod)) {
         ddosTimer.restart();
         ddos.clear();
     }
-    int &x = ddos[ip];
+    double &x = ddos[ip];
     x += weight;
-    if (!b && x >= 2000) {
+    if (previousWeight > 0.0)
+        x -= previousWeight;
+    if (!b && x >= DdosLimit) {
         ddosWaitMutex.lock();
         QElapsedTimer *etmr = new QElapsedTimer;
         etmr->start();
         ddosWait.insert(ip, etmr);
         ddosWaitMutex.unlock();
     }
-    b = b || (x >= 2000);
+    b = b || (x >= DdosLimit);
     return !b;
 }
 

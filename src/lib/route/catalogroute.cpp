@@ -20,20 +20,25 @@ CatalogRoute::CatalogRoute(cppcms::application &app) :
 
 void CatalogRoute::handle(std::string boardName)
 {
-    DDOS_A(100)
+    DDOS_A(50)
     QString bn = Tools::fromStd(boardName);
     QString logTarget = bn;
     Tools::log(application, "catalog", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "catalog", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "catalog", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
     if (board.isNull()) {
         Controller::renderNotFoundNonAjax(application);
         Tools::log(application, "catalog", "fail:not_found", logTarget);
+        DDOS_POST_A
         return;
     }
     board->handleCatalog(application);
+    DDOS_POST_A
 }
 
 unsigned int CatalogRoute::handlerArgumentCount() const

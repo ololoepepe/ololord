@@ -22,13 +22,16 @@ FrameRoute::FrameRoute(cppcms::application &app) :
 
 void FrameRoute::handle()
 {
-    DDOS_A(100)
+    DDOS_A(12)
     QString path = Tools::getParameters(application.request()).value("path");
     QString logTarget = path;
     Tools::log(application, "frame", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "frame", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "frame", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     Content::Frame c;
     TranslatorQt tq(application.request());
     Controller::initBase(c, application.request(),
@@ -38,6 +41,7 @@ void FrameRoute::handle()
         c.sourcePath = "/";
     Tools::render(application, "frame", c);
     Tools::log(application, "frame", "success", logTarget);
+    DDOS_POST_A
 }
 
 unsigned int FrameRoute::handlerArgumentCount() const

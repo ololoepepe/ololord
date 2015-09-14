@@ -45,9 +45,21 @@ class locale;
 #include <string>
 
 #define DDOS_A(weight) if (!Tools::ddosTest(application, (weight))) \
+    return; \
+double _beqt_previous_weight = weight; \
+QElapsedTimer _beqt_etmr; \
+_beqt_etmr.start();
+
+#define DDOS_POST_A if (!Tools::ddosTest(application, double(_beqt_etmr.elapsed()), _beqt_previous_weight)) \
     return;
 
 #define DDOS_S(weight) if (!Tools::ddosTest(server, (weight))) \
+    return; \
+double _beqt_previous_weight = weight; \
+QElapsedTimer _beqt_etmr; \
+_beqt_etmr.start();
+
+#define DDOS_POST_S if (!Tools::ddosTest(server, double(_beqt_etmr.elapsed()), _beqt_previous_weight)) \
     return;
 
 namespace Tools
@@ -190,7 +202,7 @@ OLOLORD_EXPORT QString cookieValue(const cppcms::http::request &req, const QStri
 OLOLORD_EXPORT QString customContent(const QString &prefix, const QLocale &l);
 OLOLORD_EXPORT QList<CustomLinkInfo> customLinks(const QLocale &l);
 OLOLORD_EXPORT QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req);
-OLOLORD_EXPORT bool ddosTest(const cppcms::application &app, int weight = 1);
+OLOLORD_EXPORT bool ddosTest(const cppcms::application &app, double weight = 1.0, double previousWeight = 0.0);
 OLOLORD_EXPORT QString externalLinkRegexpPattern();
 OLOLORD_EXPORT bool externalLinkRootZoneExists(const QString &zoneName);
 OLOLORD_EXPORT QString flagName(const QString &countryCode);

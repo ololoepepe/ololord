@@ -21,11 +21,14 @@ FaqRoute::FaqRoute(cppcms::application &app) :
 
 void FaqRoute::handle()
 {
-    DDOS_A(100)
+    DDOS_A(16)
     Tools::log(application, "faq", "begin");
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "faq", "fail:" + err);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "faq", "fail:" + err);
+        DDOS_POST_A
+        return;
+    }
     Content::Faq c;
     TranslatorQt tq(application.request());
     Controller::initBase(c, application.request(), tq.translate("FaqRoute", "F.A.Q.", "pageTitle"));
@@ -33,6 +36,7 @@ void FaqRoute::handle()
     c.custom = Tools::toStd(Tools::customContent("faq", tq.locale()).replace("%deviceType%", deviceType));
     Tools::render(application, "faq", c);
     Tools::log(application, "faq", "success");
+    DDOS_POST_A
 }
 
 unsigned int FaqRoute::handlerArgumentCount() const

@@ -23,17 +23,21 @@ ManageRoute::ManageRoute(cppcms::application &app) :
 
 void ManageRoute::handle()
 {
-    DDOS_A(100)
+    DDOS_A(16)
     Tools::log(application, "manage", "begin");
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "manage", "fail:" + err);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "manage", "fail:" + err);
+        DDOS_POST_A
+        return;
+    }
     TranslatorQt tq(application.request());
     if (Database::registeredUserLevel(application.request()) < RegisteredUser::ModerLevel) {
         QString err = tq.translate("ManageRoute", "Access error", "error");
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("ManageRoute", "Not enough rights", "description"));
         Tools::log(application, "manage", "fail:" + err);
+        DDOS_POST_A
         return;
     }
     Content::Manage c;
@@ -70,6 +74,7 @@ void ManageRoute::handle()
     if (!ok) {
         Controller::renderErrorNonAjax(application, err);
         Tools::log(application, "manage", "fail:" + err);
+        DDOS_POST_A
         return;
     }
     foreach (const QString &ip, banInfos.keys()) {
@@ -84,6 +89,7 @@ void ManageRoute::handle()
                 QString err = tq.translate("ManageRoute", "Internal error", "error");
                 Controller::renderErrorNonAjax(application, err);
                 Tools::log(application, "manage", "fail:" + err);
+                DDOS_POST_A
                 return;
             }
             info.boardName = Tools::toStd(bn);
@@ -109,6 +115,7 @@ void ManageRoute::handle()
     }
     Tools::render(application, "manage", c);
     Tools::log(application, "manage", "success");
+    DDOS_POST_A
 }
 
 unsigned int ManageRoute::handlerArgumentCount() const

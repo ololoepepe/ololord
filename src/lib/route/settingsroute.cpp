@@ -29,16 +29,20 @@ SettingsRoute::SettingsRoute(cppcms::application &app) :
 
 void SettingsRoute::handle()
 {
-    DDOS_A(100)
+    DDOS_A(11)
     Tools::log(application, "settings", "begin");
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "settings", "fail:" + err);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "settings", "fail:" + err);
+        DDOS_POST_A
+        return;
+    }
     Content::Settings c;
     TranslatorQt tq(application.request());
     Controller::initBase(c, application.request(), tq.translate("SettingsRoute", "Settings", "pageTitle"));
     Tools::render(application, "settings_view", c);
     Tools::log(application, "settings", "success");
+    DDOS_POST_A
 }
 
 unsigned int SettingsRoute::handlerArgumentCount() const

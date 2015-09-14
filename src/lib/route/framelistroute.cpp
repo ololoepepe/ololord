@@ -22,11 +22,14 @@ FrameListRoute::FrameListRoute(cppcms::application &app) :
 
 void FrameListRoute::handle()
 {
-    DDOS_A(100)
+    DDOS_A(10)
     Tools::log(application, "frame_list", "begin");
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "frame_list", "fail:" + err);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "frame_list", "fail:" + err);
+        DDOS_POST_A
+        return;
+    }
     Content::FrameList c;
     TranslatorQt tq(application.request());
     TranslatorStd ts(tq.locale());
@@ -35,6 +38,7 @@ void FrameListRoute::handle()
     c.normalVersionText = ts.translate("FrameListRoute", "Version without frame", "normalVersionText");
     Tools::render(application, "frame_list", c);
     Tools::log(application, "frame_list", "success");
+    DDOS_POST_A
 }
 
 unsigned int FrameListRoute::handlerArgumentCount() const

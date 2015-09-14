@@ -988,3 +988,11 @@ a.progressBlocking {
 .track > audio {
     width: 600px;
 }
+
+#recaptcha_image_cell {
+    background-color: inherit;
+}
+
+#recaptcha_response_field {
+    background-color: inherit;
+}

@@ -23,21 +23,25 @@ BanUserRoute::BanUserRoute(cppcms::application &app) :
 
 void BanUserRoute::handle()
 {
-    DDOS_A(100)
+    DDOS_A(20)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString boardName = params.value("board");
     quint64 postNumber = params.value("post").toULongLong();
     QString logTarget = boardName + "/" + QString::number(postNumber);
     Tools::log(application, "ban_user", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "ban_user", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "ban_user", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     TranslatorQt tq(application.request());
     if (!Database::moderOnBoard(application.request(), boardName)) {
         QString err = tq.translate("BanUserRoute", "Access error", "error");
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("BanUserRoute", "Not enough rights", "description"));
         Tools::log(application, "ban_user", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (boardName.isEmpty()) {
@@ -45,6 +49,7 @@ void BanUserRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("BanUserRoute", "Board name is empty", "description"));
         Tools::log(application, "ban_user", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (!postNumber) {
@@ -52,6 +57,7 @@ void BanUserRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("BanUserRoute", "Post number is null", "description"));
         Tools::log(application, "ban_user", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (AbstractBoard::board(boardName).isNull()) {
@@ -59,6 +65,7 @@ void BanUserRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("BanUserRoute", "There is no such board", "description"));
         Tools::log(application, "ban_user", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     Content::BanUser c;
@@ -97,6 +104,7 @@ void BanUserRoute::handle()
     if (!ok) {
         Controller::renderErrorNonAjax(application, err);
         Tools::log(application, "ban_user", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     foreach (const QString &bn, userBoards) {
@@ -108,6 +116,7 @@ void BanUserRoute::handle()
             QString err = tq.translate("BanUserRoute", "Internal error", "error");
             Controller::renderErrorNonAjax(application, err);
             Tools::log(application, "ban_user", "fail:" + err, logTarget);
+            DDOS_POST_A
             return;
         }
         info.boardName = Tools::toStd(bn);
@@ -129,6 +138,7 @@ void BanUserRoute::handle()
     }
     Tools::render(application, "ban_user", c);
     Tools::log(application, "ban_user", "success", logTarget);
+    DDOS_POST_A
 }
 
 unsigned int BanUserRoute::handlerArgumentCount() const

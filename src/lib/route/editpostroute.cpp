@@ -24,7 +24,7 @@ EditPostRoute::EditPostRoute(cppcms::application &app) :
 
 void EditPostRoute::handle()
 {
-    DDOS_A(100)
+    DDOS_A(18)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString boardName = params.value("board");
     quint64 postNumber = params.value("post").toULongLong();
@@ -32,13 +32,17 @@ void EditPostRoute::handle()
     Tools::log(application, "edit_post", "begin", logTarget);
     QString err;
     TranslatorQt tq(application.request());
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "edit_post", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "edit_post", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     if (Tools::hashpassString(application.request()).isEmpty()) {
         QString err = tq.translate("EditPostRoute", "Access error", "error");
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("EditPostRoute", "Not enough rights", "description"));
         Tools::log(application, "edit_post", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (boardName.isEmpty()) {
@@ -46,6 +50,7 @@ void EditPostRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("EditPostRoute", "Board name is empty", "description"));
         Tools::log(application, "edit_post", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
@@ -54,9 +59,11 @@ void EditPostRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("EditPostRoute", "There is no such board", "description"));
         Tools::log(application, "edit_post", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     board->handleEditPost(application, postNumber);
+    DDOS_POST_A
 }
 
 unsigned int EditPostRoute::handlerArgumentCount() const
