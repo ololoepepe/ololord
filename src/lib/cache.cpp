@@ -526,13 +526,14 @@ void removePost(const QString &boardName, quint64 postNumber)
 
 void removeLastNPost(const QString &boardName, quint64 threadNumber, quint64 postNumber)
 {
+    qDebug() << "aaa";
     if (boardName.isEmpty() || !threadNumber || !postNumber)
         return;
     QWriteLocker locker(&lastNPostsLock);
     PostList *list = theLastNPosts.object(boardName + "/" + QString::number(threadNumber));
     if (!list)
         return;
-    foreach (int i, bRangeD(0, list->size())) {
+    foreach (int i, bRangeD(0, list->size() - 1)) {
         if (list->at(i).number() == postNumber) {
             if (list->at(i).draft())
                 theLastNPosts.clear();
@@ -567,7 +568,7 @@ void removeThreadPost(const QString &boardName, quint64 threadNumber, quint64 po
     PostList *list = theThreadPosts.object(boardName + "/" + QString::number(threadNumber));
     if (!list)
         return;
-    foreach (int i, bRangeD(0, list->size())) {
+    foreach (int i, bRangeD(0, list->size() - 1)) {
         if (list->at(i).number() == postNumber) {
             list->removeAt(i);
             return;
