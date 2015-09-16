@@ -1,6 +1,7 @@
 #ifndef BASETHREAD_H
 #define BASETHREAD_H
 
+#include "board/abstractboard.h"
 #include "controller/base.h"
 
 #include "../global.h"
@@ -172,6 +173,7 @@ public:
     std::string loadingPostsText;
     std::string markupBold;
     std::string markupCode;
+    AbstractBoard::MarkupElements markupElements;
     std::string markupItalics;
     std::string markupLang;
     std::list<MarkupMode> markupModes;

@@ -518,6 +518,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.loadingPostsText = ts.translate("initBaseBoard", "Loading posts...", "loadingPostsText");
     c.markupBold = ts.translate("initBaseBoard", "Bold text", "markupBold");
     c.markupCode = ts.translate("initBaseBoard", "Code block", "markupCode");
+    c.markupElements = board->markupElements();
     c.markupItalics = ts.translate("initBaseBoard", "Italics", "markupItalics");
     c.markupLang = ts.translate("initBaseBoard", "Code block syntax", "markupLang");
     c.markupQuotation = ts.translate("initBaseBoard", "Quote selected text", "markupQuotation");

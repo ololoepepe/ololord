@@ -321,6 +321,9 @@ void AbstractBoard::reloadBoards()
         BTranslation::translate("AbstractBoard", "Kamina", "defaultUserName"));
     boards.insert(cb->name(), cb);
     cb = new ConfigurableBoard("b", BTranslation::translate("AbstractBoard", "/b/rotherhood", "title"));
+    cb->setMarkupElements(MarkupElements(BoldMarkupElement | ItalicsMarkupElement | StrikedOutMarkupElement
+        | UnderlinedMarkupElement | SpoilerMarkupElement | QuotationMarkupElement | CodeMarkupElement
+        | SubscriptMarkupElement | SuperscriptMarkupElement | UrlMarkupElement));
     boards.insert(cb->name(), cb);
     AbstractBoard *b = new cgBoard;
     boards.insert(b->name(), b);
@@ -1306,6 +1309,13 @@ bool AbstractBoard::isFileTypeSupported(const QByteArray &data) const
 bool AbstractBoard::isHidden() const
 {
     return SettingsLocker()->value("Board/" + name() + "/hidden", false).toBool();
+}
+
+AbstractBoard::MarkupElements AbstractBoard::markupElements() const
+{
+    return MarkupElements(BoldMarkupElement | ItalicsMarkupElement | StrikedOutMarkupElement | UnderlinedMarkupElement
+            | SpoilerMarkupElement | QuotationMarkupElement | SubscriptMarkupElement | SuperscriptMarkupElement
+            | UrlMarkupElement);
 }
 
 QStringList AbstractBoard::postformRules(const QLocale &l) const

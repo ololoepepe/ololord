@@ -13,6 +13,7 @@ ConfigurableBoard::ConfigurableBoard(const QString &name, const BTranslation &ti
                                      const BTranslation &defaultUserName) :
     DefaultUserName(defaultUserName), Name(name), Title(title)
 {
+    mmarkupElements = AbstractBoard::markupElements();
     mshowWhois = AbstractBoard::showWhois();
 }
 
@@ -25,9 +26,19 @@ QString ConfigurableBoard::defaultUserName(const QLocale &l) const
                                      un.disambiguation().toUtf8().constData(), un.n());
 }
 
+AbstractBoard::MarkupElements ConfigurableBoard::markupElements() const
+{
+    return mmarkupElements;
+}
+
 QString ConfigurableBoard::name() const
 {
     return Name;
+}
+
+void ConfigurableBoard::setMarkupElements(MarkupElements elements)
+{
+    mmarkupElements = elements;
 }
 
 void ConfigurableBoard::setShowWhois(bool show)

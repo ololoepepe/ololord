@@ -42,7 +42,7 @@
 [done] Remove builtin banners
 [done] Add post shrinking settings option
 [done] Implement striking out words with ^W
-* Do not show some markup buttons on some boards
+[done] Do not show some markup buttons on some boards
 * Implement Vimeo and Vocaroo embedding
 * Fix moving video files
 

@@ -21,6 +21,13 @@ prBoard::prBoard()
     //
 }
 
+AbstractBoard::MarkupElements prBoard::markupElements() const
+{
+    return MarkupElements(BoldMarkupElement | ItalicsMarkupElement | StrikedOutMarkupElement | UnderlinedMarkupElement
+            | SpoilerMarkupElement | QuotationMarkupElement | CodeMarkupElement | SubscriptMarkupElement
+            | SuperscriptMarkupElement | UrlMarkupElement);
+}
+
 QString prBoard::name() const
 {
     return "pr";
