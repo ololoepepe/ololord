@@ -41,7 +41,7 @@
 [done] Implement basic DoS protection
 [done] Remove builtin banners
 [done] Add post shrinking settings option
-* Implement striking out words with ^W
+[done] Implement striking out words with ^W
 * Do not show some markup buttons on some boards
 * Implement Vimeo and Vocaroo embedding
 * Fix moving video files

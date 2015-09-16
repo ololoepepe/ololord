@@ -1410,6 +1410,16 @@ text</source>
         <comment>nomarkupEscaped</comment>
         <translation>без разметки \&apos;&apos; с экранированными \&apos;&apos; символами</translation>
     </message>
+    <message>
+        <source>striked out</source>
+        <comment>strikedoutWord1</comment>
+        <translation>зачеркнутое</translation>
+    </message>
+    <message>
+        <source>word</source>
+        <comment>strikedoutWord2</comment>
+        <translation>слово</translation>
+    </message>
 </context>
 <context>
     <name>MoveThreadRoute</name>

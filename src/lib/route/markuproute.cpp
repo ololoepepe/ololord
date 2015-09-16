@@ -71,6 +71,8 @@ void MarkupRoute::handle()
         Q_UNUSED(i)
         c.strikedoutTextWakaba.append("^H");
     }
+    c.strikedoutWord1 = ts.translate("MarkupRoute", "striked out", "strikedoutWord1");
+    c.strikedoutWord2 = ts.translate("MarkupRoute", "word", "strikedoutWord2");
     c.underlinedText = ts.translate("MarkupRoute", "underlined text", "underlinedText");
     Tools::render(application, "markup", c);
     Tools::log(application, "markup", "success");
