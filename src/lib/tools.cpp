@@ -188,7 +188,7 @@ static QMutex countryNameMutex(QMutex::Recursive);
 static QMap<QString, double> ddos;
 static const qint64 DdosBanPeriod = BeQt::Minute;
 static const qint64 DdosClearPeriod = BeQt::Hour;
-static const double DdosLimit = 5001.0;
+static const double DdosLimit = 10000.0;
 static QMutex ddosMutex;
 static const qint64 DdosPeriod = 10 * BeQt::Second;
 static QElapsedTimer ddosTimer;
