@@ -189,6 +189,10 @@ lord.showSettings = function() {
         lord.setCookie("mode", md, {
             "expires": lord.Billion, "path": "/"
         });
+        var sp = !!lord.nameOne("shrinkPosts", div).checked;
+        lord.setCookie("shrinkPosts", sp, {
+            "expires": lord.Billion, "path": "/"
+        });
         sel = lord.nameOne("styleChangeSelect", div);
         var sn = sel.options[sel.selectedIndex].value;
         lord.setCookie("style", sn, {

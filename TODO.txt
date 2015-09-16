@@ -40,9 +40,9 @@
 [done] Cache board pages and threads
 [done] Implement basic DoS protection
 [done] Remove builtin banners
+[done] Add post shrinking settings option
 * Implement striking out words with ^W
 * Do not show some markup buttons on some boards
-* Add post shrinking settings option
 * Implement Vimeo and Vocaroo embedding
 * Fix moving video files
 

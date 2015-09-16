@@ -49,7 +49,7 @@
                             <td>
                                 <%= styleLabelText %>
                             </td>
-                            <td>
+                            <td class="nowrap">
                                 <select name="styleChangeSelect" class="select">
                                     <% foreach st in styles %>
                                         <% item %>
@@ -63,6 +63,12 @@
                                         <% end %>
                                     <% end %>
                                 </select>
+                                <%= postShrinkingLabelText %>
+                                <% if ( content.shrinkPosts ) %>
+                                    <input type="checkbox" name="shrinkPosts" value="true" checked="true" />
+                                <% else %>
+                                    <input type="checkbox" name="shrinkPosts" value="true" />
+                                <% end %>
                             </td>
                         </tr>
                         <tr>

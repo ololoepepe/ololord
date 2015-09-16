@@ -203,6 +203,12 @@
                                 <% end %>
                             <% end %>
                         </select>
+                        <%= postShrinkingLabelText %>
+                        <% if ( content.shrinkPosts ) %>
+                            <input type="checkbox" name="shrinkPosts" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="shrinkPosts" value="true" />
+                        <% end %>
                     </td>
                 </tr>
                 <tr>

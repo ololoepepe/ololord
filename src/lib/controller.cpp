@@ -292,6 +292,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.playAudioVideoImmediatelyLabelText = ts.translate("initBase", "Play audio and video files immediately:",
                                                         "playAudioVideoImmediatelyLabelText");
     c.postformTabText = ts.translate("initBase", "Postform and posting", "postformTabText");
+    c.postShrinkingLabelText = ts.translate("initBase", "Shrink posts:", "postShrinkingLabelText");
     c.postsTabText = ts.translate("initBase", "Posts and threads", "postsTabText");
     c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
                                                     "quickReplyActionAppendPostText");
@@ -332,6 +333,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showYoutubeVideoTitleLabelText = ts.translate("initBase", "Show titles of YouTube videos:",
                                                     "showYoutubeVideoTitleLabelText");
+    c.shrinkPosts = !Tools::cookieValue(req, "shrinkPosts").compare("true", Qt::CaseInsensitive);
+    c.shrinkPostsClass = c.shrinkPosts ? " shrinkedPost" : "";
     c.signOpPostLinksLabelText = ts.translate("initBase", "Mark OP post links:", "signOpPostLinksLabelText");
     c.signOwnPostLinksLabelText = ts.translate("initBase", "Mark own post links:", "signOwnPostLinksLabelText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());

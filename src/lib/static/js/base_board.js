@@ -499,6 +499,8 @@ lord.createPostNode = function(res, permanent, boardName) {
         lord.addClass(post, "opIp");
     if (res["ownIp"])
         lord.addClass(post, "ownIp");
+    if (+lord.text("shrinkPosts"))
+        lord.addClass(post, "shrinkedPost");
     var registered = lord.nameOne("registered", post);
     if (!!res["showRegistered"] && !!res["showTripcode"])
         registered.style.display = "";

@@ -3247,6 +3247,11 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>style title</comment>
         <translation>Burichan</translation>
     </message>
+    <message>
+        <source>Shrink posts:</source>
+        <comment>postShrinkingLabelText</comment>
+        <translation>Скукоживать посты:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>

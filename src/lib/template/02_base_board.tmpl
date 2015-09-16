@@ -241,29 +241,29 @@
 <% if ( post.number == post.threadNumber ) %>
     <% if ( post.ownIp ) %>
         <% if ( post.opIp ) %>
-            <div id="post<%= post.number %>" class="opPost ownIp opIp">
+            <div id="post<%= post.number %>" class="opPost ownIp opIp<%= shrinkPostsClass %>">
         <% else %>
-            <div id="post<%= post.number %>" class="opPost ownIp">
+            <div id="post<%= post.number %>" class="opPost ownIp<%= shrinkPostsClass %>">
         <% end %>
     <% else %>
         <% if ( post.opIp ) %>
-            <div id="post<%= post.number %>" class="opPost opIp">
+            <div id="post<%= post.number %>" class="opPost opIp<%= shrinkPostsClass %>">
         <% else %>
-            <div id="post<%= post.number %>" class="opPost">
+            <div id="post<%= post.number %>" class="opPost<%= shrinkPostsClass %>">
         <% end %>
     <% end %>
 <% else %>
     <% if ( post.ownIp ) %>
         <% if ( post.opIp ) %>
-            <div id="post<%= post.number %>" class="post ownIp opIp">
+            <div id="post<%= post.number %>" class="post ownIp opIp<%= shrinkPostsClass %>">
         <% else %>
-            <div id="post<%= post.number %>" class="post ownIp">
+            <div id="post<%= post.number %>" class="post ownIp<%= shrinkPostsClass %>">
         <% end %>
     <% else %>
         <% if ( post.opIp ) %>
-            <div id="post<%= post.number %>" class="post opIp">
+            <div id="post<%= post.number %>" class="post opIp<%= shrinkPostsClass %>">
         <% else %>
-            <div id="post<%= post.number %>" class="post">
+            <div id="post<%= post.number %>" class="post<%= shrinkPostsClass %>">
         <% end %>
     <% end %>
 <% end %>
@@ -1080,6 +1080,7 @@
 <input type="hidden" id="unselectAllText" value="<%= unselectAllText %>" />
 <input type="hidden" id="delallButtonText" value="<%= delallButtonText %>" />
 <input type="hidden" id="hideByImageText" value="<%= hideByImageText %>" />
+<input type="hidden" id="shrinkPosts" value="<%= shrinkPosts %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>

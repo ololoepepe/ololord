@@ -141,6 +141,7 @@ public:
     std::string path;
     std::string playAudioVideoImmediatelyLabelText;
     std::string postformTabText;
+    std::string postShrinkingLabelText;
     std::string postsTabText;
     std::string quickReplyActionAppendPostText;
     std::string quickReplyActionDoNothingText;
@@ -164,6 +165,8 @@ public:
     std::string showNewPostsLabelText;
     std::string showPasswordText;
     std::string showYoutubeVideoTitleLabelText;
+    bool shrinkPosts;
+    std::string shrinkPostsClass;
     std::string signOpPostLinksLabelText;
     std::string signOwnPostLinksLabelText;
     std::string siteDomain;

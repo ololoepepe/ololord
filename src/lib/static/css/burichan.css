@@ -866,3 +866,7 @@ a.progressBlocking {
 #recaptcha_response_field {
     background-color: inherit;
 }
+
+.shrinkedPost {
+    display: table;
+}
