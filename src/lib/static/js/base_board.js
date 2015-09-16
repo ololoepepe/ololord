@@ -2413,7 +2413,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         sizeHintX = (lord.text("deviceType") == "mobile") ? 500 : 400;
         lord.img = lord.node("audio");
         lord.img.width = sizeHintX + "px";
-        lord.img.controls = "controls";
+        lord.img.controls = true;
         if (lord.getLocalObject("loopAudioVideo", false))
             lord.img.loop = true;
         if (lord.text("deviceType") == "mobile")
@@ -2436,7 +2436,7 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.img.src = href;
     } else if (lord.isVideoType(type)) {
         lord.img = lord.node("video");
-        lord.img.controls = "controls";
+        lord.img.controls = true;
         if (lord.getLocalObject("loopAudioVideo", false))
             lord.img.loop = true;
         var defVol = lord.getLocalObject("defaultAudioVideoVolume", 100) / 100;
@@ -2448,6 +2448,8 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
         lord.img.appendChild(src);
     }
     lord.img.fileType = type;
+    lord.img.sizeHintX = sizeHintX;
+    lord.img.sizeHintY = sizeHintY;
     lord.imgWrapper.appendChild(lord.img);
     lord.setInitialScale(lord.imgWrapper, sizeHintX, sizeHintY);
     lord.resetScale(lord.imgWrapper);
@@ -2493,7 +2495,12 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
                 if (!!e.button)
                     return;
                 e.preventDefault();
+                if (lord.isAudioType(lord.img.fileType))
+                    return;
+                if (lord.isVideoType(lord.img.fileType) && (lord.img.sizeHintY - e.offsetY < 35))
+                    return;
                 lord.img.moving = true;
+                lord.img.wasPaused = lord.img.paused;
                 lord.img.coord.x = e.clientX;
                 lord.img.coord.y = e.clientY;
                 lord.img.initialCoord.x = e.clientX;
@@ -2503,6 +2510,8 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
                 if (!!e.button)
                     return;
                 e.preventDefault();
+                if (!lord.img.moving)
+                    return;
                 lord.img.moving = false;
                 if (lord.img.initialCoord.x === e.clientX && lord.img.initialCoord.y === e.clientY) {
                     if (lord.isAudioType(type) || lord.isVideoType(type)) {
@@ -2513,6 +2522,11 @@ lord.showImage = function(href, type, sizeHintX, sizeHintY) {
                     lord.query(".leafButton").forEach(function(a) {
                         a.style.display = "none";
                     });
+                } else if (!lord.img.wasPaused) {
+                    setTimeout(function() {
+                        if (lord.img.paused)
+                            lord.img.play();
+                    }, 10);
                 }
             };
             lord.imgWrapper.onmousemove = function(e) {

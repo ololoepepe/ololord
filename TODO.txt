@@ -44,7 +44,7 @@
 [done] Implement striking out words with ^W
 [done] Do not show some markup buttons on some boards
 * Implement Vimeo and Vocaroo embedding
-* Fix moving video files
+[done] Fix moving video files
 
 * Use D-Pointer approach for the lib
 * Reload codecha instead of reloading a page
