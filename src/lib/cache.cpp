@@ -526,7 +526,6 @@ void removePost(const QString &boardName, quint64 postNumber)
 
 void removeLastNPost(const QString &boardName, quint64 threadNumber, quint64 postNumber)
 {
-    qDebug() << "aaa";
     if (boardName.isEmpty() || !threadNumber || !postNumber)
         return;
     QWriteLocker locker(&lastNPostsLock);

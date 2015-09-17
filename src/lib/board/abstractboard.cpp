@@ -1469,6 +1469,7 @@ bool AbstractBoard::saveFile(const Tools::File &f, FileTransaction &ft)
             img = generateRandomImage(hash, mimeType);
             if (img.isNull())
                 return false;
+            ft.setMainFileSize(0, 0);
             ft.setThumbFileSize(200, 200);
         }
         if (!img.save(path + "/" + dt + "s.png", "png"))
