@@ -3232,6 +3232,8 @@ lord.initializeOnLoadBaseBoard = function() {
         ["Bold", "Italics", "StrikedOut", "Underlined", "Spoiler", "Quotation", "Code"].forEach(function(s) {
             s = "markup" + s;
             var btn = lord.nameOne(s, table);
+            if (!btn)
+                return;
             btn.title = btn.title + " (" + key(s) + ")";
         });
         lord.query("[name='updateThreadButton']").forEach(function(a) {
