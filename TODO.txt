@@ -43,8 +43,8 @@
 [done] Add post shrinking settings option
 [done] Implement striking out words with ^W
 [done] Do not show some markup buttons on some boards
-* Implement Vimeo and Vocaroo embedding
 [done] Fix moving video files
+* Implement Vimeo and Vocaroo embedding
 
 * Use D-Pointer approach for the lib
 * Reload codecha instead of reloading a page

@@ -210,6 +210,7 @@ public:
     std::string postFormLabelEmail;
     std::string postFormLabelMarkupMode;
     std::string postFormLabelName;
+    std::string postFormLabelOptions;
     std::string postFormLabelPassword;
     std::string postFormLabelRaw;
     std::string postFormLabelSignAsOp;

@@ -456,7 +456,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.captchaScriptSource = Tools::toStd(ce->scriptSource(asceticMode));
     c.captchaWidgetHtml = Tools::toStd(ce->widgetHtml(req, asceticMode));
     c.captchaQuota = board->captchaQuota(ip);
-    c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
+    c.captchaQuotaText = ts.translate("initBaseBoard", "Posts left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
     c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
     c.collapseVideoText = ts.translate("initBaseBoard", "Collapse video", "collapseVideoText");
@@ -567,12 +567,13 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelEmail = ts.translate("initBaseBoard", "E-mail:", "postFormLabelEmail");
     c.postFormLabelMarkupMode = ts.translate("initBaseBoard", "Markup mode:", "postFormLabelMarkupMode");
     c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
+    c.postFormLabelOptions = ts.translate("initBaseBoard", "Options:", "postFormLabelOptions");
     c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
-    c.postFormLabelSignAsOp = ts.translate("initBaseBoard", "Sign as OP:", "postFormLabelSignAsOp");
+    c.postFormLabelSignAsOp = ts.translate("initBaseBoard", "OP:", "postFormLabelSignAsOp");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
-    c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode:", "postFormLabelTripcode");
+    c.postFormLabelTripcode = ts.translate("initBaseBoard", "Tripcode:", "postFormLabelTripcode");
     c.postFormPlaceholderEmail = ts.translate("initBaseBoard", "E-mail", "postFormPlaceholderEmail");
     c.postFormPlaceholderName = ts.translate("initBaseBoard", "Name", "postFormPlaceholderName");
     c.postFormPlaceholderPassword = ts.translate("initBaseBoard", "Password", "postFormPlaceholderPassword");

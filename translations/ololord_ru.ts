@@ -235,11 +235,6 @@ The default is %1.</source>
         <translation>Новых постов:</translation>
     </message>
     <message>
-        <source>Internal file system error</source>
-        <comment>error</comment>
-        <translation type="obsolete">Внутренняя ошибка файловой системы</translation>
-    </message>
-    <message>
         <source>Internal database error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
@@ -3446,11 +3441,6 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <translation>Вам не нужно вводить капчу</translation>
     </message>
     <message>
-        <source>Posts without captcha left:</source>
-        <comment>captchaQuotaText</comment>
-        <translation>Осталось постов без капчи:</translation>
-    </message>
-    <message>
         <source>Edit post</source>
         <comment>editPostText</comment>
         <translation>Редактировать пост</translation>
@@ -3850,11 +3840,6 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <translation>Выбранный файл слишком большой</translation>
     </message>
     <message>
-        <source>Show tripcode:</source>
-        <comment>postFormLabelTripcode</comment>
-        <translation>Показывать трипкод:</translation>
-    </message>
-    <message>
         <source>E-mail</source>
         <comment>postFormPlaceholderEmail</comment>
         <translation>Эл. почта</translation>
@@ -3875,11 +3860,6 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <translation>Тема</translation>
     </message>
     <message>
-        <source>Sign as OP:</source>
-        <comment>postFormLabelSignAsOp</comment>
-        <translation>Подписаться как ОП:</translation>
-    </message>
-    <message>
         <source>Show user IP</source>
         <comment>showUserIpText</comment>
         <translation>Показать IP-адрес пользователя</translation>
@@ -3898,6 +3878,26 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <source>Delete all user posts on selected board</source>
         <comment>delallButtonText</comment>
         <translation>Удалить все посты пользователя на выбранной доске</translation>
+    </message>
+    <message>
+        <source>Options:</source>
+        <comment>postFormLabelOptions</comment>
+        <translation>Опции:</translation>
+    </message>
+    <message>
+        <source>OP:</source>
+        <comment>postFormLabelSignAsOp</comment>
+        <translation>ОП:</translation>
+    </message>
+    <message>
+        <source>Tripcode:</source>
+        <comment>postFormLabelTripcode</comment>
+        <translation>Трипкод:</translation>
+    </message>
+    <message>
+        <source>Posts left:</source>
+        <comment>captchaQuotaText</comment>
+        <translation>Осталось постов:</translation>
     </message>
 </context>
 <context>

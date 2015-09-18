@@ -48,6 +48,9 @@
 <% template customPostFormField4() %>
 <% end template %>
 
+<% template customPostFormField40() %>
+<% end template %>
+
 <% template customPostFormField41() %>
 <% end template %>
 
@@ -55,6 +58,9 @@
 <% end template %>
 
 <% template customPostFormField43() %>
+<% end template %>
+
+<% template customPostFormField44() %>
 <% end template %>
 
 <% template customPostFormField5() %>
@@ -87,7 +93,13 @@
 <% template customPostFormFieldEdit4() %>
 <% end template %>
 
+<% template customPostFormFieldEdit40() %>
+<% end template %>
+
 <% template customPostFormFieldEdit41() %>
+<% end template %>
+
+<% template customPostFormFieldEdit42() %>
 <% end template %>
 
 <% template customPostFormFieldEdit5() %>
@@ -803,91 +815,44 @@
                 </td>
             </tr>
             <% include customPostFormField4() %>
-            <% if ( content.moder >= 10 ) %>
-                <tr>
-                    <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
-                        <td class="postformField" colspan="2">
-                            <b><%= postFormLabelRaw %></b>
-                            <input type="checkbox" name="raw" value="true" />
-                        </td>
-                    <% else %>
-                        <td class="postformLabel">
-                            <b><%= postFormLabelRaw %></b>
-                        </td>
-                        <td class="postformField">
-                            <input type="checkbox" name="raw" value="true" />
-                        </td>
-                    <% end %>
-                </tr>
-            <% end %>
-            <% include customPostFormField41() %>
             <tr>
-                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
-                    <td class="postformField" colspan="2">
-                        <b><%= postFormLabelSignAsOp %></b>
-                        <input type="checkbox" name="signAsOp" value="true" />
-                    </td>
-                <% else %>
+                <% if ( content.deviceType != "mobile" && !content.minimalisticPostform ) %>
                     <td class="postformLabel">
-                        <b><%= postFormLabelSignAsOp %></b>
+                        <b><%= postFormLabelOptions %></b>
                     </td>
-                    <td class="postformField">
-                        <input type="checkbox" name="signAsOp" value="true" />
-                    </td>
+                    <td>
+                <% else %>
+                    <td class="postformField" colspan="2">
                 <% end %>
+                    <% include customPostFormField40() %>
+                    <% if ( content.moder >= 10 ) %>
+                        <b><%= postFormLabelRaw %></b>
+                        <input type="checkbox" name="raw" value="true" />
+                    <% end %>
+                    <% include customPostFormField41() %>
+                    <b><%= postFormLabelSignAsOp %></b>
+                    <input type="checkbox" name="signAsOp" value="true" />
+                    <% include customPostFormField42() %>
+                    <% if ( content.loggedIn ) %>
+                        <b><%= postFormLabelTripcode %></b>
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
+                        <% else %>
+                            <input type="checkbox" name="tripcode" value="true" />
+                        <% end %>
+                    <% end %>
+                    <% include customPostFormField43() %>
+                    <% if ( content.draftsEnabled && content.loggedIn ) %>
+                        <b><%= postFormLabelDraft %></b>
+                        <% if ( content.draftsByDefault ) %>
+                            <input type="checkbox" name="draft" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="draft" value="true" />
+                        <% end %>
+                    <% end %>
+                    <% include customPostFormField44() %>
+                </td>
             </tr>
-            <% include customPostFormField42() %>
-            <% if ( content.loggedIn ) %>
-                <tr>
-                    <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
-                        <td class="postformField" colspan="2">
-                            <b><%= postFormLabelTripcode %></b>
-                            <% if ( content.mode.name != "ascetic" ) %>
-                                <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
-                            <% else %>
-                                <input type="checkbox" name="tripcode" value="true" />
-                            <% end %>
-                        </td>
-                    <% else %>
-                        <td class="postformLabel">
-                            <b><%= postFormLabelTripcode %></b>
-                        </td>
-                        <td class="postformField">
-                            <% if ( content.mode.name != "ascetic" ) %>
-                                <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
-                            <% else %>
-                                <input type="checkbox" name="tripcode" value="true" />
-                            <% end %>
-                        </td>
-                    <% end %>
-                </tr>
-            <% end %>
-            <% include customPostFormField43() %>
-            <% if ( content.draftsEnabled && content.loggedIn ) %>
-                <tr>
-                    <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
-                        <td class="postformField" title="<%= postFormTooltipDraft %>" colspan="2">
-                            <b><%= postFormLabelDraft %></b>
-                            <% if ( content.draftsByDefault ) %>
-                                <input type="checkbox" name="draft" value="true" checked="true" />
-                            <% else %>
-                                <input type="checkbox" name="draft" value="true" />
-                            <% end %>
-                        </td>
-                    <% else %>
-                        <td class="postformLabel" title="<%= postFormTooltipDraft %>">
-                            <b><%= postFormLabelDraft %></b>
-                        </td>
-                        <td class="postformField" title="<%= postFormTooltipDraft %>">
-                            <% if ( content.draftsByDefault ) %>
-                                <input type="checkbox" name="draft" value="true" checked="true" />
-                            <% else %>
-                                <input type="checkbox" name="draft" value="true" />
-                            <% end %>
-                        </td>
-                    <% end %>
-                </tr>
-            <% end %>
             <% include customPostFormField5() %>
             <% if ( content.maxFileCount ) %>
                 <tr>
@@ -1365,27 +1330,26 @@
             </td>
         </tr>
         <% include customPostFormFieldEdit4() %>
-        <% if ( content.moder >= 10 ) %>
-            <tr>
-                <td class="postformLabel">
+        
+        
+        <tr>
+            <td class="postformLabel">
+                <b><%= postFormLabelOptions %></b>
+            </td>
+            <td class="postformField nowrap">
+                <% include customPostFormFieldEdit40() %>
+                <% if ( content.moder >= 10 ) %>
                     <b><%= postFormLabelRaw %></b>
-                </td>
-                <td class="postformField">
                     <input type="checkbox" name="raw" value="true" />
-                </td>
-            </tr>
-        <% end %>
-        <% include customPostFormFieldEdit41() %>
-        <% if ( content.draftsEnabled && content.loggedIn ) %>
-            <tr>
-                <td class="postformLabel" title="<%= postFormTooltipDraft %>">
+                <% end %>
+                <% include customPostFormFieldEdit41() %>
+                <% if ( content.draftsEnabled && content.loggedIn ) %>
                     <b><%= postFormLabelDraft %></b>
-                </td>
-                <td class="postformField" title="<%= postFormTooltipDraft %>">
                     <input type="checkbox" name="draft" value="true" />
-                </td>
-            </tr>
-        <% end %>
+                <% end %>
+                <% include customPostFormFieldEdit42() %>
+            </td>
+        </tr>
         <% include customPostFormFieldEdit5() %>
         <tr>
             <td class="postformLabel">
