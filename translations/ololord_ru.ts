@@ -3533,7 +3533,7 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
     <message>
         <source>Download all thread files as a .zip archive</source>
         <comment>downloadThreadText</comment>
-        <translation>Скачoать все файлы из треда в виде .zip-архива</translation>
+        <translation>Скачать все файлы из треда в виде .zip-архива</translation>
     </message>
     <message>
         <source>Draft:</source>
