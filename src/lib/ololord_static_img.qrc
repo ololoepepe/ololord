@@ -293,5 +293,6 @@
         <file>static/img/ip.png</file>
         <file>static/img/manage.png</file>
         <file>static/img/loading.gif</file>
+        <file>static/img/raw_text.png</file>
     </qresource>
 </RCC>

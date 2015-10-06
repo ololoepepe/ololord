@@ -438,13 +438,12 @@ lord.nameOne = function(name, parent) {
 lord.contains = function(s, subs) {
     if (typeof s == "string" && typeof subs == "string")
         return s.replace(subs, "") != s;
-    var arr = lord.arr(s);
-    if (!arr || !arr.length || arr.length < 1)
+    if (!s || !s.length || s.length < 1)
         return false;
-    arr.forEach(function(v) {
-        if (lord.equal(v, subs))
+    for (var i = 0; i < s.length; ++i) {
+        if (lord.equal(s[i], subs))
             return true;
-    });
+    }
     return false;
 };
 

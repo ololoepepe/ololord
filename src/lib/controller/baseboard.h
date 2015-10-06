@@ -233,6 +233,7 @@ public:
     std::string previousFileText;
     std::string quickReplyText;
     std::string ratingLabelText;
+    std::string rawPostTextText;
     std::string referencedByText;
     std::string registeredText;
     std::string removeFileText;

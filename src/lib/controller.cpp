@@ -637,6 +637,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.previousFileText = ts.translate("initBaseBoard", "Previous file", "previousFileText");
     c.quickReplyText = ts.translate("initBaseBoard", "Quick reply", "quickReplyText");
     c.ratingLabelText = ts.translate("initBaseBoard", "Rating:", "ratingLabelText");
+    c.rawPostTextText = ts.translate("initBaseBoard", "Raw post text", "rawPostTextText");
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");

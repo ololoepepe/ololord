@@ -3899,6 +3899,11 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <comment>captchaQuotaText</comment>
         <translation>Осталось постов:</translation>
     </message>
+    <message>
+        <source>Raw post text</source>
+        <comment>rawPostTextText</comment>
+        <translation>Исходный текст поста</translation>
+    </message>
 </context>
 <context>
     <name>initCommands</name>

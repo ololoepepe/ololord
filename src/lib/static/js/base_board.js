@@ -665,6 +665,8 @@ lord.createPostNode = function(res, permanent, boardName) {
     }
     var deleteButton = lord.nameOne("deleteButton", post);
     deleteButton.href = deleteButton.href.replace("%postNumber%", res["number"]);
+    var rawTextButton = lord.nameOne("rawTextButton", post);
+    rawTextButton.href = rawTextButton.href.replace("%postNumber%", res["number"]);
     var hideButton = lord.nameOne("hideButton", post);
     hideButton.id = hideButton.id.replace("%postNumber%", res["number"]);
     hideButton.href = hideButton.href.replace("%postNumber%", res["number"]);
@@ -1237,6 +1239,27 @@ lord.countSymbols = function(textarea) {
     if (span.childNodes.length > 0)
         span.removeChild(span.childNodes[0]);
     span.appendChild(lord.node("text", textarea.value.length.toString()));
+};
+
+lord.getRawPostText = function(boardName, postNumber) {
+    if (!boardName || isNaN(+postNumber))
+        return;
+    var stage2 = function(text) {
+        var ta = lord.node("textarea");
+        ta.value = text;
+        ta.style.height = "400px";
+        ta.style.width = "400px";
+        lord.showDialog(lord.text("rawPostTextText"), null, ta);
+    };
+    if (lord.text("currntBoardName") == boardName) {
+        var post = lord.id("post" + postNumber);
+        var rawPostText = lord.nameOne("rawText", post);
+        if (rawPostText)
+            return stage2(rawPostText.value);
+    }
+    lord.ajaxRequest("get_post", [boardName, +postNumber], lord.RpcGetPostId, function(res) {
+        return stage2(res["rawPostText"]);
+    });
 };
 
 lord.deletePost = function(boardName, postNumber, fromThread) {
