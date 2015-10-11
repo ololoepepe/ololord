@@ -1159,45 +1159,77 @@
         <span name="permanent" style="display: none;">
             [<a name="quickReply" href="javascript:lord.quickReply(%postNumber%);"
                 title="<%= quickReplyText %>">&gt;&gt;</a>]
-            <span class="<%= deviceType %> postActions">
+            <span tabindex="0" class="<%= deviceType %> postActions">
                 <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
+                <ul class="postActionsMenu">
+                <li>
                 <a name="addFileButton" href="javascript:lord.addFile('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/add.png" /> <%= addFileText %></a>
+                </li>
+                <li>
                 <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/edit.png" /> <%= editPostText %></a>
+                </li>
+                <li>
                 <a name="fixButton"
                    href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
-                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" /> <%= fixThreadText %></a>
+                </li>
+                <li>
                 <a name="unfixButton"
                    href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
-                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" /> <%= unfixThreadText %></a>
+                </li>
+                <li>
                 <a name="closeButton"
                    href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
-                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/closed.png" /> <%= closeThreadText %></a>
+                </li>
+                <li>
                 <a name="openButton"
                    href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
-                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/open.png" /> <%= openThreadText %></a>
+                </li>
+                <li>
                 <a name="moveButton" href="javascript:lord.moveThread('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/move.png" title="<%= moveThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/move.png" /> <%= moveThreadText %></a>
+                </li>
+                <li>
                 <a name="ipButton" href="javascript:void(prompt('IP:', '%postIp%'));">
-                    <img src="/<%= sitePathPrefix %>img/ip.png" title="<%= showUserIpText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/ip.png" /> <%= showUserIpText %></a>
+                </li>
+                <li>
                 <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/ban.png" /> <%= banUserText %></a>
+                </li>
+                <li>
                 <a name="downloadButton" href="javascript:lord.downloadThread();">
-                    <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/download.png" /> <%= downloadThreadText %></a>
+                </li>
+                <li>
                 <a name="addToFavoritesButton">
-                    <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/favorite.png" /> <%= addThreadToFavoritesText %></a>
+                </li>
+                <li>
                 <a name="rawTextButton"
                    href="javascript:lord.getRawPostText('<%= currentBoard.name %>', %postNumber%);">
-                    <img src="/<%= sitePathPrefix %>img/raw_text.png" title="<%= rawPostTextText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/raw_text.png" /> <%= rawPostTextText %></a>
+                </li>
+                <li>
                 <a href="javascript:lord.complain();">
-                    <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/complain.png" /> <%= complainText %></a>
+                </li>
+                <li>
                 <a name="deleteButton"
                    href="javascript:lord.deletePost('<%= currentBoard.name %>', %postNumber%, true);">
-                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/delete.png" /> <%= deletePostText %></a>
+                </li>
+                <li>
                 <a id="hidePost%postNumber%" name="hideButton"
                    href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/hide.png" /> <%= showHidePostText %></a>
+                </li>
+                </ul>
             </span>
             <span name="toThread" class="postToThread <%= deviceType %>" style="display: none;">
                 <% if ( content.deviceType != "mobile" ) %>

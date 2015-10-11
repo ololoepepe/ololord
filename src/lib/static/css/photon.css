@@ -651,7 +651,7 @@ span.newPostCount {
     padding: 4px 4px 4px 4px;
     visibility: hidden;
     opacity: 0;
-    transition: visibility 0s linear 0.1s,opacity 0.1s linear;
+    transition: visibility 0s linear 0.2s,opacity 0.2s linear;
     position: absolute;
     z-index: 9999;
     background-color: #DDDDDD;

@@ -690,7 +690,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     if ((moder || res["draft"]) && (res["files"].length < +lord.text("maxFileCount"))) {
         addFileButton.href = addFileButton.href.replace("%postNumber%", res["number"]);
     } else {
-        addFileButton.parentNode.removeChild(addFileButton);
+        addFileButton.parentNode.perentNode.removeChild(addFileButton.perentNode);
     }
     if (moder || res["draft"]) {
         editButton.href = editButton.href.replace("%postNumber%", res["number"]);
@@ -699,10 +699,10 @@ lord.createPostNode = function(res, permanent, boardName) {
         lord.nameOne("name", post).value = res["rawName"];
         lord.nameOne("subject", post).value = res["rawSubject"];
     } else {
-        editButton.parentNode.removeChild(editButton);
+        editButton.parentNode.parentNode.removeChild(editButton.parentNode);
     }
     if (res["number"] != res["threadNumber"] || !inp || +inp.value !== res["threadNumber"])
-        downloadButton.parentNode.removeChild(downloadButton);
+        downloadButton.parentNode.parentNode.removeChild(downloadButton.parentNode);
     if (res["number"] == res["threadNumber"]) {
         var fav = lord.getLocalObject("favoriteThreads", {});
         if (fav.hasOwnProperty(boardName + "/" + res["number"])) {
@@ -714,16 +714,16 @@ lord.createPostNode = function(res, permanent, boardName) {
             favButton.onclick = lord.addThreadToFavorites.bind(lord, boardName, res["number"]);
         }
     } else {
-        favButton.parentNode.removeChild(favButton);
+        favButton.parentNode.parentNode.removeChild(favButton.parentNode);
     }
     if (!moder) {
-        fixButton.parentNode.removeChild(fixButton);
-        unfixButton.parentNode.removeChild(unfixButton);
-        openButton.parentNode.removeChild(openButton);
-        closeButton.parentNode.removeChild(closeButton);
-        moveButton.parentNode.removeChild(moveButton);
-        ipButton.parentNode.removeChild(ipButton);
-        banButton.parentNode.removeChild(banButton);
+        fixButton.parentNode.parentNode.removeChild(fixButton.parentNode);
+        unfixButton.parentNode.parentNode.removeChild(unfixButton.parentNode);
+        openButton.parentNode.parentNode.removeChild(openButton.parentNode);
+        closeButton.parentNode.parentNode.removeChild(closeButton.parentNode);
+        moveButton.parentNode.parentNode.removeChild(moveButton.parentNode);
+        ipButton.parentNode.parentNode.removeChild(ipButton.parentNode);
+        banButton.parentNode.parentNode.removeChild(banButton.parentNode);
         return post;
     }
     var toThread = lord.nameOne("toThread", post);
@@ -731,22 +731,22 @@ lord.createPostNode = function(res, permanent, boardName) {
         if (!!res["fixed"]) {
             unfixButton.style.display = "";
             unfixButton.href = unfixButton.href.replace("%postNumber%", res["number"]);
-            fixButton.parentNode.removeChild(fixButton);
+            fixButton.parentNode.parentNode.removeChild(fixButton.parentNode);
         } else {
             fixButton.style.display = "";
             fixButton.href = fixButton.href.replace("%postNumber%", res["number"]);
-            unfixButton.parentNode.removeChild(unfixButton);
+            unfixButton.parentNode.parentNode.removeChild(unfixButton.parentNode);
         }
         if (!!res["closed"]) {
             openButton.style.display = "";
             openButton.href = openButton.href.replace("%postNumber%", res["number"]);
-            closeButton.parentNode.removeChild(closeButton);
+            closeButton.parentNode.parentNode.removeChild(closeButton.parentNode);
         } else {
             closeButton.style.display = "";
             closeButton.href = closeButton.href.replace("%postNumber%", res["number"]);
-            openButton.parentNode.removeChild(openButton);
+            openButton.parentNode.parentNode.removeChild(openButton.parentNode);
         }
-        moveButton.parentNode.removeChild(moveButton);
+        moveButton.parentNode.parentNode.removeChild(moveButton.parentNode);
         moveButton.href = moveButton.href.replace("%postNumber%", res["number"]);
         if (!inp) {
             toThread.style.display = "";
@@ -756,11 +756,11 @@ lord.createPostNode = function(res, permanent, boardName) {
             toThread.parentNode.removeChild(toThread);
         }
     } else {
-        fixButton.parentNode.removeChild(fixButton);
-        unfixButton.parentNode.removeChild(unfixButton);
-        openButton.parentNode.removeChild(openButton);
-        closeButton.parentNode.removeChild(closeButton);
-        moveButton.parentNode.removeChild(moveButton);
+        fixButton.parentNode.parentNode.removeChild(fixButton.parentNode);
+        unfixButton.parentNode.parentNode.removeChild(unfixButton.parentNode);
+        openButton.parentNode.parentNode.removeChild(openButton.parentNode);
+        closeButton.parentNode.parentNode.removeChild(closeButton.parentNode);
+        moveButton.parentNode.parentNode.removeChild(moveButton.parentNode);
         toThread.parentNode.removeChild(toThread);
     }
     ipButton.href = ipButton.href.replace("%postIp%", res["ip"]);
