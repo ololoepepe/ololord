@@ -45,6 +45,7 @@
 [done] Do not show some markup buttons on some boards
 [done] Fix moving video files
 [done] Add ability to see raw post text
+[done] Implement post actions popup (pure CSS)
 * Implement Vimeo and Vocaroo embedding
 
 * Use D-Pointer approach for the lib
