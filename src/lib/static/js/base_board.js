@@ -690,7 +690,7 @@ lord.createPostNode = function(res, permanent, boardName) {
     if ((moder || res["draft"]) && (res["files"].length < +lord.text("maxFileCount"))) {
         addFileButton.href = addFileButton.href.replace("%postNumber%", res["number"]);
     } else {
-        addFileButton.parentNode.perentNode.removeChild(addFileButton.perentNode);
+        addFileButton.parentNode.parentNode.removeChild(addFileButton.parentNode);
     }
     if (moder || res["draft"]) {
         editButton.href = editButton.href.replace("%postNumber%", res["number"]);
