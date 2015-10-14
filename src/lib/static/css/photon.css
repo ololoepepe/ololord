@@ -625,7 +625,7 @@ span.newPostCount {
 }
 
 .postActions {
-    position: absolute;
+    position: relative;
     outline: 0;
 }
 
