@@ -72,13 +72,15 @@
         <h2 class="postLimitReached"><%= postLimitReachedText %></h2>
     </div>
 <% else %>
-    <hr />
+    <hr name="insteadOfPostLimitReached" />
     <% include createAction("Top") %>
 <% end %>
 <% if ( !content.postLimitReached() && content.bumpLimitReached() ) %>
-    <div class="theMessage">
+    <div class="theMessage" name="bumpLimitReached">
         <h3 class="bumpLimitReached"><%= bumpLimitReachedText %></h3>
     </div>
+<% else %>
+    <span name="insteadOfBumpLimitReached" style="display: none;"></span>
 <% end %>
 <hr />
 <% include threadActions("top") %>

@@ -124,6 +124,23 @@
                                  title="<%= toHomePageText %>"><img src="/<%= sitePathPrefix %>img/homepage.png"></a>]</span>
     <span class="navbarItem">[<a href="/<%= sitePathPrefix %>frame?path=<%= path %>" target="_top"
                                  title="<%= framedVersionText %>"><img src="/<%= sitePathPrefix %>img/frame.png"></a>]</span>
+    <span class="navbarItem">[<a href="/<%= sitePathPrefix %>faq"
+                                 title="<%= toFaqPageText %>"><img src="/<%= sitePathPrefix %>img/question.png"></a>]</span>
+    <% if ( content.moder >= 1 ) %>
+        <span class="navbarItem">[<a href="/<%= sitePathPrefix %>manage"
+                                     title="<%= toManagePageText %>"><img src="/<%= sitePathPrefix %>img/manage.png"></a>]</span>
+    <% end %>
+    <% foreach link in customLinks %>
+        <% item %>
+            <% if ( !link.imgUrl.empty() ) %>
+                <span class="navbarItem">[<a href="<%= link.url %>" target="<%= link.target %>"
+                                             title="<%= link.text %>"><img src="<%= link.imgUrl %>"></a>]</span>
+            <% else %>
+                <span class="navbarItem">[<a href="<%= link.url %>"
+                                             target="<%= link.target %>"><%= link.text %></a>]</span>
+            <% end %>
+        <% end %>
+    <% end %>
 </div>
 <% end template %>
 
@@ -162,6 +179,7 @@
 <input type="hidden" id="error413Text" value="<%= error413Text %>" />
 <input type="hidden" id="hiddenPostListText" value="<%= hiddenPostListText %>" />
 <input type="hidden" id="removeFromHiddenPostListText" value="<%= removeFromHiddenPostListText %>" />
+<input type="hidden" id="availableBoards" value="<%= availableBoardsString %>" />
 <div id="settingsDialogTemplate" class="settingsDialog" style="display: none;">
     <fieldset>
         <legend><%= generalSettingsLegendText %></legend>
@@ -191,7 +209,7 @@
                     <td>
                         <%= styleLabelText %>
                     </td>
-                    <td>
+                    <td class="nowrap">
                         <select name="styleChangeSelect" class="select">
                             <% foreach st in styles %>
                                 <% item %>
@@ -205,6 +223,12 @@
                                 <% end %>
                             <% end %>
                         </select>
+                        <%= postShrinkingLabelText %>
+                        <% if ( content.shrinkPosts ) %>
+                            <input type="checkbox" name="shrinkPosts" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="shrinkPosts" value="true" />
+                        <% end %>
                     </td>
                 </tr>
                 <tr>
@@ -284,6 +308,18 @@
                 </tr>
                 <tr>
                     <td>
+                        <%= minimalisticPostformLabelText %>
+                    </td>
+                    <td>
+                        <% if ( content.minimalisticPostform ) %>
+                            <input type="checkbox" name="minimalisticPostform" value="true" checked="true" />
+                        <% else %>
+                            <input type="checkbox" name="minimalisticPostform" value="true" />
+                        <% end %>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <%= hiddenBoardsLabelText %>
                     </td>
                     <td>
@@ -355,6 +391,22 @@
                             <input type="checkbox" name="showAutoUpdateDesktopNotifications" />
                         </td>
                     </tr>
+                    <tr>
+                        <td>
+                            <%= signOpPostLinksLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="signOpPostLinks" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= signOwnPostLinksLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="signOwnPostLinks" />
+                        </td>
+                    </tr>
                 </tbody>
             </table>
             <table name="2" style="display: none;">
@@ -387,8 +439,26 @@
                         <td>
                             <%= defaultAudioVideoVolumeLabelText %>
                         </td>
-                        <td>
+                        <td class="nowrap">
                             <input type="number" min="0" max="100" name="defaultAudioVideoVolume" />
+                            <%= rememberAudioVideoVolumeLabelText %>
+                            <input type="checkbox" name="rememberAudioVideoVolume" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= playAudioVideoImmediatelyLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="playAudioVideoImmediately" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= loopAudioVideoLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="loopAudioVideo" />
                         </td>
                     </tr>
                 </tbody>
@@ -405,6 +475,14 @@
                                 <option value="do_nothing"><%= quickReplyActionDoNothingText %></option>
                                 <option value="append_post"><%= quickReplyActionAppendPostText %></option>
                             </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <%= moveToPostOnReplyInThreadLabelText %>
+                        </td>
+                        <td>
+                            <input type="checkbox" name="moveToPostOnReplyInThread" />
                         </td>
                     </tr>
                     <tr>
@@ -494,6 +572,14 @@
             </table>
             <table name="5" style="display: none;">
                 <tbody>
+                    <tr>
+                        <td>
+                            <%= maxSimultaneousAjaxLabelText %>
+                        </td>
+                        <td>
+                            <input type="number" min="1" max="20" name="maxSimultaneousAjax" />
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             <%= showNewPostsLabelText %>

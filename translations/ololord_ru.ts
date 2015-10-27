@@ -235,11 +235,6 @@ The default is %1.</source>
         <translation>Новых постов:</translation>
     </message>
     <message>
-        <source>Internal file system error</source>
-        <comment>error</comment>
-        <translation>Внутренняя ошибка файловой системы</translation>
-    </message>
-    <message>
         <source>Internal database error</source>
         <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
@@ -526,6 +521,11 @@ By default, the date of first site launch is used.</source>
         <comment>postFormLabelMarkupMode</comment>
         <translation>Режим разметки:</translation>
     </message>
+    <message>
+        <source>Last post date</source>
+        <comment>sortingModeRecentLabelText</comment>
+        <translation>Дате последнего поста</translation>
+    </message>
 </context>
 <context>
     <name>AbstractCaptchaEngine</name>
@@ -585,9 +585,9 @@ Apperas in the HTML pages.</source>
         <translation>Отсутствует движок для этого типа капчи</translation>
     </message>
     <message>
-        <source>Internal error</source>
+        <source>Yandex captcha service error</source>
         <comment>error</comment>
-        <translation>Внутренняя ошибка</translation>
+        <translation>Ошибка сервиса Yandex-капчи</translation>
     </message>
 </context>
 <context>
@@ -606,6 +606,11 @@ Apperas in the HTML pages.</source>
         <source>Invalid captcha type</source>
         <comment>error</comment>
         <translation>Недействительный тип капчи</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
     </message>
 </context>
 <context>
@@ -629,11 +634,6 @@ Apperas in the HTML pages.</source>
         <source>There is no such board</source>
         <comment>description</comment>
         <translation>Нет такой доски</translation>
-    </message>
-    <message>
-        <source>Failed to ban user</source>
-        <comment>error</comment>
-        <translation>Не удалось забанить пользователя</translation>
     </message>
     <message>
         <source>Failed to delete file</source>
@@ -684,6 +684,16 @@ Apperas in the HTML pages.</source>
         <source>Failed to move thread</source>
         <comment>error</comment>
         <translation>Не удалось перенести тред</translation>
+    </message>
+    <message>
+        <source>Failed to ban user</source>
+        <comment>error</comment>
+        <translation>Не удалось забанить пользователя</translation>
+    </message>
+    <message>
+        <source>Failed to perform delall</source>
+        <comment>error</comment>
+        <translation>Ну удалось выполнить делолл</translation>
     </message>
 </context>
 <context>
@@ -821,6 +831,16 @@ Apperas in the HTML pages.</source>
         <comment>description</comment>
         <translation>Недостаточно прав</translation>
     </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Delete all user posts on selected board</source>
+        <comment>delallButtonText</comment>
+        <translation>Удалить все посты пользователя на выбранной доске</translation>
+    </message>
 </context>
 <context>
     <name>CodechaCaptchaEngine</name>
@@ -838,6 +858,39 @@ Apperas in the HTML pages.</source>
         <source>Codecha - programmers&apos; CAPTCHA</source>
         <comment>title</comment>
         <translation>Codecha - программистская CAPTCHA</translation>
+    </message>
+</context>
+<context>
+    <name>Database::delall</name>
+    <message>
+        <source>Invalid ip</source>
+        <comment>error</comment>
+        <translation>Неверный IP-адрес</translation>
+    </message>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Invalid board name</source>
+        <comment>error</comment>
+        <translation>Неверное имя доски</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>You can&apos;t delall yourself, baka</source>
+        <comment>error</comment>
+        <translation>Нельзя сделать делолл самому себе, бака</translation>
     </message>
 </context>
 <context>
@@ -1023,6 +1076,14 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>FaqRoute</name>
+    <message>
+        <source>F.A.Q.</source>
+        <comment>pageTitle</comment>
+        <translation>F.A.Q.</translation>
+    </message>
+</context>
+<context>
     <name>FrameListRoute</name>
     <message>
         <source>Version without frame</source>
@@ -1057,6 +1118,24 @@ Apperas in the HTML pages.</source>
     </message>
 </context>
 <context>
+    <name>GoogleRecaptchaV1CaptchaEngine</name>
+    <message>
+        <source>Captcha challenge is empty</source>
+        <comment>error</comment>
+        <translation>Задание капчи пусто</translation>
+    </message>
+    <message>
+        <source>Captcha is incorrect</source>
+        <comment>error</comment>
+        <translation>Капча решена неправильно</translation>
+    </message>
+    <message>
+        <source>Captcha response is empty</source>
+        <comment>error</comment>
+        <translation>Решение капчи пусто</translation>
+    </message>
+</context>
+<context>
     <name>HomeRoute</name>
     <message>
         <source>Welcome. Again.</source>
@@ -1082,6 +1161,79 @@ Apperas in the HTML pages.</source>
         <source>Our friends</source>
         <comment>friendsHeader</comment>
         <translation>Наши друзья</translation>
+    </message>
+</context>
+<context>
+    <name>ManageRoute</name>
+    <message>
+        <source>Expires:</source>
+        <comment>banExpiresLabelText</comment>
+        <translation>Истекает:</translation>
+    </message>
+    <message>
+        <source>Level:</source>
+        <comment>banLevelLabelText</comment>
+        <translation>Уровень:</translation>
+    </message>
+    <message>
+        <source>Not banned</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Не забанен</translation>
+    </message>
+    <message>
+        <source>Posting prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещен постинг</translation>
+    </message>
+    <message>
+        <source>Posting and reading prohibited</source>
+        <comment>banLevelDesctiption</comment>
+        <translation>Запрещены постинг и чтение</translation>
+    </message>
+    <message>
+        <source>Reason:</source>
+        <comment>banReasonLabelText</comment>
+        <translation>Причина:</translation>
+    </message>
+    <message>
+        <source>Board:</source>
+        <comment>boardLabelText</comment>
+        <translation>Доска:</translation>
+    </message>
+    <message>
+        <source>Access error</source>
+        <comment>error</comment>
+        <translation>Ошибка доступа</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>description</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>User management</source>
+        <comment>pageTitle</comment>
+        <translation>Управление пользователями</translation>
+    </message>
+    <message>
+        <source>All boards</source>
+        <comment>boardName</comment>
+        <translation>Все доски</translation>
+    </message>
+    <message>
+        <source>Delete all user posts on selected board</source>
+        <comment>delallButtonText</comment>
+        <translation>Удалить все посты пользователя на выбранной доске</translation>
+    </message>
+    <message>
+        <source>Internal error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <comment>selectAllText</comment>
+        <translation>Выбрать все</translation>
     </message>
 </context>
 <context>
@@ -1252,6 +1404,16 @@ text</source>
         <source>no markup \&apos;&apos; with escaped \&apos;&apos; characters</source>
         <comment>nomarkupEscaped</comment>
         <translation>без разметки \&apos;&apos; с экранированными \&apos;&apos; символами</translation>
+    </message>
+    <message>
+        <source>striked out</source>
+        <comment>strikedoutWord1</comment>
+        <translation>зачеркнутое</translation>
+    </message>
+    <message>
+        <source>word</source>
+        <comment>strikedoutWord2</comment>
+        <translation>слово</translation>
     </message>
 </context>
 <context>
@@ -1472,12 +1634,15 @@ text</source>
     </message>
 </context>
 <context>
-    <name>banUser</name>
+    <name>banInfos</name>
     <message>
-        <source>Invalid board name</source>
+        <source>Internal database error</source>
         <comment>error</comment>
-        <translation>Неверное имя доски</translation>
+        <translation>Внутренняя ошибка базы данных</translation>
     </message>
+</context>
+<context>
+    <name>banPoster</name>
     <message>
         <source>Invalid post number</source>
         <comment>error</comment>
@@ -1504,7 +1669,35 @@ text</source>
         <translation>Недостаточно прав</translation>
     </message>
     <message>
-        <source>You can&apos;t ban youself, baka</source>
+        <source>You can&apos;t ban yourself, baka</source>
+        <comment>error</comment>
+        <translation>Нельзя забанить самого себя, бака</translation>
+    </message>
+</context>
+<context>
+    <name>banUser</name>
+    <message>
+        <source>Not logged in</source>
+        <comment>error</comment>
+        <translation>Не залогинен</translation>
+    </message>
+    <message>
+        <source>Internal database error</source>
+        <comment>error</comment>
+        <translation>Внутренняя ошибка базы данных</translation>
+    </message>
+    <message>
+        <source>Not enough rights</source>
+        <comment>error</comment>
+        <translation>Недостаточно прав</translation>
+    </message>
+    <message>
+        <source>Invalid ip</source>
+        <comment>error</comment>
+        <translation>Неверный IP-адрес</translation>
+    </message>
+    <message>
+        <source>You can&apos;t ban yourself, baka</source>
         <comment>error</comment>
         <translation>Нельзя забанить самого себя, бака</translation>
     </message>
@@ -2135,8 +2328,20 @@ text</source>
         <translation>ОК</translation>
     </message>
     <message>
-        <source>Invalid date. User will be banned forever. Continue?</source>
-        <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
+        <source>Invalid date</source>
+        <translation>Неверная дата</translation>
+    </message>
+    <message>
+        <source>No date specified. User will be banned forever. Continue?</source>
+        <translation>Дата не указана. Пользователь будет забанен навсегда. Продолжить?</translation>
+    </message>
+    <message>
+        <source>Canceled</source>
+        <translation>Отменено</translation>
+    </message>
+    <message>
+        <source>No board specified. User will be banned/unbanned on all boards. Continue?</source>
+        <translation>Не указана доска. Пользователь будет забанен/разбанен на всех досках. Продолжить?</translation>
     </message>
 </context>
 <context>
@@ -2150,8 +2355,20 @@ text</source>
         <translation>ОК</translation>
     </message>
     <message>
-        <source>Invalid date. User will be banned forever. Continue?</source>
-        <translation>Неверная дата. Пользователь будет забанен навсегда. Продолжить?</translation>
+        <source>Invalid date</source>
+        <translation>Неверная дата</translation>
+    </message>
+    <message>
+        <source>No date specified. User will be banned forever. Continue?</source>
+        <translation>Дата не указана. Пользователь будет забанен навсегда. Продолжить?</translation>
+    </message>
+    <message>
+        <source>Canceled</source>
+        <translation>Отменено</translation>
+    </message>
+    <message>
+        <source>No board specified. User will be banned/unbanned on all boards. Continue?</source>
+        <translation>Не указана доска. Пользователь будет забанен/разбанен на всех досках. Продолжить?</translation>
     </message>
 </context>
 <context>
@@ -2317,7 +2534,7 @@ text</source>
 Your choice:</source>
         <translation>Введите уровень:
 0 - нет (только логинится)
-1 - уровень опльзователя
+1 - уровень пользователя
 10 - уровень модератора
 100 - уровень администратора
 Ваш выбор:</translation>
@@ -2975,6 +3192,71 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <comment>timeZoneOffsetLabelText</comment>
         <translation>Коррекция:</translation>
     </message>
+    <message>
+        <source>Loop audio and video files:</source>
+        <comment>loopAudioVideoLabelText</comment>
+        <translation>Зацикливать аудио- и видеофайлы:</translation>
+    </message>
+    <message>
+        <source>Play audio and video files immediately:</source>
+        <comment>playAudioVideoImmediatelyLabelText</comment>
+        <translation>Проигрывать аудио- и видеофайлы сразу же:</translation>
+    </message>
+    <message>
+        <source>Remember volume:</source>
+        <comment>rememberAudioVideoVolumeLabelText</comment>
+        <translation>Запоминать громкость:</translation>
+    </message>
+    <message>
+        <source>Move to post after replying in thread:</source>
+        <comment>moveToPostOnReplyInThreadLabelText</comment>
+        <translation>Перемещаться к посту после ответа в треде:</translation>
+    </message>
+    <message>
+        <source>Use minimalistic post form:</source>
+        <comment>minimalisticPostformLabelText</comment>
+        <translation>Использовать минималистичную форму ответа:</translation>
+    </message>
+    <message>
+        <source>Mark OP post links:</source>
+        <comment>signOpPostLinksLabelText</comment>
+        <translation>Помечать ссылки на ОП-посты:</translation>
+    </message>
+    <message>
+        <source>Mark own post links:</source>
+        <comment>signOwnPostLinksLabelText</comment>
+        <translation>Помечать ссылки на собственные посты:</translation>
+    </message>
+    <message>
+        <source>F.A.Q.</source>
+        <comment>toFaqPageText</comment>
+        <translation>F.A.Q.</translation>
+    </message>
+    <message>
+        <source>Neutron</source>
+        <comment>style title</comment>
+        <translation>Neutron</translation>
+    </message>
+    <message>
+        <source>User management</source>
+        <comment>toManagePageText</comment>
+        <translation>Управление пользователями</translation>
+    </message>
+    <message>
+        <source>Maximum simultaneous AJAX requests:</source>
+        <comment>maxSimultaneousAjaxLabelText</comment>
+        <translation>Максимум одновременных AJAX-запросов:</translation>
+    </message>
+    <message>
+        <source>Burichan</source>
+        <comment>style title</comment>
+        <translation>Burichan</translation>
+    </message>
+    <message>
+        <source>Shrink posts:</source>
+        <comment>postShrinkingLabelText</comment>
+        <translation>Скукоживать посты:</translation>
+    </message>
 </context>
 <context>
     <name>initBaseBoard</name>
@@ -3159,11 +3441,6 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <translation>Вам не нужно вводить капчу</translation>
     </message>
     <message>
-        <source>Posts without captcha left:</source>
-        <comment>captchaQuotaText</comment>
-        <translation>Осталось постов без капчи:</translation>
-    </message>
-    <message>
         <source>Edit post</source>
         <comment>editPostText</comment>
         <translation>Редактировать пост</translation>
@@ -3256,7 +3533,7 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
     <message>
         <source>Download all thread files as a .zip archive</source>
         <comment>downloadThreadText</comment>
-        <translation>Скачoать все файлы из треда в виде .zip-архива</translation>
+        <translation>Скачать все файлы из треда в виде .zip-архива</translation>
     </message>
     <message>
         <source>Draft:</source>
@@ -3342,11 +3619,6 @@ R-18G - restricted for 18 years, guidance adviced (транссексуалы, �
         <source>Add thread to favorites</source>
         <comment>addThreadToFavoritesText</comment>
         <translation>Добавить тред в избранные</translation>
-    </message>
-    <message>
-        <source>Show tripcode</source>
-        <comment>postFormLabelTripcode</comment>
-        <translation>Показывать трипкод</translation>
     </message>
     <message>
         <source>Waiting for reply...</source>
@@ -3566,6 +3838,71 @@ You have to be logged in (NO registration, only a browser cookie!) to use drafts
         <source>Selected file is too large</source>
         <comment>fileTooLargeWarningText</comment>
         <translation>Выбранный файл слишком большой</translation>
+    </message>
+    <message>
+        <source>E-mail</source>
+        <comment>postFormPlaceholderEmail</comment>
+        <translation>Эл. почта</translation>
+    </message>
+    <message>
+        <source>Name</source>
+        <comment>postFormPlaceholderName</comment>
+        <translation>Имя</translation>
+    </message>
+    <message>
+        <source>Password</source>
+        <comment>postFormPlaceholderPassword</comment>
+        <translation>Пароль</translation>
+    </message>
+    <message>
+        <source>Subject</source>
+        <comment>postFormPlaceholderSubject</comment>
+        <translation>Тема</translation>
+    </message>
+    <message>
+        <source>Show user IP</source>
+        <comment>showUserIpText</comment>
+        <translation>Показать IP-адрес пользователя</translation>
+    </message>
+    <message>
+        <source>Select all</source>
+        <comment>selectAllText</comment>
+        <translation>Выбрать все</translation>
+    </message>
+    <message>
+        <source>Unselect all</source>
+        <comment>unselectAllText</comment>
+        <translation>Отменить выбор всех</translation>
+    </message>
+    <message>
+        <source>Delete all user posts on selected board</source>
+        <comment>delallButtonText</comment>
+        <translation>Удалить все посты пользователя на выбранной доске</translation>
+    </message>
+    <message>
+        <source>Options:</source>
+        <comment>postFormLabelOptions</comment>
+        <translation>Опции:</translation>
+    </message>
+    <message>
+        <source>OP:</source>
+        <comment>postFormLabelSignAsOp</comment>
+        <translation>ОП:</translation>
+    </message>
+    <message>
+        <source>Tripcode:</source>
+        <comment>postFormLabelTripcode</comment>
+        <translation>Трипкод:</translation>
+    </message>
+    <message>
+        <source>Posts left:</source>
+        <comment>captchaQuotaText</comment>
+        <translation>Осталось постов:</translation>
+    </message>
+    <message>
+        <source>Raw post text</source>
+        <comment>rawPostTextText</comment>
+        <translation>Исходный текст поста</translation>
     </message>
 </context>
 <context>
@@ -3984,6 +4321,35 @@ The default is -1000 (no offset).</source>
 The default is convert (UNIX) or convert.exe (Windows).</source>
         <translation>Команда вызова утилиты convert из пакета ImageMagick (возможно, полный путь).
 По умолчанию convert (UNIX) или convert.exe (Windows).</translation>
+    </message>
+    <message>
+        <source>Username/password for proxy used to download files attached as links.
+May be useful when your server is under a firewall.
+See CURLOPT_PROXYUSERPWD for detals.
+Example: user:passw0rd</source>
+        <translation>Имя пользователя/пароль для прокси, используемого для загрузки файлов, прикрепленных в виде ссылок.
+Может быть полезно, если ваш сервер находится за фаерволом.
+См. CURLOPT_PROXY для дополнительной информации.
+Пример: user:passw0rd</translation>
+    </message>
+    <message>
+        <source>Proxy used to download files attached as links.
+May be useful when your server is under a firewall.
+If no protocol is specified, it defaults to http.
+If port is not specified, it defaults to 8080.
+See CURLOPT_PROXY for detals.
+Example: 123.234.56.78:8080</source>
+        <translation>Прокси, используемый для загрузки файлов, прикрепленных в виде ссылок.
+Может быть полезно, если ваш сервер находится за фаерволом.
+Если протокол не указан, по умолчанию будет использован http.
+См. CURLOPT_PROXY для дополнительной информации.
+Пример: 123.234.56.78:8080</translation>
+    </message>
+    <message>
+        <source>Determines how many threads may be used simultaneously to render pages.
+The default is QThread::idealThreadCount()</source>
+        <translation>Определяет, сколько тредов может использоваться одновременно для рендеринга страниц.
+По умолчанию QThread::idealThreadCount()</translation>
     </message>
 </context>
 <context>
@@ -4776,12 +5142,12 @@ The default is convert (UNIX) or convert.exe (Windows).</source>
     <name>userBanInfo</name>
     <message>
         <source>Internal logic error</source>
-        <comment>description</comment>
+        <comment>error</comment>
         <translation>Внутренняя ошибка в логике программы</translation>
     </message>
     <message>
         <source>Internal database error</source>
-        <comment>description</comment>
+        <comment>error</comment>
         <translation>Внутренняя ошибка базы данных</translation>
     </message>
 </context>

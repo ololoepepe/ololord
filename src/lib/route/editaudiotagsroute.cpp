@@ -25,6 +25,7 @@ EditAudioTagsRoute::EditAudioTagsRoute(cppcms::application &app) :
 
 void EditAudioTagsRoute::handle()
 {
+    DDOS_A(16)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString boardName = params.value("board");
     quint64 postNumber = params.value("post").toULongLong();
@@ -32,14 +33,18 @@ void EditAudioTagsRoute::handle()
     QString logTarget = boardName + "/" + QString::number(postNumber) + "/" + fileName;
     Tools::log(application, "edit_audio_tags", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "edit_audio_tags", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "edit_audio_tags", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     TranslatorQt tq(application.request());
     if (Tools::hashpassString(application.request()).isEmpty()) {
         QString err = tq.translate("EditAudioTagsRoute", "Access error", "error");
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("EditAudioTagsRoute", "Not enough rights", "description"));
         Tools::log(application, "edit_audio_tags", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (boardName.isEmpty()) {
@@ -47,6 +52,7 @@ void EditAudioTagsRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("EditAudioTagsRoute", "Board name is empty", "description"));
         Tools::log(application, "edit_audio_tags", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (!postNumber) {
@@ -54,6 +60,7 @@ void EditAudioTagsRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("EditAudioTagsRoute", "Post number is null", "description"));
         Tools::log(application, "edit_audio_tags", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (fileName.isEmpty()) {
@@ -61,6 +68,7 @@ void EditAudioTagsRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("EditAudioTagsRoute", "File name is empty", "description"));
         Tools::log(application, "edit_audio_tags", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
@@ -69,6 +77,7 @@ void EditAudioTagsRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("EditAudioTagsRoute", "There is no such board", "description"));
         Tools::log(application, "edit_audio_tags", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     bool ok = false;
@@ -77,6 +86,7 @@ void EditAudioTagsRoute::handle()
         Controller::renderErrorNonAjax(application, tq.translate("EditAudioTagsRoute", "Internal error", "error"),
                                        err);
         Tools::log(application, "edit_audio_tags", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     TranslatorStd ts(tq);
@@ -96,6 +106,7 @@ void EditAudioTagsRoute::handle()
     c.audioTagYearText = ts.translate("EditAudioTagsRoute", "Year:", "audioTagYearText");
     Tools::render(application, "edit_audio_tags", c);
     Tools::log(application, "edit_audio_tags", "success", logTarget);
+    DDOS_POST_A
 }
 
 unsigned int EditAudioTagsRoute::handlerArgumentCount() const

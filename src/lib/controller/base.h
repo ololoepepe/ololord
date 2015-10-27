@@ -20,6 +20,13 @@ struct OLOLORD_EXPORT Base : public cppcms::base_content
         std::string id;
         std::string title;
     };
+    struct CustomLinkInfo
+    {
+        std::string imgUrl;
+        std::string target;
+        std::string text;
+        std::string url;
+    };
     struct Locale
     {
         std::string country;
@@ -46,6 +53,7 @@ public:
     std::string allBoardsText;
     std::string autoUpdateIntervalLabelText;
     std::string autoUpdateThreadsByDefaultLabelText;
+    std::string availableBoardsString;
     AbstractBoard::BoardInfoList boards;
     std::string cancelButtonText;
     std::list<CaptchaEngine> captchaEngines;
@@ -59,6 +67,7 @@ public:
     std::string currentTime;
     std::string customFooterContent;
     std::string customHeaderContent;
+    std::list<CustomLinkInfo> customLinks;
     std::string defaultAudioVideoVolumeLabelText;
     std::string deviceType;
     bool draftsByDefault;
@@ -114,23 +123,32 @@ public:
     std::string loginMessageText;
     std::string loginPlaceholderText;
     std::string loginSystemDescriptionText;
+    std::string loopAudioVideoLabelText;
     int maxAllowedRating;
     std::string maxAllowedRatingLabelText;
+    std::string maxSimultaneousAjaxLabelText;
     unsigned int maxSearchQueryLength;
+    bool minimalisticPostform;
+    std::string minimalisticPostformLabelText;
     Mode mode;
     std::string modeLabelText;
+    int moder;
     std::list<Mode> modes;
+    std::string moveToPostOnReplyInThreadLabelText;
     std::string mumWatchingText;
     std::string otherTabText;
     std::string pageTitle;
     std::string path;
+    std::string playAudioVideoImmediatelyLabelText;
     std::string postformTabText;
+    std::string postShrinkingLabelText;
     std::string postsTabText;
     std::string quickReplyActionAppendPostText;
     std::string quickReplyActionDoNothingText;
     std::string quickReplyActionGotoThreadText;
     std::string quickReplyActionLabelText;
     std::string ratingTooltip;
+    std::string rememberAudioVideoVolumeLabelText;
     std::string removeFromFavoritesText;
     std::string removeFromHiddenPostListText;
     std::string scriptSettingsLegendText;
@@ -147,6 +165,10 @@ public:
     std::string showNewPostsLabelText;
     std::string showPasswordText;
     std::string showYoutubeVideoTitleLabelText;
+    bool shrinkPosts;
+    std::string shrinkPostsClass;
+    std::string signOpPostLinksLabelText;
+    std::string signOwnPostLinksLabelText;
     std::string siteDomain;
     std::string sitePathPrefix;
     std::string siteProtocol;
@@ -161,7 +183,9 @@ public:
     std::string timeServerText;
     int timeZoneOffset;
     std::string timeZoneOffsetLabelText;
+    std::string toFaqPageText;
     std::string toHomePageText;
+    std::string toManagePageText;
     std::string toPlaylistPageText;
     std::string toMarkupPageText;
     std::string userCssLabelText;

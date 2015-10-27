@@ -84,7 +84,47 @@ lord.getYoutubeVideoInfo = function(href, apiKey) {
     var info = response.items[0].snippet;
     info.id = videoId;
     return info;
-}
+};
+
+lord.getCoubVideoInfo = function(href) {
+    if (!href)
+        return null;
+    var videoId = href.match(/^http:\/\/coub\.com\/view\/([^\/\?]+)?/)[1];
+    if (!videoId)
+        return null;
+    var xhr = new XMLHttpRequest();
+    xhr.withCredentials = true;
+    xhr.open("post", "../api", false);
+    xhr.setRequestHeader("Content-Type", "application/json");
+    var request = {
+        "method": "get_coub_video_info",
+        "params": [videoId],
+        "id": lord.RpcGetCoubVideoInfoId
+    };
+    xhr.send(JSON.stringify(request));
+    if (xhr.status != 200)
+        return null;
+    var response = null;
+    try {
+        response = JSON.parse(xhr.responseText);
+    } catch (ex) {
+        return null;
+    }
+    if (!response.result)
+        return null;
+    response = response.result;
+    var info = {
+        "videoTitle": response.title,
+        "authorName": response.author_name,
+        "thumbnail": response.thumbnail_url ? {
+            "url": response.thumbnail_url,
+            "width": response.thumbnail_width,
+            "height": response.thumbnail_height
+        } : null
+    };
+    info["id"] = videoId;
+    return info;
+};
 
 lord.parseSpells = function(text) {
     if (typeof text != "string")
@@ -657,7 +697,10 @@ lord.spell_rep = function(post, args) {
     if (!m)
         return null;
     var s = lord.last(m) || "";
-    return { "replacements": [ { "innerHTML": post.innerHTML.replace(new RegExp(m[1], m[3]), s) } ] };
+    var nih = post.innerHTML.replace(new RegExp(m[1], m[3]), s);
+    if (post.innerHTML == nih)
+        return null;
+    return { "replacements": [ { "innerHTML": nih } ] };
 };
 
 lord.applySpell = function(post, spell, youtube) {
@@ -711,6 +754,29 @@ lord.applyYouTube = function(post, apiKey) {
             "videoTitle": info.title,
             "channelTitle": info.channelTitle
         };
+        if (info.thumbnails.medium)
+            videos[href].thumbnail = info.thumbnails.medium;
+    });
+    return videos;
+};
+
+lord.applyCoub = function(post) {
+    if (!post || !post.coub || post.coub.length < 1)
+        return null;
+    var videos = null;
+    post.coub.forEach(function(href) {
+        var info = lord.getCoubVideoInfo(href);
+        if (!info)
+            return;
+        if (!videos)
+            videos = {};
+        videos[href] = {
+            "id": info.id,
+            "videoTitle": info.videoTitle,
+            "authorName": info.authorName
+        };
+        if (info.thumbnail)
+            videos[href].thumbnail = info.thumbnail;
     });
     return videos;
 };
@@ -743,13 +809,15 @@ lord.processPosts = function(posts, spells, youtube) {
             "board": post.board,
             "number": post.number
         };
-        if (youtube && youtube.apiKey)
+        if (youtube && youtube.apiKey) {
             npost.youtube = lord.applyYouTube(post, youtube.apiKey);
+            npost.coub = lord.applyCoub(post);
+        }
         if (spells && !post.hidden) {
             var result = lord.applySpells(post, spells, npost.youtube);
             if (result) {
                 npost.hidden = result.hidden;
-                npost.modifications = result.modifications;
+                npost.replacements = result.replacements;
             }
         }
         processed.push(npost);

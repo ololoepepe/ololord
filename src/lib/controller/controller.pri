@@ -12,10 +12,12 @@ HEADERS += \
     $${PWD}/editaudiotags.h \
     $${PWD}/editpost.h \
     $${PWD}/error.h \
+    $${PWD}/faq.h \
     $${PWD}/frame.h \
     $${PWD}/framelist.h \
     $${PWD}/home.h \
     $${PWD}/ipban.h \
+    $${PWD}/manage.h \
     $${PWD}/markup.h \
     $${PWD}/mlpboard.h \
     $${PWD}/movethread.h \

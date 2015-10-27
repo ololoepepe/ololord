@@ -347,6 +347,28 @@ static void processStrikedOutShitty(ProcessingInfo &info)
     }
 }
 
+static void processStrikedOutShittyWord(ProcessingInfo &info)
+{
+    QRegExp rx("(\\^W)+");
+    int ind = info.find(rx);
+    const QString &txt = info.text();
+    while (ind >= 0) {
+        int count = rx.matchedLength() / 2;
+        int pcount = count;
+        int s = ind - 1;
+        while (count > 0) {
+            while (s >= 0 && txt.at(s).isSpace())
+                --s;
+            while (s >= 0 && !txt.at(s).isSpace())
+                --s;
+            --count;
+        }
+        info.replace(ind, rx.matchedLength(), "</s>", 0);
+        info.insert(s + 1, "<s>");
+        ind = info.find(rx, ind + (7 * pcount));
+    }
+}
+
 static bool checkLangsMatch(ProcessingInfo &, const QRegExp &rxOp, const QRegExp &rxCl, int, int)
 {
     return !rxOp.cap(1).isEmpty() && rxOp.cap(1) == rxCl.cap(1);
@@ -634,6 +656,7 @@ QString processPostText(QString text, const QString &boardName, Database::RefMap
                 &checkExternalLink);
         process(info, &convertProtocol, QRegExp("(mailto|irc|news):(\\S+)"), QRegExp());
         processStrikedOutShitty(info);
+        processStrikedOutShittyWord(info);
         process(info, &convertTooltipShitty, QRegExp("([^\\?\\s]+)\\?{3}\"([^\"]+)\""), QRegExp());
         process(info, &convertPostLink, QRegExp(">>([1-9][0-9]*)"), QRegExp());
         QString boards = AbstractBoard::boardNames().join("|");

@@ -37,6 +37,7 @@ StaticFilesRoute::StaticFilesRoute(cppcms::application &app, Mode m) :
 
 void StaticFilesRoute::handle(std::string p)
 {
+    DDOS_A(0.35)
     QString path = Tools::fromStd(p);
     QString logAction = QString(StaticFilesMode == mode ? "static" : "dynamic") + "_file";
     QString logTarget = path;
@@ -44,19 +45,25 @@ void StaticFilesRoute::handle(std::string p)
     typedef Cache::File *(*GetCacheFunction)(const QString &path);
     typedef Cache::File *(*SetCacheFunction)(const QString &path, const QByteArray &file);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, logAction, "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, logAction, "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     if (path.contains("../") || path.contains("/..")) { //NOTE: Are you trying to cheat me?
         Controller::renderNotFoundNonAjax(application);
         Tools::log(application, logAction, "fail:cheating", logTarget);
+        DDOS_POST_A
         return;
     }
     GetCacheFunction getCache = (StaticFilesMode == mode) ? &Cache::staticFile : &Cache::dynamicFile;
     SetCacheFunction setCache = (StaticFilesMode == mode) ? &Cache::cacheStaticFile : &Cache::cacheDynamicFile;
     Cache::File *file = getCache(path);
+    QString ct; // = path.endsWith(".css", Qt::CaseInsensitive) ? "text/css" : ""; //TODO: This causes page to freeze
     if (file) {
-        write(file->data, file->msecsSinceEpoch);
+        write(file->data, ct, file->msecsSinceEpoch);
         Tools::log(application, logAction, "success:cache", logTarget);
+        DDOS_POST_A
         return;
     }
     QString fn = BDirTools::findResource(Prefix + "/" + path, BDirTools::AllResources);
@@ -66,14 +73,16 @@ void StaticFilesRoute::handle(std::string p)
     if (!ok) {
         Controller::renderNotFoundNonAjax(application);
         Tools::log(application, logAction, "fail:not_found", logTarget);
+        DDOS_POST_A
         return;
     }
     file = setCache(path, ba);
     if (file)
-        write(file->data, file->msecsSinceEpoch);
+        write(file->data, ct, file->msecsSinceEpoch);
     else
-        write(ba);
+        write(ba, ct);
     Tools::log(application, logAction, "success", logTarget);
+    DDOS_POST_A
 }
 
 void StaticFilesRoute::handle(std::string boardName, std::string path)
@@ -107,7 +116,7 @@ std::string StaticFilesRoute::url() const
     return (StaticFilesMode == mode) ? "/{1}" : "/{1}/{2}";
 }
 
-void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
+void StaticFilesRoute::write(const QByteArray &data, const QString &contentType, qint64 msecsSinceEpoch)
 {
     typedef QPair<uint, uint> Range;
     cppcms::http::response &r = application.response();
@@ -130,7 +139,7 @@ void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
         if (dt.isValid() && dt.toLocalTime() >= QDateTime::fromMSecsSinceEpoch(msecsSinceEpoch))
             return r.status(304);
     }
-    r.content_type("");
+    r.content_type(Tools::toStd(contentType));
     r.accept_ranges("bytes");
     if (msecsSinceEpoch > 0)
         r.last_modified(QDateTime::fromMSecsSinceEpoch(msecsSinceEpoch).toTime_t());
@@ -182,4 +191,9 @@ void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
     r.content_length(ba.size());
     r.out().write(ba, ba.size());
     r.out().flush();
+}
+
+void StaticFilesRoute::write(const QByteArray &data, qint64 msecsSinceEpoch)
+{
+    write(data, "", msecsSinceEpoch);
 }

@@ -22,10 +22,14 @@ MarkupRoute::MarkupRoute(cppcms::application &app) :
 
 void MarkupRoute::handle()
 {
+    DDOS_A(11)
     Tools::log(application, "markup", "begin");
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "markup", "fail:" + err);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "markup", "fail:" + err);
+        DDOS_POST_A
+        return;
+    }
     Content::Markup c;
     TranslatorQt tq(application.request());
     TranslatorStd ts(application.request());
@@ -67,9 +71,12 @@ void MarkupRoute::handle()
         Q_UNUSED(i)
         c.strikedoutTextWakaba.append("^H");
     }
+    c.strikedoutWord1 = ts.translate("MarkupRoute", "striked out", "strikedoutWord1");
+    c.strikedoutWord2 = ts.translate("MarkupRoute", "word", "strikedoutWord2");
     c.underlinedText = ts.translate("MarkupRoute", "underlined text", "underlinedText");
     Tools::render(application, "markup", c);
     Tools::log(application, "markup", "success");
+    DDOS_POST_A
 }
 
 unsigned int MarkupRoute::handlerArgumentCount() const

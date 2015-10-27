@@ -1,0 +1,257 @@
+<% c++ #include "controller/manage.h" %>
+<% skin my_skin %>
+<% view manage uses Content::Manage extends base %>
+
+<% template render() %>
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <% include baseHead(1) %>
+        <% if ( content.mode.name != "ascetic" ) %>
+            <script type="text/javascript" src="/<%= sitePathPrefix %>js/manage.js"></script>
+        <% end %>
+    </head>
+    <body class="<%= deviceType %>">
+        <% include baseTexts() %>
+        <input type="hidden" id="delallButtonText" value="<%= delallButtonText %>" />
+        <input type="hidden" id="banReasonLabelText" value="<%= banReasonLabelText %>" />
+        <input type="hidden" id="banExpiresLabelText" value="<%= banExpiresLabelText %>" />
+        <input type="hidden" id="selectAllText" value="<%= selectAllText %>" />
+        <select id="availableBoardsSelect" class="select" style="display: none;">
+            <% foreach board in availableBoards %>
+                <% item %>
+                    <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+                <% end %>
+            <% end %>
+        </select>
+        <select id="banLevelsSelect" class="select" style="display: none;">
+            <% foreach level in banLevels %>
+                <% item %>
+                    <% if ( 1 == level.level ) %>
+                        <option value="<%= level.level %>" selected="true"><%= level.description %></option>
+                    <% else %>
+                        <option value="<%= level.level %>"><%= level.description %></option>
+                    <% end %>
+                <% end %>
+            <% end %>
+        </select>
+        <% include customHeader() %>
+        <% include settings() %>
+        <br />
+        <% include navbar() %>
+        <br />
+        <% include searchAction() %>
+        <div class="theTitle">
+            <h1><%= pageTitle %></h1>
+        </div>
+        <div id="bannedUsers">
+            <% foreach user in bannedUsers %>
+                <% item %>
+                    <div id="user<%= user.ip %>">
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            <div>
+                        <% else %>
+                            <form id="settings" class="centerForm" method="post" accept-charset="utf-8"
+                                  enctype="multipart/form-data" action="/<%= sitePathPrefix %>action/ban_user">
+                        <% end %>
+                            <input type="text" name="userIp" value="<%= user.ip %>" readonly="true" />
+                            <br />
+                            <% foreach ban in user.bans %>
+                                <% item %>
+                                    <div class="nowrap">
+                                        <input type="hidden" name="ban_board_<%= ban.boardName %>" value="<%= ban.boardName %>" />
+                                        [<%= ban.boardName %>] <%= ban.boardTitle %>
+                                        <select name="ban_level_<%= ban.boardName %>" class="select">
+                                            <%foreach level in banLevels %>
+                                                <% item %>
+                                                    <% if ( ban.level == level.level ) %>
+                                                        <option value="<%= level.level %>"
+                                                                selected="true"><%= level.description %></option>
+                                                    <% else %>
+                                                        <option value="<%= level.level %>"><%= level.description %></option>
+                                                    <% end %>
+                                                <% end %>
+                                            <% end %>
+                                        </select>
+                                        <input type="text" name="ban_expires_<%= ban.boardName %>" size="23"
+                                               placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
+                                        <input type="text" name="ban_reason_<%= ban.boardName %>" size="33"
+                                               placeholder="<%= banReasonLabelText %> [...]" />
+                                    </div>
+                                <% end %>
+                            <% end %>
+                            <% if ( content.mode.name != "ascetic" ) %>
+                                <br />
+                                <input type="submit" name="submit" value="<%= selectAllText %>"
+                                       onclick="lord.bansSelectAll(this);" />
+                                <select name="level" class="select">
+                                    <% foreach level in banLevels %>
+                                        <% item %>
+                                            <% if ( 0 == level.level ) %>
+                                                <option value="<%= level.level %>"
+                                                        selected="true"><%= level.description %></option>
+                                            <% else %>
+                                                <option value="<%= level.level %>"><%= level.description %></option>
+                                            <% end %>
+                                        <% end %>
+                                    <% end %>
+                                </select>
+                                <input type="text" name="expires" size="23"
+                                       placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
+                                <input type="text" name="reason" size="33"
+                                       placeholder="<%= banReasonLabelText %> [...]" />
+                                <br />
+                            <% end %>
+                            <br />
+                            <% if ( content.mode.name != "ascetic" ) %>
+                                <input type="submit" name="submit" value="<%= confirmButtonText %>"
+                                       onclick="lord.banUser(this);" />
+                            <% else %>
+                                <input type="submit" name="submit" value="<%= confirmButtonText %>" />
+                            <% end %>
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            </div>
+                        <% else %>
+                            </form>
+                        <% end %>
+                        <br />
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            <div>
+                        <% else %>
+                            <form id="settings" class="centerForm" method="post" accept-charset="utf-8"
+                                  enctype="multipart/form-data" action="/<%= sitePathPrefix %>action/delall">
+                        <% end %>
+                            <input type="hidden" name="userIp" value="<%= user.ip %>" />
+                            <select name="board" class="select">
+                                <%foreach board in availableBoards %>
+                                    <% item %>
+                                        <% if ( board.name == "*" ) %>
+                                            <option value="<%= board.name %>"
+                                                    selected="true">[<%= board.name %>] <%= board.title %></option>
+                                        <% else %>
+                                            <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+                                        <% end %>
+                                    <% end %>
+                                <% end %>
+                            </select>
+                            <% if ( content.mode.name != "ascetic" ) %>
+                                <input type="submit" name="submit" value="<%= delallButtonText %>"
+                                       onclick="lord.delall(this);" />
+                            <% else %>
+                                <input type="submit" name="submit" value="<%= delallButtonText %>" />
+                            <% end %>
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            </div>
+                        <% else %>
+                            </form>
+                        <% end %>
+                    <br />
+                    </div>
+                <% end %>
+            <% end %>
+        </div>    
+        <hr />
+        <div>
+            <% if ( content.mode.name != "ascetic" ) %>
+                <div>
+            <% else %>
+                <form id="settings" class="centerForm" method="post" accept-charset="utf-8"
+                      enctype="multipart/form-data" action="/<%= sitePathPrefix %>action/ban_user">
+            <% end %>
+                <input type="text" name="userIp" placeholder="IP: <127.0.0.1>" />
+                <br />
+                <% foreach board in availableBoards %>
+                    <% item %>
+                        <% if ( board.name != "*" ) %>
+                            <div class="nowrap">
+                                <input type="hidden" name="ban_board_<%= board.name %>" value="<%= board.name %>" />
+                                [<%= board.name %>] <%= board.title %>
+                                <select name="ban_level_<%= board.name %>" class="select">
+                                    <%foreach level in banLevels %>
+                                        <% item %>
+                                            <% if ( level.level == 0) %>
+                                                <option value="<%= level.level %>"
+                                                        selected="true"><%= level.description %></option>
+                                            <% else %>
+                                                <option value="<%= level.level %>"><%= level.description %></option>
+                                            <% end %>
+                                        <% end %>
+                                    <% end %>
+                                </select>
+                                <input type="text" name="ban_expires_<%= board.name %>" size="23"
+                                       placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
+                                <input type="text" name="ban_reason_<%= board.name %>" size="33"
+                                       placeholder="<%= banReasonLabelText %> [...]" />
+                            </div>
+                        <% end %>
+                    <% end %>
+                <% end %>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <br />
+                    <input type="submit" name="submit" value="<%= selectAllText %>"
+                           onclick="lord.bansSelectAll(this);" />
+                    <select name="level" class="select">
+                        <% foreach level in banLevels %>
+                            <% item %>
+                                <% if ( 0 == level.level ) %>
+                                    <option value="<%= level.level %>" selected="true"><%= level.description %></option>
+                                <% else %>
+                                    <option value="<%= level.level %>"><%= level.description %></option>
+                                <% end %>
+                            <% end %>
+                        <% end %>
+                    </select>
+                    <input type="text" name="expires" size="23"
+                           placeholder="<%= banExpiresLabelText %> <dd.MM.yyyy:hh>" />
+                    <input type="text" name="reason" size="33" placeholder="<%= banReasonLabelText %> [...]" />
+                    <br />
+                <% end %>
+                <br />
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <input type="submit" name="submit" value="<%= confirmButtonText %>" onclick="lord.banUser(this);" />
+                <% else %>
+                    <input type="submit" name="submit" value="<%= confirmButtonText %>" />
+                <% end %>
+            <% if ( content.mode.name != "ascetic" ) %>
+                </div>
+            <% else %>
+                </form>
+            <% end %>
+                <br />
+            <% if ( content.mode.name != "ascetic" ) %>
+                <div>
+            <% else %>
+                <form id="settings" class="centerForm" method="post" accept-charset="utf-8"
+                      enctype="multipart/form-data" action="/<%= sitePathPrefix %>action/delall">
+            <% end %>
+                <input type="text" name="userIp" placeholder="IP: <127.0.0.1>" />
+                <select name="board" class="select">
+                    <%foreach board in availableBoards %>
+                        <% item %>
+                            <% if ( board.name == "*" ) %>
+                                <option value="<%= board.name %>"
+                                        selected="true">[<%= board.name %>] <%= board.title %></option>
+                            <% else %>
+                                        <option value="<%= board.name %>">[<%= board.name %>] <%= board.title %></option>
+                            <% end %>
+                        <% end %>
+                    <% end %>
+                </select>
+                <% if ( content.mode.name != "ascetic" ) %>
+                    <input type="submit" name="submit" value="<%= delallButtonText %>" onclick="lord.delall(this);" />
+                <% else %>
+                    <input type="submit" name="submit" value="<%= delallButtonText %>" />
+                <% end %>
+            <% if ( content.mode.name != "ascetic" ) %>
+                </div>
+            <% else %>
+                </form>
+            <% end %>
+        </div>
+        <% include customHeader() %>
+    </body>
+</html>
+<% end template %>
+
+<% end view %>
+<% end skin %>

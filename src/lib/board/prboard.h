@@ -33,6 +33,7 @@ class OLOLORD_EXPORT prBoard : public AbstractBoard
 public:
     explicit prBoard();
 public:
+    MarkupElements markupElements() const;
     QString name() const;
     QString supportedCaptchaEngines() const;
     QString title(const QLocale &l) const;

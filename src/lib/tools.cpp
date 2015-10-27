@@ -21,6 +21,7 @@
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QFileInfo>
 #include <QImage>
 #include <QList>
@@ -35,6 +36,7 @@
 #include <QStringList>
 #include <QTemporaryFile>
 #include <QTextCodec>
+#include <QThread>
 #include <QTime>
 #include <QUrl>
 #include <QVariant>
@@ -53,7 +55,12 @@
 
 #include <magic.h>
 
-#include <id3/tag.h>
+#include <taglib/attachedpictureframe.h>
+#include <taglib/fileref.h>
+#include <taglib/id3v2tag.h>
+#include <taglib/mpegfile.h>
+#include <taglib/tag.h>
+#include <taglib/tpropertymap.h>
 
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
@@ -178,8 +185,22 @@ bool IpBanInfo::isValid() const
 static QMutex cityNameMutex(QMutex::Recursive);
 static QMutex countryCodeMutex(QMutex::Recursive);
 static QMutex countryNameMutex(QMutex::Recursive);
+static QMap<QString, double> ddos;
+static const qint64 DdosBanPeriod = BeQt::Minute;
+static const qint64 DdosClearPeriod = BeQt::Hour;
+static const double DdosLimit = 10000.0;
+static QMutex ddosMutex;
+static const qint64 DdosPeriod = 10 * BeQt::Second;
+static QElapsedTimer ddosTimer;
+static bool ddosTimerStarted = false;
+static QMap<QString, QElapsedTimer *> ddosWait;
+static QMutex ddosWaitMutex;
+static QElapsedTimer ddosWaitTimer;
+static bool ddosWaitTimerStarted = false;
 static QList<IpRange> loggingSkipIps;
 static QMutex loggingSkipIpsMutex(QMutex::Recursive);
+static unsigned int renderThreads = 0;
+static QMutex renderThreadsMutex;
 static QMutex storagePathMutex(QMutex::Recursive);
 static QMutex timezoneMutex(QMutex::Recursive);
 
@@ -193,24 +214,6 @@ static QTime time(int msecs)
     return QTime(h, m, s, msecs % BeQt::Second);
 }
 
-static QString audioTag(const ID3_Tag &tag, ID3_FrameID id)
-{
-    ID3_Frame *frame = tag.Find(id);
-    if (!frame)
-        return "";
-    ID3_Field *text = frame->GetField(ID3FN_TEXT);
-    if (!text)
-        return "";
-    QString s = QString::fromUtf16(text->GetRawUnicodeText(), text->Size() / 2);
-    if (!s.isEmpty())
-        return s;
-    QByteArray ba(text->GetRawText());
-    QTextCodec *codec = BTextTools::guessTextCodec(ba);
-    if (!codec)
-        codec = QTextCodec::codecForName("UTF-8");
-    return codec->toUnicode(ba);
-}
-
 QStringList acceptedExternalBoards()
 {
     QString fn = BDirTools::findResource("res/echo.txt", BDirTools::UserOnly);
@@ -221,12 +224,30 @@ AudioTags audioTags(const QString &fileName)
 {
     if (fileName.isEmpty())
         return AudioTags();
-    ID3_Tag tag(toStd(fileName).data());
     AudioTags a;
-    a.album = audioTag(tag, ID3FID_ALBUM);
-    a.artist = audioTag(tag, ID3FID_LEADARTIST);
-    a.title = audioTag(tag, ID3FID_TITLE);
-    a.year = audioTag(tag, ID3FID_YEAR);
+    TagLib::FileRef f(toStd(fileName).data());
+    if(!f.isNull() && f.tag()) {
+        TagLib::Tag *tag = f.tag();
+        a.album = TStringToQString(tag->album());
+        a.artist = TStringToQString(tag->artist());
+        a.title = TStringToQString(tag->title());
+        if (tag->year() > 0)
+            a.year = QString::number(tag->year());
+    }
+    QString suff = QFileInfo(fileName).suffix();
+    if (!suff.compare("mp3", Qt::CaseInsensitive) || !suff.compare("mpeg", Qt::CaseInsensitive)) {
+        TagLib::MPEG::File audioFile(toStd(fileName).data());
+        TagLib::ID3v2::Tag *tag = audioFile.ID3v2Tag();
+        if (tag) {
+            TagLib::ID3v2::FrameList list = tag->frameListMap()["APIC"];
+            if (!list.isEmpty()) {
+                TagLib::ID3v2::AttachedPictureFrame *pic =
+                        dynamic_cast<TagLib::ID3v2::AttachedPictureFrame *>(list.front());
+                if (pic)
+                    a.cover.loadFromData((const uchar *) pic->picture().data(), pic->picture().size());
+            }
+        }
+    }
     return a;
 }
 
@@ -270,6 +291,42 @@ QString customContent(const QString &prefix, const QLocale &l)
     return *s;
 }
 
+QList<CustomLinkInfo> customLinks(const QLocale &l)
+{
+    QList<CustomLinkInfo> *list = Cache::customLinks(l);
+    if (!list) {
+        QString path = BDirTools::findResource("res", BDirTools::UserOnly);
+        if (path.isEmpty())
+            return QList<CustomLinkInfo>();
+        QString fn = BDirTools::localeBasedFileName(path + "/custom_links.txt", l);
+        if (fn.isEmpty())
+            return QList<CustomLinkInfo>();
+        list = new QList<CustomLinkInfo>;
+        QStringList sl = BDirTools::readTextFile(fn, "UTF-8").split(QRegExp("\\r?\\n+"), QString::KeepEmptyParts);
+        foreach (const QString &s, sl) {
+            QStringList sll = BTextTools::splitCommand(s);
+            if (sll.size() < 2)
+                continue;
+            if (sll.first().isEmpty() || sll.at(1).isEmpty())
+                continue;
+            CustomLinkInfo info;
+            info.text = sll.first();
+            info.url = sll.at(1);
+            if (sll.size() > 2)
+                info.imgUrl = sll.at(2);
+            if (sll.size() > 3)
+                info.target = sll.at(3);
+            *list << info;
+        }
+        if (!Cache::cacheCustomLinks(l, list)) {
+            QList<CustomLinkInfo> llist = *list;
+            delete list;
+            return llist;
+        }
+    }
+    return *list;
+}
+
 QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
 {
     QString s = cookieValue(req, "time");
@@ -277,6 +334,57 @@ QDateTime dateTime(const QDateTime &dt, const cppcms::http::request &req)
     if (s.isEmpty() || s.compare("local", Qt::CaseInsensitive))
         return localDateTime(dt, def);
     return localDateTime(dt, timeZoneMinutesOffset(req, def));
+}
+
+bool ddosTest(const cppcms::application &app, double weight, double previousWeight)
+{
+    if (weight <= 0.0)
+        return true;
+    QString ip = userIp(const_cast<cppcms::application *>(&app)->request());
+    if (ip.isEmpty())
+        return true;
+    bool b = false;
+    ddosWaitMutex.lock();
+    if (!ddosWaitTimerStarted) {
+        ddosWaitTimerStarted = true;
+        ddosWaitTimer.start();
+    }
+    if (ddosWaitTimer.elapsed() >= DdosClearPeriod) {
+        ddosWaitTimer.restart();
+        foreach (QElapsedTimer *etmr, ddosWait)
+            delete etmr;
+        ddosWait.clear();
+    }
+    QElapsedTimer *etmr = ddosWait.value(ip);
+    if (etmr) {
+        if (etmr->elapsed() >= DdosBanPeriod)
+            delete ddosWait.take(ip);
+        else
+            b = true;
+    }
+    ddosWaitMutex.unlock();
+    QMutexLocker lock(&ddosMutex);
+    if (!ddosTimerStarted) {
+        ddosTimerStarted = true;
+        ddosTimer.start();
+    }
+    if (ddosTimer.elapsed() >= (DdosPeriod)) {
+        ddosTimer.restart();
+        ddos.clear();
+    }
+    double &x = ddos[ip];
+    x += weight;
+    if (previousWeight > 0.0)
+        x -= previousWeight;
+    if (!b && x >= DdosLimit) {
+        ddosWaitMutex.lock();
+        QElapsedTimer *etmr = new QElapsedTimer;
+        etmr->start();
+        ddosWait.insert(ip, etmr);
+        ddosWaitMutex.unlock();
+    }
+    b = b || (x >= DdosLimit);
+    return !b;
 }
 
 QString externalLinkRegexpPattern()
@@ -728,6 +836,8 @@ FileList postFiles(const cppcms::http::request &request, const PostParameters &p
         list << file;
     }
     int maxSize = maxInfo(MaxFileSize, boardName);
+    std::string proxy = toStd(SettingsLocker()->value("Site/file_link_dl_proxy").toString());
+    std::string proxyUserpwd = toStd(SettingsLocker()->value("Site/file_link_dl_proxy_userpwd").toString());
     foreach (const QString &key, params.keys()) {
         if (!key.startsWith("file_url_"))
             continue;
@@ -739,6 +849,11 @@ FileList postFiles(const cppcms::http::request &request, const PostParameters &p
             curlpp::Easy request;
             request.setOpt(curlpp::options::Url(Tools::toStd(url)));
             request.setOpt(curlpp::options::MaxFileSize(maxSize));
+            if (!proxy.empty()) {
+                request.setOpt(curlpp::options::Proxy(proxy));
+                if (!proxyUserpwd.empty())
+                    request.setOpt(curlpp::options::ProxyUserPwd(proxyUserpwd));
+            }
             std::ostringstream os;
             os << request;
             std::string s = os.str();
@@ -800,7 +915,21 @@ void redirect(cppcms::application &app, const QString &path)
 
 void render(cppcms::application &app, const QString &templateName, cppcms::base_content &content)
 {
-    return app.render(toStd(templateName), content);
+    forever {
+        renderThreadsMutex.lock();
+        bool b = (renderThreads < SettingsLocker()->value("System/max_render_threads",
+                                                          QThread::idealThreadCount()).toUInt());
+        if (b)
+            ++renderThreads;
+        renderThreadsMutex.unlock();
+        if (b)
+            break;
+        BeQt::msleep(1);
+    }
+    app.render(toStd(templateName), content);
+    renderThreadsMutex.lock();
+    --renderThreads;
+    renderThreadsMutex.unlock();
 }
 
 void resetLoggingSkipIps()

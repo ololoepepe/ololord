@@ -42,6 +42,16 @@ lord._defineHotkey("markupCode", "Alt+C");
 
 /*Functions*/
 
+lord.availableBoards = function() {
+    if (lord.availableBoards._boards)
+        return lord.availableBoards._boards;
+    lord.availableBoards._boards = {};
+    lord.arr(lord.text("availableBoards").split(";")).forEach(function(brd) {
+        lord.availableBoards._boards[brd.split("|").shift()] = brd.split("|").pop();
+    });
+    return lord.availableBoards._boards;
+};
+
 lord.changeLocale = function() {
     var sel = lord.id("localeChangeSelect");
     var ln = sel.options[sel.selectedIndex].value;
@@ -114,6 +124,8 @@ lord.showSettings = function() {
     sel = lord.nameOne("ratingSelect", div);
     var rt = lord.getCookie("maxAllowedRating") || "R-18G";
     lord.queryOne("[value='" + rt + "']", sel).selected = true;
+    var moveToPostOnReplyInThread = lord.nameOne("moveToPostOnReplyInThread", div);
+    moveToPostOnReplyInThread.checked = lord.getLocalObject("moveToPostOnReplyInThread", true);
     var showNewPosts = lord.nameOne("showNewPosts", div);
     showNewPosts.checked = lord.getLocalObject("showNewPosts", true);
     var showYoutubeVideosTitles = lord.nameOne("showYoutubeVideosTitles", div);
@@ -137,14 +149,24 @@ lord.showSettings = function() {
     var timeZoneOffset = lord.nameOne("timeZoneOffset", div);
     var date = new Date();
     timeZoneOffset.value = lord.getCookie("timeZoneOffset") || -date.getTimezoneOffset();    
-    var autoUpdateThreadsByDefault = lord.nameOne("autoUpdateThreadsByDefault", div);
     var defaultAudioVideoVolume = lord.nameOne("defaultAudioVideoVolume", div);
     defaultAudioVideoVolume.value = lord.getLocalObject("defaultAudioVideoVolume", 100);
+    var rememberAudioVideoVolume = lord.nameOne("rememberAudioVideoVolume", div);
+    rememberAudioVideoVolume.checked = lord.getLocalObject("rememberAudioVideoVolume", false);
+    var playAudioVideoImmediately = lord.nameOne("playAudioVideoImmediately", div);
+    playAudioVideoImmediately.checked = lord.getLocalObject("playAudioVideoImmediately", true);
+    var loopAudioVideo = lord.nameOne("loopAudioVideo", div);
+    loopAudioVideo.checked = lord.getLocalObject("loopAudioVideo", false);
+    var autoUpdateThreadsByDefault = lord.nameOne("autoUpdateThreadsByDefault", div);
     autoUpdateThreadsByDefault.checked = !!lord.getLocalObject("autoUpdateThreadsByDefault", false);
     var autoUpdateInterval = lord.nameOne("autoUpdateInterval", div);
     autoUpdateInterval.value = lord.getLocalObject("autoUpdateInterval", 15);
     var showAutoUpdateTimer = lord.nameOne("showAutoUpdateTimer", div);
     showAutoUpdateTimer.checked = !!lord.getLocalObject("showAutoUpdateTimer", true);
+    var signOpPostLinks = lord.nameOne("signOpPostLinks", div);
+    signOpPostLinks.checked = !!lord.getLocalObject("signOpPostLinks", true);
+    var signOwnPostLinks = lord.nameOne("signOwnPostLinks", div);
+    signOwnPostLinks.checked = !!lord.getLocalObject("signOwnPostLinks", true);
     var showAutoUpdateDesktopNotifications = lord.nameOne("showAutoUpdateDesktopNotifications", div);
     showAutoUpdateDesktopNotifications.checked = !!lord.getLocalObject("showAutoUpdateDesktopNotifications", false);
     var hideTripcodes = lord.nameOne("hideTripcodes", div);
@@ -153,6 +175,8 @@ lord.showSettings = function() {
     hideUserNames.checked = !!lord.getLocalObject("hideUserNames", false);
     var strikeOutHiddenPostLinks = lord.nameOne("strikeOutHiddenPostLinks", div);
     strikeOutHiddenPostLinks.checked = !!lord.getLocalObject("strikeOutHiddenPostLinks", true);
+    var maxSimultaneousAjax = lord.nameOne("maxSimultaneousAjax", div);
+    maxSimultaneousAjax.value = lord.getLocalObject("maxSimultaneousAjax", 2);
     var spellsEnabled = lord.nameOne("spellsEnabled", div);
     spellsEnabled.checked = !!lord.getLocalObject("spellsEnabled", true);
     var hotkeysEnabled = lord.nameOne("hotkeysEnabled", div);
@@ -163,6 +187,10 @@ lord.showSettings = function() {
         var sel = lord.nameOne("modeChangeSelect", div);
         var md = sel.options[sel.selectedIndex].value;
         lord.setCookie("mode", md, {
+            "expires": lord.Billion, "path": "/"
+        });
+        var sp = !!lord.nameOne("shrinkPosts", div).checked;
+        lord.setCookie("shrinkPosts", sp, {
             "expires": lord.Billion, "path": "/"
         });
         sel = lord.nameOne("styleChangeSelect", div);
@@ -203,6 +231,10 @@ lord.showSettings = function() {
         lord.setCookie("hidePostformRules", hr, {
             "expires": lord.Billion, "path": "/"
         });
+        var mp = !!lord.nameOne("minimalisticPostform", div).checked;
+        lord.setCookie("minimalisticPostform", mp, {
+            "expires": lord.Billion, "path": "/"
+        });
         var hiddenBoards = [];
         lord.query("input", lord.nameOne("hiddenBoards", div)).forEach(function(inp) {
             if (!!inp.checked)
@@ -215,6 +247,7 @@ lord.showSettings = function() {
         var act = sel.options[sel.selectedIndex].value;
         lord.setLocalObject("quickReplyAction", act);
         lord.setLocalObject("showNewPosts", !!showNewPosts.checked);
+        lord.setLocalObject("moveToPostOnReplyInThread", !!moveToPostOnReplyInThread.checked);
         lord.setLocalObject("showYoutubeVideosTitles", !!showYoutubeVideosTitles.checked);
         lord.setLocalObject("checkFileExistence", !!checkFileExistence.checked);
         lord.setLocalObject("showAttachedFilePreview", !!showAttachedFilePreview.checked);
@@ -225,13 +258,19 @@ lord.showSettings = function() {
         lord.setLocalObject("leafThroughImagesOnly", !!leafThroughImagesOnly.checked);
         lord.setLocalObject("imageZoomSensitivity", +imageZoomSensitivity.value);
         lord.setLocalObject("defaultAudioVideoVolume", +defaultAudioVideoVolume.value);
+        lord.setLocalObject("rememberAudioVideoVolume", !!rememberAudioVideoVolume.checked);
+        lord.setLocalObject("playAudioVideoImmediately", !!playAudioVideoImmediately.checked);
+        lord.setLocalObject("loopAudioVideo", !!loopAudioVideo.checked);
         lord.setLocalObject("autoUpdateThreadsByDefault", !!autoUpdateThreadsByDefault.checked);
         lord.setLocalObject("autoUpdateInterval", +autoUpdateInterval.value);
         lord.setLocalObject("showAutoUpdateTimer", !!showAutoUpdateTimer.checked);
+        lord.setLocalObject("signOpPostLinks", !!signOpPostLinks.checked);
+        lord.setLocalObject("signOwnPostLinks", !!signOwnPostLinks.checked);
         lord.setLocalObject("showAutoUpdateDesktopNotifications", !!showAutoUpdateDesktopNotifications.checked);
         lord.setLocalObject("hideTripcodes", !!hideTripcodes.checked);
         lord.setLocalObject("hideUserNames", !!hideUserNames.checked);
         lord.setLocalObject("strikeOutHiddenPostLinks", !!strikeOutHiddenPostLinks.checked);
+        lord.setLocalObject("maxSimultaneousAjax", +maxSimultaneousAjax.value);
         lord.setLocalObject("spellsEnabled", !!spellsEnabled.checked);
         lord.setLocalObject("hotkeysEnabled", !!hotkeysEnabled.checked);
         lord.setLocalObject("userCssEnabled", !!userCssEnabled.checked);

@@ -31,6 +31,7 @@ public:
     std::string sortingModeBumpsLabelText;
     std::string sortingModeDateLabelText;
     std::string sortingModeLabelText;
+    std::string sortingModeRecentLabelText;
     std::list<Thread> threads;
 };
 

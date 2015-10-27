@@ -100,6 +100,11 @@ bool RefKey::operator <(const RefKey &other) const
     return boardName < other.boardName || (boardName == other.boardName && postNumber < other.postNumber);
 }
 
+bool BanInfo::isExpired() const
+{
+    return expires.isValid() && expires <= QDateTime::currentDateTimeUtc();
+}
+
 CreatePostParameters::CreatePostParameters(const cppcms::http::request &req, const QMap<QString, QString> &ps,
                                            const QList<Tools::File> &fs, const QLocale &l) :
     files(fs), locale(l), params(ps), request(req)
@@ -222,6 +227,10 @@ static QReadWriteLock processTextLock(QReadWriteLock::Recursive);
 static QMutex postMutex(QMutex::Recursive);
 static QReadWriteLock rssLock(QReadWriteLock::Recursive);
 static QMap<QString, QString> rssMap;
+static QMap<QByteArray, QStringList> registeredUserBoardsMap;
+static QMutex registeredUserBoardsMutex(QMutex::Recursive);
+static QMap<QByteArray, int> registeredUserLevelMap;
+static QMutex registeredUserLevelMutex(QMutex::Recursive);
 
 static bool addToReferencedPosts(QSharedPointer<Post> post, const RefMap &referencedPosts, QString *error = 0,
                                  QString *description = 0, const QLocale &l = BCoreApplication::locale())
@@ -495,13 +504,10 @@ static bool testCaptcha(const cppcms::http::request &req, const Tools::PostParam
     return bRet(error, QString(), description, QString(), true);
 }
 
-static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, const QString &board, int level,
-                            const QString &reason, const QDateTime &expires, QString *error, const QLocale &l,
-                            QString ip = QString())
+static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, const QList<BanInfo> &bans, QString *error,
+                            const QLocale &l, QString ip = QString())
 {
     TranslatorQt tq(l);
-    if (board.isEmpty() || (!AbstractBoard::boardNames().contains(board) && "*" != board))
-        return bRet(error, tq.translate("banUserInternal", "Invalid board name", "error"), false);
     try {
         Transaction t;
         if (!t)
@@ -517,41 +523,55 @@ static bool banUserInternal(const QString &sourceBoard, quint64 postNumber, cons
             postId = post->id();
             if (ip.isEmpty())
                 ip = post->posterIp();
-            post->setBannedFor(level > 0);
+            bool banned = false;
+            foreach (const BanInfo &inf, bans) {
+                if (sourceBoard == inf.boardName) {
+                    banned = (inf.level > 0 && !inf.isExpired());
+                    break;
+                }
+            }
+            post->setBannedFor(banned);
+            quint64 threadNumber = post->thread().load()->number();
+            Cache::updateLastNPost(sourceBoard, threadNumber, *post);
+            Cache::updateThreadPost(sourceBoard, threadNumber, *post);
+            Cache::removeOpPost(sourceBoard, threadNumber);
             update(post);
         }
         if (ip.isEmpty())
             return bRet(error, tq.translate("banUserInternal", "Invalid IP address", "error"), false);
-        Result<BannedUser> user = queryOne<BannedUser, BannedUser>(odb::query<BannedUser>::board == board
-                                                                   && odb::query<BannedUser>::ip == ip);
+        Result<BannedUser> user = queryOne<BannedUser, BannedUser>(odb::query<BannedUser>::ip == ip);
         if (user.error)
             return bRet(error, tq.translate("banUserInternal", "Internal database error", "error"), false);
         QDateTime dt = QDateTime::currentDateTimeUtc();
-        if (!user) {
-            if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
-                t.commit();
-                return bRet(error, QString(), true);
-            }
-            user = new BannedUser(board, ip, dt, postId);
-            user->setExpirationDateTime(expires);
-            user->setLevel(level);
-            user->setReason(reason);
-            persist(user);
-        } else {
-            if (level < 1 || (expires.isValid() && expires.toUTC() <= dt)) {
-                t->erase(*user);
-                t.commit();
-                Cache::removePost(board, postNumber);
-                return bRet(error, QString(), true);
-            }
-            user->setDateTime(dt);
-            user->setExpirationDateTime(expires);
-            user->setLevel(level);
-            user->setReason(reason);
+        if (user) {
+            typedef QLazyWeakPointer<Ban> LazyBan;
+            foreach (LazyBan lban, user->bans())
+                t->erase(*lban.load());
+            user->bans().clear();
             update(user);
+        } else {
+            user = new BannedUser(ip);
+            persist(user);
         }
+        QStringList boardNames = AbstractBoard::boardNames();
+        bool count = 0;
+        foreach (const BanInfo &inf, bans) {
+            if (!boardNames.contains(inf.boardName))
+                return bRet(error, tq.translate("banUserInternal", "Invalid board name", "error"), false);
+            if (inf.level <= 0 || inf.isExpired())
+                continue;
+            QSharedPointer<Ban> ban(new Ban(user.data, inf.boardName, dt,
+                                            (sourceBoard == inf.boardName) ? postId : 0L));
+            ban->setExpirationDateTime(inf.expires);
+            ban->setLevel(inf.level);
+            ban->setReason(inf.reason);
+            t->persist(*ban);
+            ++count;
+        }
+        if (count < 1)
+            t->erase(*user);
         t.commit();
-        Cache::removePost(board, postNumber);
+        Cache::removePost(sourceBoard, postNumber);
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -622,7 +642,8 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         QString ip = Tools::userIp(p.request);
         GeolocationInfo gli = geolocationInfo(ip);
         QSharedPointer<Post> ps(new Post(boardName, postNumber, p.dateTime, thread.data, ip, gli.countryCode,
-                                         gli.countryName, gli.cityName, post.password, hp));
+                                         gli.countryName, gli.cityName, post.password, hp,
+                                         !p.params.value("signAsOp").compare("true", Qt::CaseInsensitive)));
         ps->setEmail(post.email);
         ps->setName(post.name);
         ps->setSubject(post.subject);
@@ -659,6 +680,10 @@ static bool createPostInternal(CreatePostInternalParameters &p)
         t.commit();
         p.fileTransaction.commit();
         Search::addToIndex(boardName, postNumber, post.text);
+        if (ps->number() != p.threadNumber) {
+            Cache::addThreadPost(boardName, p.threadNumber, *ps);
+            Cache::addLastNPost(boardName, p.threadNumber, *ps);
+        }
         return bRet(p.error, QString(), p.description, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(p.error, tq.translate("createPostInternal", "Internal error", "error"), p.description,
@@ -680,6 +705,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
     QWriteLocker lock(&processTextLock);
     QMap<quint64, PostTmpInfo> postIds;
     QMutexLocker locker(&postMutex);
+    quint64 threadNumber = 0;
     try {
         Transaction t;
         if (!t)
@@ -690,10 +716,7 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
         if (!post)
             return bRet(error, tq.translate("deletePostInternal", "No such post", "error"), false);
-        Result<Thread> thread = queryOne<Thread, Thread>(odb::query<Thread>::board == boardName
-                                                         && odb::query<Thread>::number == postNumber);
-        if (thread.error)
-            return bRet(error, tq.translate("deletePostInternal", "Internal database error", "error"), false);
+        threadNumber = post->thread().load()->number();
         if (!removeFromReferencedPosts(post.data->id(), error, tq.locale()))
             return false;
         typedef QLazySharedPointer<PostReference> PostReferenceSP;
@@ -772,6 +795,12 @@ static bool deletePostInternal(const QString &boardName, quint64 postNumber, QSt
             t->erase_query<Thread>(odb::query<Thread>::id == thread->id());
         Cache::removePost(boardName, postNumber);
         Search::removeFromIndex(boardName, postNumber, post->text());
+        if (threadNumber == postNumber)
+            Cache::removeThreadPosts(boardName, threadNumber);
+        else
+            Cache::removeThreadPost(boardName, threadNumber, postNumber);
+        Cache::removeLastNPost(boardName, threadNumber, postNumber);
+        Cache::removeOpPost(boardName, threadNumber);
         t.commit();
         return bRet(error, QString(), true);
     }  catch (const odb::exception &e) {
@@ -799,6 +828,7 @@ static bool setThreadFixedInternal(const QString &board, quint64 threadNumber, b
         update(thread);
         t.commit();
         Cache::removePost(board, threadNumber);
+        Cache::removeOpPost(board, threadNumber);
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -825,6 +855,7 @@ static bool setThreadOpenedInternal(const QString &board, quint64 threadNumber, 
         update(thread);
         t.commit();
         Cache::removePost(board, threadNumber);
+        Cache::removeOpPost(board, threadNumber);
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -870,6 +901,7 @@ bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &par
             return bRet(error, tq.translate("addFile", "Invalid parameters", "error"), description,
                         tq.translate("addFile", "No such post", "error"), false);
         }
+        quint64 threadNumber = post->thread().load()->number();
         QList<AbstractBoard::FileInfo> infos = ft.fileInfos();
         if ((infos.size() + post->fileInfos().size()) > int(Tools::maxInfo(Tools::MaxFileCount, board->name()))) {
             return bRet(error, tq.translate("addFile", "Invalid parameters", "error"), description,
@@ -882,7 +914,14 @@ bool addFile(const cppcms::http::request &req, const QMap<QString, QString> &par
         }
         t.commit();
         ft.commit();
+        if (post->number() == threadNumber) {
+            Cache::removeOpPost(board->name(), threadNumber);
+        } else {
+            Cache::updateThreadPost(board->name(), threadNumber, *post);
+            Cache::updateLastNPost(board->name(), threadNumber, *post);
+        }
         Cache::removePost(post->board(), post->number());
+        Cache::removePost(post->board(), threadNumber);
         return bRet(error, QString(), description, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, tq.translate("addFile", "Internal error", "error"), description, Tools::fromStd(e.what()),
@@ -906,46 +945,112 @@ int addPostsToIndex(QString *error, const QLocale &l)
     }
 }
 
-bool banUser(const QString &ip, const QString &board, int level, const QString &reason, const QDateTime &expires,
-             QString *error, const QLocale &l)
+QMap< QString, QMap<QString, BanInfo> > banInfos(bool *ok, QString *error, const QLocale &l)
 {
-    return banUserInternal("", 0, board, level, reason, expires, error, l, ip);
+    QMap< QString, QMap<QString, BanInfo> > map;
+    TranslatorQt tq(l);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(ok, false, error, tq.translate("banInfos", "Internal database error", "error"), map);
+        QList<BannedUser> users = queryAll<BannedUser>();
+        foreach (const BannedUser &user, users) {
+            QMap<QString, BanInfo> list;
+            typedef QLazyWeakPointer<Ban> LazyBan;
+            foreach (const LazyBan &lban, user.bans()) {
+                QSharedPointer<Ban> ban = lban.load();
+                BanInfo inf;
+                inf.boardName = ban->board();
+                inf.dateTime = ban->dateTime();
+                inf.expires = ban->expirationDateTime();
+                inf.level = ban->level();
+                inf.reason = ban->reason();
+                if (!inf.isExpired())
+                    list.insert(inf.boardName, inf);
+            }
+            if (!list.isEmpty())
+                map.insert(user.ip(), list);
+        }
+        return bRet(ok, true, error, QString(), map);
+    }  catch (const odb::exception &e) {
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QMap< QString, QMap<QString, BanInfo> >());
+    }
 }
 
-bool banUser(const QString &sourceBoard, quint64 postNumber, const QString &board, int level, const QString &reason,
-             const QDateTime &expires, QString *error, const QLocale &l)
+bool banUser(const QString &ip, const QList<BanInfo> &bans, QString *error, const QLocale &l)
 {
-    return banUserInternal(sourceBoard, postNumber, board, level, reason, expires, error, l);
+    return banUserInternal("", 0, bans, error, l, ip);
 }
 
-bool banUser(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber, const QString &board,
-             int level, const QString &reason, const QDateTime &expires, QString *error)
+bool banUser(const QString &sourceBoard, quint64 postNumber, const QList<BanInfo> &bans, QString *error,
+             const QLocale &l)
+{
+    return banUserInternal(sourceBoard, postNumber, bans, error, l);
+}
+
+bool banUser(const cppcms::http::request &req, const QString &ip, const QList<BanInfo> &bans, QString *error)
 {
     TranslatorQt tq(req);
-    QStringList boardNames = AbstractBoard::boardNames();
-    if (board != "*" && (!boardNames.contains(board) || !boardNames.contains(sourceBoard)))
-        return bRet(error, tq.translate("banUser", "Invalid board name", "error"), false);
-    if (!postNumber)
-        return bRet(error, tq.translate("banUser", "Invalid post number", "error"), false);
+    if (ip.isEmpty() || !Tools::ipNum(ip))
+        return bRet(error, tq.translate("banUser", "Invalid ip", "error"), false);
     QByteArray hashpass = Tools::hashpass(req);
     if (hashpass.isEmpty())
         return bRet(error, tq.translate("banUser", "Not logged in", "error"), false);
+    QString selfIp = Tools::userIp(req);
     try {
         Transaction t;
         if (!t)
             return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
+        QList<Post> posts = query<Post, Post>((odb::query<Post>::posterIp == ip) + " ORDER BY dateTime DESC LIMIT 1");
+        foreach (const Post &post, posts) {
+            if (hashpass == post.hashpass() || selfIp == post.posterIp())
+                return bRet(error, tq.translate("banUser", "You can't ban yourself, baka", "error"), false);
+        }
+        int lvl = registeredUserLevel(req);
+        foreach (const BanInfo &inf, bans) {
+            if (!moderOnBoard(req, inf.boardName))
+                return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+            foreach (const Post &post, posts) {
+                if (registeredUserLevel(post.hashpass()) >= lvl)
+                    return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
+            }
+        }
+        if (!banUser(ip, bans, error, tq.locale()))
+            return false;
+        t.commit();
+        return bRet(error, QString(), true);
+    } catch (const odb::exception &e) {
+        return bRet(error, Tools::fromStd(e.what()), false);
+    }
+}
+
+bool banPoster(const cppcms::http::request &req, const QString &sourceBoard, quint64 postNumber,
+               const QList<BanInfo> &bans, QString *error)
+{
+    TranslatorQt tq(req);
+    if (!postNumber)
+        return bRet(error, tq.translate("banPoster", "Invalid post number", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("banPoster", "Not logged in", "error"), false);
+    try {
+        Transaction t;
+        if (!t)
+            return bRet(error, tq.translate("banPoster", "Internal database error", "error"), false);
         Result<Post> post = queryOne<Post, Post>(odb::query<Post>::board == sourceBoard
                                                  && odb::query<Post>::number == postNumber);
         if (post.error)
-            return bRet(error, tq.translate("banUser", "Internal database error", "error"), false);
+            return bRet(error, tq.translate("banPoster", "Internal database error", "error"), false);
         if (!post)
-            return bRet(error, tq.translate("banUser", "No such post", "error"), false);
-        if (hashpass == post->hashpass())
-            return bRet(error, tq.translate("banUser", "You can't ban youself, baka", "error"), false);
+            return bRet(error, tq.translate("banPoster", "No such post", "error"), false);
+        if (hashpass == post->hashpass() || Tools::userIp(req) == post->posterIp())
+            return bRet(error, tq.translate("banPoster", "You can't ban yourself, baka", "error"), false);
         int lvl = registeredUserLevel(req);
-        if (!moderOnBoard(req, board, sourceBoard) || registeredUserLevel(post->hashpass()) >= lvl)
-            return bRet(error, tq.translate("banUser", "Not enough rights", "error"), false);
-        if (!banUser(sourceBoard, postNumber, board, level, reason, expires, error, tq.locale()))
+        foreach (const BanInfo &inf, bans) {
+            if (!moderOnBoard(req, sourceBoard, inf.boardName) || registeredUserLevel(post->hashpass()) >= lvl)
+                return bRet(error, tq.translate("banPoster", "Not enough rights", "error"), false);
+        }
+        if (!banUser(sourceBoard, postNumber, bans, error, tq.locale()))
             return false;
         t.commit();
         return bRet(error, QString(), true);
@@ -960,22 +1065,29 @@ void checkOutdatedEntries()
         Transaction t;
         if (!t)
             return;
-        QDateTime dt = QDateTime::currentDateTimeUtc();
         QList<BannedUser> list = queryAll<BannedUser>();
         foreach (const BannedUser &u, list) {
-            QDateTime exp = u.expirationDateTime();
-            if (exp.isValid() && exp <= dt) {
-                quint64 postId = u.postId();
-                t.db()->erase_query<BannedUser>(odb::query<BannedUser>::id == u.id());
-                if (postId) {
-                    Result<Post> post = queryOne<Post, Post>(odb::query<Post>::id == postId);
-                    if (post.error || !post)
-                        continue;
-                    post->setBannedFor(false);
-                    update(post);
-                    Cache::removePost(post->board(), post->number());
+            typedef QLazyWeakPointer<Ban> LazyBan;
+            int expired = 0;
+            foreach (LazyBan lban, u.bans()) {
+                QSharedPointer<Ban> ban = lban.load();
+                QDateTime exp = ban->expirationDateTime();
+                if (exp.isValid() && exp <= QDateTime::currentDateTimeUtc()) {
+                    quint64 postId = ban->postId();
+                    t->erase(*ban);
+                    ++expired;
+                    if (postId) {
+                        Result<Post> post = queryOne<Post, Post>(odb::query<Post>::id == postId);
+                        if (post.error || !post)
+                            continue;
+                        post->setBannedFor(false);
+                        update(post);
+                        Cache::removePost(post->board(), post->number());
+                    }
                 }
             }
+            if (expired >= u.bans().size())
+                t->erase(u);
         }
         t.commit();
     } catch (const odb::exception &e) {
@@ -1108,6 +1220,55 @@ quint64 createThread(CreateThreadParameters &p)
     }
 }
 
+bool delall(const cppcms::http::request &req, const QString &ip, const QString &boardName, QString *error)
+{
+    TranslatorQt tq(req);
+    if (ip.isEmpty() || !Tools::ipNum(ip))
+        return bRet(error, tq.translate("Database::delall", "Invalid ip", "error"), false);
+    QByteArray hashpass = Tools::hashpass(req);
+    if (hashpass.isEmpty())
+        return bRet(error, tq.translate("Database::delall", "Not logged in", "error"), false);
+    QStringList allBoards = AbstractBoard::boardNames();
+    if ("*" != boardName && !allBoards.contains(boardName))
+        return bRet(error, tq.translate("Database::delall", "Invalid board name", "error"), false);
+    QStringList boards = ("*" == boardName) ? registeredUserBoards(req) : (QStringList() << boardName);
+    if (boards.contains("*"))
+        boards = allBoards;
+    int lvl = registeredUserLevel(req);
+    QList<Post> posts;
+    QString selfIp = Tools::userIp(req);
+    foreach (const QString &bn, boards) {
+        try {
+            Transaction t;
+            if (!t)
+                return bRet(error, tq.translate("Database::delall", "Internal database error", "error"), false);
+            posts << query<Post, Post>(odb::query<Post>::board == bn && odb::query<Post>::posterIp == ip);
+            foreach (const Post &post, posts) {
+                if (hashpass == post.hashpass() || selfIp == post.posterIp()) {
+                    return bRet(error, tq.translate("Database::delall",
+                                                    "You can't delall yourself, baka", "error"), false);
+                }
+            }
+            if (!moderOnBoard(req, bn))
+                return bRet(error, tq.translate("Database::delall", "Not enough rights", "error"), false);
+            foreach (const Post &post, posts) {
+                if (registeredUserLevel(post.hashpass()) >= lvl)
+                    return bRet(error, tq.translate("Database::delall", "Not enough rights", "error"), false);
+            }
+            t.commit();
+        } catch (const odb::exception &e) {
+            return bRet(error, Tools::fromStd(e.what()), false);
+        }
+    }
+    foreach (const Post &post, posts) {
+        QStringList list;
+        if (!deletePostInternal(post.board(), post.number(), error, tq.locale(), list))
+            return false;
+        deleteFiles(post.board(), list);
+    }
+    return bRet(error, QString(), true);
+}
+
 bool deleteFile(const QString &boardName, const QString &fileName,  const cppcms::http::request &req,
                 const QByteArray &password, QString *error)
 {
@@ -1140,9 +1301,17 @@ bool deleteFile(const QString &boardName, const QString &fileName,  const cppcms
         } else if (password != post->password()) {
             return bRet(error, tq.translate("deleteFile", "Incorrect password", "error"), false);
         }
+        quint64 threadNumber = post->thread().load()->number();
         erase(fileInfo);
         t.commit();
+        if (post->number() == threadNumber) {
+            Cache::removeOpPost(boardName, threadNumber);
+        } else {
+            Cache::updateThreadPost(boardName, threadNumber, *post);
+            Cache::updateLastNPost(boardName, threadNumber, *post);
+        }
         Cache::removePost(boardName, post->number());
+        Cache::removePost(boardName, threadNumber);
         deleteFiles(boardName, QStringList() << fileInfo->name() << fileInfo->thumbName());
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
@@ -1243,10 +1412,12 @@ bool editAudioTags(const QString &boardName, const QString &fileName, const cppc
                 continue;
             m[key] = v;
         }
+        quint64 threadNumber = post->thread().load()->number();
         fileInfo->setMetaData(m);
         update(fileInfo);
         t.commit();
         Cache::removePost(boardName, post->number());
+        Cache::removePost(boardName, threadNumber);
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -1340,6 +1511,12 @@ bool editPost(EditPostParameters &p)
         update(post);
         t.commit();
         Cache::removePost(p.boardName, p.postNumber);
+        if (post->number() == thread.number()) {
+            Cache::removeOpPost(p.boardName, thread.number());
+        } else {
+            Cache::updateThreadPost(p.boardName, thread.number(), *post);
+            Cache::updateLastNPost(p.boardName, thread.number(), *post);
+        }
         Search::removeFromIndex(p.boardName, p.postNumber, previousText);
         Search::addToIndex(p.boardName, p.postNumber, p.text);
         return bRet(p.error, QString(), true);
@@ -1571,9 +1748,11 @@ GeolocationInfo geolocationInfo(const QString &ip)
     db.setDatabaseName(BDirTools::findResource("geolocation/ip2location.sqlite"));
     if (!db.open())
         return info;
-    static const QStringList Fields = QStringList() << "country_code" << "country_name" << "city_name";
+    static const QStringList Fields = QStringList() << "ip_from" << "country_code" << "country_name" << "city_name";
     BSqlResult r = db.select("ip2location", Fields, BSqlWhere("ip_to >= :ip LIMIT 1", ":ip", n));
     if (!r)
+        return info;
+    if (r.value("ip_from").toUInt() < n)
         return info;
     info.cityName = r.value("city_name").toString();
     info.countryCode = r.value("country_code").toString();
@@ -1901,7 +2080,7 @@ bool moderOnBoard(const QByteArray &hashpass, const QString &board1, const QStri
     if (lvl >= RegisteredUser::AdminLevel)
         return true;
     QStringList boards = registeredUserBoards(hashpass);
-    return (boards.contains("*") && boards.contains(board1) && (board2.isEmpty() || boards.contains(board2)));
+    return (boards.contains("*") || (boards.contains(board1) && (board2.isEmpty() || boards.contains(board2))));
 }
 
 quint64 moveThread(const cppcms::http::request &req, const QString &sourceBoard, quint64 threadNumber,
@@ -2012,6 +2191,9 @@ quint64 moveThread(const cppcms::http::request &req, const QString &sourceBoard,
         thread->setNumber(newThreadNumber);
         update(thread);
         t.commit();
+        Cache::removeThreadPosts(sourceBoard, threadNumber);
+        Cache::removeLastNPosts(sourceBoard, threadNumber);
+        Cache::removeOpPost(sourceBoard, threadNumber);
         return bRet(error, QString(), newThreadNumber);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), 0);
@@ -2081,10 +2263,18 @@ QStringList registeredUserBoards(const cppcms::http::request &req)
 
 QStringList registeredUserBoards(const QByteArray &hashpass)
 {
+    if (hashpass.isEmpty())
+        return QStringList();
     bool b = false;
     Tools::toString(hashpass, &b);
     if (!b)
         return QStringList();
+    registeredUserBoardsMutex.lock();
+    if (registeredUserBoardsMap.contains(hashpass)) {
+        registeredUserBoardsMutex.unlock();
+        return registeredUserBoardsMap.value(hashpass);
+    }
+    registeredUserBoardsMutex.unlock();
     try {
         Transaction t;
         if (!t)
@@ -2110,10 +2300,18 @@ int registeredUserLevel(const cppcms::http::request &req)
 
 int registeredUserLevel(const QByteArray &hashpass)
 {
+    if (hashpass.isEmpty())
+        return -1;
     bool b = false;
     Tools::toString(hashpass, &b);
     if (!b)
         return -1;
+    registeredUserLevelMutex.lock();
+    if (registeredUserLevelMap.contains(hashpass)) {
+        registeredUserLevelMutex.unlock();
+        return registeredUserLevelMap.value(hashpass);
+    }
+    registeredUserLevelMutex.unlock();
     try {
         Transaction t;
         if (!t)
@@ -2148,6 +2346,7 @@ bool registerUser(const QByteArray &hashpass, RegisteredUser::Level level, const
             return bRet(error, tq.translate("registerUser", "Internal database error", "error"), false);
         RegisteredUser user(hashpass, QDateTime::currentDateTimeUtc(), level, boards);
         t->persist(user);
+        t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -2287,6 +2486,7 @@ int rerenderPosts(const QStringList boardNames, QString *error, const QLocale &l
                    + tq.translate("rerenderPosts", "ms", "message") + ")");
         elapsed = etmr.elapsed();
     }
+    Cache::clearLastNPostsCache();
     bWriteLine(tq.translate("rerenderPosts", "Finished! Operation took", "message") + " "
                + QString::number(etmr.elapsed()) + tq.translate("rerenderPosts", "ms", "message"));
     return bRet(error, QString(), count);
@@ -2392,10 +2592,17 @@ bool setVoteOpened(quint64 postNumber, bool opened, const QByteArray &password, 
         if (m.value("disabled") == !opened)
             return bRet(error, QString(), true);
         m["disabled"] = !opened;
+        quint64 threadNumber = post->thread().load()->number();
         post->setUserData(m);
         update(post);
         t.commit();
         Cache::removePost("rpg", postNumber);
+        if (postNumber == threadNumber) {
+            Cache::removeOpPost("rpg", threadNumber);
+        } else {
+            Cache::updateThreadPost("rpg", threadNumber, *post);
+            Cache::updateLastNPost("rpg", threadNumber, *post);
+        }
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
         return bRet(error, Tools::fromStd(e.what()), false);
@@ -2451,6 +2658,13 @@ bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error
         post->setUserData(m);
         update(post);
         Cache::removePost("rpg", postNumber);
+        quint64 threadNumber = post->thread().load()->number();
+        if (postNumber == threadNumber) {
+            Cache::removeOpPost("rpg", threadNumber);
+        } else {
+            Cache::updateThreadPost("rpg", threadNumber, *post);
+            Cache::updateLastNPost("rpg", threadNumber, *post);
+        }
         t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {
@@ -2458,49 +2672,43 @@ bool unvote(quint64 postNumber, const cppcms::http::request &req, QString *error
     }
 }
 
-BanInfo userBanInfo(const QString &ip, const QString &boardName, bool *ok, QString *error, const QLocale &l)
+QMap<QString, BanInfo> userBanInfo(const QString &ip, bool *ok, QString *error, const QLocale &l)
 {
-    BanInfo inf;
-    inf.level = 0;
+    QMap<QString, BanInfo> map;
     TranslatorQt tq(l);
     if (ip.isEmpty())
-        return bRet(ok, false, error, tq.translate("userBanInfo", "Internal logic error", "description"), inf);
+        return bRet(ok, false, error, tq.translate("userBanInfo", "Internal logic error", "error"), map);
     try {
         Transaction t;
         if (!t)
-            return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "description"), inf);
-        QList<BannedUser> list = query<BannedUser, BannedUser>(odb::query<BannedUser>::board == "*"
-                                                               && odb::query<BannedUser>::ip == ip);
-        foreach (const BannedUser &u, list) {
-            QDateTime expires = u.expirationDateTime().toUTC();
-            if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                inf.level = u.level();
-                inf.boardName = u.board();
-                inf.dateTime = u.dateTime();
-                inf.reason = u.reason();
-                inf.expires = expires;
-                break;
-            }
+            return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "error"), map);
+        Result<BannedUser> user = queryOne<BannedUser, BannedUser>(odb::query<BannedUser>::ip == ip);
+        if (user.error)
+            return bRet(ok, false, error, tq.translate("userBanInfo", "Internal database error", "error"), map);
+        if (!user)
+            return bRet(ok, true, error, QString(), map);
+        typedef QLazyWeakPointer<Ban> LazyBan;
+        foreach (const LazyBan &lban, user->bans()) {
+            QSharedPointer<Ban> ban = lban.load();
+            BanInfo inf;
+            inf.boardName = ban->board();
+            inf.dateTime = ban->dateTime();
+            inf.expires = ban->expirationDateTime();
+            inf.level = ban->level();
+            inf.reason = ban->reason();
+            if (!inf.isExpired())
+                map.insert(inf.boardName, inf);
         }
-        if (inf.level <= 0 && !boardName.isEmpty()) {
-            list = query<BannedUser, BannedUser>(odb::query<BannedUser>::board == boardName
-                                                 && odb::query<BannedUser>::ip == ip);
-            foreach (const BannedUser &u, list) {
-                QDateTime expires = u.expirationDateTime().toUTC();
-                if (!expires.isValid() || expires > QDateTime::currentDateTimeUtc()) {
-                    inf.level = u.level();
-                    inf.boardName = u.board();
-                    inf.dateTime = u.dateTime();
-                    inf.reason = u.reason();
-                    inf.expires = expires;
-                    break;
-                }
-            }
-        }
-        return bRet(ok, true, error, QString(), inf);
+        return bRet(ok, true, error, QString(), map);
     }  catch (const odb::exception &e) {
-        return bRet(ok, false, error, Tools::fromStd(e.what()), inf);
+        return bRet(ok, false, error, Tools::fromStd(e.what()), QMap<QString, BanInfo>());
     }
+}
+
+QMap<QString, BanInfo> userBanInfo(const QString &boardName, quint64 postNumber, bool *ok, QString *error,
+                                   const QLocale &l)
+{
+    return userBanInfo(posterIp(boardName, postNumber), ok, error, l);
 }
 
 bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::request &req, QString *error)
@@ -2559,6 +2767,13 @@ bool vote(quint64 postNumber, const QStringList &votes, const cppcms::http::requ
         post->setUserData(m);
         update(post);
         Cache::removePost("rpg", postNumber);
+        quint64 threadNumber = post->thread().load()->number();
+        if (postNumber == threadNumber) {
+            Cache::removeOpPost("rpg", threadNumber);
+        } else {
+            Cache::updateThreadPost("rpg", threadNumber, *post);
+            Cache::updateLastNPost("rpg", threadNumber, *post);
+        }
         t.commit();
         return bRet(error, QString(), true);
     } catch (const odb::exception &e) {

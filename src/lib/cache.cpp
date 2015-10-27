@@ -2,6 +2,7 @@
 
 #include "controller/baseboard.h"
 #include "settingslocker.h"
+#include "stored/thread.h"
 #include "translator.h"
 
 #include <BeQt>
@@ -10,6 +11,7 @@
 #include <QByteArray>
 #include <QCache>
 #include <QDateTime>
+#include <QDebug>
 #include <QLocale>
 #include <QMap>
 #include <QReadLocker>
@@ -25,20 +27,28 @@ namespace Cache
 
 static QCache<QString, QString> theCustomContent;
 static QReadWriteLock customContentLock(QReadWriteLock::Recursive);
+static QCache<QString, CustomLinkInfoList> theCustomLinks;
+static QReadWriteLock customLinksLock(QReadWriteLock::Recursive);
 static QCache<QString, File> dynamicFiles;
 static QReadWriteLock dynamicFilesLock(QReadWriteLock::Recursive);
 static QCache<QString, Tools::FriendList> theFriendList;
 static QReadWriteLock friendListLock(QReadWriteLock::Recursive);
 static QCache<QString, IpBanInfoList> theIpBanInfoList;
 static QReadWriteLock ipBanInfoListLock(QReadWriteLock::Recursive);
+static QCache<QString, PostList> theLastNPosts;
+static QReadWriteLock lastNPostsLock(QReadWriteLock::Recursive);
 static QCache<QString, QStringList> theNews;
 static QReadWriteLock newsLock(QReadWriteLock::Recursive);
+static QCache<QString, Post> theOpPosts;
+static QReadWriteLock opPostsLock(QReadWriteLock::Recursive);
 static QCache<QString, Content::Post> thePosts;
 static QReadWriteLock postsLock(QReadWriteLock::Recursive);
 static QCache<QString, QStringList> theRules;
 static QReadWriteLock rulesLock(QReadWriteLock::Recursive);
 static QCache<QString, File> staticFiles;
 static QReadWriteLock staticFilesLock(QReadWriteLock::Recursive);
+static QCache<QString, PostList> theThreadPosts;
+static QReadWriteLock threadPostsLock(QReadWriteLock::Recursive);
 static QCache<QString, BTranslator> translators;
 static QReadWriteLock translatorsLock(QReadWriteLock::Recursive);
 
@@ -53,17 +63,52 @@ void initCache(T &cache, const QString &name, int defaultSize)
     cache.setMaxCost((sz >= 0) ? sz : 0);
 }
 
+bool addThreadPost(const QString &boardName, quint64 threadNumber, const Post &post)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return false;
+    QWriteLocker locker(&threadPostsLock);
+    PostList *list = theThreadPosts.object(boardName + "/" + QString::number(threadNumber));
+    if (!list)
+        return false;
+    *list << post;
+    return true;
+}
+
+bool addLastNPost(const QString &boardName, quint64 threadNumber, const Post &post)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return false;
+    QWriteLocker locker(&lastNPostsLock);
+    PostList *list = theLastNPosts.object(boardName + "/" + QString::number(threadNumber));
+    if (!list)
+        return false;
+    list->prepend(post);
+    int count = 0;
+    foreach (const Post &p, *list) {
+        if (!p.draft())
+            ++count;
+    }
+    if (count > 3)
+        list->removeLast();
+    return true;
+}
+
 ClearCacheFunctionMap availableClearCacheFunctions()
 {
     init_once(ClearCacheFunctionMap, map, ClearCacheFunctionMap()) {
         map.insert("custom_content", &clearCustomContent);
+        map.insert("custom_links", &clearCustomLinks);
         map.insert("dynamic_files", &clearDynamicFilesCache);
         map.insert("friend_list", &clearFriendListCache);
         map.insert("ip_ban_info_list", &clearIpBanInfoListCache);
+        map.insert("last_n_posts", &clearLastNPostsCache);
         map.insert("news", &clearNewsCache);
+        map.insert("op_posts", &clearOpPostsCache);
         map.insert("posts", &clearPostsCache);
         map.insert("rules", &clearRulesCache);
         map.insert("static_files", &clearStaticFilesCache);
+        map.insert("thread_posts", &clearThreadPostsCache);
         map.insert("translators", &clearTranslatorsCache);
     }
     return map;
@@ -73,13 +118,17 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 {
     init_once(SetMaxCacheSizeFunctionMap, map, SetMaxCacheSizeFunctionMap()) {
         map.insert("custom_content", &setCustomContentMaxCacheSize);
+        map.insert("custom_links", &setCustomLinksMaxCacheSize);
         map.insert("dynamic_files", &setDynamicFilesMaxCacheSize);
         map.insert("friend_list", &setFriendListMaxCacheSize);
         map.insert("ip_ban_info_list", &setIpBanInfoListMaxCacheSize);
+        map.insert("last_n_posts", &setLastNPostsMaxCacheSize);
         map.insert("news", &setNewsMaxCacheSize);
+        map.insert("op_posts", &setOpPostsMaxCacheSize);
         map.insert("posts", &setPostsMaxCacheSize);
         map.insert("rules", &setRulesMaxCacheSize);
         map.insert("static_files", &setStaticFilesMaxCacheSize);
+        map.insert("thread_posts", &setThreadPostsMaxCacheSize);
         map.insert("translators", &setTranslatorsMaxCacheSize);
     }
     return map;
@@ -88,14 +137,19 @@ SetMaxCacheSizeFunctionMap availableSetMaxCacheSizeFunctions()
 QStringList availableCacheNames()
 {
     init_once(QStringList, names, QStringList()) {
+        names << "custom_content";
+        names << "custom_links";
         names << "home_page";
         names << "dynamic_files";
         names << "friend_list";
         names << "ip_ban_info_list";
+        names << "last_n_posts";
         names << "news";
+        names << "op_posts";
         names << "posts";
         names << "rules";
         names << "static_files";
+        names << "thread_posts";
         names << "translators";
     }
     return names;
@@ -112,6 +166,20 @@ bool cacheCustomContent(const QString &prefix, const QLocale &l, QString *conten
     if (theCustomContent.maxCost() < sz)
         return false;
     theCustomContent.insert(prefix + "/" + l.name(), content, sz);
+    return true;
+}
+
+bool cacheCustomLinks(const QLocale &l, CustomLinkInfoList *list)
+{
+    if (!list)
+        return false;
+    QWriteLocker locker(&customLinksLock);
+    do_once(init)
+        initCache(theCustomLinks, "custom_links", defaultCustomLinksCacheSize);
+    int sz = list->size();
+    if (theCustomLinks.maxCost() < sz)
+        return false;
+    theCustomLinks.insert(l.name(), list, sz);
     return true;
 }
 
@@ -161,6 +229,20 @@ bool cacheIpBanInfoList(IpBanInfoList *list)
     return true;
 }
 
+bool cacheLastNPosts(const QString &boardName, quint64 threadNumber, PostList *list)
+{
+    if (boardName.isEmpty() || !threadNumber || !list)
+        return false;
+    QWriteLocker locker(&lastNPostsLock);
+    do_once(init)
+        initCache(theLastNPosts, "last_n_posts", defaultLastNPostsCacheSize);
+    int sz = list->size();
+    if (theLastNPosts.maxCost() < sz)
+        return false;
+    theLastNPosts.insert(boardName + "/" + QString::number(threadNumber), list, sz);
+    return true;
+}
+
 bool cacheNews(const QLocale &locale, QStringList *news)
 {
     if (!news)
@@ -174,6 +256,19 @@ bool cacheNews(const QLocale &locale, QStringList *news)
     if (theNews.maxCost() < sz)
         return false;
     theNews.insert(locale.name(), news, sz);
+    return true;
+}
+
+bool cacheOpPost(const QString &boardName, quint64 threadNumber, Post *post)
+{
+    if (boardName.isEmpty() || !threadNumber || !post)
+        return false;
+    QWriteLocker locker(&opPostsLock);
+    do_once(init)
+        initCache(theOpPosts, "op_posts", defaultOpPostsCacheSize);
+    if (theOpPosts.maxCost() < 1)
+        return false;
+    theOpPosts.insert(boardName + "/" + QString::number(threadNumber), post, 1);
     return true;
 }
 
@@ -222,6 +317,20 @@ File *cacheStaticFile(const QString &path, const QByteArray &file)
     return f;
 }
 
+bool cacheThreadPosts(const QString &boardName, quint64 threadNumber, PostList *list)
+{
+    if (boardName.isEmpty() || !threadNumber || !list)
+        return false;
+    QWriteLocker locker(&threadPostsLock);
+    do_once(init)
+        initCache(theThreadPosts, "thread_posts", defaultThreadPostsCacheSize);
+    int sz = list->size();
+    if (theThreadPosts.maxCost() < sz)
+        return false;
+    theThreadPosts.insert(boardName + "/" + QString::number(threadNumber), list, sz);
+    return true;
+}
+
 bool cacheTranslator(const QString &name, const QLocale &locale, BTranslator *t)
 {
     if (name.isEmpty() || !t)
@@ -251,6 +360,12 @@ void clearCustomContent()
     theCustomContent.clear();
 }
 
+void clearCustomLinks()
+{
+    QWriteLocker locker(&customLinksLock);
+    theCustomLinks.clear();
+}
+
 void clearDynamicFilesCache()
 {
     QWriteLocker locker(&dynamicFilesLock);
@@ -269,10 +384,22 @@ void clearIpBanInfoListCache()
     theIpBanInfoList.clear();
 }
 
+void clearLastNPostsCache()
+{
+    QWriteLocker locker(&lastNPostsLock);
+    theLastNPosts.clear();
+}
+
 void clearNewsCache()
 {
     QWriteLocker locker(&newsLock);
     theNews.clear();
+}
+
+void clearOpPostsCache()
+{
+    QWriteLocker locker(&opPostsLock);
+    theOpPosts.clear();
 }
 
 void clearPostsCache()
@@ -293,6 +420,12 @@ void clearStaticFilesCache()
     staticFiles.clear();
 }
 
+void clearThreadPostsCache()
+{
+    QWriteLocker locker(&threadPostsLock);
+    theThreadPosts.clear();
+}
+
 void clearTranslatorsCache()
 {
     QWriteLocker locker(&translatorsLock);
@@ -307,17 +440,27 @@ QString *customContent(const QString &prefix, const QLocale &l)
     return theCustomContent.object(prefix + "/" + l.name());
 }
 
+CustomLinkInfoList *customLinks(const QLocale &l)
+{
+    QReadLocker locker(&customLinksLock);
+    return theCustomLinks.object(l.name());
+}
+
 int defaultCacheSize(const QString &name)
 {
     typedef QMap<QString, int> IntMap;
     init_once(IntMap, map, IntMap()) {
         map.insert("custom_content", defaultCustomContentCacheSize);
+        map.insert("custom_links", defaultCustomLinksCacheSize);
         map.insert("dynamic_files", defaultDynamicFilesCacheSize);
         map.insert("friend_list", defaultFriendListCacheSize);
         map.insert("ip_ban_info_list", defaultIpBanInfoListCacheSize);
+        map.insert("last_n_posts", defaultLastNPostsCacheSize);
         map.insert("news", defaultNewsCacheSize);
+        map.insert("op_posts", defaultOpPostsCacheSize);
         map.insert("rules", defaultRulesCacheSize);
         map.insert("static_files", defaultStaticFilesCacheSize);
+        map.insert("thread_posts", defaultThreadPostsCacheSize);
         map.insert("translators", defaultTranslationsCacheSize);
     }
     return map.value(name);
@@ -343,10 +486,26 @@ IpBanInfoList *ipBanInfoList()
     return theIpBanInfoList.object("x");
 }
 
+PostList *lastNPosts(const QString &boardName, quint64 threadNumber)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return 0;
+    QReadLocker locker(&lastNPostsLock);
+    return theLastNPosts.object(boardName + "/" + QString::number(threadNumber));
+}
+
 QStringList *news(const QLocale &locale)
 {
     QReadLocker locker(&newsLock);
     return theNews.object(locale.name());
+}
+
+Post *opPost(const QString &boardName, quint64 threadNumber)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return 0;
+    QReadLocker locker(&opPostsLock);
+    return theOpPosts.object(boardName + "/" + QString::number(threadNumber));
 }
 
 Content::Post *post(const QString &boardName, quint64 postNumber)
@@ -365,6 +524,65 @@ void removePost(const QString &boardName, quint64 postNumber)
     thePosts.remove(boardName + "/" + QString::number(postNumber));
 }
 
+void removeLastNPost(const QString &boardName, quint64 threadNumber, quint64 postNumber)
+{
+    if (boardName.isEmpty() || !threadNumber || !postNumber)
+        return;
+    QWriteLocker locker(&lastNPostsLock);
+    PostList *list = theLastNPosts.object(boardName + "/" + QString::number(threadNumber));
+    if (!list)
+        return;
+    foreach (int i, bRangeD(0, list->size() - 1)) {
+        if (list->at(i).number() == postNumber) {
+            if (list->at(i).draft())
+                theLastNPosts.clear();
+            else
+                list->removeAt(i);
+            return;
+        }
+    }
+}
+
+void removeLastNPosts(const QString &boardName, quint64 threadNumber)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return;
+    QWriteLocker locker(&lastNPostsLock);
+    theLastNPosts.remove(boardName + "/" + QString::number(threadNumber));
+}
+
+void removeOpPost(const QString &boardName, quint64 threadNumber)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return;
+    QWriteLocker locker(&opPostsLock);
+    theOpPosts.remove(boardName + "/" + QString::number(threadNumber));
+}
+
+void removeThreadPost(const QString &boardName, quint64 threadNumber, quint64 postNumber)
+{
+    if (boardName.isEmpty() || !threadNumber || !postNumber)
+        return;
+    QWriteLocker locker(&threadPostsLock);
+    PostList *list = theThreadPosts.object(boardName + "/" + QString::number(threadNumber));
+    if (!list)
+        return;
+    foreach (int i, bRangeD(0, list->size() - 1)) {
+        if (list->at(i).number() == postNumber) {
+            list->removeAt(i);
+            return;
+        }
+    }
+}
+
+void removeThreadPosts(const QString &boardName, quint64 threadNumber)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return;
+    QWriteLocker locker(&threadPostsLock);
+    theThreadPosts.remove(boardName + "/" + QString::number(threadNumber));
+}
+
 QStringList *rules(const QLocale &locale, const QString &prefix)
 {
     if (prefix.isEmpty())
@@ -379,6 +597,14 @@ void setCustomContentMaxCacheSize(int size)
         return;
     QWriteLocker locker(&customContentLock);
     theCustomContent.setMaxCost(size);
+}
+
+void setCustomLinksMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QWriteLocker locker(&customLinksLock);
+    theCustomLinks.setMaxCost(size);
 }
 
 void setDynamicFilesMaxCacheSize(int size)
@@ -405,6 +631,14 @@ void setIpBanInfoListMaxCacheSize(int size)
     theIpBanInfoList.setMaxCost(size);
 }
 
+void setLastNPostsMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QWriteLocker locker(&lastNPostsLock);
+    theLastNPosts.setMaxCost(size);
+}
+
 bool setMaxCacheSize(const QString &name, int size, QString *err, const QLocale &l)
 {
     TranslatorQt tq(l);
@@ -425,6 +659,13 @@ void setNewsMaxCacheSize(int size)
     theNews.setMaxCost(size);
 }
 
+void setOpPostsMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QWriteLocker locker(&opPostsLock);
+    theOpPosts.setMaxCost(size);
+}
 
 void setPostsMaxCacheSize(int size)
 {
@@ -450,6 +691,14 @@ void setStaticFilesMaxCacheSize(int size)
     staticFiles.setMaxCost(size);
 }
 
+void setThreadPostsMaxCacheSize(int size)
+{
+    if (size < 0)
+        return;
+    QWriteLocker locker(&threadPostsLock);
+    theThreadPosts.setMaxCost(size);
+}
+
 void setTranslatorsMaxCacheSize(int size)
 {
     if (size < 0)
@@ -466,12 +715,57 @@ File *staticFile(const QString &path)
     return staticFiles.object(path);
 }
 
+PostList *threadPosts(const QString &boardName, quint64 threadNumber)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return 0;
+    QReadLocker locker(&threadPostsLock);
+    return theThreadPosts.object(boardName + "/" + QString::number(threadNumber));
+}
+
 BTranslator *translator(const QString &name, const QLocale &locale)
 {
     if (name.isEmpty())
         return 0;
     QReadLocker locker(&translatorsLock);
     return translators.object(name + "_" + locale.name());
+}
+
+bool updateLastNPost(const QString &boardName, quint64 threadNumber, const Post &post)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return false;
+    QWriteLocker locker(&lastNPostsLock);
+    PostList *list = theLastNPosts.object(boardName + "/" + QString::number(threadNumber));
+    if (!list)
+        return false;
+    foreach (int i, bRangeD(0, list->size() - 1)) {
+        if (list->at(i).number() == post.number()) {
+            if (list->at(i).draft() != post.draft())
+                theLastNPosts.clear();
+            else
+                list->replace(i, post);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool updateThreadPost(const QString &boardName, quint64 threadNumber, const Post &post)
+{
+    if (boardName.isEmpty() || !threadNumber)
+        return false;
+    QWriteLocker locker(&threadPostsLock);
+    PostList *list = theThreadPosts.object(boardName + "/" + QString::number(threadNumber));
+    if (!list)
+        return false;
+    foreach (int i, bRangeD(0, list->size() - 1)) {
+        if (list->at(i).number() == post.number()) {
+            list->replace(i, post);
+            return true;
+        }
+    }
+    return false;
 }
 
 }

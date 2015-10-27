@@ -101,6 +101,7 @@ void Transaction::reset()
             odb::sqlite::database *db = new odb::sqlite::database(Tools::toStd(fileName),
                                                                   SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE);
             new Hack(db->begin());
+            db->execute("PRAGMA busy_timeout = 30000;"); //30 seconds
         } catch (const odb::exception &e) {
             Tools::log("Transaction::reset", e);
             return;

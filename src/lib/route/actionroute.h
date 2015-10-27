@@ -48,11 +48,13 @@ private:
     static HandleActionMap actionMap();
 private:
     void handleAddFile(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
+    void handleBanPoster(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleBanUser(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleChangeLocale(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleChangeSettings(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleCreatePost(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleCreateThread(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
+    void handleDelall(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleDeleteFile(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleDeletePost(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);
     void handleEditAudioTags(const QString &action, const Tools::PostParameters &params, const Translator::Qt &tq);

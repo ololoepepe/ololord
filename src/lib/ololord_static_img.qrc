@@ -1,19 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>static/img/drakeface.jpg</file>
-        <file>static/img/banner/a_1.png</file>
-        <file>static/img/banner/a_2.jpg</file>
-        <file>static/img/banner/a_3.gif</file>
-        <file>static/img/banner/b_1.gif</file>
-        <file>static/img/banner/b_2.png</file>
-        <file>static/img/banner/pr_1.jpg</file>
-        <file>static/img/banner/rf_1.png</file>
-        <file>static/img/banner/rf_2.png</file>
-        <file>static/img/banner/rf_3.png</file>
-        <file>static/img/banner/vg_1.gif</file>
-        <file>static/img/banner/vg_2.jpg</file>
-        <file>static/img/banner/vg_3.png</file>
-        <file>static/img/banner/vg_4.jpg</file>
         <file>static/img/not_found/not_found_1.jpg</file>
         <file>static/img/not_found/not_found_2.png</file>
         <file>static/img/closed.png</file>
@@ -302,5 +289,10 @@
         <file>static/img/catalog.png</file>
         <file>static/img/rss.png</file>
         <file>static/img/move.png</file>
+        <file>static/img/neutron_line.png</file>
+        <file>static/img/ip.png</file>
+        <file>static/img/manage.png</file>
+        <file>static/img/loading.gif</file>
+        <file>static/img/raw_text.png</file>
     </qresource>
 </RCC>

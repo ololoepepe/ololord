@@ -90,7 +90,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     typedef QMap<QString, BTranslation> TranslationMap;
     init_once(TranslationMap, styles, TranslationMap()) {
         styles.insert("photon", BTranslation::translate("initBase", "Photon", "style title"));
+        styles.insert("neutron", BTranslation::translate("initBase", "Neutron", "style title"));
         styles.insert("futaba", BTranslation::translate("initBase", "Futaba", "style title"));
+        styles.insert("burichan", BTranslation::translate("initBase", "Burichan", "style title"));
     }
     init_once(TranslationMap, modes, TranslationMap()) {
         modes.insert("normal", BTranslation::translate("initBase", "Normal", "mode title"));
@@ -105,6 +107,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                  "autoUpdateIntervalLabelText");
     c.autoUpdateThreadsByDefaultLabelText = ts.translate("initBase", "Auto update threads by default:",
                                                          "autoUpdateThreadsByDefaultLabelText");
+    QStringList userBoards = Database::registeredUserBoards(req);
+    if (userBoards.size() == 1 && userBoards.first() == "*") {
+        userBoards.clear();
+        userBoards << AbstractBoard::boardNames();
+    }
+    foreach (int i, bRangeD(0, userBoards.size() - 1))
+        userBoards[i] += "|" + AbstractBoard::board(userBoards.at(i))->title(ts.locale());
+    c.availableBoardsString = Tools::toStd(userBoards.join(";"));
     c.boards = AbstractBoard::boardInfos(ts.locale(), false);
     c.captchaLabelText = ts.translate("initBase", "Captcha:", "captchaLabelText");
     c.captchaLabelWarningText = ts.translate("initBase", "This option may be ignored on some boards",
@@ -142,6 +152,14 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                                                              deviceType));
     c.customHeaderContent = Tools::toStd(Tools::customContent("header", ts.locale()).replace("%deviceType%",
                                                                                              deviceType));
+    foreach (const Tools::CustomLinkInfo &info, Tools::customLinks(ts.locale())) {
+        Content::Base::CustomLinkInfo inf;
+        inf.imgUrl = Tools::toStd(info.imgUrl);
+        inf.target = Tools::toStd(info.target);
+        inf.text = Tools::toStd(info.text);
+        inf.url = Tools::toStd(info.url);
+        c.customLinks.push_back(inf);
+    }
     c.defaultAudioVideoVolumeLabelText = ts.translate("initBase", "Default audio and video files volume:",
                                                       "defaultAudioVideoVolumeLabelText");
     c.deviceType = Tools::toStd(deviceType);
@@ -218,7 +236,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
             } else if (lvl >= RegisteredUser::ModerLevel) {
                 c.loginIconName = "moder.png";
                 c.loginMessageText += " (" + ts.translate("initBase", "moder", "loginMessageText") + ")";
-            } else if (lvl >= RegisteredUser::ModerLevel) {
+            } else if (lvl >= RegisteredUser::UserLevel) {
                 c.loginIconName = "user_registered.png";
                 c.loginMessageText += " (" + ts.translate("initBase", "user", "loginMessageText") + ")";
             }
@@ -233,6 +251,7 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                                 "Well, actually, the admin may register someone manually (if he is a "
                                                 "fag), but there is no way to register through the web.",
                                                 "loginSystemDescriptionText");
+    c.loopAudioVideoLabelText = ts.translate("initBase", "Loop audio and video files:", "loopAudioVideoLabelText");
     c.maxAllowedRating = 180;
     QString r = Tools::cookieValue(req, "maxAllowedRating");
     if (!r.compare("SFW", Qt::CaseInsensitive))
@@ -242,7 +261,12 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     else if (!r.compare("R-18", Qt::CaseInsensitive))
         c.maxAllowedRating = 18;
     c.maxAllowedRatingLabelText = ts.translate("initBase", "Maximum allowed rating:", "maxAllowedRatingLabelText");
+    c.maxSimultaneousAjaxLabelText = ts.translate("initBase", "Maximum simultaneous AJAX requests:",
+                                                  "maxSimultaneousAjaxLabelText");
     c.maxSearchQueryLength = 150;
+    c.minimalisticPostform = !Tools::cookieValue(req, "minimalisticPostform").compare("true", Qt::CaseInsensitive);
+    c.minimalisticPostformLabelText = ts.translate("initBase", "Use minimalistic post form:",
+                                                   "minimalisticPostformLabelText");
     c.mode.name = Tools::toStd(Tools::cookieValue(req, "mode"));
     if (c.mode.name.empty())
         c.mode.name = "normal";
@@ -258,11 +282,17 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                t.disambiguation().toUtf8().constData());
         c.modes.push_back(m);
     }
+    c.moder = Database::registeredUserLevel(req) / 10;
+    c.moveToPostOnReplyInThreadLabelText = ts.translate("initBase", "Move to post after replying in thread:",
+                                                        "moveToPostOnReplyInThreadLabelText");
     c.mumWatchingText = ts.translate("initBase", "Mum is watching me!", "mumWatchingText");
     c.otherTabText = ts.translate("initBase", "Other", "otherTabText");
     c.pageTitle = Tools::toStd(pageTitle);
     c.path = const_cast<cppcms::http::request *>(&req)->path_info();
+    c.playAudioVideoImmediatelyLabelText = ts.translate("initBase", "Play audio and video files immediately:",
+                                                        "playAudioVideoImmediatelyLabelText");
     c.postformTabText = ts.translate("initBase", "Postform and posting", "postformTabText");
+    c.postShrinkingLabelText = ts.translate("initBase", "Shrink posts:", "postShrinkingLabelText");
     c.postsTabText = ts.translate("initBase", "Posts and threads", "postsTabText");
     c.quickReplyActionAppendPostText = ts.translate("initBase", "Appends a new post",
                                                     "quickReplyActionAppendPostText");
@@ -277,6 +307,8 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
                                    "religious/racist/nationalist content)\n"
                                    "R-18G - restricted for 18 years, guidance advised (shemale, death, guro, scat, "
                                    "defecation, urination, etc.)", "ratingTooltip");
+    c.rememberAudioVideoVolumeLabelText = ts.translate("initBase", "Remember volume:",
+                                                       "rememberAudioVideoVolumeLabelText");
     c.removeFromFavoritesText = ts.translate("initBase", "Remove from favorites", "removeFromFavoritesText");
     c.removeFromHiddenPostListText = ts.translate("initBase", "Remove from hidden post/thread list",
                                                   "removeFromHiddenPostListText");
@@ -301,6 +333,10 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.showPasswordText = ts.translate("initBase", "Show password", "showPasswordText");
     c.showYoutubeVideoTitleLabelText = ts.translate("initBase", "Show titles of YouTube videos:",
                                                     "showYoutubeVideoTitleLabelText");
+    c.shrinkPosts = !Tools::cookieValue(req, "shrinkPosts").compare("true", Qt::CaseInsensitive);
+    c.shrinkPostsClass = c.shrinkPosts ? " shrinkedPost" : "";
+    c.signOpPostLinksLabelText = ts.translate("initBase", "Mark OP post links:", "signOpPostLinksLabelText");
+    c.signOwnPostLinksLabelText = ts.translate("initBase", "Mark own post links:", "signOwnPostLinksLabelText");
     c.siteDomain = Tools::toStd(s->value("Site/domain").toString());
     c.sitePathPrefix = Tools::toStd(s->value("Site/path_prefix").toString());
     c.siteProtocol = Tools::toStd(s->value("Site/protocol").toString());
@@ -331,7 +367,9 @@ void initBase(Content::Base &c, const cppcms::http::request &req, const QString 
     c.timeServerText = ts.translate("initBase", "Server", "timeServerText");
     c.timeZoneOffset = Tools::cookieValue(req, "timeZoneOffset").toInt();
     c.timeZoneOffsetLabelText = ts.translate("initBase", "Offset:", "timeZoneOffsetLabelText");
+    c.toFaqPageText = ts.translate("initBase", "F.A.Q.", "toFaqPageText");
     c.toHomePageText = ts.translate("initBase", "Home", "toHomePageText");
+    c.toManagePageText = ts.translate("initBase", "User management", "toManagePageText");
     c.toPlaylistPageText = ts.translate("initBase", "Playlist", "toPlaylistPageText");
     c.toMarkupPageText = ts.translate("initBase", "Markup", "toMarkupPageText");
     c.userCssLabelText = ts.translate("initBase", "User CSS:", "userCssLabelText");
@@ -396,6 +434,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.banUserText = ts.translate("initBaseBoard", "Ban user", "banUserText");
     c.boardLabelText = ts.translate("initBaseBoard", "Board:", "boardLabelText");
     c.bytesText = ts.translate("initBaseBoard", "Byte(s)", "bytesText");
+    c.bumpLimit = board->bumpLimit();
     c.bumpLimitReachedText = ts.translate("initBaseBoard", "Bump limit reached", "bumpLimitReachedText");
     QString ip = Tools::userIp(req);
     c.captchaEnabled = Tools::captchaEnabled(board->name());
@@ -417,7 +456,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.captchaScriptSource = Tools::toStd(ce->scriptSource(asceticMode));
     c.captchaWidgetHtml = Tools::toStd(ce->widgetHtml(req, asceticMode));
     c.captchaQuota = board->captchaQuota(ip);
-    c.captchaQuotaText = ts.translate("initBaseBoard", "Posts without captcha left:", "captchaQuotaText");
+    c.captchaQuotaText = ts.translate("initBaseBoard", "Posts left:", "captchaQuotaText");
     c.closedText = ts.translate("initBaseBoard", "The thread is closed", "closedText");
     c.closeThreadText = ts.translate("initBaseBoard", "Close thread", "closeThreadText");
     c.collapseVideoText = ts.translate("initBaseBoard", "Collapse video", "collapseVideoText");
@@ -448,6 +487,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
         mmc = "ewm_and_bbc";
     c.currentMarkupMode = mmmap.value(mmc);
     c.currentThread = currentThread;
+    c.delallButtonText = ts.translate("initBaseBoard", "Delete all user posts on selected board", "delallButtonText");
     c.deleteFileText = ts.translate("initBaseBoard", "Delete file", "deleteFileText");
     c.deletePostText = ts.translate("initBaseBoard", "Delete post", "deletePostText");
     c.deleteThreadText = ts.translate("initBaseBoard", "Delete thread", "deleteThreadText");
@@ -478,6 +518,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.loadingPostsText = ts.translate("initBaseBoard", "Loading posts...", "loadingPostsText");
     c.markupBold = ts.translate("initBaseBoard", "Bold text", "markupBold");
     c.markupCode = ts.translate("initBaseBoard", "Code block", "markupCode");
+    c.markupElements = board->markupElements();
     c.markupItalics = ts.translate("initBaseBoard", "Italics", "markupItalics");
     c.markupLang = ts.translate("initBaseBoard", "Code block syntax", "markupLang");
     c.markupQuotation = ts.translate("initBaseBoard", "Quote selected text", "markupQuotation");
@@ -495,7 +536,6 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.maxPasswordLength = Tools::maxInfo(Tools::MaxPasswordFieldLength, board->name());
     c.maxTextLength = Tools::maxInfo(Tools::MaxTextFieldLength, board->name());
     c.megabytesText = ts.translate("initBaseBoard", "MB", "megabytesText");
-    c.moder = Database::registeredUserLevel(req) / 10;
     if (c.moder > 0) {
         QStringList boards = Database::registeredUserBoards(req);
         if (!boards.contains("*") && !boards.contains(board->name()))
@@ -527,11 +567,17 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.postFormLabelEmail = ts.translate("initBaseBoard", "E-mail:", "postFormLabelEmail");
     c.postFormLabelMarkupMode = ts.translate("initBaseBoard", "Markup mode:", "postFormLabelMarkupMode");
     c.postFormLabelName = ts.translate("initBaseBoard", "Name:", "postFormLabelName");
+    c.postFormLabelOptions = ts.translate("initBaseBoard", "Options:", "postFormLabelOptions");
     c.postFormLabelPassword = ts.translate("initBaseBoard", "Password:", "postFormLabelPassword");
     c.postFormLabelRaw = ts.translate("initBaseBoard", "Raw HTML:", "postFormLabelRaw");
+    c.postFormLabelSignAsOp = ts.translate("initBaseBoard", "OP:", "postFormLabelSignAsOp");
     c.postFormLabelSubject = ts.translate("initBaseBoard", "Subject:", "postFormLabelSubject");
     c.postFormLabelText = ts.translate("initBaseBoard", "Post:", "postFormLabelText");
-    c.postFormLabelTripcode = ts.translate("initBaseBoard", "Show tripcode", "postFormLabelTripcode");
+    c.postFormLabelTripcode = ts.translate("initBaseBoard", "Tripcode:", "postFormLabelTripcode");
+    c.postFormPlaceholderEmail = ts.translate("initBaseBoard", "E-mail", "postFormPlaceholderEmail");
+    c.postFormPlaceholderName = ts.translate("initBaseBoard", "Name", "postFormPlaceholderName");
+    c.postFormPlaceholderPassword = ts.translate("initBaseBoard", "Password", "postFormPlaceholderPassword");
+    c.postFormPlaceholderSubject = ts.translate("initBaseBoard", "Subject", "postFormPlaceholderSubject");
     c.postFormTooltipDraft = ts.translate("initBaseBoard", "A post marked as a draft is only visible to yourself and "
                                           "moderators/admins. You may edit a draft as many times as you wish. "
                                           "Finally, when you remove the \"draft\" mark, your post will become visible "
@@ -584,21 +630,25 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
             }
         }
     }
+    c.postLimit = board->postLimit();
     c.postLimitReachedText = ts.translate("initBaseBoard", "Post limit reached", "postLimitReachedText");
     foreach (QString r, board->postformRules(tq.locale()))
         c.postformRules.push_back(Tools::toStd(r.replace("%currentBoard.name%", board->name())));
     c.previousFileText = ts.translate("initBaseBoard", "Previous file", "previousFileText");
     c.quickReplyText = ts.translate("initBaseBoard", "Quick reply", "quickReplyText");
     c.ratingLabelText = ts.translate("initBaseBoard", "Rating:", "ratingLabelText");
+    c.rawPostTextText = ts.translate("initBaseBoard", "Raw post text", "rawPostTextText");
     c.referencedByText = ts.translate("initBaseBoard", "Answers:", "referencedByText");
     c.registeredText = ts.translate("initBaseBoard", "This user is registered", "registeredText");
     c.removeFileText = ts.translate("initBaseBoard", "Remove this file", "removeFileText");
+    c.selectAllText = ts.translate("initBaseBoard", "Select all", "selectAllText");
     c.selectFileText = ts.translate("initBaseBoard", "Select file", "selectFileText");
     c.showPostformMarkupText = ts.translate("initBaseBoard", "Show markup", "showPostformMarkupText");
     c.showPostformRulesText = ts.translate("initBaseBoard", "Show rules", "showPostformRulesText");
     c.showPostFormText = currentThread ? ts.translate("initBaseBoard", "Answer in this thread", "showPostFormText")
                                        : ts.translate("initBaseBoard", "Create thread", "showPostFormText");
     c.showHidePostText = ts.translate("initBaseBoard", "Hide/show", "showHidePostText");
+    c.showUserIpText = ts.translate("initBaseBoard", "Show user IP", "showUserIpText");
     c.showWhois = board->showWhois();
     c.supportedFileTypes = Tools::toStd(board->supportedFileTypes());
     c.toBottomText = ts.translate("initBaseBoard", "Scroll to the bottom", "toBottomText");
@@ -607,6 +657,7 @@ bool initBaseBoard(Content::BaseBoard &c, const cppcms::http::request &req, cons
     c.unexpectedEndOfTokenListErrorText = ts.translate("initBaseBoard", "Unexpected end of spell list",
                                                        "unexpectedEndOfTokenListErrorText");
     c.unfixThreadText = ts.translate("initBaseBoard", "Unfix thread", "unfixThreadText");
+    c.unselectAllText = ts.translate("initBaseBoard", "Unselect all", "unselectAllText");
     c.youtubeApiKey = Tools::toStd(s->value("Site/youtube_api_key").toString());
     return true;
 }
@@ -630,15 +681,15 @@ void renderBanAjax(cppcms::application &app, const Database::BanInfo &info)
     cppcms::json::object o;
     o["errorMessage"] = ts.translate("renderBanAjax", "You are banned", "errorMessage");
     std::string desc = ts.translate("renderBanAjax", "Board:", "errorDescription") + " ";
-    desc += ("*" != info.boardName) ? Tools::toStd(info.boardName)
-                                    : ts.translate("renderBanAjax", "all boards", "errorDescription") + ". ";
+    desc += (("*" != info.boardName) ? Tools::toStd(info.boardName)
+                                     : ts.translate("renderBanAjax", "all boards", "errorDescription")) + ". ";
     desc += ts.translate("renderBanAjax", "Date:", "errorDescription") + " ";
     desc += Tools::toStd(ts.locale().toString(Tools::dateTime(info.dateTime, app.request()),
                                               "dd.MM.yyyy ddd hh:mm:ss")) + ". ";
     desc += ts.translate("renderBanAjax", "Expires:", "errorDescription") + " ";
-    desc += info.expires.isValid() ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
+    desc += (info.expires.isValid() ? Tools::toStd(ts.locale().toString(Tools::dateTime(info.expires, app.request()),
                                                                        "dd.MM.yyyy ddd hh:mm:ss"))
-                                   : ts.translate("renderBanAjax", "never", "errorDescription") + ". ";
+                                    : ts.translate("renderBanAjax", "never", "errorDescription")) + ". ";
     desc += ts.translate("renderBanAjax", "Restricted actions:", "errorDescription") + " ";
     if (info.level >= 10)
         desc += ts.translate("renderBanAjax", "reading and posting are restricted", "errorDescription");
@@ -865,11 +916,14 @@ bool testBanAjax(cppcms::application &app, UserActionType proposedAction, const 
     TranslatorQt tq(app.request());
     bool ok = false;
     QString err;
-    Database::BanInfo inf = Database::userBanInfo(ip, board, &ok, &err, tq.locale());
+    QMap<QString, Database::BanInfo> map = Database::userBanInfo(ip, &ok, &err, tq.locale());
     if (!ok) {
         renderErrorAjax(app, tq.translate("testBanAjax", "Internal error", "error"), err);
         return false;
     }
+    if (!map.contains(board))
+        return true;
+    Database::BanInfo inf = map.value(board);
     if (inf.level >= proposedAction) {
         renderBanAjax(app, inf);
         return false;
@@ -888,11 +942,12 @@ bool testBanNonAjax(cppcms::application &app, UserActionType proposedAction, con
     TranslatorQt tq(app.request());
     bool ok = false;
     QString err;
-    Database::BanInfo inf = Database::userBanInfo(ip, board, &ok, &err, tq.locale());
+    QMap<QString, Database::BanInfo> map = Database::userBanInfo(ip, &ok, &err, tq.locale());
     if (!ok) {
         renderError(app, tq.translate("testBan", "Internal error", "error"), err);
         return false;
     }
+    Database::BanInfo inf = map.value(board);
     if (inf.level >= proposedAction) {
         renderBan(app, inf);
         return false;

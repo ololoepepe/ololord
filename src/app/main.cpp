@@ -84,7 +84,7 @@ int main(int argc, char **argv)
         OlolordApplication app(argc, argv, AppName, "Andrey Bogdanov");
         if (!force)
             s.listen();
-        app.setApplicationVersion("0.1.0-rc10");
+        app.setApplicationVersion("0.1.0-rc11");
         BLocationProvider *prov = new BLocationProvider;
         prov->addLocation("storage");
         prov->addLocation("storage/img");
@@ -124,6 +124,8 @@ int main(int argc, char **argv)
         owt.wait(10 * BeQt::Second);
         BDirTools::writeFile(Tools::captchaQuotaFile(), AbstractBoard::saveCaptchaQuota());
         BDirTools::writeFile(Tools::searchIndexFile(), Search::saveIndex());
+        foreach (const QString &name, Cache::availableCacheNames())
+            Cache::clearCache(name);
     } else {
         bWriteLine(translate("main", "Another instance of") + " "  + AppName + " "
                    + translate("main", "is already running. Quitting..."));
@@ -164,7 +166,7 @@ bool handleBanPoster(const QString &, const QStringList &args)
     QString errorData;
     QString boards = AbstractBoard::boardNames().join("|");
     QString options = "sourceBoard:--source-board|-s=" + boards + ",postNumber:--post-number|-p=,"
-            "[board:--board|-b=" + boards + "|*],[level:--level|-l=0|1|10|100],[reason:--reason|-r=],"
+            "[level:--level|-l=0|1|10|100],[board:--board|-b=" + boards + "],[reason:--reason|-r=],"
             "[expires:--expires|-e=]";
     BTextTools::OptionsParsingError error = BTextTools::parseOptions(args, options, result, errorData);
     if (!checkParsingError(error, errorData))
@@ -175,23 +177,49 @@ bool handleBanPoster(const QString &, const QStringList &args)
     if (!ok || !postNumber)
         return false;
     QString board = result.value("board");
-    if (board.isEmpty())
-        board = "*";
     int level = result.contains("level") ? result.value("level").toInt() : 1;
     QString reason = result.value("reason");
-    QDateTime expires;
-    if (result.contains("expires")) {
-        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"),
-                                                                     Tools::InputDateTimeFormat) : QDateTime();
-        if (!expires.isValid()) {
-            QString s = bReadLine(translate("handleBanPoster", "Invalid date. User will be banned forever. Continue?")
-                                  + " [Yn] ");
-            if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
-                return true;
+    QDateTime expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"),
+                                                                           Tools::InputDateTimeFormat) : QDateTime();
+    if (!expires.isValid() && level > 0) {
+        if (result.contains("expires")) {
+            bReadLine(translate("handleBanPoster", "Invalid date"));
+            return false;
+        }
+        QString s = bReadLine(translate("handleBanPoster", "No date specified. User will be banned forever. Continue?")
+                              + " [Yn] ");
+        if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive)) {
+            bWriteLine(translate("handleBanPoster", "Canceled"));
+            return true;
         }
     }
     QString err;
-    if (!Database::banUser(sourceBoard, postNumber, board, level, reason, expires, &err))
+    QMap<QString, Database::BanInfo> map = Database::userBanInfo(sourceBoard, postNumber, &ok, &err);
+    if (!ok) {
+        bWriteLine(err);
+        return true;
+    }
+    Database::BanInfo inf;
+    inf.expires = expires;
+    inf.level = level;
+    inf.reason = reason;
+    if (board.isEmpty()) {
+        QString s = bReadLine(translate("handleBanPoster",
+                                        "No board specified. User will be banned/unbanned on all boards. Continue?")
+                              + " [Yn] ");
+        if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive)) {
+            bWriteLine(translate("handleBanPoster", "Canceled"));
+            return true;
+        }
+        foreach (const QString &bn, AbstractBoard::boardNames()) {
+            inf.boardName = bn;
+            map.insert(bn, inf);
+        }
+    } else {
+        inf.boardName = board;
+        map.insert(board, inf);
+    }
+    if (!Database::banUser(sourceBoard, postNumber, map.values(), &err))
         bWriteLine(err);
     else
         bWriteLine(translate("handleBanPoster", "OK"));
@@ -203,7 +231,7 @@ bool handleBanUser(const QString &, const QStringList &args)
     QMap<QString, QString> result;
     QString errorData;
     QString boards = AbstractBoard::boardNames().join("|");
-    QString options = "ip:--ip-address|-i=,[board:--board|-b=" + boards + "|*],[level:--level|-l=0|1|10|100],"
+    QString options = "ip:--ip-address|-i=,[board:--board|-b=" + boards + "],[level:--level|-l=0|1|10|100],"
             "[reason:--reason|-r=],[expires:--expires|-e=]";
     BTextTools::OptionsParsingError error = BTextTools::parseOptions(args, options, result, errorData);
     if (!checkParsingError(error, errorData))
@@ -214,23 +242,50 @@ bool handleBanUser(const QString &, const QStringList &args)
         return false;
     }
     QString board = result.value("board");
-    if (board.isEmpty())
-        board = "*";
     int level = result.contains("level") ? result.value("level").toInt() : 1;
     QString reason = result.value("reason");
-    QDateTime expires;
-    if (result.contains("expires")) {
-        expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"),
-                                                                     Tools::InputDateTimeFormat) : QDateTime();
-        if (!expires.isValid()) {
-            QString s = bReadLine(translate("handleBanUser", "Invalid date. User will be banned forever. Continue?")
-                                  + " [Yn] ");
-            if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive))
-                return true;
+    QDateTime expires = result.contains("expires") ? QDateTime::fromString(result.value("expires"),
+                                                                           Tools::InputDateTimeFormat) : QDateTime();
+    if (!expires.isValid() && level > 0) {
+        if (result.contains("expires")) {
+            bReadLine(translate("handleBanUser", "Invalid date"));
+            return false;
+        }
+        QString s = bReadLine(translate("handleBanUser", "No date specified. User will be banned forever. Continue?")
+                              + " [Yn] ");
+        if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive)) {
+            bWriteLine(translate("handleBanUser", "Canceled"));
+            return true;
         }
     }
     QString err;
-    if (!Database::banUser(ip, board, level, reason, expires, &err))
+    bool ok = false;
+    QMap<QString, Database::BanInfo> map = Database::userBanInfo(ip, &ok, &err);
+    if (!ok) {
+        bWriteLine(err);
+        return true;
+    }
+    Database::BanInfo inf;
+    inf.expires = expires;
+    inf.level = level;
+    inf.reason = reason;
+    if (board.isEmpty()) {
+        QString s = bReadLine(translate("handleBanUser",
+                                        "No board specified. User will be banned/unbanned on all boards. Continue?")
+                              + " [Yn] ");
+        if (!s.isEmpty() && s.compare("y", Qt::CaseInsensitive)) {
+            bWriteLine(translate("handleBanUser", "Canceled"));
+            return true;
+        }
+        foreach (const QString &bn, AbstractBoard::boardNames()) {
+            inf.boardName = bn;
+            map.insert(bn, inf);
+        }
+    } else {
+        inf.boardName = board;
+        map.insert(board, inf);
+    }
+    if (!Database::banUser(ip, map.values(), &err))
         bWriteLine(err);
     else
         bWriteLine(translate("handleBanUser", "OK"));
@@ -618,7 +673,7 @@ void initCommands()
         BTerminal::setCommandHelp(s, ch);
     foreach (const QString &s, BTerminal::commands(BTerminal::SetCommand)) {
         BTerminal::installHandler(s, &handleSet);
-        BTerminal::setCommandHelp(s, BTerminal::commandHelp(BTerminal::SetCommand));
+        BTerminal::setCommandHelp(s, BTerminal::commandHelpList(BTerminal::SetCommand));
     }
     //
     BTerminal::installHandler("ban-user", &handleBanUser);
@@ -770,7 +825,7 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "Determines if captcha is enabled.\n"
                                                "If false, captcha will be disabled on all boards.\n"
                                                "The default is true."));
-    nn = new BSettingsNode(QVariant::Bool, "supported_captcha_engines", n);
+    nn = new BSettingsNode(QVariant::String, "supported_captcha_engines", n);
     nn->setDescription(BTranslation::translate("initSettings", "Identifiers of supported captcha engines.\n"
                                                "Identifers must be separated by commas.\n"
                                                "Example: google-recaptcha,codecha\n"
@@ -861,6 +916,19 @@ void initSettings()
     nn = new BSettingsNode(QVariant::String, "youtube_api_key", n);
     nn->setDescription(BTranslation::translate("initSettings", "The key required to access YouTube API.\n"
                                                "It will appear in HTML."));
+    nn = new BSettingsNode(QVariant::String, "file_link_dl_proxy", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Proxy used to download files attached as links.\n"
+                                               "May be useful when your server is under a firewall.\n"
+                                               "If no protocol is specified, it defaults to http.\n"
+                                               "If port is not specified, it defaults to 8080.\n"
+                                               "See CURLOPT_PROXY for detals.\n"
+                                               "Example: 123.234.56.78:8080"));
+    nn = new BSettingsNode(QVariant::String, "file_link_dl_proxy_userpwd", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Username/password for proxy used to download files "
+                                               "attached as links.\n"
+                                               "May be useful when your server is under a firewall.\n"
+                                               "See CURLOPT_PROXYUSERPWD for detals.\n"
+                                               "Example: user:passw0rd"));
     /*======================================== Captcha ========================================*/
     n = new BSettingsNode("Captcha", root); //NOTE: Yep, it must be here.
     /*======================================== System ========================================*/
@@ -904,6 +972,10 @@ void initSettings()
     nn->setDescription(BTranslation::translate("initSettings", "List of IP addresses which are not logged.\n"
                                                "IP's are represented as ranges and are separated by commas.\n"
                                                "Example: 127.0.0.1,192.168.0.1-192.168.0.255"));
+    nn = new BSettingsNode(QVariant::UInt, "max_render_threads", n);
+    nn->setDescription(BTranslation::translate("initSettings", "Determines how many threads may be used "
+                                               "simultaneously to render pages.\n"
+                                               "The default is QThread::idealThreadCount()"));
     nn = new BSettingsNode("Proxy", n);
     BSettingsNode *nnn = new BSettingsNode(QVariant::Bool, "detect_real_ip", nn);
     nnn->setDescription(BTranslation::translate("initSettings", "Determines if real IP of a client is detected.\n"

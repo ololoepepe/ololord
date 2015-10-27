@@ -12,10 +12,10 @@
 
 <% template navigationButton(std::string target) %>
 <% if ( "top" == target ) %>
-    <a class="navigationButton navigationButtonBottom" title="<%= toTopText %>"
+    <a class="navigationButton navigationButtonTop" title="<%= toTopText %>"
        href="#top"><img src="/<%= sitePathPrefix %>img/up.png"></a>
 <% elif ( "bottom" == target ) %>
-    <a class="navigationButton navigationButtonTop" title="<%= toBottomText %>"
+    <a class="navigationButton navigationButtonBottom" title="<%= toBottomText %>"
        href="#bottom"><img src="/<%= sitePathPrefix %>img/down.png"></a>
 <% end %>
 <% end template %>
@@ -48,10 +48,19 @@
 <% template customPostFormField4() %>
 <% end template %>
 
+<% template customPostFormField40() %>
+<% end template %>
+
 <% template customPostFormField41() %>
 <% end template %>
 
 <% template customPostFormField42() %>
+<% end template %>
+
+<% template customPostFormField43() %>
+<% end template %>
+
+<% template customPostFormField44() %>
 <% end template %>
 
 <% template customPostFormField5() %>
@@ -84,7 +93,13 @@
 <% template customPostFormFieldEdit4() %>
 <% end template %>
 
+<% template customPostFormFieldEdit40() %>
+<% end template %>
+
 <% template customPostFormFieldEdit41() %>
+<% end template %>
+
+<% template customPostFormFieldEdit42() %>
 <% end template %>
 
 <% template customPostFormFieldEdit5() %>
@@ -236,9 +251,33 @@
 
 <% template post(Content::Post post, Content::Board::ThreadPointer thread) %>
 <% if ( post.number == post.threadNumber ) %>
-    <div id="post<%= post.number %>" class="opPost">
+    <% if ( post.ownIp ) %>
+        <% if ( post.opIp ) %>
+            <div id="post<%= post.number %>" class="opPost ownIp opIp<%= shrinkPostsClass %>">
+        <% else %>
+            <div id="post<%= post.number %>" class="opPost ownIp<%= shrinkPostsClass %>">
+        <% end %>
+    <% else %>
+        <% if ( post.opIp ) %>
+            <div id="post<%= post.number %>" class="opPost opIp<%= shrinkPostsClass %>">
+        <% else %>
+            <div id="post<%= post.number %>" class="opPost<%= shrinkPostsClass %>">
+        <% end %>
+    <% end %>
 <% else %>
-    <div id="post<%= post.number %>" class="post">
+    <% if ( post.ownIp ) %>
+        <% if ( post.opIp ) %>
+            <div id="post<%= post.number %>" class="post ownIp opIp<%= shrinkPostsClass %>">
+        <% else %>
+            <div id="post<%= post.number %>" class="post ownIp<%= shrinkPostsClass %>">
+        <% end %>
+    <% else %>
+        <% if ( post.opIp ) %>
+            <div id="post<%= post.number %>" class="post opIp<%= shrinkPostsClass %>">
+        <% else %>
+            <div id="post<%= post.number %>" class="post<%= shrinkPostsClass %>">
+        <% end %>
+    <% end %>
 <% end %>
     <a id="<%= post.number %>"></a>
     <% if ( post.rawHtml ) %>
@@ -293,6 +332,9 @@
                 <%= post.name | raw %>
             <% end %>
         </span>
+        <% if ( post.ownIp && post.signAsOp ) %>
+            <span class="opSign">[OP]</span>
+        <% end %>
         <% if ( !post.tripcode.empty() && post.showTripcode ) %>
             <span class="tripcode <%= deviceType %>"><%= post.tripcode %></span>
         <% end %>
@@ -309,16 +351,17 @@
             <% if ( thread ) %>
                 <% if ( content.moder ) %>
                     #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#i<%= post.number %>"
-                        title="<%= post.ip %>"><%= post.number %></a>
+                        name="number" title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
+                    #<a name="number"
+                        href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#i<%= post.number %>"><%= post.number %></a>
                 <% end %>
             <% else %>
                 <% if ( content.moder ) %>
                     #<a href="#<%= post.number %>" onclick="lord.insertPostNumber(<%= post.number %>); return false;"
-                        title="<%= post.ip %>"><%= post.number %></a>
+                        name="number" title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="#<%= post.number %>"
+                    #<a href="#<%= post.number %>" name="number"
                         onclick="lord.insertPostNumber(<%= post.number %>); return false;"><%= post.number %></a>
                 <% end %>
             <% end %>
@@ -326,15 +369,16 @@
             <% if ( thread ) %>
                 <% if ( content.moder ) %>
                     #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#<%= post.number %>"
-                        title="<%= post.ip %>"><%= post.number %></a>
+                        name="number" title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
+                    #<a name="number"
+                        href="/<%= sitePathPrefix %><%= currentBoard.name %>/thread/<%= thread->opPost.number %>.html#<%= post.number %>"><%= post.number %></a>
                 <% end %>
             <% else %>
                 <% if ( content.moder ) %>
-                    #<a href="#<%= post.number %>" title="<%= post.ip %>"><%= post.number %></a>
+                    #<a name="number" href="#<%= post.number %>" title="<%= post.ip %>"><%= post.number %></a>
                 <% else %>
-                    #<a href="#<%= post.number %>"><%= post.number %></a>
+                    #<a name="number" href="#<%= post.number %>"><%= post.number %></a>
                 <% end %>
             <% end %>
         <% end %>
@@ -343,154 +387,196 @@
             [<a href="javascript:lord.quickReply(<%= post.number %>);" title="<%= quickReplyText %>"
                 name="quickReply">&gt;&gt;</a>]
         <% end %>
-        <% if ( content.mode.name != "ascetic" ) %>
-            <span class="<%= deviceType %> postActions">
+        <% if ( content.mode.name != "ascetic" || content.loggedIn ) %>
+            <span tabindex="0" class="<%= deviceType %> postActions">
                 <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
+                <ul class="postActionsMenu">
                 <% if ( (content.moder || post.draft) && (post.files.size() < content.maxFileCount) ) %>
+                    <li>
                     <% if ( content.mode.name != "ascetic" ) %>
                         <a name="addFileButton"
                            href="javascript:lord.addFile('<%= currentBoard.name %>', '<%= post.number %>');">
-                            <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/add.png"> <%= addFileText %></a>
                     <% else %>
                         <a name="addFileButton" target="_blank"
                            href="/<%= sitePathPrefix %>add_file?board=<%= currentBoard.name %>&post=<%= post.number %>">
-                            <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/add.png"/> <%= addFileText %></a>
                     <% end %>
+                    </li>
                 <% end %>
                 <% if ( content.moder || post.draft ) %>
+                    <li>
                     <% if ( content.mode.name != "ascetic" ) %>
                         <a name="editButton"
                            href="javascript:lord.editPost('<%= currentBoard.name %>', '<%= post.number %>');">
-                            <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/edit.png"/> <%= editPostText %></a>
                     <% else %>
                         <a name="editButton" target="_blank"
                            href="/<%= sitePathPrefix %>edit_post?board=<%= currentBoard.name %>&post=<%= post.number %>">
-                            <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/edit.png" /> <%= editPostText %></a>
                     <% end %>
+                    </li>
                 <% end %>
                 <% if ( content.moder && post.number == post.threadNumber ) %>
+                    <li>
                     <% if ( (thread && thread->fixed) || (!thread && dynamic_cast<Content::Thread *>(&content)->fixed) ) %>
                         <% if ( content.mode.name != "ascetic" ) %>
                             <a name="fixButton"
                                href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                                <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                                <img src="/<%= sitePathPrefix %>img/unfix.png" /> <%= unfixThreadText %></a>
                         <% elif ( content.loggedIn ) %>
                             <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
                                   action="/<%= sitePathPrefix %>action/set_thread_fixed">
                                 <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
                                 <input type="hidden" name="threadNumber" value="<%= post.number %>" />
                                 <input type="hidden" name="fixed" value="false" />
-                                <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/unfix.png"
-                                       title="<%= unfixThreadText %>" />
+                                <input type="image" name="deleteFileButton"
+                                       src="/<%= sitePathPrefix %>img/unfix.png" />
                             </form>
+                            <%= unfixThreadText %>
                         <% end %>
                     <% else %>
                         <% if ( content.mode.name != "ascetic" ) %>
                             <a name="fixButton"
                                href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                                <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                                <img src="/<%= sitePathPrefix %>img/fixed.png" /> <%= fixThreadText %></a>
                         <% elif ( content.loggedIn ) %>
                             <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
                                   action="/<%= sitePathPrefix %>action/set_thread_fixed">
                                 <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
                                 <input type="hidden" name="threadNumber" value="<%= post.number %>" />
                                 <input type="hidden" name="fixed" value="true" />
-                                <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/fixed.png"
-                                       title="<%= fixThreadText %>" />
+                                <input type="image" name="deleteFileButton"
+                                       src="/<%= sitePathPrefix %>img/fixed.png" />
                             </form>
+                            <%= fixThreadText %>
                         <% end %>
                     <% end %>
+                    </li>
+                    <li>
                     <% if ( (thread && thread->closed) || (!thread && dynamic_cast<Content::Thread *>(&content)->closed) ) %>
                         <% if ( content.mode.name != "ascetic" ) %>
                             <a name="closeButton"
                                href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', true);">
-                                <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                                <img src="/<%= sitePathPrefix %>img/open.png" /> <%= openThreadText %></a>
                         <% elif ( content.loggedIn ) %>
                             <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
                                   action="/<%= sitePathPrefix %>action/set_thread_opened">
                                 <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
                                 <input type="hidden" name="threadNumber" value="<%= post.number %>" />
                                 <input type="hidden" name="opened" value="true" />
-                                <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/open.png"
-                                       title="<%= openThreadText %>" />
+                                <input type="image" name="deleteFileButton"
+                                       src="/<%= sitePathPrefix %>img/open.png" />
                             </form>
+                            <%= openThreadText %>
                         <% end %>
                     <% else %>
                         <% if ( content.mode.name != "ascetic" ) %>
                             <a name="closeButton"
                                href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '<%= post.number %>', false);">
-                                <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                                <img src="/<%= sitePathPrefix %>img/closed.png" /> <%= closeThreadText %></a>
                         <% elif ( content.loggedIn ) %>
                             <form method="post" accept-charset="utf-8" enctype="multipart/form-data" class="inlineForm"
                                   action="/<%= sitePathPrefix %>action/set_thread_opened">
                                 <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
                                 <input type="hidden" name="threadNumber" value="<%= post.number %>" />
                                 <input type="hidden" name="opened" value="false" />
-                                <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/closed.png"
-                                       title="<%= closeThreadText %>" />
+                                <input type="image" name="deleteFileButton"
+                                       src="/<%= sitePathPrefix %>img/closed.png" />
                             </form>
+                            <%= closeThreadText %>
                         <% end %>
                     <% end %>
+                    </li>
+                    <li>
                     <% if ( content.mode.name != "ascetic" ) %>
                         <a name="moveButton"
                            href="javascript:lord.moveThread('<%= currentBoard.name %>', '<%= post.number %>');">
-                            <img src="/<%= sitePathPrefix %>img/move.png" title="<%= moveThreadText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/move.png" /> <%= moveThreadText %></a>
                     <% elif ( content.loggedIn ) %>
                         <a name="moveButton" target="_blank"
                            href="/<%= sitePathPrefix %>move_thread?board=<%= currentBoard.name %>&thread=<%= post.number %>">
-                            <img src="/<%= sitePathPrefix %>img/move.png" title="<%= moveThreadText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/move.png" /> <%= moveThreadText %></a>
                     <% end %>
+                    </li>
                 <% end %>
                 <% if ( content.moder ) %>
+                    
                     <% if ( content.mode.name != "ascetic" ) %>
+                        <li>
+                        <a name="ipButton"
+                           href="javascript:void(prompt('IP:', '<%= post.ip %>'));">
+                            <img src="/<%= sitePathPrefix %>img/ip.png" /> <%= showUserIpText %></a>
+                        <li>
                         <a name="banButton"
                            href="javascript:lord.banUser('<%= currentBoard.name %>', '<%= post.number %>');">
-                            <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/ban.png" /> <%= banUserText %></a>
+                        </li>
                     <% else %>
+                        <li>
                         <a name="banButton" target="_blank"
                            href="/<%= sitePathPrefix %>ban_user?board=<%= currentBoard.name %>&post=<%= post.number %>">
-                            <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/ban.png" /> <%= banUserText %></a>
+                        </li>
                     <% end %>
                 <% end %>
                 <% if ( content.mode.name != "ascetic" ) %>
                     <% if ( !thread && post.number == post.threadNumber ) %>
+                        <li>
                         <a name="downloadButton" href="javascript:lord.downloadThread();">
-                            <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/download.png" /> <%= downloadThreadText %></a>
+                        </li>
                     <% end %>
                     <% if ( post.number == post.threadNumber ) %>
+                        <li>
                         <a name="addToFavoritesButton">
-                            <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/favorite.png" /> <%= addThreadToFavoritesText %></a>
+                        </li>
                     <% end %>
+                    <li>
+                    <a name="rawTextButton"
+                       href="javascript:lord.getRawPostText('<%= currentBoard.name %>', <%= post.number %>);">
+                        <img src="/<%= sitePathPrefix %>img/raw_text.png" /> <%= rawPostTextText %></a>
+                    </li>
+                    <li>
                     <a name="complainButton" href="javascript:lord.complain();">
-                        <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
+                        <img src="/<%= sitePathPrefix %>img/complain.png" /> <%= complainText %></a>
+                    </li>
                 <% end %>
                 <% if ( content.mode.name != "ascetic" ) %>
+                    <li>
                     <a name="deleteButton"
-                       href="javascript:lord.deletePost('<%= currentBoard.name %>', '<%= post.number %>', true);">
+                       href="javascript:lord.deletePost('<%= currentBoard.name %>', <%= post.number %>, true);">
                         <% if ( post.number == post.threadNumber ) %>
-                            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deleteThreadText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/delete.png" /> <%= deleteThreadText %></a>
                         <% else %>
-                            <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+                            <img src="/<%= sitePathPrefix %>img/delete.png" /> <%= deletePostText %></a>
                         <% end %>
+                    </li>
                 <% elif ( content.loggedIn ) %>
+                    <li>
                     <form method="post" accept-charset="utf-8" action="/<%= sitePathPrefix %>action/delete_post"
                           enctype="multipart/form-data" class="inlineForm">
                         <input type="hidden" name="boardName" value="<%= currentBoard.name %>" />
                         <input type="hidden" name="postNumber" value="<%= post.number %>" />
                         <% if ( post.number == post.threadNumber ) %>
-                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png"
-                                   title="<%= deleteThreadText %>" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png" />
+                            <%= deleteThreadText %>
                         <% else %>
-                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png"
-                                   title="<%= deletePostText %>" />
+                            <input type="image" name="deleteFileButton" src="/<%= sitePathPrefix %>img/delete.png" />
+                            <%= deletePostText %>
                         <% end %>
                     </form>
+                    </li>
                 <% end %>
                 <% if ( content.mode.name != "ascetic" ) %>
+                    <li>
                     <a name="hideButton" id="hidePost<%= post.number %>"
                        href="javascript:lord.setPostHidden('<%= currentBoard.name %>', '<%= post.number %>');">
-                        <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+                        <img src="/<%= sitePathPrefix %>img/hide.png" /> <%= showHidePostText %></a>
+                    </li>
                 <% end %>
+                </ul>
             </span>
         <% end %>
         <% if ( thread && post.number == post.threadNumber ) %>
@@ -607,96 +693,153 @@
         <tbody>
             <% include customPostFormField0() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelEmail %></b>
-                </td>
-                <td class="postformField">
-                    <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
-                    <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField nowrap" colspan="2">
+                        <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="27"
+                               placeholder="<%= postFormPlaceholderEmail %>" />
+                        <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelEmail %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxEmailLength %>" name="email" size="30" />
+                        <input type="submit" name="submit" value="<%= postFormButtonSubmit %>" />
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField1() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelName %></b>
-                </td>
-                <td class="postformField">
-                    <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <input type="text" maxlength="<%= maxNameLength %>" name="name" size="40"
+                               placeholder="<%= postFormPlaceholderName %>" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelName %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxNameLength %>" name="name" size="43" />
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField2() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelSubject %></b>
-                </td>
-                <td class="postformField">
-                    <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="40"
+                               placeholder="<%= postFormPlaceholderSubject %>" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelSubject %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="text" maxlength="<%= maxSubjectLength %>" name="subject" size="43" />
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField3() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelText %></b>
-                </td>
-                <td class="postformField">
-                    <div class="symbolCounterContainer">
-                        <% if ( content.mode.name != "ascetic" ) %>
-                            <span class="symbolCounter"><span name="used">0</span>/<%= maxTextLength %></span>
-                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
-                        <% else %>
-                            <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
-                                      class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
-                        <% end %>
-                    </div>
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <div class="symbolCounterContainer">
+                            <textarea name="text" rows="10" cols="41" placeholder="<%= postFormTextPlaceholder %>"
+                                      class="postFormTextarea"></textarea>
+                        </div>
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelText %></b>
+                    </td>
+                    <td class="postformField">
+                        <div class="symbolCounterContainer">
+                            <% if ( content.mode.name != "ascetic" ) %>
+                                <span class="symbolCounter"><span name="used">0</span>/<%= maxTextLength %></span>
+                                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                          class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                            <% else %>
+                                <textarea name="text" rows="10" cols="43" placeholder="<%= postFormTextPlaceholder %>"
+                                          class="postFormTextarea" onkeyup="lord.countSymbols(this);"></textarea>
+                            <% end %>
+                        </div>
+                    </td>
+                <% end %>
             </tr>
-            <% if ( content.mode.name != "ascetic" ) %>
+            <% if ( content.mode.name != "ascetic" && content.deviceType != "mobile" && !content.minimalisticPostform ) %>
                 <tr>
                     <td>
                         <a class="hidePostformMarkupButton" />
                     </td>
                     <td class="postformMarkup">
                         <span>
-                            <button class="button" onclick="lord.markup('b'); return false;" name="markupBold"
-                                    title="<%= markupBold %>"><b>B</b></button>
-                            <button class="button" onclick="lord.markup('i'); return false;" name="markupItalics"
-                                    title="<%= markupItalics %>"><i>i</i></button>
-                            <button class="button" onclick="lord.markup('s'); return false;" name="markupStrikedOut"
-                                    title="<%= markupStrikedOut %>"><s>S</s></button>
-                            <button class="button" onclick="lord.markup('u'); return false;" name="markupUnderlined"
-                                    title="<%= markupUnderlined %>"><u>U</u></button>
-                            <button class="button" onclick="lord.markup('spoiler'); return false;" name="markupSpoiler"
-                                    title="<%= markupSpoiler %>"><span class="spoiler">------</span></button>
-                            <button class="button" onclick="lord.markup('>'); return false;" name="markupQuotation"
-                                    title="<%= markupQuotation %>"><span class="quoatation">&gt;</span></button>
-                            <select name="langSelect" class="select" title="<%= markupLang %>"
-                                    onchange="lord.changeLastCodeLang();">
-                                <option value="-" selected="true">-----</option>
-                                <% foreach lang in availableLangs %>
-                                    <% item %>
-                                        <option value="<%= lang.id %>"><%= lang.name %></option>
+                            <% if ( content.markupElements & AbstractBoard::BoldMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('b'); return false;" name="markupBold"
+                                        title="<%= markupBold %>"><b>B</b></button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::ItalicsMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('i'); return false;" name="markupItalics"
+                                        title="<%= markupItalics %>"><i>i</i></button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::StrikedOutMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('s'); return false;" name="markupStrikedOut"
+                                        title="<%= markupStrikedOut %>"><s>S</s></button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::UnderlinedMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('u'); return false;" name="markupUnderlined"
+                                        title="<%= markupUnderlined %>"><u>U</u></button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::SpoilerMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('spoiler'); return false;" name="markupSpoiler"
+                                        title="<%= markupSpoiler %>"><span class="spoiler">------</span></button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::QuotationMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('>'); return false;" name="markupQuotation"
+                                        title="<%= markupQuotation %>"><span class="quoatation">&gt;</span></button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::CodeMarkupElement ) %>
+                                <select name="langSelect" class="select" title="<%= markupLang %>"
+                                        onchange="lord.changeLastCodeLang();">
+                                    <option value="-" selected="true">-----</option>
+                                    <% foreach lang in availableLangs %>
+                                        <% item %>
+                                            <option value="<%= lang.id %>"><%= lang.name %></option>
+                                        <% end %>
                                     <% end %>
-                                <% end %>
-                            </select>
-                            <button class="button" onclick="lord.markup('code'); return false;" name="markupCode"
-                                    title="<%= markupCode %>">[code]</button>
-                            <button class="button" onclick="lord.markup('sub'); return false;" name="markupSubscript"
-                                    title="<%= markupSubscript %>">H<sub>2</sub>O</button>
-                            <button class="button" onclick="lord.markup('sup'); return false;" name="markupSuperscript"
-                                    title="<%= markupSuperscript %>">X<sup>3</sup></button>
-                            <button class="button" onclick="lord.markup('url'); return false;" name="markupUrl"
-                                    title="<%= markupUrl %>">http://</button>
+                                </select>
+                                <button class="button" onclick="lord.markup('code'); return false;" name="markupCode"
+                                        title="<%= markupCode %>">[code]</button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::SubscriptMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('sub'); return false;" name="markupSubscript"
+                                        title="<%= markupSubscript %>">H<sub>2</sub>O</button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::SuperscriptMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('sup'); return false;" name="markupSuperscript"
+                                        title="<%= markupSuperscript %>">X<sup>3</sup></button>
+                            <% end %>
+                            <% if ( content.markupElements & AbstractBoard::UrlMarkupElement ) %>
+                                <button class="button" onclick="lord.markup('url'); return false;" name="markupUrl"
+                                        title="<%= markupUrl %>">http://</button>
+                            <% end %>
                         </span>
                     </td>
                 </tr>
             <% end %>
             <% include customPostFormField31() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelMarkupMode %></b>
-                </td>
-                <td class="postformField">
+                <% if ( content.deviceType != "mobile" && !content.minimalisticPostform ) %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelMarkupMode %></b>
+                    </td>
+                <% end %>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                <% else %>
+                    <td class="postformField">
+                <% end %>
                     <select name="markupMode" class="select">
                         <% foreach mode in markupModes %>
                             <% item %>
@@ -711,53 +854,57 @@
                 </td>
             </tr>
             <% include customPostFormField4() %>
-            <% if ( content.moder >= 10 ) %>
-                <tr>
+            <tr>
+                <% if ( content.deviceType != "mobile" && !content.minimalisticPostform ) %>
                     <td class="postformLabel">
+                        <b><%= postFormLabelOptions %></b>
+                    </td>
+                    <td>
+                <% else %>
+                    <td class="postformField" colspan="2">
+                <% end %>
+                    <% include customPostFormField40() %>
+                    <% if ( content.moder >= 10 ) %>
                         <b><%= postFormLabelRaw %></b>
-                    </td>
-                    <td class="postformField">
                         <input type="checkbox" name="raw" value="true" />
-                    </td>
-                </tr>
-            <% end %>
-            <% include customPostFormField41() %>
-            <% if ( content.loggedIn ) %>
-                <tr>
-                    <td class="postformLabel">
+                    <% end %>
+                    <% include customPostFormField41() %>
+                    <b><%= postFormLabelSignAsOp %></b>
+                    <input type="checkbox" name="signAsOp" value="true" />
+                    <% include customPostFormField42() %>
+                    <% if ( content.loggedIn ) %>
                         <b><%= postFormLabelTripcode %></b>
-                    </td>
-                    <td class="postformField">
                         <% if ( content.mode.name != "ascetic" ) %>
                             <input type="checkbox" name="tripcode" value="true" onclick="lord.switchShowTripcode();" />
                         <% else %>
                             <input type="checkbox" name="tripcode" value="true" />
                         <% end %>
-                    </td>
-                </tr>
-            <% end %>
-            <% include customPostFormField42() %>
-            <% if ( content.draftsEnabled && content.loggedIn ) %>
-                <tr>
-                    <td class="postformLabel" title="<%= postFormTooltipDraft %>">
+                    <% end %>
+                    <% include customPostFormField43() %>
+                    <% if ( content.draftsEnabled && content.loggedIn ) %>
                         <b><%= postFormLabelDraft %></b>
-                    </td>
-                    <td class="postformField" title="<%= postFormTooltipDraft %>">
                         <% if ( content.draftsByDefault ) %>
                             <input type="checkbox" name="draft" value="true" checked="true" />
                         <% else %>
                             <input type="checkbox" name="draft" value="true" />
                         <% end %>
-                    </td>
-                </tr>
-            <% end %>
+                    <% end %>
+                    <% include customPostFormField44() %>
+                </td>
+            </tr>
             <% include customPostFormField5() %>
             <% if ( content.maxFileCount ) %>
                 <tr>
-                    <td class="postformLabel">
-                        <b><%= postFormInputFile %></b>
-                    </td>
-                    <td class="postformField">
+                    <% if ( content.deviceType != "mobile" && !content.minimalisticPostform ) %>
+                        <td class="postformLabel">
+                            <b><%= postFormInputFile %></b>
+                        </td>
+                    <% end %>
+                    <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                        <td class="postformField" colspan="2">
+                    <% else %>
+                        <td class="postformField">
+                    <% end %>
                         <% if ( content.mode.name != "ascetic" ) %>
                             <div class="postformFile" onclick="lord.browseFile(event, this);"
                                  ondragover="return lord.fileDragOver(event, this);"
@@ -792,7 +939,7 @@
                             </div>
                         <% else %>
                             <% c++ for (int i = 0; i < int(content.maxFileCount); ++i) { %>
-                                <% c++ out() << "<input type=\"file_" << i << "\" name=\"file\" accept=\"content.supportedFileTypes\" />"; %>
+                                <% c++ out() << "<input type=\"file\"" << "\" name=\"file_\" << i << accept=\"content.supportedFileTypes\" />"; %>
                                 <% c++ out() << "<select name=\"file_" << i << "_rating\">"; %>
                                     <option value="SFW" selected="true">SFW</option>
                                     <option value="R-15">R-15</option>
@@ -810,56 +957,80 @@
             <% end %>
             <% include customPostFormField6() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelPassword %></b>
-                </td>
-                <td class="postformField">
-                    <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
-                </td>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td class="postformField" colspan="2">
+                        <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="40"
+                               placeholder="<%= postFormPlaceholderPassword %>" />
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelPassword %></b>
+                    </td>
+                    <td class="postformField">
+                        <input type="password" maxlength="<%= maxPasswordLength %>" name="password" size="43" />
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField7() %>
             <tr>
-                <td class="postformLabel">
-                    <b><%= postFormLabelCaptcha %></b>
-                </td>
-                <td id="captchaContainer" class="postformField">
-                    <% if ( content.captchaEnabled ) %>
-                        <% if ( content.captchaQuota > 0 ) %>
-                            <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
-                                <%= captchaQuota %></span>
+                <% if ( content.deviceType == "mobile" || content.minimalisticPostform ) %>
+                    <td id="captchaContainer" class="postformField">
+                        <% if ( content.captchaEnabled ) %>
+                            <% if ( content.captchaQuota > 0 ) %>
+                                <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
+                                    <%= captchaQuota %></span>
+                            <% else %>
+                                <%= captchaWidgetHtml | raw %>
+                            <% end %>
                         <% else %>
-                            <%= captchaWidgetHtml | raw %>
+                            <span class="noCaptchaText"><%= noCaptchaText %></span>
                         <% end %>
-                    <% else %>
-                        <span class="noCaptchaText"><%= noCaptchaText %></span>
-                    <% end %>
-                </td>
+                    </td>
+                <% else %>
+                    <td class="postformLabel">
+                        <b><%= postFormLabelCaptcha %></b>
+                    </td>
+                    <td id="captchaContainer" class="postformField">
+                        <% if ( content.captchaEnabled ) %>
+                            <% if ( content.captchaQuota > 0 ) %>
+                                <span class="noCaptchaText"><%= noCaptchaText %>. <%= captchaQuotaText %>
+                                    <%= captchaQuota %></span>
+                            <% else %>
+                                <%= captchaWidgetHtml | raw %>
+                            <% end %>
+                        <% else %>
+                            <span class="noCaptchaText"><%= noCaptchaText %></span>
+                        <% end %>
+                    </td>
+                <% end %>
             </tr>
             <% include customPostFormField8() %>
-            <tr>
-                <td colspan="2" class="postformRules">
-                    <% if ( content.hidePostformRules ) %>
-                        <ul style="display: none;">
-                    <% else %>
-                        <ul>
-                    <% end %>
+            <% if ( content.deviceType != "mobile" && !content.minimalisticPostform ) %>
+                <tr>
+                    <td colspan="2" class="postformRules">
+                        <% if ( content.hidePostformRules ) %>
+                            <ul style="display: none;">
+                        <% else %>
+                            <ul>
+                        <% end %>
                         <% foreach rule in postformRules %>
-                            <% item %>
-                                <li><%= rule | raw %></li>
+                                <% item %>
+                                    <li><%= rule | raw %></li>
+                                <% end %>
+                            <% end %>
+                        </ul>
+                        <% if ( content.mode.name != "ascetic" ) %>
+                            <% if ( content.hidePostformRules ) %>
+                                <a href="javascript:lord.setPostformRulesVisible(true);"
+                                   class="hidePostformRulesButton"><%= showPostformRulesText %></a>
+                            <% else %>
+                                <a href="javascript:lord.setPostformRulesVisible(false);"
+                                   class="hidePostformRulesButton"><%= hidePostformRulesText %></a>
                             <% end %>
                         <% end %>
-                    </ul>
-                    <% if ( content.mode.name != "ascetic" ) %>
-                        <% if ( content.hidePostformRules ) %>
-                            <a href="javascript:lord.setPostformRulesVisible(true);"
-                               class="hidePostformRulesButton"><%= showPostformRulesText %></a>
-                        <% else %>
-                            <a href="javascript:lord.setPostformRulesVisible(false);"
-                               class="hidePostformRulesButton"><%= hidePostformRulesText %></a>
-                        <% end %>
-                    <% end %>
-                </td>
-            </tr>
+                    </td>
+                </tr>
+            <% end %>
         </tbody>
     </table>
 </form>
@@ -925,6 +1096,16 @@
 <input type="hidden" id="moveThreadText" value="<%= moveThreadText %>" />
 <input type="hidden" id="moveThreadWarningText" value="<%= moveThreadWarningText %>" />
 <input type="hidden" id="fileTooLargeWarningText" value="<%= fileTooLargeWarningText %>" />
+<input type="hidden" id="bumpLimit" value="<%= bumpLimit %>" />
+<input type="hidden" id="postLimit" value="<%= postLimit %>" />
+<input type="hidden" id="bumpLimitReachedText" value="<%= bumpLimitReachedText %>" />
+<input type="hidden" id="postLimitReachedText" value="<%= postLimitReachedText %>" />
+<input type="hidden" id="selectAllText" value="<%= selectAllText %>" />
+<input type="hidden" id="unselectAllText" value="<%= unselectAllText %>" />
+<input type="hidden" id="delallButtonText" value="<%= delallButtonText %>" />
+<input type="hidden" id="hideByImageText" value="<%= hideByImageText %>" />
+<input type="hidden" id="shrinkPosts" value="<%= shrinkPosts %>" />
+<input type="hidden" id="rawPostTextText" value="<%= rawPostTextText %>" />
 <select id="availableBoardsSelect" class="select" style="display: none;">
     <% foreach board in availableBoards %>
         <% item %>
@@ -969,6 +1150,7 @@
         <img name="registered" src="/<%= sitePathPrefix %>img/registered.png" title="<%= registeredText %>"
              style="display: none;">
         <span class="someName <%= deviceType %>" name="someName"><span name="userName"></span></span>
+        <span class="opSign" name="opSign">[OP]</span>
         <span name="tripcode" class="tripcode <%= deviceType %>" style="display: none;"></span>
         <img name="whois" src="/<%= sitePathPrefix %>img/flag/%flagName%" style="display: none;">
         <span name="dateTime" class="postDateTime <%= deviceType %>"></span>
@@ -977,40 +1159,77 @@
         <span name="permanent" style="display: none;">
             [<a name="quickReply" href="javascript:lord.quickReply(%postNumber%);"
                 title="<%= quickReplyText %>">&gt;&gt;</a>]
-            <span class="<%= deviceType %> postActions">
+            <span tabindex="0" class="<%= deviceType %> postActions">
                 <img src="/<%= sitePathPrefix %>img/post_actions.png" title="<%= postActionsText %>">
+                <ul class="postActionsMenu">
+                <li>
                 <a name="addFileButton" href="javascript:lord.addFile('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/add.png" title="<%= addFileText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/add.png" /> <%= addFileText %></a>
+                </li>
+                <li>
                 <a name="editButton" href="javascript:lord.editPost('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/edit.png" title="<%= editPostText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/edit.png" /> <%= editPostText %></a>
+                </li>
+                <li>
                 <a name="fixButton"
                    href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', true);">
-                    <img src="/<%= sitePathPrefix %>img/fixed.png" title="<%= fixThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/fixed.png" /> <%= fixThreadText %></a>
+                </li>
+                <li>
                 <a name="unfixButton"
                    href="javascript:lord.setThreadFixed('<%= currentBoard.name %>', '%postNumber%', false);">
-                    <img src="/<%= sitePathPrefix %>img/unfix.png" title="<%= unfixThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/unfix.png" /> <%= unfixThreadText %></a>
+                </li>
+                <li>
                 <a name="closeButton"
                    href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', false);">
-                    <img src="/<%= sitePathPrefix %>img/closed.png" title="<%= closeThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/closed.png" /> <%= closeThreadText %></a>
+                </li>
+                <li>
                 <a name="openButton"
                    href="javascript:lord.setThreadOpened('<%= currentBoard.name %>', '%postNumber%', true);">
-                    <img src="/<%= sitePathPrefix %>img/open.png" title="<%= openThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/open.png" /> <%= openThreadText %></a>
+                </li>
+                <li>
                 <a name="moveButton" href="javascript:lord.moveThread('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/move.png" title="<%= moveThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/move.png" /> <%= moveThreadText %></a>
+                </li>
+                <li>
+                <a name="ipButton" href="javascript:void(prompt('IP:', '%postIp%'));">
+                    <img src="/<%= sitePathPrefix %>img/ip.png" /> <%= showUserIpText %></a>
+                </li>
+                <li>
                 <a name="banButton" href="javascript:lord.banUser('<%= currentBoard.name %>', '%postNumber%');">
-                    <img src="/<%= sitePathPrefix %>img/ban.png" title="<%= banUserText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/ban.png" /> <%= banUserText %></a>
+                </li>
+                <li>
                 <a name="downloadButton" href="javascript:lord.downloadThread();">
-                    <img src="/<%= sitePathPrefix %>img/download.png" title="<%= downloadThreadText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/download.png" /> <%= downloadThreadText %></a>
+                </li>
+                <li>
                 <a name="addToFavoritesButton">
-                    <img src="/<%= sitePathPrefix %>img/favorite.png" title="<%= addThreadToFavoritesText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/favorite.png" /> <%= addThreadToFavoritesText %></a>
+                </li>
+                <li>
+                <a name="rawTextButton"
+                   href="javascript:lord.getRawPostText('<%= currentBoard.name %>', %postNumber%);">
+                    <img src="/<%= sitePathPrefix %>img/raw_text.png" /> <%= rawPostTextText %></a>
+                </li>
+                <li>
                 <a href="javascript:lord.complain();">
-                    <img src="/<%= sitePathPrefix %>img/complain.png" title="<%= complainText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/complain.png" /> <%= complainText %></a>
+                </li>
+                <li>
                 <a name="deleteButton"
                    href="javascript:lord.deletePost('<%= currentBoard.name %>', %postNumber%, true);">
-                    <img src="/<%= sitePathPrefix %>img/delete.png" title="<%= deletePostText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/delete.png" /> <%= deletePostText %></a>
+                </li>
+                <li>
                 <a id="hidePost%postNumber%" name="hideButton"
                    href="javascript:lord.setPostHidden('<%= currentBoard.name %>', %postNumber%);">
-                    <img src="/<%= sitePathPrefix %>img/hide.png" title="<%= showHidePostText %>" /></a>
+                    <img src="/<%= sitePathPrefix %>img/hide.png" /> <%= showHidePostText %></a>
+                </li>
+                </ul>
             </span>
             <span name="toThread" class="postToThread <%= deviceType %>" style="display: none;">
                 <% if ( content.deviceType != "mobile" ) %>
@@ -1186,27 +1405,26 @@
             </td>
         </tr>
         <% include customPostFormFieldEdit4() %>
-        <% if ( content.moder >= 10 ) %>
-            <tr>
-                <td class="postformLabel">
+        
+        
+        <tr>
+            <td class="postformLabel">
+                <b><%= postFormLabelOptions %></b>
+            </td>
+            <td class="postformField nowrap">
+                <% include customPostFormFieldEdit40() %>
+                <% if ( content.moder >= 10 ) %>
                     <b><%= postFormLabelRaw %></b>
-                </td>
-                <td class="postformField">
                     <input type="checkbox" name="raw" value="true" />
-                </td>
-            </tr>
-        <% end %>
-        <% include customPostFormFieldEdit41() %>
-        <% if ( content.draftsEnabled && content.loggedIn ) %>
-            <tr>
-                <td class="postformLabel" title="<%= postFormTooltipDraft %>">
+                <% end %>
+                <% include customPostFormFieldEdit41() %>
+                <% if ( content.draftsEnabled && content.loggedIn ) %>
                     <b><%= postFormLabelDraft %></b>
-                </td>
-                <td class="postformField" title="<%= postFormTooltipDraft %>">
                     <input type="checkbox" name="draft" value="true" />
-                </td>
-            </tr>
-        <% end %>
+                <% end %>
+                <% include customPostFormFieldEdit42() %>
+            </td>
+        </tr>
         <% include customPostFormFieldEdit5() %>
         <tr>
             <td class="postformLabel">

@@ -3,14 +3,10 @@
 #include <QDateTime>
 #include <QString>
 
-BannedUser::BannedUser(const QString &board, const QString &ip, const QDateTime &dateTime, quint64 postId)
+BannedUser::BannedUser(const QString &ip)
 {
     id_ = 0L;
-    board_ = board;
     ip_ = ip;
-    dateTime_ = dateTime.toUTC();
-    level_ = 1;
-    postId_ = postId;
 }
 
 BannedUser::BannedUser()
@@ -23,57 +19,92 @@ quint64 BannedUser::id() const
     return id_;
 }
 
-QString BannedUser::board() const
-{
-    return board_;
-}
-
 QString BannedUser::ip() const
 {
     return ip_;
 }
 
-QDateTime BannedUser::dateTime() const
+const BannedUser::Bans &BannedUser::bans() const
+{
+    return bans_;
+}
+
+BannedUser::Bans &BannedUser::bans()
+{
+    return bans_;
+}
+
+Ban::Ban(QSharedPointer<BannedUser> bannedUser, const QString &board, const QDateTime &dateTime, quint64 postId)
+{
+    id_ = 0L;
+    bannedUser_ = bannedUser;
+    board_ = board;
+    dateTime_ = dateTime.toUTC();
+    level_ = 1;
+    postId_ = postId;
+}
+
+Ban::Ban()
+{
+    //
+}
+
+quint64 Ban::id() const
+{
+    return id_;
+}
+
+QString Ban::board() const
+{
+    return board_;
+}
+
+QDateTime Ban::dateTime() const
 {
     return QDateTime(dateTime_.date(), dateTime_.time(), Qt::UTC);
 }
 
-QDateTime BannedUser::expirationDateTime() const
+QDateTime Ban::expirationDateTime() const
 {
     return QDateTime(expirationDateTime_.date(), expirationDateTime_.time(), Qt::UTC);
 }
 
-int BannedUser::level() const
+int Ban::level() const
 {
     return level_;
 }
 
-QString BannedUser::reason() const
+QString Ban::reason() const
 {
     return reason_;
 }
 
-quint64 BannedUser::postId() const
+quint64 Ban::postId() const
 {
     return postId_;
 }
 
-void BannedUser::setDateTime(const QDateTime &dateTime)
+void Ban::setDateTime(const QDateTime &dateTime)
 {
     dateTime_ = dateTime.toUTC();
 }
 
-void BannedUser::setExpirationDateTime(const QDateTime &dateTime)
+void Ban::setExpirationDateTime(const QDateTime &dateTime)
 {
     expirationDateTime_ = dateTime.toUTC();
 }
 
-void BannedUser::setLevel(int level)
+void Ban::setLevel(int level)
 {
     level_ = level;
 }
 
-void BannedUser::setReason(const QString &reason)
+void Ban::setReason(const QString &reason)
 {
     reason_ = reason;
+}
+
+QLazySharedPointer<BannedUser> Ban::bannedUser() const
+{
+    return bannedUser_;
 }

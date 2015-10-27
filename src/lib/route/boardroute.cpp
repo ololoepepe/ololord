@@ -25,51 +25,67 @@ bool BoardRoute::duplicateWithSlashAppended() const
 
 void BoardRoute::handle(std::string boardName)
 {
+    DDOS_A(60)
     QString bn = Tools::fromStd(boardName);
     QString logTarget = bn;
     QString err;
     if (BoardMode == mode) {
         logTarget += "/0";
         Tools::log(application, "board", "begin", logTarget);
-        if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-            return Tools::log(application, "board", "fail:" + err, logTarget);
+        if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+            Tools::log(application, "board", "fail:" + err, logTarget);
+            DDOS_POST_A
+            return;
+        }
         AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
         if (board.isNull()) {
             Controller::renderNotFoundNonAjax(application);
             Tools::log(application, "board", "fail:not_found", logTarget);
+            DDOS_POST_A
             return;
         }
         board->handleBoard(application);
     } else if (BoardRulesRoute) {
         Tools::log(application, "board_rules", "begin", logTarget);
-        if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-            return Tools::log(application, "board", "fail:" + err, logTarget);
+        if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+            Tools::log(application, "board", "fail:" + err, logTarget);
+            DDOS_POST_A
+            return;
+        }
         AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
         if (board.isNull()) {
             Controller::renderNotFoundNonAjax(application);
             Tools::log(application, "board", "fail:not_found", logTarget);
+            DDOS_POST_A
             return;
         }
         board->handleRules(application);
     }
+    DDOS_POST_A
 }
 
 void BoardRoute::handle(std::string boardName, std::string page)
 {
+    DDOS_A(60)
     QString bn = Tools::fromStd(boardName);
     QString p = Tools::fromStd(page);
     QString logTarget = bn + "/" + p;
     Tools::log(application, "board", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "board", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "board", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     AbstractBoard::LockingWrapper board = AbstractBoard::board(bn);
     if (board.isNull()) {
         Tools::log(application, "board", "fail:not_found", logTarget);
         Controller::renderNotFoundNonAjax(application);
+        DDOS_POST_A
         return;
     }
     board->handleBoard(application, p.toUInt());
+    DDOS_POST_A
 }
 
 unsigned int BoardRoute::handlerArgumentCount() const

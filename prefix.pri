@@ -99,17 +99,17 @@ INCLUDEPATH *= $${LIBMAGIC_PREFIX}/include
 DEPENDPATH *= $${LIBMAGIC_PREFIX}/include
 LIBS *= -L$${LIBMAGIC_PREFIX}/lib/ -lmagic
 
-isEmpty(LIBID3_PREFIX) {
+isEmpty(TAGLIB_PREFIX) {
     mac|unix {
-        LIBID3_PREFIX=/usr
+        TAGLIB_PREFIX=/usr
     } else:win32 {
-        error(libid3 path is not specified)
+        error(TagLib path is not specified)
     }
 }
 
-INCLUDEPATH *= $${LIBID3_PREFIX}/include
-DEPENDPATH *= $${LIBID3_PREFIX}/include
-LIBS *= -L$${LIBID3_PREFIX}/lib/ -lid3
+INCLUDEPATH *= $${TAGLIB_PREFIX}/include
+DEPENDPATH *= $${TAGLIB_PREFIX}/include
+LIBS *= -L$${TAGLIB_PREFIX}/lib/ -ltag
 
 isEmpty(SQLITE_PREFIX) {
     mac|unix {

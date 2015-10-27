@@ -2,6 +2,97 @@
 
 var lord = lord || {};
 
+/*Classes*/
+
+/*constructor*/ lord.PopupMessage = function(text, options) {
+    this.hideTimer = null;
+    this.text = text;
+    this.timeout = (options && !isNaN(+options.timeout)) ? +options.timeout : 5 * 1000;
+    this.classNames = (options && typeof options.classNames == "string") ? options.classNames : "";
+    if (options && typeof options.type == "string" && lord.in(["critical", "warning"], options.type.toLowerCase()))
+        this.classNames += options.type.toLowerCase() + (("" != this.classNames) ? " " : "");
+    this.html = (options && typeof options.type == "string" && options.type.toLowerCase() == "html");
+    this.node = (options && typeof options.type == "string" && options.type.toLowerCase() == "node");
+    this.msg = lord.node("div");
+    lord.addClass(this.msg, "popup");
+    lord.addClass(this.msg, this.classNames);
+    if (lord.popups.length > 0) {
+        var prev = lord.popups[lord.popups.length - 1];
+        this.msg.style.top = (prev.msg.offsetTop + prev.msg.offsetHeight + 5) + "px";
+    }
+    if (this.html)
+        this.msg.innerHTML = text;
+    else if (this.node)
+        this.msg.appendChild(text);
+    else
+        this.msg.appendChild(lord.node("text", text));
+};
+
+/*public*/ lord.PopupMessage.prototype.show = function() {
+    if (this.hideTimer)
+        return;
+    document.body.appendChild(this.msg);
+    lord.popups.push(this);
+    this.hideTimer = setTimeout(this.hide.bind(this), this.timeout);
+};
+
+/*public*/ lord.PopupMessage.prototype.hide = function() {
+    if (!this.hideTimer)
+        return;
+    clearTimeout(this.hideTimer);
+    this.hideTimer = null;
+    var offsH = this.msg.offsetHeight + 5;
+    document.body.removeChild(this.msg);
+    var ind = lord.popups.indexOf(this);
+    if (ind < 0)
+        return;
+    lord.popups.splice(ind, 1);
+    for (var i = ind; i < lord.popups.length; ++i) {
+        var top = +lord.popups[i].msg.style.top.replace("px", "");
+        top -= offsH;
+        lord.popups[i].msg.style.top = top + "px";
+    }
+};
+
+/*public*/ lord.PopupMessage.prototype.resetTimeout = function(timeout) {
+    if (!this.hideTimer)
+        return;
+    clearTimeout(this.hideTimer);
+    this.timeout = (!isNaN(+timeout)) ? +timeout : 5 * 1000;
+    this.hideTimer = setTimeout(this.hide.bind(this), this.timeout);
+};
+
+/*public*/ lord.PopupMessage.prototype.resetText = function(text, options) {
+    var offsH = this.msg.offsetHeight;
+    this.text = text;
+    this.classNames = (options && typeof options.classNames == "string") ? options.classNames : "";
+    if (options && typeof options.type == "string" && lord.in(["critical", "warning"], options.type.toLowerCase()))
+        this.classNames += options.type.toLowerCase() + (("" != this.classNames) ? " " : "");
+    this.html = (options && typeof options.type == "string" && options.type.toLowerCase() == "html");
+    this.node = (options && typeof options.type == "string" && options.type.toLowerCase() == "node");
+    this.msg.className = "";
+    lord.addClass(this.msg, "popup");
+    lord.addClass(this.msg, this.classNames);
+    lord.removeChildren(this.msg);
+    if (this.html)
+        this.msg.innerHTML = text;
+    else if (this.node)
+        this.msg.appendChild(text);
+    else
+        this.msg.appendChild(lord.node("text", text));
+    if (!this.hideTimer)
+        return;
+    var ind = lord.popups.indexOf(this);
+    if (ind < 0)
+        return;
+    offsH = this.msg.offsetHeight - offsH;
+    for (var i = ind + 1; i < lord.popups.length; ++i) {
+        var top = +lord.popups[i].msg.style.top.replace("px", "");
+        top += offsH;
+        lord.popups[i].msg.style.top = top + "px";
+    }
+};
+
 /*Constants*/
 
 lord.Second = 1000;
@@ -23,13 +114,15 @@ lord._defineEnum = function(constName, value) {
     }
 };
 
-lord._defineEnum("RpcBanUserId", 1);
+lord._defineEnum("RpcBanPosterId", 1);
+lord._defineEnum("RpcBanUserId");
 lord._defineEnum("RpcDeleteFileId");
 lord._defineEnum("RpcDeletePostId");
 lord._defineEnum("RpcEditAudioTagsId");
 lord._defineEnum("RpcEditPostId");
 lord._defineEnum("RpcGetBoardsId");
 lord._defineEnum("RpcGetCaptchaQuotaId");
+lord._defineEnum("RpcGetCoubVideoInfoId");
 lord._defineEnum("RpcGetFileExistenceId");
 lord._defineEnum("RpcGetFileMetaDataId");
 lord._defineEnum("RpcGetNewPostCountId");
@@ -37,6 +130,7 @@ lord._defineEnum("RpcGetNewPostCountExId");
 lord._defineEnum("RpcGetNewPostsId");
 lord._defineEnum("RpcGetPostId");
 lord._defineEnum("RpcGetThreadNumbersId");
+lord._defineEnum("RpcGetUserBanInfoId");
 lord._defineEnum("RpcGetYandexCaptchaImageId");
 lord._defineEnum("RpcMoveThreadId");
 lord._defineEnum("RpcSetThreadFixedId");
@@ -51,6 +145,8 @@ lord.popups = [];
 lord.unloading = false;
 lord.leftChain = [];
 lord.rightChain = [];
+lord._ajaxRequestQueue = [];
+lord._ajaxRequestActive = 0;
 
 /*Functions*/
 
@@ -236,6 +332,59 @@ lord.equal = function(x, y) {
     return true;
 };
 
+lord.gently = function(obj, f, delay, n, after) {
+    if (!obj || typeof f != "function")
+        return;
+    delay = +delay;
+    n = +n;
+    if (isNaN(delay) || delay < 1)
+        delay = 1;
+    if (isNaN(n) || n < 1)
+        n = 1;
+    if (Array.isArray(obj)) {
+        (function(arr, f, delay, n, after) {
+            var ind = 0;
+            var g = function() {
+                if (ind >= arr.length) {
+                    if (typeof after == "function")
+                        after();
+                    return;
+                }
+                for (var i = ind; i < Math.min(ind + n, arr.length); ++i)
+                    f(arr[i], i);
+                ind += n;
+                setTimeout(g, delay);
+            };
+            g();
+        })(obj, f, delay, n, after);
+    } else {
+        var arr = [];
+        for (var x in obj) {
+            if (obj.hasOwnProperty(x)) {
+                arr.push({
+                    "key": x,
+                    "value": obj[x]
+                });
+            }
+        }
+        (function(arr, f, delay, n, after) {
+            var ind = 0;
+            var g = function() {
+                if (ind >= arr.length) {
+                    if (typeof after == "function")
+                        after();
+                    return;
+                }
+                for (var i = ind; i < Math.min(ind + n, arr.length); ++i)
+                    f(arr[i].value, arr[i].key);
+                ind += n;
+                setTimeout(g, delay);
+            };
+            g();
+        })(arr, f, delay, n, after);
+    }
+};
+
 lord.regexp = function(s) {
     if (!s || typeof s != "string")
         return null;
@@ -289,13 +438,12 @@ lord.nameOne = function(name, parent) {
 lord.contains = function(s, subs) {
     if (typeof s == "string" && typeof subs == "string")
         return s.replace(subs, "") != s;
-    var arr = lord.arr(s);
-    if (!arr || !arr.length || arr.length < 1)
+    if (!s || !s.length || s.length < 1)
         return false;
-    arr.forEach(function(v) {
-        if (lord.equal(v, subs))
+    for (var i = 0; i < s.length; ++i) {
+        if (lord.equal(s[i], subs))
             return true;
-    });
+    }
     return false;
 };
 
@@ -368,35 +516,9 @@ lord.reloadPage = function() {
 };
 
 lord.showPopup = function(text, options) {
-    if (!text)
-        return;
-    var timeout = (options && !isNaN(+options.timeout)) ? +options.timeout : 5 * 1000;
-    var classNames = (options && typeof options.classNames == "string") ? options.classNames : "";
-    if (options && typeof options.type == "string" && lord.in(["critical", "warning"], options.type.toLowerCase()))
-        classNames += options.type.toLowerCase() + (("" != classNames) ? " " : "");
-    var msg = lord.node("div");
-    lord.addClass(msg, "popup");
-    lord.addClass(msg, classNames);
-    if (lord.popups.length > 0) {
-        var prev = lord.popups[lord.popups.length - 1];
-        msg.style.top = (prev.offsetTop + prev.offsetHeight + 5) + "px";
-    }
-    msg.appendChild(lord.node("text", text));
-    document.body.appendChild(msg);
-    lord.popups.push(msg);
-    setTimeout(function() {
-        var offsH = msg.offsetHeight + 5;
-        document.body.removeChild(msg);
-        var ind = lord.popups.indexOf(msg);
-        if (ind < 0)
-            return;
-        lord.popups.splice(ind, 1);
-        for (var i = 0; i < lord.popups.length; ++i) {
-            var top = +lord.popups[i].style.top.replace("px", "");
-            top -= offsH;
-            lord.popups[i].style.top = top + "px";
-        }
-    }, timeout);
+    var popup = new lord.PopupMessage(text, options);
+    popup.show();
+    return popup;
 };
 
 lord.showNotification = function(title, body, icon) {
@@ -471,47 +593,90 @@ lord.showDialog = function(title, label, body, callback, afterShow) {
 };
 
 lord.ajaxRequest = function(method, params, id, callback, errorCallback) {
-    var xhr = new XMLHttpRequest();
-    xhr.withCredentials = true;
-    var prefix = lord.text("sitePathPrefix");
-    xhr.open("post", "/" + prefix + "api");
-    xhr.setRequestHeader("Content-Type", "application/json");
-    var request = {
+    var req = {
         "method": method,
         "params": params,
-        "id": id
+        "id": id,
+        "callback": callback,
+        "errorCallback": errorCallback
     };
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4) {
-            if (xhr.status === 200) {
-                var response = JSON.parse(xhr.responseText);
-                var err = response.error;
-                if (!!err) {
-                    lord.showPopup(err, {type: "critical"});
-                    if (typeof errorCallback == "function")
-                        errorCallback(err);
-                    return;
-                }
-                if (typeof callback == "function")
-                    callback(response.result);
-            } else {
-                if (!lord.unloading) {
-                    var text = lord.text("ajaxErrorText") + " " + xhr.status;
-                    switch (+xhr.status) {
-                    case 413:
-                        text = lord.text("error" + xhr.status + "Text");
-                        break;
-                    default:
-                        break;
+    var f = function() {
+        if (lord._ajaxRequestQueue.length < 1)
+            return;
+        ++lord._ajaxRequestActive;
+        var req = lord._ajaxRequestQueue.shift();
+        var xhr = new XMLHttpRequest();
+        xhr.withCredentials = true;
+        var prefix = lord.text("sitePathPrefix");
+        xhr.open("post", "/" + prefix + "api");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        var request = {
+            "method": req.method,
+            "params": req.params,
+            "id": req.id
+        };
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    var response = JSON.parse(xhr.responseText);
+                    var err = response.error;
+                    if (!!err) {
+                        var show = true;
+                        for (var i = 0; i < lord.popups.length; ++i) {
+                            if (lord.popups[i].text == err) {
+                                show = false;
+                                break;
+                            }
+                        }
+                        if (show)
+                            lord.showPopup(err, {type: "critical"});
+                        --lord._ajaxRequestActive;
+                        f();
+                        if (typeof req.errorCallback == "function")
+                            req.errorCallback(err);
+                        return;
                     }
-                    lord.showPopup(text, {type: "critical"});
-                    if (typeof errorCallback == "function")
-                        errorCallback(text);
+                    --lord._ajaxRequestActive;
+                    f();
+                    if (typeof req.callback == "function")
+                        req.callback(response.result);
+                } else {
+                    if (!lord.unloading) {
+                        var text = lord.text("ajaxErrorText") + " " + xhr.status;
+                        switch (+xhr.status) {
+                        case 413:
+                            text = lord.text("error" + xhr.status + "Text");
+                            break;
+                        default:
+                            break;
+                        }
+                        var show = true;
+                        for (var i = 0; i < lord.popups.length; ++i) {
+                            if (lord.popups[i].text == text) {
+                                show = false;
+                                break;
+                            }
+                        }
+                        if (show)
+                            lord.showPopup(text, {type: "critical"});
+                        --lord._ajaxRequestActive;
+                        f();
+                        if (typeof req.errorCallback == "function")
+                            req.errorCallback(text);
+                    }
                 }
             }
-        }
+        };
+        xhr.send(JSON.stringify(request));
     };
-    xhr.send(JSON.stringify(request));
+    lord._ajaxRequestQueue.push(req);
+    var ms = lord.getLocalObject("maxSimultaneousAjax", 2);
+    if (isNaN(ms) || ms <= 0)
+        ms = 2;
+    if (lord._ajaxRequestActive < ms)
+        f();
+    if (lord._ajaxRequestActive < ms)
+        f();
 };
 
 lord.isHashpass = function(s) {

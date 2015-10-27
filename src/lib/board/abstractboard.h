@@ -123,6 +123,21 @@ public:
     private:
         friend class AbstractBoard;
     };
+    enum MarkupElement
+    {
+        NoMarkupElement = 0x000,
+        BoldMarkupElement = 0x001,
+        ItalicsMarkupElement = 0x002,
+        StrikedOutMarkupElement = 0x004,
+        UnderlinedMarkupElement = 0x008,
+        SpoilerMarkupElement = 0x010,
+        QuotationMarkupElement = 0x020,
+        CodeMarkupElement = 0x040,
+        SubscriptMarkupElement = 0x080,
+        SuperscriptMarkupElement = 0x100,
+        UrlMarkupElement = 0x200
+    };
+    Q_DECLARE_FLAGS(MarkupElements, MarkupElement)
     struct PostingSpeed
     {
         qint64 postCount;
@@ -186,6 +201,7 @@ public:
     bool isFileTypeSupported(const QString &mimeType) const;
     bool isFileTypeSupported(const QByteArray &data) const;
     virtual bool isHidden() const;
+    virtual MarkupElements markupElements() const;
     virtual QString name() const = 0;
     virtual QStringList postformRules(const QLocale &l) const;
     virtual bool postingEnabled() const;

@@ -21,10 +21,14 @@ HomeRoute::HomeRoute(cppcms::application &app) :
 
 void HomeRoute::handle()
 {
+    DDOS_A(25)
     Tools::log(application, "home", "begin");
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "home", "fail:" + err);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "home", "fail:" + err);
+        DDOS_POST_A
+        return;
+    }
     Content::Home c;
     TranslatorQt tq(application.request());
     TranslatorStd ts(application.request());
@@ -49,6 +53,7 @@ void HomeRoute::handle()
     c.welcomeMessage = ts.translate("HomeRoute", "Welcome. Again.", "welcomeMessage");
     Tools::render(application, "home", c);
     Tools::log(application, "home", "success");
+    DDOS_POST_A
 }
 
 unsigned int HomeRoute::handlerArgumentCount() const

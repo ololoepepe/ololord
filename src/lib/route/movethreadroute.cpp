@@ -23,20 +23,25 @@ MoveThreadRoute::MoveThreadRoute(cppcms::application &app) :
 
 void MoveThreadRoute::handle()
 {
+    DDOS_A(12)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString boardName = params.value("board");
     quint64 threadNumber = params.value("thread").toULongLong();
     QString logTarget = boardName + "/" + QString::number(threadNumber);
     Tools::log(application, "move_thread", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "move_thread", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "move_thread", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     TranslatorQt tq(application.request());
     if (Tools::hashpassString(application.request()).isEmpty()) {
         QString err = tq.translate("MoveThreadRoute", "Access error", "error");
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("MoveThreadRoute", "Not enough rights", "description"));
         Tools::log(application, "move_thread", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (boardName.isEmpty()) {
@@ -44,6 +49,7 @@ void MoveThreadRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("MoveThreadRoute", "Board name is empty", "description"));
         Tools::log(application, "move_thread", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (!threadNumber) {
@@ -51,6 +57,7 @@ void MoveThreadRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("MoveThreadRoute", "Thread number is null", "description"));
         Tools::log(application, "move_thread", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
@@ -59,6 +66,7 @@ void MoveThreadRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("MoveThreadRoute", "There is no such board", "description"));
         Tools::log(application, "thread_number", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     Content::MoveThread c;
@@ -82,6 +90,7 @@ void MoveThreadRoute::handle()
     }
     Tools::render(application, "move_thread", c);
     Tools::log(application, "move_thread", "success", logTarget);
+    DDOS_POST_A
 }
 
 unsigned int MoveThreadRoute::handlerArgumentCount() const

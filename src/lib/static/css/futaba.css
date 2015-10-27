@@ -11,7 +11,7 @@ body.mobile {
     -moz-text-size-adjust: 100%;
     -webkit-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+    /*text-size-adjust: 100%;*/
     font-size: 14px;
 }
 
@@ -204,7 +204,7 @@ blockquote.expand {
     max-height: none;
 }
 
-span.spoiler, span.spoiler a {
+span.spoiler, span.spoiler a, span.spoiler .cspoilerTitle {
     background: #F0D0B6;
     color: #F0D0B6;
 }
@@ -215,6 +215,10 @@ span.spoiler:hover {
 
 span.spoiler:hover a {
     color: #DD0000;
+}
+
+span.spoiler:hover .cspoilerTitle {
+    color: #E08060;
 }
 
 span.tooltip {
@@ -416,12 +420,16 @@ span.newPostCount {
     bottom: 7px;
     color: #333333;
     opacity: 0.6;
-    filter: alpha(opacity=60);
+    /*filter: alpha(opacity=60);*/
 }
 
 .symbolCounterContainer {
     position: relative;
     display: inline-block;
+}
+
+.opSign {
+    color: red;
 }
 
 /*
@@ -542,6 +550,10 @@ span.newPostCount {
     background-color: #AAFF99;
 }
 
+.post.temporary {
+    border: 1px solid #000000;
+}
+
 .omittedPosts.hiddenPosts {
     display: none;
 }
@@ -573,48 +585,88 @@ span.newPostCount {
 
 .postFileFile > a > img.mumWatching:not(:hover) {
     opacity: 0.05;
-    filter: alpha(opacity=5);
+    /*filter: alpha(opacity=5);*/
 }
 
 .postHeader > a > img, .postFileSearch > a > img, .postHeader > span > a > img, .postFileSearch > form,
 .postHeader > span > form {
     opacity: 0.65;
-    filter: alpha(opacity=65);
+    /*filter: alpha(opacity=65);*/
 }
 
 .postHeader > a:not(.disabled) > img:hover, .postFileSearch > a:not(.disabled) > img:hover,
 .postHeader > span > a:not(.disabled) > img:hover, .postFileSearch > form:hover, .postHeader > span > form:hover {
     opacity: 1;
-    filter: alpha(opacity=100);
+    /*filter: alpha(opacity=100);*/
 }
 
 .postToThread > a > button {
     font-size: 1.2em;
 }
 
-.desktop.postActions > a, .desktop.postActions > form {
-    display: none;
+.postToThread {
+    margin-left: 20px;
+}
+
+.postToThread.mobile {
+    display: block;
+}
+
+.postActions {
+    position: absolute;
+    outline: 0;
+}
+
+.postActions, .postActions:active, .postActions:visited {
+    color: #800000;
+}
+
+.postActions.mobile {
+    display: block;
 }
 
 .postActions > img {
     opacity: 0.65;
-    filter: alpha(opacity=65);
 }
 
-.desktop.postActions:hover > a, .desktop.postActions:hover > form {
-    display: inline;
+.postActions:hover > img {
+    opacity: 1;
 }
 
-.desktop.postActions:hover > img {
-    display: none;
+.postActionsMenu {
+    list-style-type: none;
+    margin-left: 0px;
+    padding: 4px 4px 4px 4px;
+    visibility: hidden;
+    opacity: 0;
+    transition: visibility 0s linear 0.2s,opacity 0.2s linear;
+    position: absolute;
+    z-index: 9999;
+    background-color: #F0E0D6;
+    border: 1px solid #000000;
+    margin-top: 0px;
+    top: 100%;
+    left: 0%;
 }
 
-.mobile.postActions > img {
-    display: none;
+.postActions:focus > .postActionsMenu {
+    visibility: visible;
+    opacity: 1;
+}
+
+.postActionsMenu > li > a {
+    text-decoration: none;
+    color: #800000;
+}
+
+.postActionsMenu > li > a:hover {
+    display: block;
+    color: #FFFFFF;
+    background-color: #444444;
 }
 
 .threadPost {
-    horizontal-align: left;
+    text-align: left; /*WAS: horizontal-align*/
 }
 
 .postFile {
@@ -683,19 +735,19 @@ span.newPostCount {
     right: 20px;
     z-index: 9910;
     opacity: 0.5;
-    filter: alpha(opacity=50);
+    /*filter: alpha(opacity=50);*/
 }
 
 .navigationButton:hover {
     opacity: 1;
-    filter: alpha(opacity=100);
-}
-
-.navigationButtonTop {
-    bottom: 30px;
+    /*filter: alpha(opacity=100);*/
 }
 
 .navigationButtonBottom {
+    bottom: 30px;
+}
+
+.navigationButtonTop {
     top: 30px;
 }
 
@@ -704,12 +756,12 @@ span.newPostCount {
     top: 50%;
     z-index: 9910;
     opacity: 0.5;
-    filter: alpha(opacity=50);
+    /*filter: alpha(opacity=50);*/
 }
 
 .leafButton:hover {
     opacity: 1;
-    filter: alpha(opacity=100);
+    /*filter: alpha(opacity=100);*/
 }
 
 .leafButtonPrevious {
@@ -724,6 +776,8 @@ span.newPostCount {
     position: fixed;
     z-index: 9905;
     border: 5px solid #777777;
+    padding: 0;
+    line-height: 0;
 }
 
 .postformFile {
@@ -755,7 +809,7 @@ span.newPostCount {
     width: 1px;
     height: 1px;
     opacity: 0;
-    filter: alpha(opacity=0);
+    /*filter: alpha(opacity=0);*/
 }
 
 .postformFileText {
@@ -822,7 +876,7 @@ ul.tabWidget > li.activated {
     font-size: 0.9em;
     padding-bottom: 5px;
     text-align: left;
-    white-spcace: nowrap;
+    white-space: nowrap;
     overflow-x: auto;
 }
 
@@ -899,6 +953,11 @@ a.progressBlocking {
     z-index: 9920;
 }
 
+.externalThreadFrame.mobile {
+    width: 120px;
+    height: 240px;
+}
+
 .externalThreadFrame:hover {
     width: 90%;
     height: 100%;
@@ -952,4 +1011,20 @@ a.progressBlocking {
 
 .track > audio {
     width: 600px;
+}
+
+/*#recaptcha_response_field {
+    color: #698CC0;
+}*/
+
+#recaptcha_image_cell {
+    background-color: inherit;
+}
+
+#recaptcha_response_field {
+    background-color: inherit;
+}
+
+.shrinkedPost {
+    display: table;
 }

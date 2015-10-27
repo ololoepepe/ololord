@@ -23,14 +23,18 @@ AddFileRoute::AddFileRoute(cppcms::application &app) :
 
 void AddFileRoute::handle()
 {
+    DDOS_A(17)
     Tools::GetParameters params = Tools::getParameters(application.request());
     QString boardName = params.value("board");
     quint64 postNumber = params.value("post").toULongLong();
     QString logTarget = boardName + "/" + QString::number(postNumber);
     Tools::log(application, "add_file", "begin", logTarget);
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "add_file", "fail:" + err, logTarget);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "add_file", "fail:" + err, logTarget);
+        DDOS_POST_A
+        return;
+    }
     TranslatorQt tq(application.request());
     if (Tools::hashpassString(application.request()).isEmpty()) {
         QString err = tq.translate("AddFileRoute", "Access error", "error");
@@ -44,6 +48,7 @@ void AddFileRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("AddFileRoute", "Board name is empty", "description"));
         Tools::log(application, "add_file", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     if (!postNumber) {
@@ -51,6 +56,7 @@ void AddFileRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("AddFileRoute", "Post number is null", "description"));
         Tools::log(application, "add_file", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     AbstractBoard::LockingWrapper board = AbstractBoard::board(boardName);
@@ -59,6 +65,7 @@ void AddFileRoute::handle()
         Controller::renderErrorNonAjax(application, err,
                                        tq.translate("AddFileRoute", "There is no such board", "description"));
         Tools::log(application, "add_file", "fail:" + err, logTarget);
+        DDOS_POST_A
         return;
     }
     Content::AddFile c;
@@ -69,6 +76,7 @@ void AddFileRoute::handle()
     c.supportedFileTypes = Tools::toStd(board->supportedFileTypes());
     Tools::render(application, "add_file", c);
     Tools::log(application, "add_file", "success", logTarget);
+    DDOS_POST_A
 }
 
 unsigned int AddFileRoute::handlerArgumentCount() const

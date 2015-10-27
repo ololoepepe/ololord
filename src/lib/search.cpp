@@ -143,7 +143,7 @@ static QStringList words(const QString &text)
         }
     }
     if (!word.isEmpty())
-        list << word;
+        list << word.toLower();
     return list;
 }
 

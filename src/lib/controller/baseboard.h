@@ -1,6 +1,7 @@
 #ifndef BASETHREAD_H
 #define BASETHREAD_H
 
+#include "board/abstractboard.h"
 #include "controller/base.h"
 
 #include "../global.h"
@@ -73,6 +74,7 @@ public:
     std::string name;
     std::string nameRaw;
     unsigned long long number;
+    bool opIp;
     bool ownHashpass;
     bool ownIp;
     std::string rawName;
@@ -83,6 +85,7 @@ public:
     std::list<Ref> refersTo;
     unsigned int sequenceNumber;
     bool showRegistered;
+    bool signAsOp;
     std::string subject;
     bool subjectIsRaw;
     std::string text;
@@ -125,6 +128,7 @@ public:
     std::string banReasonLabelText;
     std::string banUserText;
     std::string boardLabelText;
+    unsigned int bumpLimit;
     std::string bumpLimitReachedText;
     std::string bytesText;
     bool captchaEnabled;
@@ -141,6 +145,7 @@ public:
     AbstractBoard::BoardInfo currentBoard;
     MarkupMode currentMarkupMode;
     unsigned long long currentThread;
+    std::string delallButtonText;
     std::string deleteFileText;
     std::string deletePostText;
     std::string deleteThreadText;
@@ -168,6 +173,7 @@ public:
     std::string loadingPostsText;
     std::string markupBold;
     std::string markupCode;
+    AbstractBoard::MarkupElements markupElements;
     std::string markupItalics;
     std::string markupLang;
     std::list<MarkupMode> markupModes;
@@ -186,7 +192,6 @@ public:
     unsigned int maxPasswordLength;
     unsigned int maxTextLength;
     std::string megabytesText;
-    int moder;
     std::string modificationDateTimeText;
     std::string moveThreadText;
     std::string moveThreadWarningText;
@@ -205,11 +210,17 @@ public:
     std::string postFormLabelEmail;
     std::string postFormLabelMarkupMode;
     std::string postFormLabelName;
+    std::string postFormLabelOptions;
     std::string postFormLabelPassword;
     std::string postFormLabelRaw;
+    std::string postFormLabelSignAsOp;
     std::string postFormLabelSubject;
     std::string postFormLabelText;
     std::string postFormLabelTripcode;
+    std::string postFormPlaceholderEmail;
+    std::string postFormPlaceholderName;
+    std::string postFormPlaceholderPassword;
+    std::string postFormPlaceholderSubject;
     std::list<std::string> postformRules;
     std::string postFormTextPlaceholder;
     std::string postFormTooltipDraft;
@@ -217,18 +228,22 @@ public:
     bool postingEnabled;
     std::string postingSpeed;
     std::string postingSpeedText;
+    unsigned int postLimit;
     std::string postLimitReachedText;
     std::string previousFileText;
     std::string quickReplyText;
     std::string ratingLabelText;
+    std::string rawPostTextText;
     std::string referencedByText;
     std::string registeredText;
     std::string removeFileText;
+    std::string selectAllText;
     std::string selectFileText;
     std::string showHidePostText;
     std::string showPostformMarkupText;
     std::string showPostformRulesText;
     std::string showPostFormText;
+    std::string showUserIpText;
     bool showWhois;
     std::string supportedFileTypes;
     std::string toBottomText;
@@ -236,6 +251,7 @@ public:
     std::string toTopText;
     std::string unexpectedEndOfTokenListErrorText;
     std::string unfixThreadText;
+    std::string unselectAllText;
     std::string youtubeApiKey;
 public:
     static bool isAudioType(const std::string &mimeType)

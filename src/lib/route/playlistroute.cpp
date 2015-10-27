@@ -22,10 +22,14 @@ PlaylistRoute::PlaylistRoute(cppcms::application &app) :
 
 void PlaylistRoute::handle()
 {
+    DDOS_A(11)
     Tools::log(application, "playlist", "begin");
     QString err;
-    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err))
-        return Tools::log(application, "playlist", "fail:" + err);
+    if (!Controller::testRequestNonAjax(application, Controller::GetRequest, &err)) {
+        Tools::log(application, "playlist", "fail:" + err);
+        DDOS_POST_A
+        return;
+    }
     Content::Playlist c;
     TranslatorQt tq(application.request());
     TranslatorStd ts(tq.locale());
@@ -37,6 +41,7 @@ void PlaylistRoute::handle()
     c.unknownTitleText = ts.translate("PlaylistRoute", "Unknown title", "unknownTitleText");
     Tools::render(application, "playlist", c);
     Tools::log(application, "playlist", "success");
+    DDOS_POST_A
 }
 
 unsigned int PlaylistRoute::handlerArgumentCount() const
